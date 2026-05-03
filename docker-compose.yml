@@ -108,6 +108,42 @@ services:
     # real catalogue endpoint instead:
     #   curl -fsS http://localhost:8081/self-descriptions
 
+  ui:
+    image: simpl-catalogue-client:local
+    container_name: simpl-cat-ui
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4321
+      # Astro reads PUBLIC_* vars at BOTH build time (baked into client bundle
+      # by astro build via .env in the source dir — see start.sh) AND at
+      # request time during SSR (read from process.env). The set below covers
+      # the runtime/SSR path. Must match the .env file start.sh writes.
+      PUBLIC_AUTH_KEYCLOAK_SERVER_URL: ""
+      PUBLIC_AUTH_KEYCLOAK_REALM: ""
+      PUBLIC_AUTH_KEYCLOAK_CLIENT_ID: ""
+      PUBLIC_FEDERATED_CATALOGUE_API_URL: "http://localhost:${FC_SERVICE_PORT:-8081}"
+      PUBLIC_SEARCH_API_URL: "http://localhost:${FC_SERVICE_PORT:-8081}"
+      PUBLIC_SEARCH_API_VERSION: "v1"
+      PUBLIC_CONTRACT_CONSUMPTION_API_URL: ""
+      PUBLIC_CONTRACT_CONSUMPTION_API_VERSION: "v1"
+      PUBLIC_AGENT_TYPE: "consumer"
+      USE_MOCK_APIS: "false"
+    ports:
+      - "${UI_PORT:-4321}:4321"
+    networks:
+      - simpl-cat-net
+    depends_on:
+      - fc-service
+    # The UI's PUBLIC_FEDERATED_CATALOGUE_API_URL is set to http://localhost:8081
+    # at build time so the same string works in both browser and SSR contexts.
+    # In the browser (running on the host) localhost:8081 hits the host's
+    # published port 8081 which is forwarded to fc-service. Inside the ui
+    # container we map localhost to host-gateway so SSR fetches reach the same
+    # endpoint. Without this, server-side rendered pages would fail to fetch
+    # catalogue data.
+    extra_hosts:
+      - "localhost:host-gateway"
+
 networks:
   simpl-cat-net:
     driver: bridge

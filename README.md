@@ -51,7 +51,7 @@ Stop:
 | 4 | Start Postgres + Neo4j via compose | ✅ |
 | 5 | Run fc-service container against dependencies | ✅ |
 | 6 | Verify catalogue API | ✅ |
-| 7 | Add catalogue UI (`simpl-catalogue-client`) | ⏳ |
+| 7 | Add catalogue UI (`simpl-catalogue-client`) | ✅ |
 | 8 | Architecture diagrams + dependency map | ⏳ |
 
 All ✅ phases verified end-to-end against upstream `simpl-fc-service` default branch on 2026-05-03 and codified into `start.sh` + `docker-compose.yml`.
@@ -61,6 +61,7 @@ All ✅ phases verified end-to-end against upstream `simpl-fc-service` default b
 ## What this stack provides
 
 - **fc-service** (Federated Catalogue, Spring Boot 3.5 / Java 17, runs on Java 21 JRE) on `:8081` — REST API for self-descriptions, schemas. Built from upstream source.
+- **simpl-catalogue-client** (Astro + Vue UI) on `:4321` — browser UI for the catalogue. Auth disabled (empty Keycloak vars), wired directly at fc-service. Search and contract-consumption endpoints degrade gracefully (the UI's full feature set requires xfsc-advsearch-be + contract-consumption-be which we don't run locally).
 - **PostgreSQL 14** on `:5432` — relational store for fc-service.
 - **Neo4j 5.14.0** on `:7474` (HTTP) / `:7687` (Bolt) with APOC + GDS + n10s plugins — graph store for fc-service's RDF/semantic operations.
 
@@ -168,6 +169,7 @@ Defaults are in `docker-compose.yml` and `start.sh`. Override by copying `.env.e
 
 | Service | URL | Purpose |
 |---------|-----|---------|
+| Catalogue UI | http://localhost:4321 | Browser UI for the catalogue — browse + view SDs |
 | fc-service API | http://localhost:8081 | REST API for self-descriptions and schemas |
 | Neo4j Browser | http://localhost:7474 | Graph database UI (login: `neo4j` / `neo12345`) |
 | Postgres | localhost:5432 | Database (user: `postgres`, db: `fed_cat`) |
