@@ -1,0 +1,112 @@
+# simpl-catalogue-local — full local stack for the Simpl-Open Federated Catalogue.
+#
+# This file brings up postgres + neo4j + fc-service in one shot. fc-service is built
+# from the upstream code cloned by start.sh into repos/simpl-fc-service/.
+#
+# DELIBERATE DEVIATIONS FROM UPSTREAM docker/docker-compose.yml:
+#   - 'version:' attribute removed (it's deprecated since Compose Spec 1.27).
+#   - n10s plugin INCLUDED in NEO4J_PLUGINS (upstream dev.env compose has it; some
+#     prior local-stack iterations missed it and silently broke at runtime).
+#   - fc-service IS a service here (in upstream it's commented out).
+#   - fc-service has SPRING_NEO4J_* env vars set as a workaround for an upstream
+#     wiring bug (GraphDbConfig is missing the @Configuration annotation, so its
+#     custom Neo4j driver bean is never registered). The env vars wire Spring
+#     Boot's auto-config Neo4j driver instead. GRAPHSTORE_* env vars are also set
+#     so this stack will continue to work once the upstream bug is patched.
+#   - No /actuator/health healthcheck on fc-service (the endpoint is 404 in current
+#     upstream because spring-boot-starter-actuator isn't on the classpath). Use
+#     catalogue endpoints for liveness instead.
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: simpl-cat-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-postgres}
+      POSTGRES_DB: fed_cat
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - simpl-cat-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  neo4j:
+    image: neo4j:5.14.0
+    container_name: simpl-cat-neo4j
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-neo12345}
+      NEO4J_PLUGINS: '["apoc", "graph-data-science", "n10s"]'
+      NEO4J_dbms_security_procedures_unrestricted: gds.*,apoc.*,n10s.*,semantics.*
+      NEO4J_dbms_security_procedures_allowlist: gds.*,apoc.*,n10s.*,semantics.*
+      NEO4J_server_memory_heap_initial__size: 512M
+      NEO4J_server_memory_heap_max__size: 1G
+      NEO4J_server_memory_pagecache_size: 512M
+    ports:
+      - "${NEO4J_HTTP_PORT:-7474}:7474"
+      - "${NEO4J_BOLT_PORT:-7687}:7687"
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+      - neo4j-plugins:/plugins
+    networks:
+      - simpl-cat-net
+    healthcheck:
+      test: ["CMD-SHELL", "/var/lib/neo4j/bin/neo4j status"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  fc-service:
+    image: simpl-fc-service:local
+    container_name: simpl-cat-fc-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fed_cat
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASS:-postgres}
+      # Workaround: upstream GraphDbConfig is missing the @Configuration
+      # annotation, so its custom Neo4j driver bean is never registered. Setting
+      # SPRING_NEO4J_* makes Spring Boot's auto-config Neo4j driver usable instead.
+      SPRING_NEO4J_URI: bolt://neo4j:7687
+      SPRING_NEO4J_AUTHENTICATION_USERNAME: ${NEO4J_USER:-neo4j}
+      SPRING_NEO4J_AUTHENTICATION_PASSWORD: ${NEO4J_PASSWORD:-neo12345}
+      # Belt-and-braces: GRAPHSTORE_* env vars for when the upstream wiring is
+      # fixed. Once GraphDbConfig.driver() registers properly it will supersede
+      # the auto-config driver via Spring's bean precedence and pick these up.
+      GRAPHSTORE_URI: bolt://neo4j:7687
+      GRAPHSTORE_USER: ${NEO4J_USER:-neo4j}
+      GRAPHSTORE_PASSWORD: ${NEO4J_PASSWORD:-neo12345}
+      # Disable schema-manager subscription — fc-service defaults to a Kubernetes-style
+      # hostname that doesn't exist in our local network.
+      SCHEMA_MANAGER_SUBSCRIPTION_ENABLED: "false"
+      OTEL_SDK_DISABLED: "true"
+    ports:
+      - "${FC_SERVICE_PORT:-8081}:8081"
+    networks:
+      - simpl-cat-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    # No healthcheck declared — /actuator/health returns 404 in current upstream
+    # (spring-boot-starter-actuator is not on the classpath). For liveness, use a
+    # real catalogue endpoint instead:
+    #   curl -fsS http://localhost:8081/self-descriptions
+
+networks:
+  simpl-cat-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  neo4j-data:
+  neo4j-logs:
+  neo4j-plugins:
