@@ -6,19 +6,19 @@ A short reference for what `fc-service` is, what it talks to in our local stack,
 
 ```mermaid
 flowchart LR
-    Client["HTTP client<br/>(curl / browser / SDK)"] -->|REST :8081| FC
+    Client["HTTP client<br/>curl / browser / SDK"] -->|REST :8081| FC
 
     subgraph net["Docker network: simpl-cat-net"]
-        FC["fc-service<br/>Spring Boot 3.5<br/>Java 17 (21 JRE)<br/>:8081"]
+        FC["fc-service<br/>Spring Boot 3.5<br/>Java 17 / 21 JRE<br/>:8081"]
         PG[("postgres:14<br/>db: fed_cat<br/>:5432")]
-        N4J[("neo4j:5.14<br/>+ apoc, gds, n10s<br/>:7474 HTTP, :7687 Bolt")]
-        FC -->|JDBC<br/>SPRING_DATASOURCE_*| PG
-        FC -->|Bolt<br/>SPRING_NEO4J_*| N4J
+        N4J[("neo4j:5.14<br/>+ apoc, gds, n10s<br/>:7474 HTTP / :7687 Bolt")]
+        FC -->|JDBC| PG
+        FC -->|Bolt| N4J
     end
 
-    FC -.->|disabled<br/>SCHEMA_MANAGER_SUBSCRIPTION_ENABLED=false| SM["schema-manager<br/>(not deployed locally)"]
-    FC -.->|on-demand<br/>during SD verification| DID["uniresolver.io<br/>(external DID resolver)"]
-    FC -.->|scheduled fetch<br/>(fails gracefully)| GTA["registry.lab.gaia-x.eu<br/>(external trust anchor)"]
+    FC -.->|disabled in our setup| SM["schema-manager<br/>not deployed locally"]
+    FC -.->|on-demand during SD verification| DID["uniresolver.io<br/>external DID resolver"]
+    FC -.->|scheduled fetch, fails gracefully| GTA["registry.lab.gaia-x.eu<br/>external trust anchor"]
 
     classDef hard fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     classDef soft fill:#fff3e0,stroke:#ef6c00,stroke-dasharray:5 5
