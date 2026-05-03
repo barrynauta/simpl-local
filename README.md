@@ -61,7 +61,7 @@ All ✅ phases verified end-to-end against upstream `simpl-fc-service` default b
 ## What this stack provides
 
 - **fc-service** (Federated Catalogue, Spring Boot 3.5 / Java 17, runs on Java 21 JRE) on `:8081` — REST API for self-descriptions, schemas. Built from upstream source.
-- **simpl-catalogue-client** (Astro + Vue UI) on `:4321` — browser UI for the catalogue. Auth disabled (empty Keycloak vars), wired directly at fc-service. Search and contract-consumption endpoints degrade gracefully (the UI's full feature set requires xfsc-advsearch-be + contract-consumption-be which we don't run locally).
+- **simpl-catalogue-client** (Astro + Vue UI) on `:4321` — browser UI for the catalogue. Auth disabled (empty Keycloak vars), wired directly at fc-service. Search and contract-consumption endpoints degrade gracefully (the UI's full feature set requires xfsc-advsearch-be + contract-consumption-be which we don't run locally). Per-component breakdown + the build-time/runtime env-var split + the `extra_hosts` networking trick is in [`docs/catalogue-ui-architecture.md`](docs/catalogue-ui-architecture.md). Manual setup steps are in [`docs/catalogue-ui-manual-setup.md`](docs/catalogue-ui-manual-setup.md).
 - **PostgreSQL 14** on `:5432` — relational store for fc-service.
 - **Neo4j 5.14.0** on `:7474` (HTTP) / `:7687` (Bolt) with APOC + GDS + n10s plugins — graph store for fc-service's RDF/semantic operations.
 
@@ -130,8 +130,10 @@ simpl-catalogue-local/
 ├── seed.sh                (Optional) POST upstream Gaia-X example SDs to populate the catalogue.
 ├── .env.example           Template for local overrides (copy to .env).
 ├── docs/                  Per-service walkthroughs and architecture notes.
-│   ├── fc-service-manual-setup.md    Manual equivalent of ./start.sh.
-│   └── fc-service-architecture.md    Diagram + dependencies + process model.
+│   ├── fc-service-manual-setup.md       Manual equivalent of ./start.sh for fc-service.
+│   ├── fc-service-architecture.md       Diagram + dependencies + process model for fc-service.
+│   ├── catalogue-ui-manual-setup.md     Manual equivalent of ./start.sh for the UI.
+│   └── catalogue-ui-architecture.md     Diagram + env-var flow + networking trick for the UI.
 └── repos/                 GITIGNORED. Upstream code, cloned by start.sh.
     └── simpl-fc-service/    Cloned from code.europa.eu in Phase 1.
 ```
