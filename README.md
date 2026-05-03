@@ -1,6 +1,8 @@
 # Simpl Catalogue — Local
 
-A scripts-and-documentation repo for running the **Simpl-Open Federated Catalogue** locally on a Mac (OrbStack or Docker Desktop). Intended for evaluation, debugging, and SC-3 co-development scenarios on a 16 GB Mac.
+A scripts-and-documentation repo for running the **Simpl-Open Federated Catalogue** locally on a Mac 
+(OrbStack or Docker Desktop). 
+Intended for proving modularity of the catalogue, for evaluation and debugging on a 16 GB Mac.
 
 This repo holds **only orchestration scripts, configuration, and documentation**. 
 No upstream Simpl-Open code is committed here, the actual catalogue source lives at [https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-fc-service](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-fc-service) 
