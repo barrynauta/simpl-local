@@ -56,6 +56,8 @@ All ✅ phases verified end-to-end against upstream `simpl-fc-service` default b
 - **PostgreSQL 14** on `:5432` — relational store for fc-service.
 - **Neo4j 5.14.0** on `:7474` (HTTP) / `:7687` (Bolt) with APOC + GDS + n10s plugins — graph store for fc-service's RDF/semantic operations.
 
+For an architecture diagram + per-component breakdown of what fc-service talks to (and what it intentionally doesn't), see [`docs/fc-service-architecture.md`](docs/fc-service-architecture.md).
+
 ## What this stack does NOT provide
 
 - Production governance / policy / quality layers (Catalogue Client Service, Query Mapper Adapter, Policy Filter, Quality Validation, Schema Registry, Management Service).
@@ -118,7 +120,8 @@ simpl-catalogue-local/
 ├── stop.sh                Stop containers, optionally wipe volumes (--full).
 ├── .env.example           Template for local overrides (copy to .env).
 ├── docs/                  Per-service walkthroughs and architecture notes.
-│   └── fc-service-manual-setup.md    Manual equivalent of ./start.sh.
+│   ├── fc-service-manual-setup.md    Manual equivalent of ./start.sh.
+│   └── fc-service-architecture.md    Diagram + dependencies + process model.
 └── repos/                 GITIGNORED. Upstream code, cloned by start.sh.
     └── simpl-fc-service/    Cloned from code.europa.eu in Phase 1.
 ```
