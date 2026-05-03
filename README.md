@@ -25,6 +25,12 @@ curl http://localhost:8081/self-descriptions   # → {"totalCount":0,"items":[]}
 curl http://localhost:8081/schemas             # → 4 default schemas
 ```
 
+(Optional) Seed it with example Gaia-X self-descriptions so you have data to query:
+```bash
+./seed.sh
+```
+Loads upstream-shipped legal-person and service-offering examples. Idempotent — re-runs are no-ops unless you pass `--force`.
+
 Stop:
 ```bash
 ./stop.sh           # preserve data + volumes
@@ -118,6 +124,7 @@ simpl-catalogue-local/
 ├── docker-compose.yml     Defines the postgres + neo4j + fc-service stack.
 ├── start.sh               Idempotent one-shot setup (clone + build + image + up + n10s init).
 ├── stop.sh                Stop containers, optionally wipe volumes (--full).
+├── seed.sh                (Optional) POST upstream Gaia-X example SDs to populate the catalogue.
 ├── .env.example           Template for local overrides (copy to .env).
 ├── docs/                  Per-service walkthroughs and architecture notes.
 │   ├── fc-service-manual-setup.md    Manual equivalent of ./start.sh.
@@ -143,7 +150,9 @@ Defaults are in `docker-compose.yml` and `start.sh`. Override by copying `.env.e
 ## Known limitations and design choices
 
 - **No authentication.** This is a local-development stack. The `/participants` and `/users` endpoint families return HTTP 501 (`"feature disabled due to keycloak removal"`) because the upstream removed the keycloak integration without restoring auth on top. Don't run this configuration anywhere networked.
-- **No data seeding.** fc-service starts with an empty database. `curl /self-descriptions` returns `{"totalCount":0,"items":[]}` on a fresh stack — this is normal, not a bug. Self-descriptions and schemas need to be uploaded explicitly via the API.
+- **No automatic data seeding.** fc-service starts with an empty database. `curl /self-descriptions` returns `{"totalCount":0,"items":[]}` on a fresh stack — this is normal. Run `./seed.sh` to populate with upstream-shipped Simpl example SDs.
+- **Sandbox-permissive validation.** `docker-compose.yml` sets `FEDERATED_CATALOGUE_VERIFICATION_SCHEMA=false` and `FEDERATED_CATALOGUE_VERIFICATION_SEMANTICS=false` so example SDs from upstream test fixtures can be ingested. Current upstream validators are stricter than what those fixtures comply with (and they're stricter than what `./seed.sh`'s example payloads can satisfy without hand-construction). Both verification layers must be re-enabled for any deployment ingesting untrusted SDs. Signature verification is off by default in the upstream `application.yml` and we don't change that.
+- **Only one example SD seeds successfully.** `./seed.sh` currently uploads one DataOffering. A second fixture (a service-offering VP) triggers an upstream ClassCastException and is intentionally excluded — see the comment in `seed.sh`.
 - **No advanced search.** `xfsc-advsearch-be` is intentionally not part of this stack. The catalogue API serves browse and basic search via fc-service directly.
 - **No `/actuator/health`.** Returns 404 in current upstream because `spring-boot-starter-actuator` is not on the classpath. Use real catalogue endpoints (e.g. `curl /self-descriptions`) for liveness checks.
 - **n10s graph init step is a workaround**, not the original design. The upstream `GraphDbConfig.driver()` would have run it automatically, but the class is missing `@Configuration` so it's never registered. We use `SPRING_NEO4J_*` env vars to wire Spring Boot's auto-config Neo4j driver instead, and run the n10s init manually via cypher-shell. Once upstream fixes the missing annotation, our env vars become harmless no-ops.

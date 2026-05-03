@@ -87,6 +87,13 @@ services:
       # hostname that doesn't exist in our local network.
       SCHEMA_MANAGER_SUBSCRIPTION_ENABLED: "false"
       OTEL_SDK_DISABLED: "true"
+      # SANDBOX MODE: disable schema + semantic verification so example SDs
+      # that don't perfectly match current upstream's validation rules still
+      # get ingested. NOT for production — any deployment that ingests
+      # untrusted SDs MUST set both back to true (or unset to inherit the
+      # application.yml defaults). See README known-limitations section.
+      FEDERATED_CATALOGUE_VERIFICATION_SCHEMA: "false"
+      FEDERATED_CATALOGUE_VERIFICATION_SEMANTICS: "false"
     ports:
       - "${FC_SERVICE_PORT:-8081}:8081"
     networks:
