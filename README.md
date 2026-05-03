@@ -62,7 +62,7 @@ All ✅ phases verified end-to-end against upstream `simpl-fc-service` default b
 - Self-description authoring backends (`sdtooling-api-be`, `sdtooling-validation-api-be`, `simpl-sd-ui`, `simpl-signer`).
 - Advanced search (`xfsc-advsearch-be`).
 - Contract negotiation / data plane (`simpl-edc`, `edcconnectoradapter`, `contract-consumption-be`).
-- Authentication — Keycloak, Tier-1 / Tier-2 gateways are deliberately omitted. The `/participants` and `/users` endpoints return HTTP 501 because the upstream keycloak integration was removed (see Upstream bugs found below).
+- Authentication — Keycloak, Tier-1 / Tier-2 gateways are deliberately omitted. The `/participants` and `/users` endpoints return HTTP 501 because the upstream keycloak integration was removed.
 - Vault, OpenBao, Kafka, NFS, ArgoCD, Helm — none of the production platform layers.
 - Production-grade scaling, HA, secrets management, monitoring.
 
@@ -141,7 +141,7 @@ docker compose up -d
 
 Brings up `postgres`, `neo4j`, and `fc-service` per this repo's `docker-compose.yml`. Postgres is healthy in seconds; Neo4j takes ~40s on first run while it downloads the apoc + graph-data-science + n10s plugins.
 
-### 5. Initialise n10s in Neo4j (workaround — see "Upstream bugs found" below)
+### 5. Initialise n10s in Neo4j (workaround for an upstream wiring bug)
 
 ```bash
 docker exec simpl-cat-neo4j cypher-shell -u neo4j -p neo12345 \
