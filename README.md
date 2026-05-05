@@ -139,6 +139,96 @@ Defaults live in `docker-compose.yml`. Copy `.env.example` to `.env` to override
 
 ---
 
+## Testing
+
+The notification service has no HTTP API. The only way to trigger it is to publish a JSON message to the `notifications` Kafka topic. Mailpit captures the resulting email so you can inspect it without a real mail server.
+
+**Prerequisites:** stack is running (`./start.sh` completed) and Mailpit is open at http://localhost:8025.
+
+### Message schema
+
+Every message published to the `notifications` topic must be a JSON object with these fields:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `channel` | `"email"` | Yes | Notification channel — only `email` is implemented |
+| `to` | string | Yes | Primary recipient address |
+| `cc` | array of strings | No | Additional recipients |
+| `subject` | string | Yes | Email subject line |
+| `message` | string | Yes | Email body |
+
+### Test 1 — single recipient
+
+**Input** (publish to Kafka):
+
+```bash
+docker exec -i simpl-kafka kafka-console-producer \
+  --broker-list kafka:9093 \
+  --topic notifications <<< \
+  '{"channel":"email","to":"alice@example.com","subject":"Onboarding approved","message":"Your onboarding request has been approved. You may now access the data space."}'
+```
+
+**Expected output in Mailpit** (http://localhost:8025):
+
+- 1 new message appears within ~1 second
+- **To:** `alice@example.com`
+- **Subject:** `Onboarding approved`
+- **Body:** `Your onboarding request has been approved. You may now access the data space.`
+- No Cc field
+
+**Validate:**
+
+```bash
+curl -s http://localhost:8025/api/v1/messages | python3 -m json.tool | grep -E '"to"|"subject"'
+```
+
+### Test 2 — multiple recipients
+
+**Input** (publish to Kafka):
+
+```bash
+docker exec -i simpl-kafka kafka-console-producer \
+  --broker-list kafka:9093 \
+  --topic notifications <<< \
+  '{"channel":"email","to":"alice@example.com","cc":["bob@example.com","carol@example.com"],"subject":"Contract closed","message":"Contract #C-2026-001 has been closed. All parties have been notified."}'
+```
+
+**Expected output in Mailpit** (http://localhost:8025):
+
+- 1 new message appears within ~1 second
+- **To:** `alice@example.com`
+- **Cc:** `bob@example.com`, `carol@example.com`
+- **Subject:** `Contract closed`
+- **Body:** `Contract #C-2026-001 has been closed. All parties have been notified.`
+
+**Validate:**
+
+```bash
+curl -s http://localhost:8025/api/v1/messages | python3 -m json.tool | grep -E '"to"|"cc"|"subject"'
+```
+
+### Inspect the Kafka topic
+
+To see all messages consumed so far (useful for debugging):
+
+```bash
+docker exec simpl-kafka kafka-console-consumer \
+  --bootstrap-server kafka:9093 \
+  --topic notifications \
+  --from-beginning \
+  --max-messages 10
+```
+
+### Watch the service logs in real time
+
+```bash
+docker logs -f simpl-notification-service
+```
+
+A successful dispatch logs a line containing the recipient address. A failed dispatch (e.g. SMTP unreachable) logs a `NotificationException`.
+
+---
+
 ## Architectural observations
 
 **The Kafka topic is east-west, not north-south.** The `notifications` Kafka topic connects platform-internal services only — Onboarding Manager, Contract Manager, Schema Manager, and the Notification Service all run in the same `common` namespace on the same cluster. No data space boundary is crossed by the Kafka message. The only north-south moment in the entire flow is the SMTP email dispatched at the end, when a message leaves the platform to reach a human recipient's inbox.
