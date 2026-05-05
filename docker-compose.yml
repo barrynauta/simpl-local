@@ -108,6 +108,27 @@ services:
     # real catalogue endpoint instead:
     #   curl -fsS http://localhost:8081/self-descriptions
 
+  query-mapper-adapter:
+    # Aka catalogue-adapter / poc-gaia-edc / "query-mapper" depending on the doc.
+    # The simpl-catalogue-client UI's quick-search routes through this when
+    # PUBLIC_QUERY_MAPPER_ADAPTER_API_URL is set, bypassing xfsc-advsearch-be.
+    image: query-mapper-adapter:local
+    container_name: simpl-cat-qma
+    environment:
+      # Note the typo "FEDERATED_CATALOOGUE" (extra O) in upstream
+      # application.properties — env var must match the typo'd property name.
+      FEDERATED_CATALOOGUE_CLIENT_URL: http://fc-service:8081
+      # Mount qma's endpoints under /v1 so they match what the UI builds:
+      # http://localhost:8084/v1/selfDescriptions ...
+      SERVER_SERVLET_CONTEXT_PATH: /v1
+      OTEL_SDK_DISABLED: "true"
+    ports:
+      - "${QMA_PORT:-8084}:8084"
+    networks:
+      - simpl-cat-net
+    depends_on:
+      - fc-service
+
   ui:
     image: simpl-catalogue-client:local
     container_name: simpl-cat-ui
@@ -124,6 +145,11 @@ services:
       PUBLIC_FEDERATED_CATALOGUE_API_URL: "http://localhost:${FC_SERVICE_PORT:-8081}"
       PUBLIC_SEARCH_API_URL: "http://localhost:${FC_SERVICE_PORT:-8081}"
       PUBLIC_SEARCH_API_VERSION: "v1"
+      # When set, the UI's quick-search and advanced-search route through this
+      # URL instead of via xfsc-advsearch-be. Matches the query-mapper-adapter
+      # service above.
+      PUBLIC_QUERY_MAPPER_ADAPTER_API_URL: "http://localhost:${QMA_PORT:-8084}"
+      PUBLIC_QUERY_MAPPER_ADAPTER_API_VERSION: "v1"
       PUBLIC_CONTRACT_CONSUMPTION_API_URL: ""
       PUBLIC_CONTRACT_CONSUMPTION_API_VERSION: "v1"
       PUBLIC_AGENT_TYPE: "consumer"

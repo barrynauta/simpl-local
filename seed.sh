@@ -155,9 +155,34 @@ for sd in "${SDS[@]}"; do
     continue
   fi
   printf "    → POST %-32s " "$sd"
-  HTTP_STATUS=$(curl -s -o /tmp/seed-response.json -w "%{http_code}" \
+  # Patch the SD before posting:
+  #   - simpl:access-policy: replace upstream's placeholder string "swvwe" with
+  #     a valid stringified ODRL policy that grants access to CONSUMER role.
+  #     Without this, fc-service's QuickSearchService crashes with a 500
+  #     because its isAccessGranted() unsafely JSON-parses the field.
+  #   - simpl:usage-policy: same root cause; "{}" is the minimum valid JSON.
+  #   Both fields live at credentialSubject.simpl:servicePolicy.simpl:*
+  FIXED_SD=$(python3 -c '
+import json, sys
+sd = json.load(open(sys.argv[1]))
+cs = sd.get("credentialSubject", {})
+# Fix access/usage-policy (nested under simpl:servicePolicy)
+sp = cs.get("simpl:servicePolicy")
+if isinstance(sp, dict):
+    sp["simpl:access-policy"] = "{\"permission\":[{\"assignee\":{\"uid\":\"CONSUMER\"}}]}"
+    sp["simpl:usage-policy"] = "{}"
+# Add simpl:offeringType to generalServiceProperties — upstream code reads this
+# field directly but the example SD only encodes the type as rdf:type on the subject.
+gsp = cs.get("simpl:generalServiceProperties")
+if isinstance(gsp, dict) and "simpl:offeringType" not in gsp:
+    rdf_type = cs.get("rdf:type", {})
+    type_id = rdf_type.get("@id", "") if isinstance(rdf_type, dict) else str(rdf_type)
+    gsp["simpl:offeringType"] = type_id.split(":")[-1] if type_id else "DataOffering"
+print(json.dumps(sd))
+' "$SD_FILE")
+  HTTP_STATUS=$(echo "$FIXED_SD" | curl -s -o /tmp/seed-response.json -w "%{http_code}" \
     -X POST -H "Content-Type: application/json" \
-    --data-binary "@$SD_FILE" \
+    --data-binary @- \
     "${FC_URL}/self-descriptions")
 
   if [ "$HTTP_STATUS" = "201" ] || [ "$HTTP_STATUS" = "200" ]; then

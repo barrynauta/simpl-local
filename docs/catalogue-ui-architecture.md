@@ -10,22 +10,24 @@ flowchart LR
 
     subgraph net["Docker network: simpl-cat-net"]
         UI["catalogue UI<br/>Astro 4 + Vue 3<br/>Node 22 SSR<br/>:4321"]
+        QMA["query-mapper-adapter<br/>:8084  context: /v1"]
         FC["fc-service<br/>:8081"]
+        QMA --> FC
     end
 
+    UI -->|search via localhost:8084/v1/selfDescriptions| QMAHost["Host gateway<br/>maps localhost:8084<br/>to host port 8084"]
+    QMAHost -->|forwards to published port| QMA
     UI -.->|SSR fetch via extra_hosts<br/>localhost:host-gateway| Host["Host gateway<br/>maps localhost:8081<br/>to host port 8081"]
     Host -->|forwards to published port| FC
     Browser -->|browser-side fetch<br/>direct localhost:8081| FC
 
-    UI -.->|missing in local stack<br/>search returns errors gracefully| ADV["xfsc-advsearch-be<br/>NOT DEPLOYED"]
     UI -.->|missing in local stack<br/>contract flows return errors| CC["contract-consumption-be<br/>NOT DEPLOYED"]
-    UI -.->|missing in local stack| QM["query-mapper-adapter<br/>NOT DEPLOYED"]
     UI -.->|disabled by empty env vars| KC["Keycloak / Tier-1 gateway<br/>NOT DEPLOYED"]
 
     classDef hard fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     classDef soft fill:#fff3e0,stroke:#ef6c00,stroke-dasharray:5 5
-    class FC hard
-    class ADV,CC,QM,KC soft
+    class FC,QMA hard
+    class CC,KC soft
 ```
 
 Solid arrows = active in our local stack. Dashed arrows = the UI tries to reach these in production but they are not deployed locally; the UI degrades to error states for those flows.
@@ -53,8 +55,8 @@ That's the entire surface — the UI does not have a "browse all" or "list" page
 | `/resourceDescriptions/{id}` page | fc-service `/self-descriptions/{id}` | ✅ Works — renders offer details, billing schema, contract template, SLA agreements |
 | `/status` page | none (static) | ✅ Works |
 | `/` quick-search box (display) | none (static) | ✅ Renders |
-| Quick search submission | xfsc-advsearch-be at `/v1/selfDescriptions?q=...` | ❌ HTTP 404 (advsearch-be not deployed; fc-service has no `/v1/...` namespace). Surfaces as `(QUICK_SEARCH_ERROR) Error details are not available` — an upstream UI bug, see SIMPL-26189 |
-| Advanced search | xfsc-advsearch-be `/advanced` | ❌ Same as above |
+| Quick search submission | query-mapper-adapter at `localhost:8084/v1/selfDescriptions?searchString=...` | ✅ Works — returns access-policy-filtered results via QMA → fc-service |
+| Advanced search | query-mapper-adapter `/v1/selfDescriptions/advancedSearch` | ✅ Works with a valid filter body; empty `{"filters":[]}` returns HTTP 400 |
 | Contract negotiation flows | contract-consumption-be | ❌ Not deployed |
 
 ## The networking trick — `extra_hosts: ["localhost:host-gateway"]`
@@ -89,8 +91,7 @@ The two sets of values must match. `start.sh` writes them once and `docker-compo
 
 | Component | Status here | What it would do |
 |---|---|---|
-| **xfsc-advsearch-be** | Not deployed | Provides keyword + advanced search via `/v1/selfDescriptions?q=...`. Without it, search submissions fail with the swallow-error pattern (SIMPL-26189). |
-| **query-mapper-adapter** | Not deployed | Optional override for advanced search — when present, the UI routes search through it instead of advsearch-be. Both being absent is functionally equivalent. |
+| **xfsc-advsearch-be** | Not deployed — QMA takes its place | Provides keyword + advanced search. When `PUBLIC_QUERY_MAPPER_ADAPTER_API_URL` is set the UI routes search through QMA instead, bypassing advsearch-be entirely. |
 | **contract-consumption-be** | Not deployed | Initiates ContractNegotiation and TransferProcess workflows. The UI has buttons for these in the SD detail page; clicking them errors out. |
 | **Keycloak + Tier-1 gateway** | Not deployed | Production auth. The UI's empty Keycloak env vars make it skip the auth flow entirely — every request goes through unauthenticated. |
 
@@ -104,8 +105,10 @@ Set both at build time (in `repos/simpl-catalogue-client/.env`, written by `star
 | `PUBLIC_AUTH_KEYCLOAK_REALM` | (empty) | Disables Keycloak auth flow |
 | `PUBLIC_AUTH_KEYCLOAK_CLIENT_ID` | (empty) | Disables Keycloak auth flow |
 | `PUBLIC_FEDERATED_CATALOGUE_API_URL` | `http://localhost:8081` | Browse + SD detail (works) |
-| `PUBLIC_SEARCH_API_URL` | `http://localhost:8081` | Search target (404s — advsearch-be not deployed) |
+| `PUBLIC_SEARCH_API_URL` | `http://localhost:8081` | Fallback search target (unused when QMA URL is set) |
 | `PUBLIC_SEARCH_API_VERSION` | `v1` | Path prefix for search |
+| `PUBLIC_QUERY_MAPPER_ADAPTER_API_URL` | `http://localhost:8084` | When set, UI routes quick-search and advanced-search through QMA instead of advsearch-be |
+| `PUBLIC_QUERY_MAPPER_ADAPTER_API_VERSION` | `v1` | Path prefix for QMA — matches `SERVER_SERVLET_CONTEXT_PATH` on the QMA container |
 | `PUBLIC_CONTRACT_CONSUMPTION_API_URL` | (empty) | Disables contract flows |
 | `PUBLIC_CONTRACT_CONSUMPTION_API_VERSION` | `v1` | Path prefix |
 | `PUBLIC_AGENT_TYPE` | `consumer` | UI persona — affects which flows are visible |

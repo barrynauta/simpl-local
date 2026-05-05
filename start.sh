@@ -11,6 +11,8 @@ UPSTREAM_REPO="$REPO_DIR/repos/simpl-fc-service"
 UPSTREAM_GIT="https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-fc-service.git"
 UI_REPO="$REPO_DIR/repos/simpl-catalogue-client"
 UI_GIT="https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-catalogue-client.git"
+QMA_REPO="$REPO_DIR/repos/poc-gaia-edc"
+QMA_GIT="https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/poc-gaia-edc.git"
 
 # Load env overrides if present. Defaults match what start.sh / docker-compose.yml expect.
 if [ -f "$REPO_DIR/.env" ]; then
@@ -73,6 +75,8 @@ PUBLIC_AUTH_KEYCLOAK_CLIENT_ID=
 PUBLIC_FEDERATED_CATALOGUE_API_URL=http://localhost:${FC_SERVICE_PORT}
 PUBLIC_SEARCH_API_URL=http://localhost:${FC_SERVICE_PORT}
 PUBLIC_SEARCH_API_VERSION=v1
+PUBLIC_QUERY_MAPPER_ADAPTER_API_URL=http://localhost:${QMA_PORT:-8084}
+PUBLIC_QUERY_MAPPER_ADAPTER_API_VERSION=v1
 PUBLIC_CONTRACT_CONSUMPTION_API_URL=
 PUBLIC_CONTRACT_CONSUMPTION_API_VERSION=v1
 PUBLIC_AGENT_TYPE=consumer
@@ -86,7 +90,30 @@ else
   echo "    Image simpl-catalogue-client:local exists. To rebuild after env-var changes: docker rmi simpl-catalogue-client:local && ./start.sh"
 fi
 
-echo "==> 4b/5 Start stack (postgres + neo4j + fc-service + ui)"
+echo "==> 4b/5 Clone poc-gaia-edc (query-mapper-adapter, if missing) and build its Docker image"
+if [ ! -d "$QMA_REPO/.git" ]; then
+  echo "    Cloning $QMA_GIT ..."
+  git clone "$QMA_GIT" "$QMA_REPO"
+else
+  echo "    Already cloned. To update: cd repos/poc-gaia-edc && git pull"
+fi
+
+QMA_JAR=$(ls "$QMA_REPO"/target/adapter-*.jar 2>/dev/null | head -1 || true)
+if [ -z "$QMA_JAR" ]; then
+  echo "    No JAR found; running ./mvnw clean install -DskipTests..."
+  (cd "$QMA_REPO" && PROJECT_RELEASE_VERSION=local ./mvnw clean install -DskipTests)
+else
+  echo "    JAR exists: $(basename "$QMA_JAR"). To rebuild: rm repos/poc-gaia-edc/target/*.jar"
+fi
+
+if ! docker image inspect query-mapper-adapter:local > /dev/null 2>&1; then
+  echo "    Building query-mapper-adapter Docker image..."
+  (cd "$QMA_REPO" && docker build -t query-mapper-adapter:local .)
+else
+  echo "    Image query-mapper-adapter:local exists. To rebuild: docker rmi query-mapper-adapter:local"
+fi
+
+echo "==> 4c/5 Start stack (postgres + neo4j + fc-service + query-mapper-adapter + ui)"
 (cd "$REPO_DIR" && docker compose up -d)
 
 echo "==> 5/5 Initialise n10s graph in Neo4j (workaround for upstream wiring bug)"
@@ -116,6 +143,7 @@ echo "==> Stack ready"
 echo ""
 echo "    Catalogue UI:  http://localhost:${UI_PORT:-4321}"
 echo "    fc-service:    http://localhost:${FC_SERVICE_PORT}"
+echo "    query-mapper:  http://localhost:${QMA_PORT:-8084}  (catalogue-adapter / poc-gaia-edc)"
 echo "    Neo4j Browser: http://localhost:${NEO4J_HTTP_PORT}  (login: ${NEO4J_USER} / ${NEO4J_PASSWORD})"
 echo "    Postgres:      localhost:${POSTGRES_PORT}  (user: ${DB_USER:-postgres} / database: fed_cat)"
 echo ""
