@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Local Maven settings for building notification-service.
+
+  The upstream pom.xml resolves internal EU packages via GitLab Package Registry
+  (projects 879 and 897 on code.europa.eu) using ${CI_API_V4_URL} which is a
+  GitLab CI predefined variable. Locally we substitute it via -DCI_API_V4_URL=...
+  and authenticate using a Personal Access Token from the GITLAB_PAT env var.
+
+  To get a PAT: log into https://code.europa.eu → Profile → Access Tokens →
+  create one with at least "read_api" scope.
+
+  If the package registries are public (no auth required), GITLAB_PAT can be empty.
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>gitlab-maven</id>
+      <configuration>
+        <httpHeaders>
+          <property>
+            <name>Private-Token</name>
+            <value>${env.GITLAB_PAT}</value>
+          </property>
+        </httpHeaders>
+      </configuration>
+    </server>
+    <server>
+      <id>gitlab-maven-2</id>
+      <configuration>
+        <httpHeaders>
+          <property>
+            <name>Private-Token</name>
+            <value>${env.GITLAB_PAT}</value>
+          </property>
+        </httpHeaders>
+      </configuration>
+    </server>
+  </servers>
+</settings>

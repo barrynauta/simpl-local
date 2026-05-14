@@ -1,0 +1,36 @@
+# Test overlay — email capture for local evaluation.
+#
+# Adds Mailpit (a zero-config SMTP capture server) and wires notification-service
+# to it. This overlay has no equivalent in production: in production the SMTP relay
+# is a real server configured via OpenBao secrets.
+#
+# Used automatically by start.sh:
+#   docker compose -f docker-compose.yml -f docker-compose.test.yml up
+#
+# To run WITHOUT email testing (no Mailpit):
+#   docker compose up
+
+services:
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: simpl-mailpit
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"   # SMTP — accepts mail from notification-service
+      - "${MAILPIT_UI_PORT:-8025}:8025"     # Web UI — inspect captured emails
+    networks:
+      - simpl-notification-net
+
+  notification-service:
+    depends_on:
+      mailpit:
+        condition: service_started
+    environment:
+      # Route SMTP to Mailpit instead of a real relay.
+      # Overrides the hardcoded port/TLS settings in upstream application.properties.
+      SMTP_HOST: mailpit
+      SMTP_USERNAME: local
+      SMTP_PASSWORD: local
+      SPRING_MAIL_PORT: "1025"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"

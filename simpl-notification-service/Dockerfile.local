@@ -1,0 +1,83 @@
+# Multi-stage local build for simpl-notification-service.
+#
+# The upstream Dockerfile is single-stage (copies a pre-built JAR from GitLab CI).
+# This replaces it for local evaluation with a self-contained multi-stage build.
+#
+# Dependency chain (all resolved from local source — no GitLab PAT needed):
+#   COMMON_LOGGING:2.4.0  ← needed by COMMON:2.5.1
+#   COMMON_LOGGING:2.0.1  ← needed directly by notification-service
+#   COMMON:2.5.1          ← needed by notification-service
+#   notification-service  ← the target
+#
+# The ${CI_API_V4_URL} Maven property in upstream pom.xml files references the
+# GitLab Package Registry. We pass a valid URL so Maven doesn't error on config,
+# but since all EU artifacts are installed into the local .m2 first, it is never
+# actually contacted.
+#
+# Build context: the local stack root (simpl-notification-service-local/)
+# Requires repos/ to be populated first by start.sh (git clone of all three upstream repos).
+# Built by start.sh — do not run docker build directly.
+
+# ─── Stage 1: Maven build ─────────────────────────────────────────────────────
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+
+ARG CI_API_V4_URL=https://code.europa.eu/api/v4
+
+WORKDIR /build
+
+COPY repos/common_logging /build/common_logging
+COPY repos/common         /build/common
+COPY repos/notification-service /build/notification-service
+
+# Step 1 — Install COMMON_LOGGING:2.4.0
+# Required by COMMON:2.5.1 (<simpl.common.logging.version>2.4.0</simpl.common.logging.version>)
+RUN cd /build/common_logging && \
+    PROJECT_RELEASE_VERSION=2.4.0 \
+    mvn install -DskipTests -q \
+      -DCI_API_V4_URL="${CI_API_V4_URL}" \
+      -DCI_PROJECT_ID=local
+
+# Step 2 — Install COMMON_LOGGING:2.0.1
+# Required directly by notification-service (<simpl.common.logging.version>2.0.1</simpl.common.logging.version>)
+RUN cd /build/common_logging && \
+    PROJECT_RELEASE_VERSION=2.0.1 \
+    mvn install -DskipTests -q \
+      -DCI_API_V4_URL="${CI_API_V4_URL}" \
+      -DCI_PROJECT_ID=local
+
+# Step 3 — Install COMMON:2.5.1
+# COMMON_LOGGING:2.4.0 is now in local .m2 — the GitLab registry is not contacted.
+# Checkstyle skipped (runs in validate phase; fine for local evaluation builds).
+RUN cd /build/common && \
+    PROJECT_RELEASE_VERSION=2.5.1 \
+    mvn install -DskipTests -q \
+      -Dcheckstyle.skip=true \
+      -DCI_API_V4_URL="${CI_API_V4_URL}" \
+      -DCI_PROJECT_ID=local
+
+# Step 4 — Build notification-service
+# COMMON_LOGGING:2.0.1 and COMMON:2.5.1 are now in local .m2.
+RUN cd /build/notification-service && \
+    chmod +x mvnw && \
+    PROJECT_RELEASE_VERSION=local \
+    ./mvnw clean package -DskipTests -q \
+      -DCI_API_V4_URL="${CI_API_V4_URL}"
+
+# ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
+# Mirrors the upstream Dockerfile exactly; only the JAR source differs.
+FROM eclipse-temurin:21-jdk-alpine
+
+COPY --from=builder /build/notification-service/target/*.jar simpl-notification-service.jar
+RUN mkdir /otel && chmod 775 /otel && apk add --no-cache libc6-compat
+
+ADD https://repo1.maven.org/maven2/co/elastic/otel/elastic-otel-javaagent/1.3.0/elastic-otel-javaagent-1.3.0.jar /otel/elastic-otel-javaagent.jar
+
+RUN adduser -u 8877 -D dockeruser && chown -R dockeruser:dockeruser /otel
+USER dockeruser
+EXPOSE 8080
+
+ENV OTEL_SERVICE_NAME=simpl-notification-service
+ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://collector.common01.dev.simpl-europe.eu/
+ENV OTEL_LOGS_EXPORTER="none"
+
+CMD ["java", "-javaagent:/otel/elastic-otel-javaagent.jar", "-jar", "simpl-notification-service.jar"]

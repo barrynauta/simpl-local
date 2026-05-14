@@ -1,0 +1,93 @@
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: simpl-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - simpl-notification-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: simpl-kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # No SASL — PLAINTEXT for local dev
+    ports:
+      - "${KAFKA_HOST_PORT:-9093}:9093"
+    networks:
+      - simpl-notification-net
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server kafka:9093"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.1
+    container_name: simpl-kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093
+    ports:
+      - "${KAFKA_UI_PORT:-9082}:8080"
+    networks:
+      - simpl-notification-net
+
+  notification-service:
+    image: simpl-notification-service:local
+    container_name: simpl-notification-service
+    # Image is built by start.sh using Dockerfile.local (multi-stage Maven + runtime).
+    # To rebuild: ./start.sh --rebuild
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      # Kafka — PLAINTEXT (no SASL for local dev)
+      KAFKA_BOOTSTRAP_SERVER: kafka:9093
+      KAFKA_SECURITY_PROTOCOL: PLAINTEXT
+      KAFKA_SASL_MECHANISM: PLAIN
+      KAFKA_SASL_JAAS_CONFIG: ""
+      KAFKA_CLIENT_USER: ""
+      KAFKA_CLIENT_PASSWORDS: ""
+      KAFKA_RETRY_TOPIC_BACKOFF_DELAY: "1000"
+
+      # App config
+      API_KEY: "${API_KEY:-local-dev-api-key}"
+      SPRING_PROFILES_ACTIVE: default
+
+      # Policy: health endpoint must not be under /actuator — expose at /health
+      MANAGEMENT_ENDPOINTS_WEB_BASE_PATH: /
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
+
+      # Observability — disabled locally
+      OTEL_SDK_DISABLED: "true"
+
+      # SMTP — configured by docker-compose.test.yml when testing with Mailpit.
+      # Without that overlay, notification-service starts but email dispatch will fail.
+      # In production these values come from OpenBao secrets.
+      SMTP_HOST: "${SMTP_HOST:-}"
+      SMTP_USERNAME: "${SMTP_USERNAME:-}"
+      SMTP_PASSWORD: "${SMTP_PASSWORD:-}"
+      DEFAULT_EMAIL_RECEIVER: "${DEFAULT_EMAIL_RECEIVER:-test@example.com}"
+    ports:
+      - "${NOTIFICATION_SERVICE_PORT:-8082}:8080"
+    networks:
+      - simpl-notification-net
+
+networks:
+  simpl-notification-net:
+    driver: bridge
