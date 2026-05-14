@@ -10,8 +10,8 @@ No upstream Simpl-Open code is committed to this repo. Each subproject's `start.
 
 | Folder | Component | Status | What it does |
 |--------|-----------|--------|--------------|
-| [`simpl-catalogue/`](./simpl-catalogue/README.md) | Federated Catalogue (`simpl-fc-service` + `simpl-catalogue-client` UI + `poc-gaia-edc` query-mapper-adapter) | End-to-end verified 2026-05-03 | Local catalogue with REST API, browser UI, and access-policy-aware search. Backed by Postgres + Neo4j. |
-| [`simpl-notification-service/`](./simpl-notification-service/README.md) | Notification Service | End-to-end verified 2026-05-05 | Spring Boot Kafka consumer that dispatches emails. Comes with Kafka, Kafka UI, and Mailpit for SMTP capture. |
+| [`simpl-catalogue/`](./simpl-catalogue/README.md) | Federated Catalogue (`simpl-fc-service` + `simpl-catalogue-client` UI + `poc-gaia-edc` query-mapper-adapter) | QMA-backed quick search + basic advanced search verified 2026-05-03 | Local catalogue with REST API, browser UI, and access-policy-aware search via QMA. Backed by Postgres + Neo4j. Full advanced search (`xfsc-advsearch-be`), full SD lifecycle, and contract negotiation are out of scope — see subproject README. |
+| [`simpl-notification-service/`](./simpl-notification-service/README.md) | Notification Service | Local stack runs (email path verified 2026-05-05) — **upstream component assessed FAIL** (technical review 2026-05-08, see subproject README) | Spring Boot Kafka consumer that dispatches emails. Comes with Kafka, Kafka UI, and Mailpit for SMTP capture. Upstream issues: SMS channel is an unimplemented stub with a fake test (`assertTrue(true)`), and the Kafka transport adds integration burden disproportionate to what is effectively a simple SMTP relay — replacement or full rework recommended before any producer integrates. |
 | [`simpl-orchestration/`](./simpl-orchestration/README.md) | Orchestration Platform (Dagster) | Demonstration stack | Local Dagster-based orchestration stack with seed data and a Bruno collection for exploring the pipeline. |
 
 ---

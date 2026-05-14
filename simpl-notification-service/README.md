@@ -14,6 +14,28 @@ cloned into `repos/` (gitignored) at build time:
 
 ---
 
+## Upstream component assessment — FAIL (technical review 2026-05-08)
+
+The local stack in this repo runs and the email-dispatch path is verified end-to-end. However, **the upstream `notification-service` component itself was assessed as FAIL** in a four-persona technical review on 2026-05-08 (Solution Architect, Application Expert, Data Expert, Integration Expert — all returned FAIL with high confidence). The local stack is useful for exploring and reproducing the behaviour, but the component should not be integrated against in its current shape.
+
+Three concerns are load-bearing for that verdict:
+
+- **SMS channel is an unimplemented stub.** `SMSService.send()` logs one line and returns. The accompanying `SMSServiceTest` is `assertTrue(true)` with a `//TO BE IMPLEMENTED` comment — fabricated test coverage for a channel that delivers nothing. Callers sending `channel: sms` receive no delivery, no error, no indication of failure. One of two advertised channels is non-functional.
+- **The email-path test exists; the SMS-path test does not.** `ConsumerTest.java` (with `@EmbeddedKafka`) is genuinely thorough for the Kafka→SMTP path. There is no real test for the SMS channel, and the placeholder test misleads coverage reports. Test coverage of the component as a whole is therefore overstated.
+- **Kafka transport is architecturally disproportionate for a simple email relay.** ADR-03 (23 Jan 2025) documents the choice of Kafka, but in practice every caller must configure a Kafka producer to send what amounts to an SMTP message. No service has integrated with this component yet (per FTA: *"integration has not yet been included in the latest release"*) — meaning the integration tax has not actually been paid by any caller. A REST-based `POST /notifications` would deliver the same outcome with no infrastructure burden on callers and would provide synchronous delivery confirmation. ADR-03 is worth re-presenting to the programme before producers commit to the Kafka contract.
+
+Additional HIGH findings flagged in the same review (full detail in the Notion review page):
+
+- AsyncAPI spec is structurally invalid and contractually wrong — `action: send` documents a producer for what is a consumer service, and a malformed `$ref` makes the document unparseable. Any team building a producer from this spec would build the wrong integration.
+- GDPR risk — `Consumer.prepareDefaultErrorNotification()` appends raw Kafka payloads (which may contain participant PII) directly into outbound error emails and logs.
+- No dead-letter queue — `FixedBackOff(1000L, 1)` discards failed messages after a single 1-second retry. SMTP transient failure results in permanent message loss, defeating Kafka's primary durability benefit.
+
+**Recommendation from the review:** replace with a REST endpoint (preferred — revisits ADR-03 at programme level), or rework with at minimum a DLQ, GDPR-safe error handling, a corrected AsyncAPI spec, an implemented or removed SMS channel, and pom.xml alignment to the parent BOM (estimated 5–8 days). The current moment — before any producer has integrated — is the right moment to make that call.
+
+What this means for the local stack here: nothing changes mechanically — `./start.sh` still works and Mailpit still catches dispatched email. Treat the stack as a tool for confirming the verdict and for demonstrating the behaviour, not as a launchpad for building producers against the current contract.
+
+---
+
 ## Quick start
 
 ```bash
