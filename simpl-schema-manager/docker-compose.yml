@@ -76,6 +76,20 @@ services:
     networks:
       - simpl-schema-manager-net
 
+  schema-manager-ui:
+    image: simpl-schema-manager-ui:local
+    container_name: simpl-schema-manager-ui
+    # Image is built by start.sh using Dockerfile.local-ui — Vite build + an
+    # nginx that proxies /v1/* to the backend with auth-header injection.
+    # To rebuild: ./start.sh --rebuild
+    depends_on:
+      schema-manager:
+        condition: service_started
+    ports:
+      - "${UI_PORT:-4322}:8080"
+    networks:
+      - simpl-schema-manager-net
+
   # ── Bruno smoke tests ────────────────────────────────────────────────────
   # Opt-in via the "tests" profile. Run with:
   #   ./start.sh --run-tests

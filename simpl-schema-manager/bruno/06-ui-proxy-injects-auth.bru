@@ -1,0 +1,29 @@
+meta {
+  name: UI Proxy Injects Auth Header — Backend Accepts /v1/schemas
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url_ui}}/v1/schemas
+  body: none
+  auth: none
+}
+
+tests {
+  // Going through the UI's nginx proxy, /v1/schemas is rewritten to /schemas
+  // and an Authorization header is injected with a fake JWT carrying
+  // realm_access.roles=[GA_SCHEMA_ADMIN, GA_SCHEMA_VIEWER]. The backend's
+  // RoleUtil uses auth0 JWT.decode() (no signature verification), so the
+  // request passes the role check — confirming both:
+  //   1. /v1 → / rewrite works
+  //   2. Authorization injection works
+  //   3. Fake JWT carries the right claim
+  test("proxy round-trip succeeds (not 400 from missing Authorization)", function() {
+    expect(res.status).to.not.equal(400);
+  });
+
+  test("backend returned 200 — auth gate satisfied by the fake JWT", function() {
+    expect(res.status).to.equal(200);
+  });
+}

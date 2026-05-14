@@ -1,0 +1,25 @@
+meta {
+  name: schema-manager-ui Index Page Served
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url_ui}}/
+  body: none
+  auth: none
+}
+
+tests {
+  test("UI nginx serves index.html on /", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response is HTML and includes the env-config.js script tag", function() {
+    const body = res.body || "";
+    expect(body).to.match(/<!doctype html>/i);
+    // The UI injects env-config.js at runtime — proving our local copy is
+    // baked into the image is the easiest single check for "build succeeded".
+    expect(body).to.include("env-config.js");
+  });
+}

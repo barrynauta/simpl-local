@@ -45,17 +45,34 @@ clone_or_pull \
   "repos/simpl-schema-manager" \
   "simpl-schema-manager"
 
+clone_or_pull \
+  "https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager-ui.git" \
+  "repos/simpl-schema-manager-ui" \
+  "simpl-schema-manager-ui"
+
 # ── 4. Build Docker image ───────────────────────────────────────────────────
 IMAGE_EXISTS=$(docker images -q simpl-schema-manager:local 2>/dev/null || true)
 if [ -z "$IMAGE_EXISTS" ] || [ "$REBUILD" = true ]; then
-  echo "Building Docker image (Stage 1: Maven — first run ~5 min for dep download, Stage 2: runtime)..."
+  echo "Building backend Docker image (Stage 1: Maven — first run ~5 min for dep download, Stage 2: runtime)..."
   docker build \
     -f "$SCRIPT_DIR/Dockerfile.local" \
     -t simpl-schema-manager:local \
     "$SCRIPT_DIR/"
-  echo "Docker image built."
+  echo "Backend Docker image built."
 else
-  echo "Docker image already exists, skipping build (use --rebuild to force)."
+  echo "Backend Docker image already exists, skipping build (use --rebuild to force)."
+fi
+
+UI_IMAGE_EXISTS=$(docker images -q simpl-schema-manager-ui:local 2>/dev/null || true)
+if [ -z "$UI_IMAGE_EXISTS" ] || [ "$REBUILD" = true ]; then
+  echo "Building UI Docker image (Stage 1: Vite — first run ~3 min for npm install, Stage 2: nginx)..."
+  docker build \
+    -f "$SCRIPT_DIR/Dockerfile.local-ui" \
+    -t simpl-schema-manager-ui:local \
+    "$SCRIPT_DIR/"
+  echo "UI Docker image built."
+else
+  echo "UI Docker image already exists, skipping build (use --rebuild to force)."
 fi
 
 # ── 5. Start services ────────────────────────────────────────────────────────
@@ -105,6 +122,7 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Service                URL"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Schema Manager UI      http://localhost:${UI_PORT:-4322}   (Keycloak bypassed — see README)"
 echo "  Schema Manager API     http://localhost:${SCHEMA_MANAGER_PORT:-8085}"
 echo "  Fuseki triplestore     http://localhost:${FUSEKI_PORT:-3030}  (${FUSEKI_ADMIN_USER:-admin} / ${FUSEKI_ADMIN_PASSWORD:-admin1234})"
 echo "  Kafka broker           localhost:${KAFKA_HOST_PORT:-9094}"

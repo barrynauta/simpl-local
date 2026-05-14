@@ -3,28 +3,43 @@
 ## Component diagram
 
 ```
-                        ┌──────────────────────────────┐
-   curl / Bruno  ─────▶ │ schema-manager (Spring Boot) │
-   (port 8085)          │  /webhooks   /schemas/...    │
-                        └────┬──────────────┬──────────┘
-                             │              │
-              SPARQL (HTTP)  │              │ producer
-                             ▼              ▼
-                       ┌───────────┐   ┌──────────┐
-                       │  Fuseki   │   │  Kafka   │
-                       │  :3030    │   │  :9094   │
-                       └───────────┘   └────┬─────┘
-                                            │
-                                            ▼
-                                       ┌──────────┐
-                                       │ Kafka UI │
-                                       │  :9001   │
-                                       └──────────┘
+       ┌──────────────────────────────────┐
+       │ schema-manager-ui (Vue 3, nginx) │   ◀── browser opens this
+       │ :4322 host  →  :8080 container   │
+       │                                  │
+       │  GET /         → index.html      │
+       │  GET /v1/...   → rewritten,      │
+       │                  Authorization   │
+       │                  injected,       │
+       │                  proxy_pass      │
+       └──────┬──────────────────┬────────┘
+              │                  │
+   direct API│                  │ proxied /v1/* with auth header
+   (curl etc)│                  │
+              ▼                  ▼
+       ┌──────────────────────────────┐
+       │ schema-manager (Spring Boot) │
+       │  /webhooks   /schemas/...    │
+       │  :8085                       │
+       └────┬──────────────┬──────────┘
+            │              │
+  SPARQL    │              │ Kafka producer
+            ▼              ▼
+      ┌───────────┐   ┌──────────┐
+      │  Fuseki   │   │  Kafka   │
+      │  :3030    │   │  :9094   │
+      └───────────┘   └────┬─────┘
+                           │
+                           ▼
+                      ┌──────────┐
+                      │ Kafka UI │
+                      │  :9001   │
+                      └──────────┘
 ```
 
-All four containers run on a single Docker bridge network (`simpl-schema-manager-net`).
-No external auth/identity components are wired in — see "What this stack does NOT provide"
-in the top-level README.
+All five containers run on a single Docker bridge network (`simpl-schema-manager-net`).
+Keycloak is deliberately omitted — see [`schema-manager-bypass.md`](schema-manager-bypass.md)
+for how the UI and backend agree to operate without it.
 
 ## Datasets
 

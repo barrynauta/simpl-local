@@ -1,0 +1,35 @@
+# Multi-stage local build for simpl-schema-manager-ui.
+#
+# The upstream Dockerfile is multi-stage too (node → nginx-unprivileged).
+# This file replaces it to bake in:
+#  - our local env-config.local.js (empty Keycloak → built-in auth-disable;
+#    relative /v1 API URL)
+#  - our local nginx.conf (reverse-proxies /v1 to the backend with header
+#    injection — see comments in nginx.conf)
+#
+# Build context: the local stack root (simpl-schema-manager/).
+# Requires repos/simpl-schema-manager-ui to be populated by start.sh.
+
+# ─── Stage 1: Vite build ──────────────────────────────────────────────────────
+FROM node:22-alpine AS builder
+
+WORKDIR /build
+COPY repos/simpl-schema-manager-ui/package.json repos/simpl-schema-manager-ui/package-lock.json ./
+RUN npm ci --prefer-offline --no-audit --no-fund
+
+COPY repos/simpl-schema-manager-ui/ ./
+RUN npm run build-only
+
+# ─── Stage 2: nginx serving ───────────────────────────────────────────────────
+FROM nginxinc/nginx-unprivileged:1
+
+# Replace upstream nginx config with our SPA + reverse-proxy config.
+COPY --chown=nginx nginx.conf /etc/nginx/nginx.conf
+
+# Static assets from the build stage.
+COPY --from=builder --chown=nginx /build/dist /usr/share/nginx/html
+
+# Local runtime env-config — disables Keycloak, points API at /v1.
+COPY --chown=nginx env-config.local.js /usr/share/nginx/html/env-config.js
+
+EXPOSE 8080

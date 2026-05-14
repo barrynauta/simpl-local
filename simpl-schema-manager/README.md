@@ -8,7 +8,8 @@ This repo holds **only orchestration scripts, configuration, and documentation**
 No upstream Simpl-Open code is committed here — sources live at `code.europa.eu` and are
 cloned into `repos/` (gitignored) at build time:
 
-- `gaia-x-edc/simpl-schema-manager` — the service itself
+- `gaia-x-edc/simpl-schema-manager` — the backend service
+- `gaia-x-edc/simpl-schema-manager-ui` — the Vue 3 frontend
 
 The schema manager's only EU-internal Maven dependency (`simpl-schema-versioning:1.0.0-SNAPSHOT`)
 is fetched anonymously from the EU GitLab Package Registry — **no GITLAB_PAT required**.
@@ -35,6 +36,9 @@ unauthenticated `/webhooks` probe returns `[]`.
 
 - **schema-manager** (Spring Boot 3.5.x / Java 21) on `:8085` — REST service for managing JSON-LD/SHACL
   schemas, their versions, and webhook subscribers. Built from upstream source.
+- **schema-manager-ui** (Vue 3 + Vite + PrimeVue, served by nginx-unprivileged) on `:4322` — the
+  upstream Vue frontend, served against the local backend with Keycloak deliberately bypassed (see
+  [`docs/schema-manager-bypass.md`](docs/schema-manager-bypass.md)).
 - **Apache Jena Fuseki** (`secoresearch/fuseki:5.3.0`) on `:3030` — RDF triplestore. The schema-manager
   auto-creates four datasets at boot: `ds_schemas`, `ds_schema_metadata`, `ds_schema_categories`,
   `ds_webhooks`.
@@ -47,9 +51,15 @@ For an architecture diagram and per-component breakdown, see
 
 ## What this stack does NOT provide
 
-- **Authentication.** Keycloak and Tier-1 / Tier-2 gateways are deliberately omitted. The unauthenticated
-  endpoints (`/webhooks`) work directly. Endpoints under `/schemas` return a Belgif RFC-7807 400 demanding
-  an `Authorization` header — that's the production JWT gate, not a stack failure.
+- **Real authentication.** Keycloak and Tier-1 / Tier-2 gateways are deliberately omitted. The UI's
+  Keycloak guard is short-circuited by setting the three `PUBLIC_AUTH_KEYCLOAK_*` env vars to empty
+  strings — the UI has a built-in `isAuthenticationEnabled()` switch that bypasses the redirect when
+  any of those is empty. UI → backend requests pass through an nginx reverse proxy that injects a
+  fake `Authorization: Bearer <JWT>` header. The backend's `RoleUtil` uses auth0
+  `JWT.decode()` which performs no signature, expiry, or issuer validation — only reads
+  `realm_access.roles` — so a hand-crafted JWT with `GA_SCHEMA_ADMIN` is sufficient. Full mechanics
+  in [`docs/schema-manager-bypass.md`](docs/schema-manager-bypass.md). **Do not** deploy this
+  configuration anywhere other than a developer's laptop.
 - **ArgoCD / Helm.** The stack proves the component runs standalone. Kubernetes is an acceptable
   substrate dependency; ArgoCD is **not** an acceptable per-component installation prerequisite.
 - **HashiCorp Vault / OpenBao.** Fuseki admin password is passed as a plain env var.
@@ -100,9 +110,15 @@ simpl-schema-manager-local/
 ├── LICENSE                EUPL-1.2 (matches upstream).
 ├── .gitignore             Excludes repos/, .env, .claude/.
 ├── docker-compose.yml     Defines the full local stack.
-├── Dockerfile.local       Multi-stage Maven build + runtime, replacing the
-│                          upstream single-stage Dockerfile that copies a
-│                          pre-built JAR from GitLab CI.
+├── Dockerfile.local       Multi-stage Maven build + runtime for the backend,
+│                          replacing the upstream single-stage Dockerfile that
+│                          copies a pre-built JAR from GitLab CI.
+├── Dockerfile.local-ui    Multi-stage Vite build + nginx for the UI. The
+│                          nginx config bakes in the auth-bypass proxy.
+├── nginx.conf             UI nginx config — SPA serving + /v1 reverse proxy
+│                          with Authorization header injection.
+├── env-config.local.js    Runtime UI env — empty Keycloak (disables auth
+│                          guard), API URL = /v1 (same-origin via proxy).
 ├── start.sh               Idempotent one-shot setup (clone → build → up → smoke).
 ├── stop.sh                Stop containers (--full wipes volumes).
 ├── .env.example           Template for port/credential overrides.
@@ -113,6 +129,7 @@ simpl-schema-manager-local/
 │   └── 0{1..4}-*.bru                           Individual tests with inline assertions.
 └── docs/
     ├── schema-manager-architecture.md   Architecture diagram and design notes.
+    ├── schema-manager-bypass.md         How the UI ↔ backend auth bypass works.
     └── schema-manager-manual-setup.md   Step-by-step walkthrough.
 ```
 
@@ -130,6 +147,7 @@ Defaults live in `docker-compose.yml`. Copy `.env.example` to `.env` to override
 | `KAFKA_HOST_PORT` | `9094` | Host port for the external Kafka listener |
 | `KAFKA_UI_PORT` | `9001` | Host port for Kafka UI |
 | `SCHEMA_MANAGER_PORT` | `8085` | Host port for the schema-manager API |
+| `UI_PORT` | `4322` | Host port for the schema-manager UI |
 
 ---
 
@@ -262,7 +280,9 @@ re-pull `repos/simpl-schema-manager` (`./start.sh --rebuild`) and check the upst
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| Schema Manager API | http://localhost:8085 | REST API (`/webhooks` unauth, `/schemas` Tier-1 JWT) |
+| Schema Manager UI | http://localhost:4322 | Vue 3 frontend, Keycloak bypassed — open in a browser |
+| Schema Manager API | http://localhost:8085 | REST API directly (`/webhooks` unauth, `/schemas` JWT-gated) |
+| Schema Manager API via UI proxy | http://localhost:4322/v1 | Same API, but with auth header injected — `/v1/schemas` returns 200 |
 | Fuseki UI | http://localhost:3030 | Triplestore admin and dataset browser (admin / admin1234) |
 | Kafka UI | http://localhost:9001 | Browse topics and messages |
 
