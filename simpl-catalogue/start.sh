@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # simpl-catalogue-local — bring up the full catalogue stack on a local Mac.
 #
+# Usage:
+#   ./start.sh                    Clone, build, and start the stack.
+#   ./start.sh --run-tests        Start the stack and run Bruno smoke tests
+#                                 inside the docker network. Stack stays up.
+#   ./start.sh --help             Show this help.
+#
 # Idempotent: re-running skips clone / build / image-build steps if their outputs
 # already exist. Use ./stop.sh --full to wipe everything and start fresh.
 
@@ -13,6 +19,19 @@ UI_REPO="$REPO_DIR/repos/simpl-catalogue-client"
 UI_GIT="https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-catalogue-client.git"
 QMA_REPO="$REPO_DIR/repos/poc-gaia-edc"
 QMA_GIT="https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/poc-gaia-edc.git"
+
+RUN_TESTS=false
+
+for arg in "$@"; do
+  case $arg in
+    --run-tests) RUN_TESTS=true ;;
+    --help|-h)
+      grep '^#' "$0" | grep -v '#!/' | sed 's/^# \{0,1\}//'
+      exit 0
+      ;;
+    *) echo "Unknown argument: $arg (use --help)" >&2; exit 2 ;;
+  esac
+done
 
 # Load env overrides if present. Defaults match what start.sh / docker-compose.yml expect.
 if [ -f "$REPO_DIR/.env" ]; then
@@ -114,7 +133,11 @@ else
 fi
 
 echo "==> 4c/5 Start stack (postgres + neo4j + fc-service + query-mapper-adapter + ui)"
-(cd "$REPO_DIR" && docker compose up -d)
+if [ "$RUN_TESTS" = true ]; then
+  (cd "$REPO_DIR" && docker compose --profile tests up -d)
+else
+  (cd "$REPO_DIR" && docker compose up -d)
+fi
 
 echo "==> 5/5 Initialise n10s graph in Neo4j (workaround for upstream wiring bug)"
 echo "    Waiting for Neo4j to accept queries..."
@@ -157,3 +180,38 @@ echo ""
 echo "    Stop:"
 echo "      ./stop.sh           (preserve data + volumes)"
 echo "      ./stop.sh --full    (also wipe data — n10s init will re-run on next start)"
+
+if [ "$RUN_TESTS" = true ]; then
+  echo ""
+  echo "==> Running Bruno smoke tests (inside docker network)"
+  echo ""
+
+  docker compose logs -f bruno-smoke-test &
+  TAIL_PID=$!
+
+  WAITED=0
+  MAX_WAIT=180
+  until [ "$(docker inspect simpl-cat-bruno-tests --format '{{.State.Status}}' 2>/dev/null)" = "exited" ]; do
+    if [ "$WAITED" -ge "$MAX_WAIT" ]; then
+      echo "    Bruno tests did not complete within ${MAX_WAIT}s." >&2
+      break
+    fi
+    sleep 3
+    WAITED=$((WAITED + 3))
+  done
+
+  kill "$TAIL_PID" 2>/dev/null || true
+  wait "$TAIL_PID" 2>/dev/null || true
+
+  BRUNO_EXIT=$(docker inspect simpl-cat-bruno-tests --format '{{.State.ExitCode}}' 2>/dev/null || echo "1")
+
+  echo ""
+  if [ "$BRUNO_EXIT" = "0" ]; then
+    echo "    ✅  All smoke tests passed."
+  else
+    echo "    ❌  One or more smoke tests failed (exit code $BRUNO_EXIT)."
+  fi
+  echo ""
+  echo "    Stack remains running. To stop: ./stop.sh"
+  exit "$BRUNO_EXIT"
+fi

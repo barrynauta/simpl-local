@@ -170,6 +170,46 @@ services:
     extra_hosts:
       - "localhost:host-gateway"
 
+  # ---------------------------------------------------------------------------
+  # Bruno smoke tests — optional, activated via --profile tests (or
+  # ./start.sh --run-tests). Runs the Bruno CLI inside the docker network so
+  # it can hit fc-service and query-mapper-adapter by their service names.
+  # ---------------------------------------------------------------------------
+  bruno-smoke-test:
+    image: node:20-alpine
+    container_name: simpl-cat-bruno-tests
+    profiles: ["tests"]
+    working_dir: /bruno
+    volumes:
+      - ./bruno:/bruno:ro
+    command: >
+      sh -c "
+        npm install -g @usebruno/cli --silent 2>/dev/null &&
+        echo '' &&
+        echo '╔══════════════════════════════════════════════════════╗' &&
+        echo '║   Simpl Catalogue Smoke Tests — Bruno                ║' &&
+        echo '╚══════════════════════════════════════════════════════╝' &&
+        echo '' &&
+        bru run --env docker -r;
+        EXIT=$$?;
+        echo '';
+        if [ $$EXIT -eq 0 ]; then
+          echo '╔══════════════════════════════════════════════════════╗';
+          echo '║   ✅  All smoke tests passed.                         ║';
+          echo '╚══════════════════════════════════════════════════════╝';
+        else
+          echo '╔══════════════════════════════════════════════════════╗';
+          echo '║   ❌  One or more tests failed. See output above.     ║';
+          echo '╚══════════════════════════════════════════════════════╝';
+        fi;
+        exit $$EXIT
+      "
+    networks:
+      - simpl-cat-net
+    depends_on:
+      - fc-service
+      - query-mapper-adapter
+
 networks:
   simpl-cat-net:
     driver: bridge
