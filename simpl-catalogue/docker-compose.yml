@@ -174,6 +174,13 @@ services:
   # Bruno smoke tests — optional, activated via --profile tests (or
   # ./start.sh --run-tests). Runs the Bruno CLI inside the docker network so
   # it can hit fc-service and query-mapper-adapter by their service names.
+  #
+  # CLI version intentionally unpinned: pinning to old versions failed (Bruno
+  # CLI publishing jumped 0.x → 2.x → 3.x with no 1.x line), and recent
+  # versions (3.x) have a QuickJS shim regression that breaks assert{} blocks
+  # (`TypeError: Cannot read properties of undefined (reading 'newObject')`).
+  # The `.bru` files in bruno/ therefore use only tests{} blocks, not assert{}
+  # blocks, to avoid the QuickJS code path entirely.
   # ---------------------------------------------------------------------------
   bruno-smoke-test:
     image: node:20-alpine

@@ -133,11 +133,11 @@ else
 fi
 
 echo "==> 4c/5 Start stack (postgres + neo4j + fc-service + query-mapper-adapter + ui)"
-if [ "$RUN_TESTS" = true ]; then
-  (cd "$REPO_DIR" && docker compose --profile tests up -d)
-else
-  (cd "$REPO_DIR" && docker compose up -d)
-fi
+# Bruno is intentionally NOT started here even when --run-tests is set. It runs
+# later via `docker compose run --rm` so we get a fresh container each time
+# (avoiding stale-network references that bite when a long-lived bruno
+# container outlives its original network).
+(cd "$REPO_DIR" && docker compose up -d)
 
 echo "==> 5/5 Initialise n10s graph in Neo4j (workaround for upstream wiring bug)"
 echo "    Waiting for Neo4j to accept queries..."
@@ -183,27 +183,25 @@ echo "      ./stop.sh --full    (also wipe data — n10s init will re-run on nex
 
 if [ "$RUN_TESTS" = true ]; then
   echo ""
+  echo "==> Seeding catalogue before running tests"
+  echo "    Bruno tests require schemas + at least one SD. Re-running ./seed.sh"
+  echo "    is idempotent (no-op if catalogue already has data)."
+  if ! "$REPO_DIR/seed.sh"; then
+    echo "    ⚠️  Seed failed — tests will likely fail too. Continuing anyway." >&2
+  fi
+
+  echo ""
   echo "==> Running Bruno smoke tests (inside docker network)"
   echo ""
 
-  docker compose logs -f bruno-smoke-test &
-  TAIL_PID=$!
-
-  WAITED=0
-  MAX_WAIT=180
-  until [ "$(docker inspect simpl-cat-bruno-tests --format '{{.State.Status}}' 2>/dev/null)" = "exited" ]; do
-    if [ "$WAITED" -ge "$MAX_WAIT" ]; then
-      echo "    Bruno tests did not complete within ${MAX_WAIT}s." >&2
-      break
-    fi
-    sleep 3
-    WAITED=$((WAITED + 3))
-  done
-
-  kill "$TAIL_PID" 2>/dev/null || true
-  wait "$TAIL_PID" 2>/dev/null || true
-
-  BRUNO_EXIT=$(docker inspect simpl-cat-bruno-tests --format '{{.State.ExitCode}}' 2>/dev/null || echo "1")
+  # `run --rm` creates a fresh, ephemeral container against the running stack
+  # network and cleans it up on exit. This avoids the "network not found"
+  # staleness bug that hits long-lived bruno containers created by `up`.
+  # The command's exit code propagates straight back from docker compose.
+  set +e
+  (cd "$REPO_DIR" && docker compose --profile tests run --rm bruno-smoke-test)
+  BRUNO_EXIT=$?
+  set -e
 
   echo ""
   if [ "$BRUNO_EXIT" = "0" ]; then

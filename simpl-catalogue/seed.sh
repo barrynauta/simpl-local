@@ -88,10 +88,23 @@ if curl -fsS "${FC_URL}/schemas" \
 fi
 
 if [ "$ALREADY_LOADED" -eq 0 ]; then
+  # UPSTREAM BUG WORKAROUND (sdtooling-sd-schemas):
+  # The ontology file declares `@prefix dcterms:` but the body uses the
+  # undeclared `dct:` prefix on dozens of triples. fc-service's schema
+  # verification rejects this with HTTP 400 "Undefined prefix: dct".
+  # Patch by adding the missing @prefix declaration to a temp copy.
+  PATCHED_ONTOLOGY="/tmp/seed-simpl-ontology-patched.ttl"
+  if ! grep -qE '^@prefix dct:' "$ONTOLOGY_FILE"; then
+    awk 'NR==1 && !done { print "@prefix dct: <http://purl.org/dc/terms/> ."; done=1 } { print }' \
+      "$ONTOLOGY_FILE" > "$PATCHED_ONTOLOGY"
+  else
+    cp "$ONTOLOGY_FILE" "$PATCHED_ONTOLOGY"
+  fi
+
   printf "    → POST %-32s " "simpl_ontology_generated.ttl"
   HTTP_STATUS=$(curl -s -o /tmp/seed-response.json -w "%{http_code}" \
     -X POST -H "Content-Type: text/turtle" \
-    --data-binary "@$ONTOLOGY_FILE" \
+    --data-binary "@$PATCHED_ONTOLOGY" \
     "${FC_URL}/schemas")
   if [ "$HTTP_STATUS" = "201" ] || [ "$HTTP_STATUS" = "200" ]; then
     echo "✓ HTTP ${HTTP_STATUS}"

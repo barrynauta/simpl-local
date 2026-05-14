@@ -10,11 +10,11 @@ get {
   auth: none
 }
 
-assert {
-  res.status: eq 200
-}
-
 tests {
+  test("fc-service is responsive on /self-descriptions", function() {
+    expect(res.status).to.equal(200);
+  });
+
   test("response has totalCount and items fields", function() {
     const body = res.getBody();
     expect(body).to.have.property("totalCount");

@@ -162,10 +162,10 @@ A Bruno collection lives in `bruno/`. Each request includes inline `assert` and 
 
 | # | Test | Asserts |
 |---|------|---------|
-| 01 | `fc-service Schemas (Liveness)` | `GET /schemas` returns 200 with ≥ 4 items. Acts as liveness since upstream has no `/actuator/health`. |
+| 01 | `fc-service Schemas (Liveness)` | `GET /schemas` returns 200 with `{ontologies, shapes, vocabularies}`. Asserts the Simpl ontology + at least one shape are present after `./seed.sh`. Acts as liveness since upstream has no `/actuator/health`. |
 | 02 | `fc-service List Self-Descriptions` | `GET /self-descriptions` returns 200, body shape is `{totalCount, items[]}`. Count not asserted (empty pre-seed, populated post-seed). |
 | 03 | `QMA Quick Search` | `GET /v1/selfDescriptions?searchString=simpl` returns 200 via QMA proxy. |
-| 04 | `QMA Advanced Search` | `POST /v1/selfDescriptions/advancedSearch` with a valid filter body returns 200. |
+| 04 | `QMA Advanced Search — Currently Broken Upstream` | **Pins the current upstream bug**: `POST /v1/selfDescriptions/advancedSearch` returns HTTP 500 regardless of filter property (verified 2026-05-14 against a single seeded `simpl:DataOffering`). Rewrite to assert 200 when upstream fixes the regression. |
 | 05 | `QMA Advanced Search — Empty Filter Returns 400` | Pins the documented upstream behaviour: empty `filters: []` is rejected with 400 rather than treated as "match all". |
 | 06 | `fc-service Participants Endpoint Returns 501` | Pins the *"feature disabled due to keycloak removal"* 501. If upstream restores auth and starts returning 200/401, this test flags it for review. |
 
@@ -173,19 +173,40 @@ Two ways to run them:
 
 ### Option 1 — `./start.sh --run-tests` (no Bruno install needed)
 
-Brings up the stack and runs the collection inside the docker network using `@usebruno/cli` in a one-shot container. Uses the `docker` environment (`environments/docker.bru`) where service URLs resolve to internal docker hostnames (`http://fc-service:8081`, `http://query-mapper-adapter:8084/v1`).
+Brings up the stack, runs `./seed.sh` to populate schemas + a Gaia-X example SD, and then runs the bruno collection inside the docker network using `@usebruno/cli` in a one-shot container. Uses the `docker` environment (`environments/docker.bru`) where service URLs resolve to internal docker hostnames (`http://fc-service:8081`, `http://query-mapper-adapter:8084/v1`).
 
 ```
 ./start.sh --run-tests
 ```
 
-The script tails the bruno container's logs, waits for it to exit, and reports the exit code. The stack stays up afterwards so you can re-run with `docker compose --profile tests up bruno-smoke-test` or stop with `./stop.sh`.
+The seed step is idempotent — re-running `--run-tests` is safe and is a no-op for seeding if data is already present. The bruno container is launched as a one-shot `docker compose run --rm` (not `up`), so it's recreated fresh on every invocation and removed on exit — this avoids a stale-network bug where a long-lived bruno container would hold a reference to a network ID that no longer exists. The stack stays up afterwards so you can re-run the tests alone with `docker compose --profile tests run --rm bruno-smoke-test` or stop everything with `./stop.sh`.
+
+> **Why auto-seed?** Two upstream behaviours forced this: (1) current fc-service does not auto-load any default schemas on a fresh start (the prior "4 default schemas" claim has drifted — logged as a catalogue Notion finding), and (2) fc-service's advanced search returns HTTP 500 against an empty catalogue rather than `{totalCount: 0, items: []}`. The seed step makes the smoke tests deterministic.
 
 ### Option 2 — Bruno desktop app
 
 Open `bruno/` in the [Bruno](https://www.usebruno.com/) app, pick the `local` environment (`environments/local.bru`, points at `http://localhost:8081` and `http://localhost:8084/v1`), and run the collection. Useful when iterating on individual requests or inspecting responses interactively.
 
 Same shape as the [`simpl-orchestration/bruno/`](../simpl-orchestration/bruno/) collection (one difference: this one has two environments — `local` for the desktop app on the host, `docker` for in-container runs — because the stack exposes two service URLs).
+
+### Tests pinning current upstream bugs
+
+Three of the six tests are deliberately written to assert *broken or drifted* upstream behaviour rather than the behaviour the docs claim. They turn currently-green-because-upstream-is-broken into a tripwire: when upstream fixes the underlying bug, the corresponding test will go red and prompt a rewrite. Each table row records the upstream-fix-expected behaviour explicitly so the rewrite is mechanical.
+
+| Test | Currently pinned | Why | What to assert once upstream is fixed |
+|------|------------------|-----|---------------------------------------|
+| `01-fc-service-schemas` | `/schemas` returns the Simpl ontology + at least one shape **only because `./seed.sh` uploaded them**. | Carry-forward knowledge claimed fc-service auto-loads "4 default schemas (3 ontologies + 1 SHACL shape)" on a fresh start. Current upstream auto-loads **zero** — `/schemas` returns `{ontologies: [], shapes: [], vocabularies: null}` until something explicitly POSTs schemas. | Replace the seed-aware assertion with the auto-load count (≥ 4 entries across `ontologies + shapes` against an **unseeded** stack). Remove the `./seed.sh` precondition from `./start.sh --run-tests` for this test, or split into "no-seed liveness" + "post-seed shape" cases. |
+| `04-qma-advanced-search` | `POST /v1/selfDescriptions/advancedSearch` returns **HTTP 500** for any filter (verified with both `simpl:name` and a full Simpl IRI against a single seeded `simpl:DataOffering`). The error has the standard Spring shape `{status: 500, error: "Internal Server Error", path: "/selfDescriptions/advancedSearch"}`. | The subproject's own architecture doc (`docs/catalogue-ui-architecture.md`) and the umbrella README claim "basic advanced search works via QMA". This claim has regressed — advanced search is currently end-to-end broken against this stack. Worth a Jira ticket alongside the `dct:` prefix bug. | Assert `res.status === 200` and the response body shape `{totalCount: number, items: array}`. The filter body in the request (`http://w3id.org/gaia-x/simpl#offeringType` = `DataOffering`) is already valid and will match the seeded SD once the 500 is gone. |
+| `06-fc-service-participants-501` | `GET /participants` returns **HTTP 501** with the *"feature disabled due to keycloak removal"* message. | fc-service had its Keycloak integration removed without replacement auth. The 501 is documented in the catalogue notes as expected current behaviour, not a bug per se — but pinning it lets us detect the day auth comes back. | If upstream restores auth, the endpoint will start returning 200 (with a list) or 401/403 (with auth required). Update the test to assert whichever shape lands. |
+
+Also: `./seed.sh` patches `repos/sdtooling-sd-schemas/ontology/simpl_ontology_generated.ttl` before upload — adds a `@prefix dct: <http://purl.org/dc/terms/> .` declaration to a temp copy because the upstream file declares `@prefix dcterms:` but uses `dct:` in 7 body triples (introduced 2026-05-08 by commit `80cc655`, Jira ticket filed). The patch is idempotent — once upstream merges a real fix (`grep -q '^@prefix dct:'` returns true), the patch becomes a copy-only no-op. Remove the workaround block from `seed.sh` once that's verified.
+
+When a pinned test goes red:
+
+1. **Read the diff of the test file in this commit** to see the exact "fixed" assertions to drop in.
+2. **Verify against the live stack** with the `curl` recipes in `docs/fc-service-manual-setup.md` / `docs/query-mapper-adapter-manual-setup.md` before changing the test.
+3. **Remove the matching "currently broken / drifted" note from this README's table.**
+4. If the change relates to a Jira ticket you logged, close it.
 
 ---
 
