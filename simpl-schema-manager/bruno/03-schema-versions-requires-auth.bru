@@ -1,0 +1,26 @@
+meta {
+  name: schema-manager Schema Versions Require JWT
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url_sm}}/schemas/example/versions
+  body: none
+  auth: none
+}
+
+tests {
+  // The /schemas/{name}/versions route is part of the same auth-gated
+  // controller as /schemas. This test confirms the gate covers the
+  // parametric routes too, not just the collection endpoint.
+  test("parametric route is also gated — Belgif 400 without auth", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("problem body identifies the missing Authorization header", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("status", 400);
+    expect(body.detail || "").to.include("Authorization");
+  });
+}

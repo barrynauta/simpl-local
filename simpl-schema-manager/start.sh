@@ -4,9 +4,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 REBUILD=false
+RUN_TESTS=false
 for arg in "$@"; do
   case "$arg" in
     --rebuild) REBUILD=true ;;
+    --run-tests) RUN_TESTS=true ;;
   esac
 done
 
@@ -108,3 +110,17 @@ echo "  Fuseki triplestore     http://localhost:${FUSEKI_PORT:-3030}  (${FUSEKI_
 echo "  Kafka broker           localhost:${KAFKA_HOST_PORT:-9094}"
 echo "  Kafka UI               http://localhost:${KAFKA_UI_PORT:-9001}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# ── 9. Bruno smoke tests (opt-in) ───────────────────────────────────────────
+if [ "$RUN_TESTS" = true ]; then
+  echo ""
+  echo "==> Running Bruno smoke tests (inside docker network)"
+  echo ""
+  # `run --rm` creates a fresh, ephemeral container against the running stack
+  # network and cleans it up on exit. Same pattern as simpl-catalogue.
+  set +e
+  docker compose --profile tests run --rm bruno-smoke-test
+  BRUNO_EXIT=$?
+  set -e
+  exit $BRUNO_EXIT
+fi

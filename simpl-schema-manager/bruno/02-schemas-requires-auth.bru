@@ -1,0 +1,28 @@
+meta {
+  name: schema-manager Schemas Require JWT (Auth Gate Wired)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url_sm}}/schemas
+  body: none
+  auth: none
+}
+
+tests {
+  // /schemas is gated by the Tier-1 JWT in production. Without an
+  // Authorization header the controller returns a Belgif RFC-7807 400.
+  // This test pins that behaviour — if upstream changes the auth posture
+  // (e.g. returns 401, or removes the gate entirely), the test will flag it.
+  test("returns Belgif RFC-7807 400 without Authorization header", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("problem body identifies the missing Authorization header", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("type");
+    expect(body).to.have.property("status", 400);
+    expect(body.detail || "").to.include("Authorization");
+  });
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Fuseki Has the Four Bootstrap Datasets
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url_fuseki}}/$/datasets
+  body: none
+  auth: basic
+}
+
+auth:basic {
+  username: {{fuseki_user}}
+  password: {{fuseki_password}}
+}
+
+tests {
+  test("Fuseki admin API is reachable", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("schema-manager has bootstrapped its four datasets", function() {
+    const body = res.getBody();
+    const names = (body.datasets || []).map(function(d) { return d["ds.name"]; });
+    // The Fuseki image ships with a default /ds dataset; we don't assert on
+    // its presence or absence. We only require the four the schema-manager
+    // creates at boot.
+    expect(names).to.include.members([
+      "/ds_schemas",
+      "/ds_schema_metadata",
+      "/ds_schema_categories",
+      "/ds_webhooks"
+    ]);
+  });
+}

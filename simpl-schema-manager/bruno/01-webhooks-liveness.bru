@@ -1,0 +1,22 @@
+meta {
+  name: schema-manager Webhooks (Liveness)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url_sm}}/webhooks
+  body: none
+  auth: none
+}
+
+tests {
+  test("schema-manager is responsive on /webhooks", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response is a JSON array (empty on a fresh stack)", function() {
+    const body = res.getBody();
+    expect(body).to.be.an("array");
+  });
+}

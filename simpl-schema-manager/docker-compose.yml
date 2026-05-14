@@ -76,6 +76,45 @@ services:
     networks:
       - simpl-schema-manager-net
 
+  # ── Bruno smoke tests ────────────────────────────────────────────────────
+  # Opt-in via the "tests" profile. Run with:
+  #   ./start.sh --run-tests
+  # or directly:
+  #   docker compose --profile tests run --rm bruno-smoke-test
+  # The container installs @usebruno/cli on first use (one-time ~15s on a
+  # warm npm cache, ~60s cold). Subsequent runs reuse the image layer.
+  bruno-smoke-test:
+    image: node:20-alpine
+    container_name: simpl-sm-bruno-tests
+    profiles: ["tests"]
+    working_dir: /bruno
+    volumes:
+      - ./bruno:/bruno:ro
+    networks:
+      - simpl-schema-manager-net
+    command: >
+      sh -c "
+        npm install -g @usebruno/cli --silent 2>/dev/null &&
+        echo '' &&
+        echo '╔══════════════════════════════════════════════════════╗' &&
+        echo '║   Simpl Schema Manager Smoke Tests — Bruno           ║' &&
+        echo '╚══════════════════════════════════════════════════════╝' &&
+        echo '' &&
+        bru run --env docker -r;
+        EXIT=$$?;
+        echo '';
+        if [ $$EXIT -eq 0 ]; then
+          echo '╔══════════════════════════════════════════════════════╗';
+          echo '║   ✅  All smoke tests passed.                         ║';
+          echo '╚══════════════════════════════════════════════════════╝';
+        else
+          echo '╔══════════════════════════════════════════════════════╗';
+          echo '║   ❌  One or more tests failed. See output above.     ║';
+          echo '╚══════════════════════════════════════════════════════╝';
+        fi;
+        exit $$EXIT
+      "
+
 networks:
   simpl-schema-manager-net:
     driver: bridge

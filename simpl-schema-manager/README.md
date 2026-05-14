@@ -88,6 +88,7 @@ See [`docs/schema-manager-manual-setup.md`](docs/schema-manager-manual-setup.md)
 
 Flags:
 - `--rebuild` — force Maven re-build and Docker image rebuild even if they exist
+- `--run-tests` — after the stack is up, run the Bruno smoke-test collection inside the docker network (no host install of Bruno needed)
 
 ---
 
@@ -105,6 +106,11 @@ simpl-schema-manager-local/
 ├── start.sh               Idempotent one-shot setup (clone → build → up → smoke).
 ├── stop.sh                Stop containers (--full wipes volumes).
 ├── .env.example           Template for port/credential overrides.
+├── bruno/                 Bruno HTTP smoke-test collection.
+│   ├── bruno.json                              Collection metadata.
+│   ├── environments/local.bru                  Bruno desktop app — hits localhost ports on the host.
+│   ├── environments/docker.bru                 In-network run via ./start.sh --run-tests — uses service hostnames.
+│   └── 0{1..4}-*.bru                           Individual tests with inline assertions.
 └── docs/
     ├── schema-manager-architecture.md   Architecture diagram and design notes.
     └── schema-manager-manual-setup.md   Step-by-step walkthrough.
@@ -127,7 +133,47 @@ Defaults live in `docker-compose.yml`. Copy `.env.example` to `.env` to override
 
 ---
 
-## Testing
+## Smoke tests (Bruno)
+
+A Bruno collection lives in `bruno/`. Each request includes inline `tests` assertions that pin
+the expected schema-manager behaviour. Four checks:
+
+1. `GET /webhooks` returns `200` with an empty array — unauthenticated liveness.
+2. `GET /schemas` returns Belgif RFC-7807 `400` without an `Authorization` header — confirms the
+   JWT gate is wired on the collection endpoint.
+3. `GET /schemas/{name}/versions` returns the same `400` — confirms the gate covers parametric
+   routes too.
+4. Fuseki's `/$/datasets` admin endpoint reports the four bootstrap datasets (`ds_schemas`,
+   `ds_schema_metadata`, `ds_schema_categories`, `ds_webhooks`) — confirms the schema-manager's
+   Fuseki client successfully initialised the triplestore at boot.
+
+### Option 1 — `./start.sh --run-tests` (no Bruno install needed)
+
+Brings up the stack and then runs the bruno collection inside the docker network using
+`@usebruno/cli` in a one-shot container. Uses the `docker` environment
+(`environments/docker.bru`) where URLs resolve to internal docker hostnames
+(`http://schema-manager:8085`, `http://fuseki:3030`).
+
+```bash
+./start.sh --run-tests
+```
+
+The bruno container is launched as a one-shot `docker compose run --rm` (not `up`), so it's
+recreated fresh on every invocation and removed on exit. The stack stays up afterwards so you
+can re-run the tests alone with `docker compose --profile tests run --rm bruno-smoke-test`, or
+tear everything down with `./stop.sh`.
+
+### Option 2 — Bruno desktop app
+
+Open `bruno/` in the [Bruno](https://www.usebruno.com/) app, pick the `local` environment
+(`environments/local.bru`, points at `http://localhost:8085` and `http://localhost:3030`), and
+run the collection. Useful when iterating on individual requests or inspecting responses
+interactively.
+
+Same shape as the [`simpl-catalogue/bruno/`](../simpl-catalogue/bruno/) collection — two
+environments (`local` for the desktop app on the host, `docker` for in-container runs).
+
+## Testing manually
 
 The schema-manager exposes a REST API at `:8085`. Most endpoints (`/schemas`, `/schemas/{name}/versions`,
 `/schemas/{name}/{version}`) require a Tier-1 JWT in the `Authorization` header — those return a
