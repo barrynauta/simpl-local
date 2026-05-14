@@ -1,0 +1,50 @@
+# Multi-stage local build for simpl-schema-manager.
+#
+# The upstream Dockerfile is single-stage (copies a pre-built JAR from GitLab CI).
+# This replaces it for local evaluation with a self-contained multi-stage build.
+#
+# Dependency chain:
+#   simpl-schema-versioning:1.0.0-SNAPSHOT  ← resolved anonymously from
+#                                              https://code.europa.eu/api/v4/projects/1462/packages/maven
+#   simpl-schema-manager                    ← the target
+#
+# No sibling source clones are needed — simpl-schema-versioning is fetched as a
+# Maven artifact from the EU GitLab Package Registry without authentication.
+#
+# The upstream pom.xml uses ${env.PROJECT_RELEASE_VERSION} as the artifact
+# version. We set it to "local" before mvnw runs.
+#
+# Build context: the local stack root (simpl-schema-manager/).
+# Requires repos/simpl-schema-manager to be populated by start.sh first.
+# Built by start.sh — do not run docker build directly.
+
+# ─── Stage 1: Maven build ─────────────────────────────────────────────────────
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+
+WORKDIR /build
+
+COPY repos/simpl-schema-manager /build/simpl-schema-manager
+
+# The upstream repo ships a settings.xml that uses ${env.CI_JOB_TOKEN} for the
+# gitlab-maven server. We do NOT pass it with -s here — Maven defaults let it
+# hit the EU GitLab Package Registry anonymously, which works for the snapshot
+# dependency.
+RUN cd /build/simpl-schema-manager && \
+    chmod +x mvnw && \
+    PROJECT_RELEASE_VERSION=local \
+    ./mvnw -B -DskipTests -q clean package
+
+# ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
+# Mirrors the upstream Dockerfile; only the JAR source differs.
+FROM eclipse-temurin:21-jdk-alpine
+
+COPY --from=builder /build/simpl-schema-manager/target/*.jar /simpl-schema-manager.jar
+
+RUN mkdir /files && chmod 775 /files && \
+    adduser -u 8877 -D dockerUser && \
+    chown -R dockerUser:dockerUser /files
+
+USER dockerUser
+EXPOSE 8085
+
+ENTRYPOINT ["java", "-jar", "/simpl-schema-manager.jar"]

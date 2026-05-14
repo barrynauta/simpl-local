@@ -13,6 +13,7 @@ No upstream Simpl-Open code is committed to this repo. Each subproject's `start.
 | [`simpl-catalogue/`](./simpl-catalogue/README.md) | Federated Catalogue (`simpl-fc-service` + `simpl-catalogue-client` UI + `poc-gaia-edc` query-mapper-adapter) | QMA-backed quick search + basic advanced search verified 2026-05-03 | Local catalogue with REST API, browser UI, and access-policy-aware search via QMA. Backed by Postgres + Neo4j. Full advanced search (`xfsc-advsearch-be`), full SD lifecycle, and contract negotiation are out of scope — see subproject README. |
 | [`simpl-notification-service/`](./simpl-notification-service/README.md) | Notification Service | Local stack runs (email path verified 2026-05-05) — **upstream component assessed FAIL** (see subproject README) | Spring Boot Kafka consumer that dispatches emails. Comes with Kafka, Kafka UI, and Mailpit for SMTP capture. Upstream issues: SMS channel is an unimplemented stub with a fake test (`assertTrue(true)`), and the Kafka transport adds integration burden disproportionate to what is effectively a simple SMTP relay — replacement or full rework recommended before any producer integrates. |
 | [`simpl-orchestration/`](./simpl-orchestration/README.md) | Orchestration Platform (Dagster) | Demonstration stack | Local Dagster-based orchestration stack with seed data and a Bruno collection for exploring the pipeline. |
+| [`simpl-schema-manager/`](./simpl-schema-manager/README.md) | Schema Manager (`simpl-schema-manager`) | Local stack runs (smoke test verified 2026-05-14) | Spring Boot REST service that manages JSON-LD/SHACL schemas, versions, and webhook subscribers. Comes with Apache Jena Fuseki (RDF triplestore), Kafka, and Kafka UI. Auto-creates four Fuseki datasets at boot. Auth-gated endpoints (`/schemas/...`) return Belgif 400 without a Tier-1 JWT; `/webhooks` is unauthenticated and used as the liveness probe. |
 
 ---
 
@@ -42,6 +43,8 @@ cd simpl-catalogue && ./start.sh             # Federated Catalogue stack
 cd simpl-notification-service && ./start.sh  # Notification Service stack
 # or
 cd simpl-orchestration && ./start.sh         # Dagster orchestration stack
+# or
+cd simpl-schema-manager && ./start.sh        # Schema Manager (Fuseki + Kafka) stack
 ```
 
 First runs take 8–20 minutes per component (Maven dependency download + Docker image builds). Subsequent starts are under 30 seconds. Each subproject's README has component-specific verification steps.
@@ -86,17 +89,22 @@ simpl-local/
 │   ├── docker-compose.yml
 │   ├── start.sh, stop.sh
 │   └── docs/                         Architecture diagram + manual-setup walkthrough.
-└── simpl-orchestration/              Orchestration Platform (Dagster) local stack.
-    ├── README.md                     Purpose, quickstart, Dagster walkthrough.
-    ├── docker-compose.yml
-    ├── start.sh
-    ├── dagster/, dagster-patches/    Dagster runtime and local patches.
-    ├── seed/                         Seed data for the sample pipeline.
-    ├── bruno/                        Bruno API collection for exploration.
-    └── scripts/
+├── simpl-orchestration/              Orchestration Platform (Dagster) local stack.
+│   ├── README.md                     Purpose, quickstart, Dagster walkthrough.
+│   ├── docker-compose.yml
+│   ├── start.sh
+│   ├── dagster/, dagster-patches/    Dagster runtime and local patches.
+│   ├── seed/                         Seed data for the sample pipeline.
+│   ├── bruno/                        Bruno API collection for exploration.
+│   └── scripts/
+└── simpl-schema-manager/             Schema Manager local stack.
+    ├── README.md                     Walkthrough, status, smoke test.
+    ├── docker-compose.yml, Dockerfile.local
+    ├── start.sh, stop.sh
+    └── docs/                         Architecture diagram + manual-setup walkthrough.
 ```
 
-Each subproject was previously a standalone repository (`simpl-catalogue-local`, `simpl-notification-service-local`, `simpl-orchestration-local`) and was absorbed into this monorepo via `git subtree add`, preserving full commit history. The original repositories on GitHub have been archived.
+Each subproject was previously a standalone repository (`simpl-catalogue-local`, `simpl-notification-service-local`, `simpl-orchestration-local`) and was absorbed into this monorepo via `git subtree add`, preserving full commit history. The original repositories on GitHub have been archived. `simpl-schema-manager/` was added directly into the monorepo (no prior standalone repo).
 
 ---
 
