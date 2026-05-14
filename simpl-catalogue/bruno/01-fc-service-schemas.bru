@@ -1,0 +1,29 @@
+meta {
+  name: fc-service Schemas (Liveness)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url_fc}}/schemas
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("fc-service is responsive on /schemas", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("at least four default schemas are present", function() {
+    const body = res.getBody();
+    // fc-service auto-loads 4 default schemas (3 ontologies + 1 SHACL shape).
+    // After ./seed.sh, the Simpl ontology adds at least one more.
+    const items = Array.isArray(body) ? body : (body.items || []);
+    expect(items.length).to.be.greaterThanOrEqual(4);
+  });
+}

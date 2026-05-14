@@ -1,0 +1,32 @@
+meta {
+  name: fc-service List Self-Descriptions
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url_fc}}/self-descriptions
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("response has totalCount and items fields", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("totalCount");
+    expect(body).to.have.property("items");
+    expect(Array.isArray(body.items)).to.be.true;
+  });
+
+  test("totalCount matches items array length", function() {
+    const body = res.getBody();
+    expect(body.totalCount).to.equal(body.items.length);
+  });
+
+  // Note: totalCount is 0 on a fresh stack; ≥1 after ./seed.sh.
+  // We don't assert a specific count so the suite runs in either state.
+}

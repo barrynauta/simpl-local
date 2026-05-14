@@ -1,0 +1,28 @@
+meta {
+  name: query-mapper-adapter Quick Search
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url_qma}}/selfDescriptions?searchString=simpl&page=1&pageSize=5
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("QMA is reachable and proxies fc-service quick search", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response shape includes totalCount and items", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("totalCount");
+    expect(body).to.have.property("items");
+    expect(Array.isArray(body.items)).to.be.true;
+  });
+}

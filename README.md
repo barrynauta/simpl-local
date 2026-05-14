@@ -79,7 +79,8 @@ simpl-local/
 │   ├── README.md                     Walkthrough, status, architecture observations.
 │   ├── docker-compose.yml
 │   ├── start.sh, stop.sh, seed.sh
-│   └── docs/                         Per-service architecture + manual-setup docs.
+│   ├── docs/                         Per-service architecture + manual-setup docs.
+│   └── bruno/                        Bruno HTTP smoke-test collection.
 ├── simpl-notification-service/       Notification Service local stack.
 │   ├── README.md                     Walkthrough, status, architectural observations.
 │   ├── docker-compose.yml

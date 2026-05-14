@@ -1,0 +1,43 @@
+meta {
+  name: query-mapper-adapter Advanced Search
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url_qma}}/selfDescriptions/advancedSearch
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "filters": [
+      {
+        "property": "simpl:name",
+        "value": "simpl"
+      }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("advanced search with a valid filter returns 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response shape includes totalCount and items", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("totalCount");
+    expect(body).to.have.property("items");
+    expect(Array.isArray(body.items)).to.be.true;
+  });
+}

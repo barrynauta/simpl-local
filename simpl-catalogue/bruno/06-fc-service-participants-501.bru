@@ -1,0 +1,25 @@
+meta {
+  name: fc-service Participants Endpoint Returns 501 (Keycloak Removed)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url_fc}}/participants
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 501
+}
+
+tests {
+  // The /participants and /users endpoint families return HTTP 501
+  // ("feature disabled due to keycloak removal") in current upstream.
+  // This test pins that documented behaviour — if upstream restores auth
+  // and starts returning 200/401, this test will flag it for review.
+  test("participants endpoint reports the removed-keycloak 501", function() {
+    expect(res.status).to.equal(501);
+  });
+}

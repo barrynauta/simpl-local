@@ -1,0 +1,34 @@
+meta {
+  name: query-mapper-adapter Advanced Search — Empty Filter Returns 400
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url_qma}}/selfDescriptions/advancedSearch
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "filters": []
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  // Documents the upstream behaviour observed in
+  // docs/catalogue-ui-architecture.md: an empty filters array is rejected
+  // with HTTP 400 rather than treated as "match all".
+  test("empty filters array is rejected with 400", function() {
+    expect(res.status).to.equal(400);
+  });
+}

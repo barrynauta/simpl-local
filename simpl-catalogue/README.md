@@ -138,11 +138,37 @@ simpl-catalogue-local/
 │   ├── catalogue-ui-architecture.md              Diagram + env-var flow + networking trick for the UI.
 │   ├── query-mapper-adapter-manual-setup.md      Manual equivalent of ./start.sh for QMA.
 │   └── query-mapper-adapter-architecture.md      Diagram + endpoints + access-policy logic for QMA.
+├── bruno/                 Bruno HTTP smoke-test collection (open with the Bruno app).
+│   ├── bruno.json                              Collection metadata.
+│   ├── environments/local.bru                  Endpoints for fc-service (:8081) and QMA (:8084).
+│   ├── 01-fc-service-schemas.bru               Liveness via /schemas (no /actuator/health in upstream).
+│   ├── 02-fc-service-self-descriptions-list.bru List SDs — shape only, no count assertion.
+│   ├── 03-qma-quick-search.bru                 QMA quick search proxy.
+│   ├── 04-qma-advanced-search.bru              QMA advanced search with a valid filter.
+│   ├── 05-qma-advanced-search-empty-filter-400.bru  Pins documented 400 on empty filter.
+│   └── 06-fc-service-participants-501.bru      Pins the keycloak-removed 501 response.
 └── repos/                 GITIGNORED. Upstream code, cloned by start.sh.
     ├── simpl-fc-service/    Cloned from code.europa.eu in Phase 1.
     ├── simpl-catalogue-client/  Cloned from code.europa.eu in Phase 7.
     └── poc-gaia-edc/        Cloned from code.europa.eu in Phase 8 (query-mapper-adapter).
 ```
+
+---
+
+## Smoke tests (Bruno)
+
+A Bruno collection lives in `bruno/`. Open it in the [Bruno](https://www.usebruno.com/) app, pick the `local` environment, and run the collection — each request includes inline `assert` and `tests` blocks that pin the expected catalogue behaviour. Tests are organised so the full sequence runs against a fresh stack (no seed required); coverage is wider after `./seed.sh`.
+
+| # | Test | Asserts |
+|---|------|---------|
+| 01 | `fc-service Schemas (Liveness)` | `GET /schemas` returns 200 with ≥ 4 items. Acts as liveness since upstream has no `/actuator/health`. |
+| 02 | `fc-service List Self-Descriptions` | `GET /self-descriptions` returns 200, body shape is `{totalCount, items[]}`. Count not asserted (empty pre-seed, populated post-seed). |
+| 03 | `QMA Quick Search` | `GET /v1/selfDescriptions?searchString=simpl` returns 200 via QMA proxy. |
+| 04 | `QMA Advanced Search` | `POST /v1/selfDescriptions/advancedSearch` with a valid filter body returns 200. |
+| 05 | `QMA Advanced Search — Empty Filter Returns 400` | Pins the documented upstream behaviour: empty `filters: []` is rejected with 400 rather than treated as "match all". |
+| 06 | `fc-service Participants Endpoint Returns 501` | Pins the *"feature disabled due to keycloak removal"* 501. If upstream restores auth and starts returning 200/401, this test flags it for review. |
+
+Same shape as the [`simpl-orchestration/bruno/`](../simpl-orchestration/bruno/) collection.
 
 ---
 
