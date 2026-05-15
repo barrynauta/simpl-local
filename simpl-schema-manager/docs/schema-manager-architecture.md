@@ -15,7 +15,7 @@
        └──────┬──────────────────┬────────┘
               │                  │
     direct API│                  │ proxied /v1/* with auth header
-     (curl etc)│                  │
+    (curl etc)│                  │
               ▼                  ▼
        ┌──────────────────────────────┐
        │ schema-manager (Spring Boot) │
@@ -80,59 +80,59 @@ fully completed (success or final-retry failure) by the time the user sees `201`
 sequenceDiagram
     autonumber
     actor User as Browser
-    participant UI as schema-manager-ui<br/>nginx :4322
-    participant SM as schema-manager<br/>:8085
-    participant F as Fuseki<br/>:3030
-    participant W as Webhook subscribers<br/>(any HTTP endpoint)
-    participant K as Kafka<br/>topic: notifications
-    participant NS as notification-service<br/>Kafka listener
-    participant MP as Mailpit<br/>:1025 SMTP
-    participant Ext as External SMTP<br/>(optional, e.g. Gmail relay)
+    participant UI as schema-manager-ui
+    participant SM as schema-manager
+    participant F as Fuseki
+    participant W as Webhook subscribers
+    participant K as Kafka notifications topic
+    participant NS as notification-service
+    participant MP as Mailpit
+    participant Ext as External SMTP relay
 
-    User->>UI: POST /v1/schemas (multipart upload)
-    UI->>UI: rewrite /v1/* → /*<br/>inject Authorization: Bearer (fake JWT)
+    User->>UI: POST /v1/schemas multipart upload
+    UI->>UI: rewrite /v1 to /, inject Bearer fake JWT
     UI->>SM: POST /schemas
-    SM->>SM: RoleUtil.validateRoles(jwt, [GA_SCHEMA_ADMIN])<br/>JWT.decode — no signature check
-    SM->>SM: ShaclValidationService.validate(ttl)
+    SM->>SM: validate roles via JWT.decode (no signature check)
+    SM->>SM: SHACL-validate the uploaded TTL
     SM->>F: persist graph, metadata, category
     F-->>SM: ok
 
-    Note over SM,K: Step 1 — email path (Kafka publish, gated by kafka.enabled)
-    SM->>K: KafkaTemplate.send("notifications", SendEmailRequest{to,subject,message})
-    K-->>SM: ack (write durable on broker)
+    Note over SM,K: Step 1 - Kafka publish, email leg
+    SM->>K: KafkaTemplate.send SendEmailRequest
+    K-->>SM: ack, write durable on broker
 
-    Note over SM,W: Step 2 — webhook path (synchronous HTTP fan-out)
-    SM->>F: SPARQL query — which webhooks match this event?
-    F-->>SM: list of (targetUrl, events[])
-    loop one POST per matching subscriber
-        SM->>W: POST { eventId, eventType, timestamp, data: {schema} }<br/>RetryTemplate-wrapped
-        W-->>SM: 2xx (or 4xx/5xx, retried then logged)
+    Note over SM,W: Step 2 - synchronous HTTP fan-out, webhook leg
+    SM->>F: SPARQL query for matching webhooks
+    F-->>SM: subscriber list
+    loop per matching subscriber
+        SM->>W: POST event JSON, RetryTemplate-wrapped
+        W-->>SM: 2xx or 4xx/5xx retried then logged
     end
 
     SM-->>UI: 201 Created
     UI-->>User: 201 Created
 
-    Note over K,Ext: ↓ continues asynchronously, after the user already has their 201 ↓
+    Note over K,Ext: Continues asynchronously after the 201 returns
 
-    K->>NS: @KafkaListener delivers record
+    K->>NS: KafkaListener delivers record
     NS->>NS: deserialise SendEmailRequest
     alt SMTP send succeeds
-        NS->>MP: SMTP MAIL FROM / RCPT TO / DATA
+        NS->>MP: SMTP MAIL FROM, RCPT TO, DATA
         MP-->>NS: 250 OK
         opt MAILPIT_RELAY_HOST configured
-            MP->>Ext: SMTP STARTTLS + AUTH PLAIN + DATA
+            MP->>Ext: SMTP STARTTLS, AUTH PLAIN, DATA
             Ext-->>MP: 250 OK
-            Note right of Ext: e.g. Gmail relay forwards<br/>to mailinator MX → public inbox
+            Note right of Ext: e.g. Gmail relay forwards to mailinator MX
         end
     else SMTP send fails
-        NS->>K: republish onto notifications-retry-0 (Spring Kafka @RetryableTopic)
-        Note over K,NS: One retry after 1s (FixedBackOff(1000L, 1));<br/>then to notifications-dlt and dropped
+        NS->>K: republish onto notifications-retry-0
+        Note over K,NS: Spring Kafka RetryableTopic, one retry after 1s then DLT
     end
 ```
 
-The diagram renders in any markdown viewer with Mermaid support (GitHub, VS Code,
-IntelliJ, GitLab). Read as plain text it still conveys ordering, but the rendered
-form is much clearer.
+The diagram is written for the GitHub-flavoured Mermaid renderer (no embedded HTML,
+no semicolons inside Notes); it renders identically in VS Code, IntelliJ, and GitLab.
+Read as plain text it still conveys ordering.
 
 ## Kafka topics & consumers
 
