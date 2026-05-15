@@ -11,9 +11,9 @@ No upstream Simpl-Open code is committed to this repo. Each subproject's `start.
 | Folder | Component | Status | What it does |
 |--------|-----------|--------|--------------|
 | [`simpl-catalogue/`](./simpl-catalogue/README.md) | Federated Catalogue (`simpl-fc-service` + `simpl-catalogue-client` UI + `poc-gaia-edc` query-mapper-adapter) | QMA-backed quick search + basic advanced search verified 2026-05-03 | Local catalogue with REST API, browser UI, and access-policy-aware search via QMA. Backed by Postgres + Neo4j. Full advanced search (`xfsc-advsearch-be`), full SD lifecycle, and contract negotiation are out of scope — see subproject README. |
-| [`simpl-notification-service/`](./simpl-notification-service/README.md) | Notification Service | Process runs; **email path non-functional (re-verified empty 2026-05-15)** — upstream finding [NS-001](./simpl-notification-service/docs/upstream-issues.md): consumer config hardcodes `SASL_PLAINTEXT`/`PLAIN`, crashes against any plain broker. Upstream component **assessed FAIL** for SMS-stub + transport-disproportionate + NS-001 reasons (see subproject README). | Spring Boot Kafka consumer that *intends* to dispatch emails but cannot in any documented local configuration. Comes with Kafka, Kafka UI, and Mailpit for SMTP capture — Mailpit stays empty because the consumer crashes at startup. To watch the email path end-to-end including the SSM-001 leak demonstration, use [`simpl-schema-manager/`](./simpl-schema-manager/README.md) with `./start.sh --with-notifications` (its broker is SASL-configured to satisfy the hardcoded consumer expectations). |
+| [`simpl-notification-service/`](./simpl-notification-service/README.md) | Notification Service | Process runs; **email path non-functional (re-verified empty 2026-05-15)** — the consumer config hardcodes `SASL_PLAINTEXT`/`PLAIN` and crashes against any plain broker. Upstream component **assessed FAIL** (SMS-channel stub, Kafka transport disproportionate to the use case, hardcoded-SASL consumer; see subproject README). | Spring Boot Kafka consumer that *intends* to dispatch emails but cannot in any documented local configuration. Comes with Kafka, Kafka UI, and Mailpit for SMTP capture — Mailpit stays empty because the consumer crashes at startup. To watch the email path end-to-end including the schema-manager Mailinator-leak demonstration, use [`simpl-schema-manager/`](./simpl-schema-manager/README.md) with `./start.sh --with-notifications` (its broker is SASL-configured to satisfy the hardcoded consumer expectations). |
 | [`simpl-orchestration/`](./simpl-orchestration/README.md) | Orchestration Platform (Dagster) | Demonstration stack | Local Dagster-based orchestration stack with seed data and a Bruno collection for exploring the pipeline. |
-| [`simpl-schema-manager/`](./simpl-schema-manager/README.md) | Schema Manager + UI (`simpl-schema-manager`, `simpl-schema-manager-ui`) | Local stack + UI verified 2026-05-15; bruno 12/12 ✓ — **upstream finding [SSM-001](./simpl-schema-manager/docs/upstream-issues.md#ssm-001--emailaddress-defaults-to-a-public-mailinator-inbox-helm-chart-does-not-override): Mailinator default leaks notifications** | Spring Boot REST service + Vue 3 UI managing JSON-LD/SHACL schemas, versions, and webhook subscribers. Comes with Apache Jena Fuseki (RDF triplestore), Kafka, and Kafka UI. Auto-creates four Fuseki datasets at boot. **Keycloak deliberately bypassed** via empty UI env vars (built-in `isAuthenticationEnabled()` switch) + nginx auth-header injection of a hand-crafted JWT (backend uses `JWT.decode()`, no signature verification). Mechanics in [`docs/schema-manager-bypass.md`](./simpl-schema-manager/docs/schema-manager-bypass.md). |
+| [`simpl-schema-manager/`](./simpl-schema-manager/README.md) | Schema Manager + UI (`simpl-schema-manager`, `simpl-schema-manager-ui`) | Local stack + UI verified 2026-05-15; bruno 12/12 ✓ — **upstream notification recipient defaults to a public Mailinator inbox; every schema lifecycle event leaks audit trail there** (see subproject README) | Spring Boot REST service + Vue 3 UI managing JSON-LD/SHACL schemas, versions, and webhook subscribers. Comes with Apache Jena Fuseki (RDF triplestore), Kafka, and Kafka UI. Auto-creates four Fuseki datasets at boot. **Keycloak deliberately bypassed** via empty UI env vars (built-in `isAuthenticationEnabled()` switch) + nginx auth-header injection of a hand-crafted JWT (backend uses `JWT.decode()`, no signature verification). Mechanics in [`docs/schema-manager-bypass.md`](./simpl-schema-manager/docs/schema-manager-bypass.md). |
 
 ---
 
@@ -46,7 +46,7 @@ catalogue validates against come from the Schema Management Service (see below).
 
 ### `simpl-schema-manager` — Schema Management Service
 
-The **Metadata Description building block** of the SIMPL architecture. The Governance
+The **Metadata Description building block** of the Simpl architecture. The Governance
 Authority uses it to define *the structure that every Self-Description in the data
 space must conform to*: which properties exist, what data types they take, what
 constraints apply, which controlled vocabularies are valid.
@@ -81,7 +81,7 @@ anonymisation, transformation, validation, etc.). When a consumer acquires a dat
 offering, the workflow associated with that offering is what actually produces the
 data the consumer receives.
 
-The platform is built on **Dagster** with a few SIMPL-specific wrappers:
+The platform is built on **Dagster** with a few Simpl-specific wrappers:
 
 - **Orchestration Engine** (Dagster Daemons) — schedules, sensors, run queueing;
   long-running daemons that coordinate workflow execution.
@@ -91,7 +91,7 @@ The platform is built on **Dagster** with a few SIMPL-specific wrappers:
   pipelines, runs, logs, and asset materialisations.
 - **Orchestration Engine API** — Dagster's GraphQL API; the programmatic interface
   used by the Asset Orchestrator and other components.
-- **Asset Orchestrator** — a SIMPL-developed component on top that bridges the
+- **Asset Orchestrator** — a Simpl-developed component on top that bridges the
   catalogue's data/application offerings to Dagster workflows.
 - **Repository (Gitea)** — version-controlled workflow source code, so every change
   to a job graph, op, resource config, or schedule is captured as a commit with
