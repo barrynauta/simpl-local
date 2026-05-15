@@ -24,11 +24,17 @@ cd simpl-schema-manager-local
 ./start.sh
 ```
 
-First run takes 4–8 minutes (Maven dependency download + Docker image build).
+First run takes 3–5 minutes (Maven dependency download + UI Vite build + Docker image assembly).
 Subsequent starts are under 15 seconds.
 
-When ready, the smoke test confirms Fuseki has the four datasets the app auto-creates and that the
-unauthenticated `/webhooks` probe returns `[]`.
+When ready:
+
+- the smoke test confirms Fuseki has the four datasets the app auto-creates and that
+  the unauthenticated `/webhooks` probe returns `[]`;
+- open **http://localhost:4322** in a browser to use the schema-manager UI (no login —
+  Keycloak is bypassed locally);
+- three valid sample SHACL files are staged in `samples/` and ready for the UI's
+  "Upload schema" form — see [Uploading a sample schema](#uploading-a-sample-schema).
 
 ---
 
@@ -66,6 +72,32 @@ For an architecture diagram and per-component breakdown, see
 - **Kafka SASL / TLS.** Production uses `SASL_SSL`; local uses `PLAINTEXT`.
 - **OpenTelemetry export.** Not wired in by this stack.
 - Production-grade HA, secrets management, or monitoring.
+
+---
+
+## Uploading a sample schema
+
+The fastest way to confirm the full UI ↔ proxy ↔ backend ↔ Fuseki ↔ SHACL-validator loop:
+
+1. Open **http://localhost:4322** — the schema list is empty.
+2. Click **Upload schema**.
+3. Fill in the form:
+
+   | Field | Value |
+   |---|---|
+   | Schema file | `samples/sample-data-offering.ttl` |
+   | Name | `SimplDataOffering` (PascalCase, 3–64 chars) |
+   | Title | `Simpl Data Offering Schema` |
+   | Description | `Canonical data offering schema (local stack sample).` |
+   | Resource Type | `Data` (one of `Application` / `Data` / `Infrastructure`, case-insensitive) |
+
+4. Submit. The schema appears in the list and `GET http://localhost:4322/v1/schemas` returns it.
+
+The three sample TTLs (`sample-data-offering.ttl`, `sample-application-offering.ttl`,
+`sample-infrastructure-offering.ttl`) are copies of the upstream
+`ShaclValidationServiceTest` "valid" fixtures, staged by `start.sh` into `samples/`
+after the upstream clone — see [`samples/README.md`](samples/README.md). The files
+are `.gitignore`d; only `samples/README.md` is tracked.
 
 ---
 
@@ -126,7 +158,10 @@ simpl-schema-manager-local/
 │   ├── bruno.json                              Collection metadata.
 │   ├── environments/local.bru                  Bruno desktop app — hits localhost ports on the host.
 │   ├── environments/docker.bru                 In-network run via ./start.sh --run-tests — uses service hostnames.
-│   └── 0{1..4}-*.bru                           Individual tests with inline assertions.
+│   └── 0{1..6}-*.bru                           Individual tests with inline assertions.
+├── samples/               Sample SHACL files ready for the UI's upload form.
+│   ├── README.md                               Form-field reference and manual-copy commands.
+│   └── *.ttl                                   (gitignored) Staged by start.sh from the upstream test fixtures.
 └── docs/
     ├── schema-manager-architecture.md   Architecture diagram and design notes.
     ├── schema-manager-bypass.md         How the UI ↔ backend auth bypass works.
@@ -154,7 +189,7 @@ Defaults live in `docker-compose.yml`. Copy `.env.example` to `.env` to override
 ## Smoke tests (Bruno)
 
 A Bruno collection lives in `bruno/`. Each request includes inline `tests` assertions that pin
-the expected schema-manager behaviour. Four checks:
+the expected schema-manager behaviour. Six checks:
 
 1. `GET /webhooks` returns `200` with an empty array — unauthenticated liveness.
 2. `GET /schemas` returns Belgif RFC-7807 `400` without an `Authorization` header — confirms the
@@ -164,6 +199,12 @@ the expected schema-manager behaviour. Four checks:
 4. Fuseki's `/$/datasets` admin endpoint reports the four bootstrap datasets (`ds_schemas`,
    `ds_schema_metadata`, `ds_schema_categories`, `ds_webhooks`) — confirms the schema-manager's
    Fuseki client successfully initialised the triplestore at boot.
+5. `GET http://schema-manager-ui:8080/` returns the SPA's `index.html` with the
+   `env-config.js` script tag — confirms the UI build landed in the nginx image.
+6. `GET http://schema-manager-ui:8080/v1/schemas` returns `200` (not `400`) — confirms the
+   UI's nginx proxy rewrites `/v1/*` → `/*` and injects the fake `Authorization` header,
+   and that the backend's `JWT.decode()` accepts the hand-crafted claim. This is the
+   load-bearing assertion for the auth bypass.
 
 ### Option 1 — `./start.sh --run-tests` (no Bruno install needed)
 

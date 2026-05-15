@@ -50,6 +50,18 @@ clone_or_pull \
   "repos/simpl-schema-manager-ui" \
   "simpl-schema-manager-ui"
 
+# ── 3a. Stage upload samples ────────────────────────────────────────────────
+# The canonical valid SHACL shape files from the upstream test fixtures.
+# Surfaced under samples/ so the UI's file picker shows them in one obvious
+# location. samples/*.ttl is .gitignored — only samples/README.md is tracked.
+mkdir -p samples
+cp -f repos/simpl-schema-manager/src/test/resources/shacl/validation/data/data-offeringShape.ttl \
+      samples/sample-data-offering.ttl 2>/dev/null || true
+cp -f repos/simpl-schema-manager/src/test/resources/shacl/validation/application/application-offeringShape.ttl \
+      samples/sample-application-offering.ttl 2>/dev/null || true
+cp -f repos/simpl-schema-manager/src/test/resources/shacl/validation/infrastructure/infrastructure-offeringShape.ttl \
+      samples/sample-infrastructure-offering.ttl 2>/dev/null || true
+
 # ── 4. Build Docker image ───────────────────────────────────────────────────
 IMAGE_EXISTS=$(docker images -q simpl-schema-manager:local 2>/dev/null || true)
 if [ -z "$IMAGE_EXISTS" ] || [ "$REBUILD" = true ]; then
