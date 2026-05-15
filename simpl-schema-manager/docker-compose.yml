@@ -18,15 +18,29 @@ services:
   kafka:
     image: bitnamilegacy/kafka:3.3.2
     container_name: simpl-sm-kafka
+    # SASL_PLAINTEXT with PLAIN mechanism is REQUIRED — the upstream
+    # simpl-notification-service ConsumerConfig.class hardcodes
+    # security.protocol=SASL_PLAINTEXT and sasl.mechanism=PLAIN
+    # (env vars are ignored by that consumer factory). So even though this
+    # is a local stack, the broker must speak SASL. Credentials are fake
+    # (simpl/simpl-local) — the goal is to satisfy the handshake, not to
+    # provide any real security boundary.
     environment:
       KAFKA_CFG_NODE_ID: 0
       KAFKA_CFG_CONTROLLER_BROKER_ID: 0
       KAFKA_CFG_PROCESS_ROLES: controller,broker
       KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
       KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:SASL_PLAINTEXT,PLAINTEXT:SASL_PLAINTEXT
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CFG_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_INTER_BROKER_USER: simpl
+      KAFKA_INTER_BROKER_PASSWORD: simpl-local
+      KAFKA_CLIENT_USERS: simpl
+      KAFKA_CLIENT_PASSWORDS: simpl-local
     ports:
       - "${KAFKA_HOST_PORT:-9094}:9094"
     networks:
@@ -40,6 +54,9 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: dev-local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM: PLAIN
+      KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="simpl" password="simpl-local";'
     ports:
       - "${KAFKA_UI_PORT:-9001}:8080"
     networks:
@@ -62,9 +79,9 @@ services:
 
       KAFKA_ENABLED: "true"
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      KAFKA_SECURITY_PROTOCOL: PLAINTEXT
-      KAFKA_SASL_MECHANISM: ""
-      KAFKA_SASL_JAAS_CONFIG: ""
+      KAFKA_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      KAFKA_SASL_MECHANISM: PLAIN
+      KAFKA_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="simpl" password="simpl-local";'
 
       # Defaults match upstream application.properties; documented here for visibility.
       EMAIL_ADDRESS: simpl123@mailinator.com

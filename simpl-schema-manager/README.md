@@ -129,8 +129,13 @@ The same flow run as individual steps — useful for debugging.
 See [`docs/schema-manager-manual-setup.md`](docs/schema-manager-manual-setup.md).
 
 Flags:
-- `--rebuild` — force Maven re-build and Docker image rebuild even if they exist
-- `--run-tests` — after the stack is up, run the Bruno smoke-test collection inside the docker network (no host install of Bruno needed)
+- `--rebuild` — force Maven re-build and Docker image rebuild even if they exist.
+- `--run-tests` — after the stack is up, seed a schema (so the Kafka producer fires) and run
+  the Bruno smoke-test collection inside the docker network (no host install of Bruno needed).
+- `--with-notifications` — additionally bring up Mailpit and `simpl-notification-service`
+  consuming the `notifications` topic, so the email side-channel is observable at
+  `http://localhost:8025`. Requires the `simpl-notification-service:local` image to be
+  built once first via the sibling stack (`cd ../simpl-notification-service && ./start.sh --rebuild`).
 
 ---
 
@@ -140,8 +145,11 @@ Flags:
 simpl-schema-manager-local/
 ├── README.md              This file.
 ├── LICENSE                EUPL-1.2 (matches upstream).
-├── .gitignore             Excludes repos/, .env, .claude/.
+├── .gitignore             Excludes repos/, .env.
 ├── docker-compose.yml     Defines the full local stack.
+├── docker-compose.notifications.yml
+│                          Optional overlay: Mailpit + simpl-notification-service consuming
+│                          the notifications Kafka topic. Enabled with --with-notifications.
 ├── Dockerfile.local       Multi-stage Maven build + runtime for the backend,
 │                          replacing the upstream single-stage Dockerfile that
 │                          copies a pre-built JAR from GitLab CI.
@@ -158,14 +166,15 @@ simpl-schema-manager-local/
 │   ├── bruno.json                              Collection metadata.
 │   ├── environments/local.bru                  Bruno desktop app — hits localhost ports on the host.
 │   ├── environments/docker.bru                 In-network run via ./start.sh --run-tests — uses service hostnames.
-│   └── 0{1..6}-*.bru                           Individual tests with inline assertions.
+│   └── 0{1..7}-*.bru                           Individual tests with inline assertions.
 ├── samples/               Sample SHACL files ready for the UI's upload form.
 │   ├── README.md                               Form-field reference and manual-copy commands.
 │   └── *.ttl                                   (gitignored) Staged by start.sh from the upstream test fixtures.
 └── docs/
     ├── schema-manager-architecture.md   Architecture diagram and design notes.
     ├── schema-manager-bypass.md         How the UI ↔ backend auth bypass works.
-    └── schema-manager-manual-setup.md   Step-by-step walkthrough.
+    ├── schema-manager-manual-setup.md   Step-by-step walkthrough.
+    └── upstream-issues.md               Findings worth reporting upstream (e.g. SSM-001).
 ```
 
 ---
@@ -183,13 +192,15 @@ Defaults live in `docker-compose.yml`. Copy `.env.example` to `.env` to override
 | `KAFKA_UI_PORT` | `9001` | Host port for Kafka UI |
 | `SCHEMA_MANAGER_PORT` | `8085` | Host port for the schema-manager API |
 | `UI_PORT` | `4322` | Host port for the schema-manager UI |
+| `MAILPIT_SMTP_PORT` | `1026` | (with `--with-notifications`) Host port for Mailpit SMTP |
+| `MAILPIT_UI_PORT` | `8025` | (with `--with-notifications`) Host port for Mailpit Web UI |
 
 ---
 
 ## Smoke tests (Bruno)
 
 A Bruno collection lives in `bruno/`. Each request includes inline `tests` assertions that pin
-the expected schema-manager behaviour. Six checks:
+the expected schema-manager behaviour. Seven checks:
 
 1. `GET /webhooks` returns `200` with an empty array — unauthenticated liveness.
 2. `GET /schemas` returns Belgif RFC-7807 `400` without an `Authorization` header — confirms the
@@ -205,6 +216,9 @@ the expected schema-manager behaviour. Six checks:
    UI's nginx proxy rewrites `/v1/*` → `/*` and injects the fake `Authorization` header,
    and that the backend's `JWT.decode()` accepts the hand-crafted claim. This is the
    load-bearing assertion for the auth bypass.
+7. Kafka-UI's `/api/clusters/{name}/topics/notifications` reports a non-empty message count
+   — confirms the schema-manager fired its Kafka producer when `start.sh --run-tests` seeded
+   a schema. The producer-side half of [SSM-001](docs/upstream-issues.md), observed live.
 
 ### Option 1 — `./start.sh --run-tests` (no Bruno install needed)
 
@@ -292,6 +306,70 @@ A successful startup logs four `Dataset ... created` lines followed by
 
 ---
 
+## Kafka usage
+
+The schema-manager uses Kafka for **exactly one purpose**: producing email-notification messages
+on schema lifecycle events. Nothing else in the service touches a broker.
+
+The whole producer surface is one class:
+
+```java
+// kafka/service/NotificationService.java
+public class NotificationService {
+    private static final String NOTIFICATION_TOPIC = "notifications";
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
+    public void sendEmailNotification(SendEmailRequest emailRequest) {
+        kafkaTemplate.send(NOTIFICATION_TOPIC, new ObjectMapper().writeValueAsString(emailRequest));
+    }
+}
+```
+
+…invoked from exactly two call sites in `SchemaService`:
+
+- `sendSchemaCreatedOrUpdatedEmailNotification()` — after schema create / new version upload.
+- `sendSchemaStatusChangeEmailNotification()` — when a schema status flips between `PUBLISHED` and `REVOKED`.
+
+The topic is consumed by **simpl-notification-service** (also a Simpl-Open component), which
+dispatches the SMTP email. The message envelope (`channel`, `to`, `cc`, `subject`, `message`)
+matches that consumer's expected schema. To trace an email end-to-end across both stacks, run
+[`simpl-notification-service/`](../simpl-notification-service/) alongside this one against the
+same Kafka broker and watch Mailpit catch the dispatched email.
+
+### What is NOT on Kafka
+
+**Webhooks.** `EventService.notifyWebhooksOnSchemaChanges()` POSTs the event JSON directly via
+Spring `RestTemplate` (wrapped in `RetryTemplate` for retries) to subscriber URLs registered in
+the `ds_webhooks` Fuseki dataset. Pure HTTP, synchronous, no broker involved. If you want to know
+about schema changes, register a webhook (`POST /webhooks`); the Kafka path is reserved for the
+email side-channel only.
+
+### Sharp edges worth knowing
+
+- **The email recipient is hardcoded — and the default is a public Mailinator inbox.**
+  `email.address` (default `simpl123@mailinator.com`) is a single fixed address. *Every*
+  schema-lifecycle event in the entire deployment notifies one inbox. No per-tenant routing,
+  no admin lookup, no role-based fan-out. The default is **publicly readable at
+  [mailinator.com/v4/public/inboxes.jsp?to=simpl123](https://www.mailinator.com/v4/public/inboxes.jsp?to=simpl123)**
+  — and the upstream Helm chart does not override `EMAIL_ADDRESS`, so a vanilla
+  `helm install` runs with this default active. Full write-up:
+  [`docs/upstream-issues.md` → SSM-001](docs/upstream-issues.md#ssm-001--emailaddress-defaults-to-a-public-mailinator-inbox-helm-chart-does-not-override).
+- **The `kafka.enabled` flag in `application.properties` is misleading.** It exists, but
+  `KafkaTemplate` is unconditionally autowired and `NotificationService.sendEmailNotification()`
+  has no guard around `kafkaTemplate.send(...)`. Setting `kafka.enabled=false` does not disable
+  the call — it just produces records into a broker that may not exist, and Kafka client retries
+  will hang the request thread.
+- **This is the integration tax flagged in the notification-service assessment.** The
+  notification-service local stack's README documents the verdict: *"Kafka transport is
+  architecturally disproportionate for a simple email relay … every caller must configure a
+  Kafka producer to send what amounts to an SMTP message. No service has integrated with this
+  component yet."* The schema-manager is now the first concrete caller — paying that tax to
+  send one event → one email. A REST `POST /notifications` would deliver the same outcome with
+  no Kafka producer, no client-id config, no SASL/SSL parameters, and synchronous delivery
+  confirmation.
+
+---
+
 ## Known limitations and design choices
 
 **Maven version via env var.** `pom.xml` uses `${env.PROJECT_RELEASE_VERSION}` as the artifact version.
@@ -326,6 +404,7 @@ re-pull `repos/simpl-schema-manager` (`./start.sh --rebuild`) and check the upst
 | Schema Manager API via UI proxy | http://localhost:4322/v1 | Same API, but with auth header injected — `/v1/schemas` returns 200 |
 | Fuseki UI | http://localhost:3030 | Triplestore admin and dataset browser (admin / admin1234) |
 | Kafka UI | http://localhost:9001 | Browse topics and messages |
+| Mailpit Web UI (with `--with-notifications` only) | http://localhost:8025 | Captured email — confirms what address the schema-manager addresses notifications to (see SSM-001) |
 
 ---
 

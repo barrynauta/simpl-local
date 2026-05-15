@@ -5,10 +5,12 @@ cd "$SCRIPT_DIR"
 
 REBUILD=false
 RUN_TESTS=false
+WITH_NOTIFICATIONS=false
 for arg in "$@"; do
   case "$arg" in
     --rebuild) REBUILD=true ;;
     --run-tests) RUN_TESTS=true ;;
+    --with-notifications) WITH_NOTIFICATIONS=true ;;
   esac
 done
 
@@ -88,8 +90,37 @@ else
 fi
 
 # ── 5. Start services ────────────────────────────────────────────────────────
-echo "Starting services..."
-docker compose up -d
+COMPOSE_FILES=(-f docker-compose.yml)
+if [ "$WITH_NOTIFICATIONS" = true ]; then
+  if [ -z "$(docker images -q simpl-notification-service:local 2>/dev/null)" ]; then
+    echo "ERROR: --with-notifications requires the simpl-notification-service:local image." >&2
+    echo "Build it once with: (cd ../simpl-notification-service && ./start.sh --rebuild)" >&2
+    exit 1
+  fi
+  # Generate Mailpit's relay config from .env. Credentials stay in .env
+  # (gitignored); this file is gitignored too. Mailpit reads it as
+  # /relay-config.yaml inside the container.
+  # STARTTLS is a YAML boolean — coerce "mandatory"/"yes"/"1" to true for
+  # backwards compatibility with the pre-correction .env.example values.
+  case "${MAILPIT_RELAY_STARTTLS:-true}" in
+    true|True|TRUE|1|yes|mandatory) STARTTLS_BOOL=true ;;
+    *) STARTTLS_BOOL=false ;;
+  esac
+  cat > mailpit-relay.yaml <<EOF
+host: ${MAILPIT_RELAY_HOST:-}
+port: ${MAILPIT_RELAY_PORT:-587}
+starttls: $STARTTLS_BOOL
+auth: ${MAILPIT_RELAY_AUTH:-plain}
+username: ${MAILPIT_RELAY_USERNAME:-}
+password: ${MAILPIT_RELAY_PASSWORD:-}
+return-path: ${MAILPIT_RELAY_USERNAME:-}
+EOF
+  COMPOSE_FILES+=(-f docker-compose.notifications.yml)
+  echo "Starting services + notifications overlay (Mailpit + notification-service)..."
+else
+  echo "Starting services..."
+fi
+docker compose "${COMPOSE_FILES[@]}" up -d
 
 # ── 6. Health checks ────────────────────────────────────────────────────────
 echo "Waiting for Fuseki..."
@@ -139,17 +170,44 @@ echo "  Schema Manager API     http://localhost:${SCHEMA_MANAGER_PORT:-8085}"
 echo "  Fuseki triplestore     http://localhost:${FUSEKI_PORT:-3030}  (${FUSEKI_ADMIN_USER:-admin} / ${FUSEKI_ADMIN_PASSWORD:-admin1234})"
 echo "  Kafka broker           localhost:${KAFKA_HOST_PORT:-9094}"
 echo "  Kafka UI               http://localhost:${KAFKA_UI_PORT:-9001}"
+if [ "$WITH_NOTIFICATIONS" = true ]; then
+  echo "  Mailpit (captured email) http://localhost:${MAILPIT_UI_PORT:-8025}"
+fi
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # ── 9. Bruno smoke tests (opt-in) ───────────────────────────────────────────
 if [ "$RUN_TESTS" = true ]; then
+  # Seed a schema so the Kafka producer fires before bruno asserts on it.
+  # Idempotent in spirit: a second run gets a 4xx (schema already exists)
+  # and we keep going — the topic still has the message from the first run.
+  echo ""
+  echo "==> Seeding a schema to trigger the Kafka producer (for bruno test 07)"
+  if [ -f samples/sample-data-offering.ttl ]; then
+    SEED_HTTP=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+      "http://localhost:${UI_PORT:-4322}/v1/schemas" \
+      -F "schemaFile=@samples/sample-data-offering.ttl" \
+      -F "name=BootstrapSchema" \
+      -F "title=Bootstrap Schema" \
+      -F "description=Test seed for bruno producer-verification." \
+      -F "resourceType=Data" 2>/dev/null || echo "000")
+    case "$SEED_HTTP" in
+      2*) echo "    Seeded — schema-manager produced a notifications message (HTTP $SEED_HTTP)." ;;
+      *)  echo "    Seed returned HTTP $SEED_HTTP — likely already exists from a previous run; OK." ;;
+    esac
+    sleep 2  # let the Kafka producer flush
+  else
+    echo "    No sample TTL on disk; skipping seed."
+  fi
+
   echo ""
   echo "==> Running Bruno smoke tests (inside docker network)"
   echo ""
   # `run --rm` creates a fresh, ephemeral container against the running stack
   # network and cleans it up on exit. Same pattern as simpl-catalogue.
+  # Pass the same compose-files set as `up` so overlay services (Mailpit,
+  # notification-service) are recognised instead of warned as orphans.
   set +e
-  docker compose --profile tests run --rm bruno-smoke-test
+  docker compose "${COMPOSE_FILES[@]}" --profile tests run --rm bruno-smoke-test
   BRUNO_EXIT=$?
   set -e
   exit $BRUNO_EXIT

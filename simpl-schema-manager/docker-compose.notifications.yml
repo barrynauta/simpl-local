@@ -1,0 +1,86 @@
+# Optional overlay: Mailpit + simpl-notification-service.
+#
+# Brings up the full notification path so you can SEE the email that the
+# schema-manager produces on every schema lifecycle event:
+#
+#   schema-manager  ──Kafka 'notifications'──▶  notification-service  ──SMTP──▶  Mailpit
+#
+# Mailpit captures everything locally (zero-config SMTP sink), so the
+# message stays on this machine even though the schema-manager's `to:`
+# field is the unsafe upstream default `simpl123@mailinator.com`.
+# Open Mailpit at http://localhost:8025 to see the captured email.
+#
+# Usage:
+#   ./start.sh --with-notifications
+# or directly:
+#   docker compose -f docker-compose.yml -f docker-compose.notifications.yml up -d
+#
+# Prerequisites:
+#   - simpl-notification-service:local image must already be built. Build it
+#     by running `cd ../simpl-notification-service && ./start.sh --rebuild`
+#     once; this overlay reuses the resulting image.
+
+services:
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: simpl-sm-mailpit
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1026}:1025"  # SMTP — notification-service connects here
+      - "${MAILPIT_UI_PORT:-8025}:8025"    # Web UI — inspect captured email
+    environment:
+      # ── Optional outbound relay ──────────────────────────────────────────
+      # In Mailpit v1.x, only host/port/username/password/auth bind through
+      # env vars; STARTTLS and return-path bind only through the YAML config
+      # file. start.sh generates mailpit-relay.yaml from .env values when
+      # --with-notifications is set; we mount that as /relay-config.yaml
+      # and point MP_SMTP_RELAY_CONFIG at it.
+      MP_SMTP_RELAY_CONFIG: /relay-config.yaml
+      MP_SMTP_RELAY_ALL: "${MAILPIT_RELAY_ALL_RECIPIENTS:-false}"
+    volumes:
+      - ./mailpit-relay.yaml:/relay-config.yaml:ro
+    networks:
+      - simpl-schema-manager-net
+
+  notification-service:
+    image: simpl-notification-service:local
+    container_name: simpl-sm-notification-service
+    depends_on:
+      kafka:
+        condition: service_started
+      mailpit:
+        condition: service_started
+    environment:
+      # Kafka — same broker as the schema-manager produces to.
+      # The notification-service's ConsumerConfig.class hardcodes
+      # security.protocol=SASL_PLAINTEXT and sasl.mechanism=PLAIN
+      # (the KAFKA_SECURITY_PROTOCOL env var is read by the producer
+      # path but ignored by the consumer factory). The broker is
+      # configured to match — see docker-compose.yml.
+      KAFKA_BOOTSTRAP_SERVER: kafka:9092
+      KAFKA_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      KAFKA_SASL_MECHANISM: PLAIN
+      KAFKA_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="simpl" password="simpl-local";'
+      KAFKA_CLIENT_USER: simpl
+      KAFKA_CLIENT_PASSWORDS: simpl-local
+      KAFKA_RETRY_TOPIC_BACKOFF_DELAY: "1000"
+
+      # App config (mirrors sibling stack's docker-compose.yml).
+      API_KEY: "local-dev-api-key"
+      SPRING_PROFILES_ACTIVE: default
+      MANAGEMENT_ENDPOINTS_WEB_BASE_PATH: /
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
+      OTEL_SDK_DISABLED: "true"
+
+      # SMTP → Mailpit. Mailpit accepts all envelopes regardless of the
+      # `to:` field, so even though the schema-manager addresses messages
+      # to `simpl123@mailinator.com`, nothing actually leaves this machine.
+      SMTP_HOST: mailpit
+      SMTP_USERNAME: local
+      SMTP_PASSWORD: local
+      SPRING_MAIL_PORT: "1025"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      DEFAULT_EMAIL_RECEIVER: "noreply@localhost.invalid"
+    networks:
+      - simpl-schema-manager-net

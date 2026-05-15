@@ -1,0 +1,39 @@
+meta {
+  name: schema-manager Produces to Kafka on Schema Create
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{base_url_kafka_ui}}/api/clusters/{{kafka_cluster_name}}/topics/notifications
+  body: none
+  auth: none
+}
+
+tests {
+  // start.sh --run-tests seeds a schema via the UI proxy before bruno runs,
+  // so by the time we get here the schema-manager has already produced at
+  // least one message onto the 'notifications' topic. This test asserts
+  // through Kafka-UI's REST API that the topic exists and has content —
+  // the producer-side half of SSM-001 in motion, mirroring what we'd see
+  // on the consumer side if simpl-notification-service were running.
+  test("Kafka-UI reports the notifications topic exists", function() {
+    expect(res.status).to.equal(200);
+    const body = res.getBody();
+    expect(body.name).to.equal("notifications");
+  });
+
+  test("topic has at least one message (schema-manager producer fired)", function() {
+    const body = res.getBody();
+    // Kafka-UI returns either messagesCount at the top level (newer builds)
+    // or only per-partition offsets (older builds). Accept either signal.
+    const topLevel = body.messagesCount;
+    const partitionSum = (body.partitions || []).reduce(function(acc, p) {
+      const min = p.offsetMin || 0;
+      const max = p.offsetMax || 0;
+      return acc + Math.max(0, max - min);
+    }, 0);
+    const messageCount = (typeof topLevel === "number") ? topLevel : partitionSum;
+    expect(messageCount).to.be.greaterThan(0);
+  });
+}
