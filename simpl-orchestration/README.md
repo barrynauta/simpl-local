@@ -384,6 +384,11 @@ docker compose down -v
 - Seed data is loaded after the app healthcheck passes, guaranteeing Flyway migrations have completed
 - `dagster.yaml` configures compute logs and artifact storage to `/data` inside the code location container, avoiding permission issues with the default `/opt/dagster` path
 
+For a fuller view — mermaid component diagram, sequence diagram of the
+register-list-trigger workflow flow, code-locations table, API endpoint reference, and
+a production-vs-local comparison — see
+[`docs/orchestration-architecture.md`](docs/orchestration-architecture.md).
+
 ---
 
 ## Troubleshooting
