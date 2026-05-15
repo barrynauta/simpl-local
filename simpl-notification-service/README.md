@@ -16,7 +16,13 @@ cloned into `repos/` (gitignored) at build time:
 
 ## Upstream component assessment — FAIL
 
-The local stack in this repo runs and the email-dispatch path is verified end-to-end. However, **the upstream `notification-service` component itself is assessed as FAIL** — the local stack is useful for exploring and reproducing the behaviour, but the component should not be integrated against in its current shape.
+The local stack in this repo brings up the notification-service Spring Boot
+application and the supporting Kafka + Mailpit infrastructure successfully.
+**The email dispatch path itself, however, is non-functional out of the box**
+— see Status table below and [`docs/upstream-issues.md` NS-001](docs/upstream-issues.md)
+for root cause. The upstream `notification-service` component itself is **assessed as FAIL** —
+the local stack is useful for exploring and reproducing the behaviour, but the
+component should not be integrated against in its current shape.
 
 Three concerns are load-bearing for that verdict:
 
@@ -29,10 +35,11 @@ Additional HIGH-severity findings:
 - AsyncAPI spec is structurally invalid and contractually wrong — `action: send` documents a producer for what is a consumer service, and a malformed `$ref` makes the document unparseable. Any team building a producer from this spec would build the wrong integration.
 - GDPR risk — `Consumer.prepareDefaultErrorNotification()` appends raw Kafka payloads (which may contain participant PII) directly into outbound error emails and logs.
 - No dead-letter queue — `FixedBackOff(1000L, 1)` discards failed messages after a single 1-second retry. SMTP transient failure results in permanent message loss, defeating Kafka's primary durability benefit.
+- **Consumer config hardcodes `SASL_PLAINTEXT`/`PLAIN` mechanism (NS-001).** The bespoke `kafka/ConsumerConfig` `@Configuration` bean baked-in `security.protocol`/`sasl.mechanism` values override the `${KAFKA_SECURITY_PROTOCOL}` env-var binding that `application.properties` documents as configurable. The consumer therefore cannot speak to any plain `PLAINTEXT` broker — including the broker shipped in this local stack. The producer path works (it uses Spring's auto-config), so the misconfiguration is silent: messages reach the topic, the consumer crashes at startup, no email is ever dispatched. See [`docs/upstream-issues.md`](docs/upstream-issues.md).
 
 **Recommendation:** replace with a REST endpoint (preferred — revisits ADR-03 at programme level), or rework with at minimum a DLQ, GDPR-safe error handling, a corrected AsyncAPI spec, an implemented or removed SMS channel, and pom.xml alignment to the parent BOM (estimated 5–8 days). The current moment — before any producer has integrated — is the right moment to make that call.
 
-What this means for the local stack here: nothing changes mechanically — `./start.sh` still works and Mailpit still catches dispatched email. Treat the stack as a tool for confirming the verdict and for demonstrating the behaviour, not as a launchpad for building producers against the current contract.
+What this means for the local stack here: `./start.sh` still brings the stack up cleanly, but **Mailpit will stay empty** because the consumer crashes at startup. To exercise the producer→broker→consumer→SMTP→Mailpit path end-to-end, use the sibling [`../simpl-schema-manager/`](../simpl-schema-manager/) stack with `./start.sh --with-notifications` — its broker is configured `SASL_PLAINTEXT/PLAIN` to satisfy NS-001's hardcoded consumer expectations, and the email actually reaches Mailpit there. Treat this stack as a tool for confirming the verdict and reproducing NS-001 in isolation, not as a launchpad for building producers against the current contract.
 
 ---
 
@@ -63,10 +70,17 @@ open http://localhost:8025   # Mailpit — should show 1 email
 | 2 | Build Docker image — Stage 1: Maven builds all three in sequence | ✅ |
 | 3 | Build Docker image — Stage 2: runtime (`eclipse-temurin:21-jdk-alpine`) | ✅ |
 | 4 | Start Kafka + Zookeeper via Compose | ✅ |
-| 5 | Run `notification-service` container | ✅ |
-| 6 | Publish test Kafka message → verify email in Mailpit | ✅ |
+| 5 | Run `notification-service` container | ⚠️ Application starts; Kafka consumer crashes within ~150ms and stops |
+| 6 | Publish test Kafka message → verify email in Mailpit | ❌ Mailpit stays empty — consumer never receives the message |
 
-Verified 2026-05-05. Spring Boot 3.5.6, Kafka 3.9.x client, Java 21.
+**Phase 6 was incorrectly marked ✅ in earlier revisions of this README; the email
+path has never worked in this local stack against the bundled broker.** Root cause
+is [NS-001](docs/upstream-issues.md): the upstream `notification-service`'s
+`kafka/ConsumerConfig` Spring bean hardcodes `security.protocol=SASL_PLAINTEXT`/`sasl.mechanism=PLAIN`,
+overriding the env-var configuration this stack relies on. The broker speaks PLAINTEXT;
+the consumer demands SASL_PLAINTEXT; they cannot meet.
+
+Re-verified 2026-05-15. Spring Boot 3.5.6, Kafka 3.9.x client, Java 21.
 
 ---
 
