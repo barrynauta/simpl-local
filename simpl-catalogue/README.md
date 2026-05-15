@@ -69,6 +69,8 @@ All ✅ phases verified end-to-end against upstream `simpl-fc-service` default b
 
 For an architecture diagram + per-component breakdown of what fc-service talks to (and what it intentionally doesn't), see [`docs/fc-service-architecture.md`](docs/fc-service-architecture.md).
 
+For an **integrative view of all three components together** — combined component diagram, sequence diagrams for quick search and advanced search, component responsibilities, data location across Postgres vs. Neo4j, and a stack-wide production-vs-local comparison — see [`docs/catalogue-architecture.md`](docs/catalogue-architecture.md). The three per-component docs remain the authoritative source for each component's internal detail; the integrative doc shows how they fit together.
+
 ## What this stack does NOT provide
 
 - Production governance / policy / quality layers (Catalogue Client Service, Policy Filter, Quality Validation, Schema Registry, Management Service). (Query Mapper Adapter is now included — see above.)
@@ -133,6 +135,7 @@ simpl-catalogue-local/
 ├── .env.example           Template for local overrides (copy to .env).
 ├── docs/                  Per-service walkthroughs and architecture notes.
 │   ├── fc-service-manual-setup.md                Manual equivalent of ./start.sh for fc-service.
+│   ├── catalogue-architecture.md                 Integrative view — all three components, sequence diagrams, prod-vs-local.
 │   ├── fc-service-architecture.md                Diagram + dependencies + process model for fc-service.
 │   ├── catalogue-ui-manual-setup.md              Manual equivalent of ./start.sh for the UI.
 │   ├── catalogue-ui-architecture.md              Diagram + env-var flow + networking trick for the UI.
