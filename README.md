@@ -11,9 +11,96 @@ No upstream Simpl-Open code is committed to this repo. Each subproject's `start.
 | Folder | Component | Status | What it does |
 |--------|-----------|--------|--------------|
 | [`simpl-catalogue/`](./simpl-catalogue/README.md) | Federated Catalogue (`simpl-fc-service` + `simpl-catalogue-client` UI + `poc-gaia-edc` query-mapper-adapter) | QMA-backed quick search + basic advanced search verified 2026-05-03 | Local catalogue with REST API, browser UI, and access-policy-aware search via QMA. Backed by Postgres + Neo4j. Full advanced search (`xfsc-advsearch-be`), full SD lifecycle, and contract negotiation are out of scope — see subproject README. |
-| [`simpl-notification-service/`](./simpl-notification-service/README.md) | Notification Service | Local stack runs (email path verified 2026-05-05) — **upstream component assessed FAIL** (see subproject README) | Spring Boot Kafka consumer that dispatches emails. Comes with Kafka, Kafka UI, and Mailpit for SMTP capture. Upstream issues: SMS channel is an unimplemented stub with a fake test (`assertTrue(true)`), and the Kafka transport adds integration burden disproportionate to what is effectively a simple SMTP relay — replacement or full rework recommended before any producer integrates. |
+| [`simpl-notification-service/`](./simpl-notification-service/README.md) | Notification Service | Process runs; **email path non-functional (re-verified empty 2026-05-15)** — upstream finding [NS-001](./simpl-notification-service/docs/upstream-issues.md): consumer config hardcodes `SASL_PLAINTEXT`/`PLAIN`, crashes against any plain broker. Upstream component **assessed FAIL** for SMS-stub + transport-disproportionate + NS-001 reasons (see subproject README). | Spring Boot Kafka consumer that *intends* to dispatch emails but cannot in any documented local configuration. Comes with Kafka, Kafka UI, and Mailpit for SMTP capture — Mailpit stays empty because the consumer crashes at startup. To watch the email path end-to-end including the SSM-001 leak demonstration, use [`simpl-schema-manager/`](./simpl-schema-manager/README.md) with `./start.sh --with-notifications` (its broker is SASL-configured to satisfy the hardcoded consumer expectations). |
 | [`simpl-orchestration/`](./simpl-orchestration/README.md) | Orchestration Platform (Dagster) | Demonstration stack | Local Dagster-based orchestration stack with seed data and a Bruno collection for exploring the pipeline. |
-| [`simpl-schema-manager/`](./simpl-schema-manager/README.md) | Schema Manager (`simpl-schema-manager`) | Local stack runs (smoke test verified 2026-05-14) | Spring Boot REST service that manages JSON-LD/SHACL schemas, versions, and webhook subscribers. Comes with Apache Jena Fuseki (RDF triplestore), Kafka, and Kafka UI. Auto-creates four Fuseki datasets at boot. Auth-gated endpoints (`/schemas/...`) return Belgif 400 without a Tier-1 JWT; `/webhooks` is unauthenticated and used as the liveness probe. |
+| [`simpl-schema-manager/`](./simpl-schema-manager/README.md) | Schema Manager + UI (`simpl-schema-manager`, `simpl-schema-manager-ui`) | Local stack + UI verified 2026-05-15; bruno 12/12 ✓ — **upstream finding [SSM-001](./simpl-schema-manager/docs/upstream-issues.md#ssm-001--emailaddress-defaults-to-a-public-mailinator-inbox-helm-chart-does-not-override): Mailinator default leaks notifications** | Spring Boot REST service + Vue 3 UI managing JSON-LD/SHACL schemas, versions, and webhook subscribers. Comes with Apache Jena Fuseki (RDF triplestore), Kafka, and Kafka UI. Auto-creates four Fuseki datasets at boot. **Keycloak deliberately bypassed** via empty UI env vars (built-in `isAuthenticationEnabled()` switch) + nginx auth-header injection of a hand-crafted JWT (backend uses `JWT.decode()`, no signature verification). Mechanics in [`docs/schema-manager-bypass.md`](./simpl-schema-manager/docs/schema-manager-bypass.md). |
+
+---
+
+## What each component is for
+
+Short summaries drawn from the [Simpl-Open Functional and Technical Architecture
+Specifications](https://code.europa.eu/simpl/simpl-open/architecture/-/blob/master/functional_and_technical_architecture_specifications/Functional-and-Technical-Architecture-Specifications.md)
+(FTA) so this index page also serves as a quick reference for *what each upstream
+component is supposed to do* — not just what the local stack reproduces.
+
+### `simpl-catalogue` — Federated Catalogue Service
+
+The Governance Authority's central publication point for signed **Self-Descriptions**
+— structured metadata documents describing every dataset, application, or
+infrastructure offering in the data space. Providers publish a Self-Description; the
+catalogue indexes it, validates it against the active schemas, and makes it searchable
+to consumers.
+
+Internally the Catalogue is several services: a database of persisted
+Self-Descriptions, a **Search Engine** that indexes them, a **Vocabulary Datastore**
+loaded with ontologies and schemas, a **Management Service** for lifecycle operations
+(e.g. revocation), and three validation layers (Syntax, Semantic/SHACL, and Quality
+Rule). Searches go through the **Query Mapper Adapter**, which embeds policy-based
+filtering via the **Policy Filter Service** so users only ever see results their
+permissions allow.
+
+The local stack runs the `simpl-fc-service` backend, the `simpl-catalogue-client` UI,
+and the `poc-gaia-edc` query-mapper-adapter against Postgres + Neo4j. Schemas the
+catalogue validates against come from the Schema Management Service (see below).
+
+### `simpl-schema-manager` — Schema Management Service
+
+The **Metadata Description building block** of the SIMPL architecture. The Governance
+Authority uses it to define *the structure that every Self-Description in the data
+space must conform to*: which properties exist, what data types they take, what
+constraints apply, which controlled vocabularies are valid.
+
+The schemas are **serialised as Turtle (`.ttl`) files** containing **SHACL shapes**
+and **ontology fragments** in RDF. These TTL schemas drive three things across the
+federation:
+
+1. **UI form generation** — the SD Tooling and the catalogue's advanced-search UI
+   automatically generate fields from the published schemas, so a participant filling
+   in a Self-Description sees exactly the fields the schema demands.
+2. **Validation** — the catalogue's Semantic Validation Service uses the same SHACL
+   shapes to validate Self-Descriptions before publication; anything that doesn't
+   conform is rejected.
+3. **Federation sync** — the Schema Synch Service propagates updates from the
+   Governance Authority's schema-manager to every Provider Node, so every participant
+   always works against the current schema standards.
+
+The schema-manager backend persists the TTL graphs into an Apache Jena Fuseki RDF
+triplestore (four datasets: `ds_schemas`, `ds_schema_metadata`, `ds_schema_categories`,
+`ds_webhooks`) and broadcasts schema lifecycle events (create / new version / publish
+/ revoke) over **Kafka** to subscribed webhook consumers and to the email
+notification-service. The TTL files in `simpl-schema-manager/samples/` are copies of
+the upstream test suite's canonical valid SHACL shapes — drop one into the UI's
+"Upload schema" form to exercise the full validate-and-publish loop.
+
+### `simpl-orchestration` — Data Orchestration Service
+
+The **Orchestration Platform** executes **Data Workflows** — multi-step pipelines
+that process or pre-process data using custom or built-in services (data
+anonymisation, transformation, validation, etc.). When a consumer acquires a data
+offering, the workflow associated with that offering is what actually produces the
+data the consumer receives.
+
+The platform is built on **Dagster** with a few SIMPL-specific wrappers:
+
+- **Orchestration Engine** (Dagster Daemons) — schedules, sensors, run queueing;
+  long-running daemons that coordinate workflow execution.
+- **Orchestration Run Worker** (K8sRunLauncher) — launches each workflow run as a
+  Kubernetes job.
+- **Orchestration Management UI** (Dagit) — Dagster's browser console for inspecting
+  pipelines, runs, logs, and asset materialisations.
+- **Orchestration Engine API** — Dagster's GraphQL API; the programmatic interface
+  used by the Asset Orchestrator and other components.
+- **Asset Orchestrator** — a SIMPL-developed component on top that bridges the
+  catalogue's data/application offerings to Dagster workflows.
+- **Repository (Gitea)** — version-controlled workflow source code, so every change
+  to a job graph, op, resource config, or schedule is captured as a commit with
+  author, timestamp, and diff.
+- **Auth Proxy** — sidecar that integrates the platform with the IAA stack without
+  coupling Dagster directly to Keycloak.
+
+The local stack runs Dagster + Asset Orchestrator + seed pipelines so the workflow
+loop is explorable without the IAA + Gitea environment.
 
 ---
 
