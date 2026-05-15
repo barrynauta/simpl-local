@@ -1,54 +1,48 @@
 # Schema Manager — local stack architecture
 
-## Component diagram
+## At a glance
 
-```
-       ┌──────────────────────────────────┐
-       │ schema-manager-ui (Vue 3, nginx) │   ◀── browser opens this
-       │ :4322 host  →  :8080 container   │
-       │                                  │
-       │  GET /         → index.html      │
-       │  GET /v1/...   → rewritten,      │
-       │                  Authorization   │
-       │                  injected,       │
-       │                  proxy_pass      │
-       └──────┬──────────────────┬────────┘
-              │                  │
-    direct API│                  │ proxied /v1/* with auth header
-    (curl etc)│                  │
-              ▼                  ▼
-       ┌──────────────────────────────┐
-       │ schema-manager (Spring Boot) │
-       │  /webhooks   /schemas/...    │
-       │  :8085                       │
-       └────┬──────────────┬──────────┘
-            │              │
-  SPARQL    │              │ Kafka producer
-            │              │ (topic: notifications)
-            ▼              ▼
-      ┌───────────┐   ┌──────────┐        ┌──────────┐
-      │  Fuseki   │   │  Kafka   │───────▶│ Kafka UI │
-      │  :3030    │   │  :9094   │        │  :9001   │
-      └───────────┘   └────┬─────┘        └──────────┘
-                           │
-                           │ Kafka consumer (only with --with-notifications)
-                           ▼
-                  ┌──────────────────────────┐
-                  │  simpl-notification-     │
-                  │  service (Spring Boot    │
-                  │  Kafka listener)         │
-                  └──────────┬───────────────┘
-                             │ SMTP
-                             ▼
-                  ┌──────────────────────────┐
-                  │  Mailpit                 │ ──── optional outbound relay 
-                  │  :1025 SMTP, :8025 UI    │    
-                  └──────────────────────────┘
+```mermaid
+flowchart LR
+    Browser["Browser"]
+    Curl["curl / Bruno smoke tests"]
+
+    subgraph net["Docker network: simpl-schema-manager-net"]
+        UI["schema-manager-ui - nginx :4322"]
+        SM["schema-manager - Spring Boot :8085"]
+        F[("Fuseki :3030 - Apache Jena triplestore")]
+        K[("Kafka :9094 - notifications topic")]
+        KU["Kafka UI :9001"]
+        NS["notification-service - Spring Boot Kafka listener"]
+        MP["Mailpit :1025 SMTP / :8025 UI"]
+    end
+
+    Ext["External SMTP relay + public mailinator inbox"]
+
+    Browser -->|HTTP :4322| UI
+    UI -->|/v1/ rewrite + auth injection :8085| SM
+    Curl -->|direct :8085 - bypass UI| SM
+    SM -->|SPARQL over HTTP| F
+    SM -->|Kafka producer| K
+    K --> KU
+    K -.->|consumer, only with --with-notifications| NS
+    NS -.->|SMTP| MP
+    MP -.->|optional MAILPIT_RELAY_* outbound| Ext
+
+    classDef hard fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef opt fill:#fff3e0,stroke:#ef6c00,stroke-dasharray:5 5
+    class UI,SM,F,K,KU hard
+    class NS,MP,Ext opt
 ```
 
-All containers run on a single Docker bridge network (`simpl-schema-manager-net`).
-Mailpit and notification-service appear only when `./start.sh --with-notifications` is
-used; otherwise the schema-manager produces to Kafka but nothing consumes the topic.
+Solid green = hard dependencies, always part of the local stack. Dashed orange =
+opt-in or external: the notification-service and Mailpit appear only when
+`./start.sh --with-notifications` is used; the external SMTP relay appears only when
+`MAILPIT_RELAY_*` env vars are set in `.env` (used to demonstrate the public-Mailinator
+leak end-to-end — see [`upstream-issues.md`](upstream-issues.md)). Without the
+overlay, the schema-manager still produces to Kafka but nothing consumes the topic
+— it just accumulates on `:9094` and is visible in Kafka UI.
+
 Keycloak is deliberately omitted — see [`schema-manager-bypass.md`](schema-manager-bypass.md)
 for how the UI and backend agree to operate without it.
 
