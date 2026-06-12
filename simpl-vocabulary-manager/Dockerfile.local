@@ -1,0 +1,32 @@
+# Local-evaluation build for the Simpl Vocabulary Manager.
+# Stage 1 builds the jar inside Maven so the host needs no Java/Maven install.
+# The internal simpl-semantic-validation-sdk dependency is pulled anonymously
+# from the public code.europa.eu group Maven registry (verified 2026-06-12) —
+# no credentials, no sibling SDK checkout needed.
+FROM maven:3.9-eclipse-temurin-21 AS build
+
+# Upstream pom reads the project version from the environment.
+ENV PROJECT_RELEASE_VERSION=0.0.1-local
+
+WORKDIR /build
+COPY repos/simpl-vocabulary-manager/ ./
+
+# skipTests: repository tests expect a live Fuseki. Spotless/license/jacoco
+# are CI concerns, skipped for the local image.
+RUN mvn -q clean package \
+      -DskipTests \
+      -Dspotless.check.skip=true \
+      -Dspotless.apply.skip=true \
+      -Dlicense.skip=true \
+      -Djacoco.skip=true
+
+# Stage 2 mirrors the upstream runtime Dockerfile (temurin-21, non-root user).
+FROM eclipse-temurin:21-jre-alpine
+
+COPY --from=build /build/target/simpl-vocabulary-manager-*.jar /app.jar
+
+RUN adduser -u 8877 -D dockerUser
+USER dockerUser
+
+EXPOSE 8086
+ENTRYPOINT ["java", "-jar", "/app.jar"]

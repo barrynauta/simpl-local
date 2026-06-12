@@ -1,0 +1,33 @@
+services:
+  fuseki:
+    image: secoresearch/fuseki:5.3.0
+    container_name: simpl-vocabulary-fuseki
+    ports:
+      # Host port defaults to 3031 so this stack can run next to
+      # simpl-schema-manager, whose Fuseki claims 3030.
+      - "${FUSEKI_PORT:-3031}:3030"
+    environment:
+      ADMIN_PASSWORD: "${FUSEKI_ADMIN_PASSWORD:-admin1234}"
+      ENABLE_DATA_WRITE: "true"
+      ENABLE_UPDATE: "true"
+    volumes:
+      - fuseki-data:/fuseki-base/databases
+      - fuseki-configuration:/fuseki-base/configuration
+
+  vocabulary-manager:
+    image: simpl-vocabulary-manager:local
+    container_name: simpl-vocabulary-manager
+    depends_on:
+      - fuseki
+    ports:
+      - "${VOCABULARY_MANAGER_PORT:-8086}:8086"
+    environment:
+      ADMIN_USERNAME: "${FUSEKI_ADMIN_USER:-admin}"
+      ADMIN_PASSWORD: "${FUSEKI_ADMIN_PASSWORD:-admin1234}"
+      # In-network address; the host port mapping is irrelevant here.
+      FUSEKI_BASE_URL: "http://fuseki:3030"
+      VOCABULARY_PUBLIC_BASE_URL: "http://localhost:${VOCABULARY_MANAGER_PORT:-8086}"
+
+volumes:
+  fuseki-data:
+  fuseki-configuration:
