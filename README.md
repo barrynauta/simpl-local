@@ -16,6 +16,8 @@ No upstream Simpl-Open code is committed to this repo. Each subproject's `start.
 | [`simpl-vocabulary-manager/`](./simpl-vocabulary-manager/README.md) | Vocabulary Manager (`simpl-vocabulary-manager`) | Verified end-to-end 2026-06-12 (health, seed, JWT-free upload 201, content roundtrip) | Spring Boot REST service managing Turtle vocabularies (versioned uploads, external-vocabulary registration, semantic validation incl. bounded OWL reasoning). Single backing service: Apache Jena Fuseki on host port 3031 (clash-free next to the schema-manager stack). **No auth machinery needed** — upstream write endpoints `JWT.decode()` the Bearer token without signature verification, so a static dummy token suffices. Upstream UI repo is an empty stub, so API-only. The internal `simpl-semantic-validation-sdk` Maven dependency resolves anonymously from the public code.europa.eu registry. |
 | [`simpl-schema-manager/`](./simpl-schema-manager/README.md) | Schema Manager + UI (`simpl-schema-manager`, `simpl-schema-manager-ui`) | Local stack + UI verified 2026-05-15; bruno 12/12 ✓ — **upstream notification recipient defaults to a public Mailinator inbox; every schema lifecycle event leaks audit trail there** (see subproject README) | Spring Boot REST service + Vue 3 UI managing JSON-LD/SHACL schemas, versions, and webhook subscribers. Comes with Apache Jena Fuseki (RDF triplestore), Kafka, and Kafka UI. Auto-creates four Fuseki datasets at boot. **Keycloak deliberately bypassed** via empty UI env vars (built-in `isAuthenticationEnabled()` switch) + nginx auth-header injection of a hand-crafted JWT (backend uses `JWT.decode()`, no signature verification). Mechanics in [`docs/schema-manager-bypass.md`](./simpl-schema-manager/docs/schema-manager-bypass.md). |
 
+*Status dates are per-stack verification dates against upstream `main` at that time. Matrix last reviewed: 2026-06-12.*
+
 ---
 
 ## What each component is for
@@ -208,4 +210,4 @@ Upstream components cloned into each subproject's `repos/` directory at build ti
 
 - **Simpl-Open programme:** [simpl-programme.ec.europa.eu](https://simpl-programme.ec.europa.eu/)
 - **Upstream source:** [`code.europa.eu/simpl`](https://code.europa.eu/simpl)
-- **Functional and Technical Architecture Specifications:** [FTA on code.europa.eu](https://code.europa.eu/simpl/simpl-open/architecture/-/blob/master/functional_and_technical_architecture_specifications/Functional-and-Technical-Architecture-Specifications.md)
+- **Architecture (canonical since June 2026):** [`foundations/architecture` on code.europa.eu](https://code.europa.eu/simpl/simpl-open/foundations/architecture/-/blob/main/functional_and_technical_architecture_specifications/Functional-and-Technical-Architecture-Specifications.md) — the FTA document is being sunset; this repo is becoming the main source for architectural information. (Old `simpl/simpl-open/architecture` project is being archived.)
