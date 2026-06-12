@@ -28,12 +28,16 @@ for cmd in docker git curl; do
   fi
 done
 
-# ── 3. Clone / pull upstream repo ───────────────────────────────────────────
+# ── 3. Clone / pull upstream repos ──────────────────────────────────────────
 clone_or_pull() {
-  local url="$1" dir="$2" label="$3"
+  local url="$1" dir="$2" label="$3" branch="${4:-}"
   if [ ! -d "$dir" ]; then
     echo "Cloning $label..."
-    git clone "$url" "$dir"
+    if [ -n "$branch" ]; then
+      git clone -b "$branch" "$url" "$dir"
+    else
+      git clone "$url" "$dir"
+    fi
   else
     echo "Pulling latest $label..."
     git -C "$dir" pull --ff-only || echo "  (pull skipped — local changes or detached HEAD)"
@@ -44,6 +48,14 @@ clone_or_pull \
   "https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager.git" \
   "repos/simpl-vocabulary-manager" \
   "simpl-vocabulary-manager"
+
+# UI: main is an empty stub upstream — the actual app lives on release-1.0.0
+# (= develop + security dependency bumps, 2026-06-12). Pin that branch.
+clone_or_pull \
+  "https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager-ui.git" \
+  "repos/simpl-vocabulary-manager-ui" \
+  "simpl-vocabulary-manager-ui" \
+  "release-1.0.0"
 
 # ── 4. Build Docker image ───────────────────────────────────────────────────
 IMAGE_EXISTS=$(docker images -q simpl-vocabulary-manager:local 2>/dev/null || true)
@@ -57,6 +69,18 @@ if [ -z "$IMAGE_EXISTS" ] || [ "$REBUILD" = true ]; then
   echo "Docker image built."
 else
   echo "Docker image already exists, skipping build (use --rebuild to force)."
+fi
+
+UI_IMAGE_EXISTS=$(docker images -q simpl-vocabulary-manager-ui:local 2>/dev/null || true)
+if [ -z "$UI_IMAGE_EXISTS" ] || [ "$REBUILD" = true ]; then
+  echo "Building UI Docker image (Stage 1: Vite — first run ~3 min for npm install, Stage 2: nginx)..."
+  docker build \
+    -f "$SCRIPT_DIR/Dockerfile.local-ui" \
+    -t simpl-vocabulary-manager-ui:local \
+    "$SCRIPT_DIR/"
+  echo "UI Docker image built."
+else
+  echo "UI Docker image already exists, skipping build (use --rebuild to force)."
 fi
 
 # ── 5. Start Fuseki first, wait, then the service ───────────────────────────
@@ -78,8 +102,8 @@ until curl -sf "http://localhost:${FUSEKI_PORT:-3031}/" >/dev/null 2>&1; do
 done
 echo "Fuseki ready."
 
-echo "Starting vocabulary-manager..."
-docker compose up -d vocabulary-manager
+echo "Starting vocabulary-manager + UI..."
+docker compose up -d vocabulary-manager vocabulary-manager-ui
 
 echo "Waiting for vocabulary-manager to start..."
 ELAPSED=0; TIMEOUT=90
@@ -120,11 +144,17 @@ for name in ds_vocabularies ds_external_vocabularies; do
 done
 echo "  Fuseki datasets    → $FOUND / 2 expected (ds_vocabularies, ds_external_vocabularies)"
 
+UI_HTTP=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${UI_PORT:-4323}/")
+echo "  GET UI /           → HTTP $UI_HTTP  (expected 200)"
+UI_PROXY_HTTP=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${UI_PORT:-4323}/api/vocabularies")
+echo "  GET UI /api proxy  → HTTP $UI_PROXY_HTTP  (expected 200 — nginx → backend)"
+
 # ── 8. Service URLs ──────────────────────────────────────────────────────────
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Service                 URL"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Vocabulary Manager UI   http://localhost:${UI_PORT:-4323}   (Keycloak bypassed — see README)"
 echo "  Vocabulary Manager API  http://localhost:${VOCABULARY_MANAGER_PORT:-8086}"
 echo "  Fuseki triplestore      http://localhost:${FUSEKI_PORT:-3031}  (${FUSEKI_ADMIN_USER:-admin} / ${FUSEKI_ADMIN_PASSWORD:-admin1234})"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

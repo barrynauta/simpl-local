@@ -28,6 +28,14 @@ services:
       FUSEKI_BASE_URL: "http://fuseki:3030"
       VOCABULARY_PUBLIC_BASE_URL: "http://localhost:${VOCABULARY_MANAGER_PORT:-8086}"
 
+  vocabulary-manager-ui:
+    image: simpl-vocabulary-manager-ui:local
+    container_name: simpl-vocabulary-manager-ui
+    depends_on:
+      - vocabulary-manager
+    ports:
+      - "${UI_PORT:-4323}:8080"
+
 volumes:
   fuseki-data:
   fuseki-configuration:

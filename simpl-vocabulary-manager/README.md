@@ -1,12 +1,15 @@
 # simpl-vocabulary-manager — local evaluation stack
 
-Runs the Simpl-Open **Vocabulary Manager** in isolation on a local machine,
-with the absolute minimum of dependencies: the Spring Boot service plus its
-single backing store, **Apache Jena Fuseki** (RDF triplestore). Nothing else —
-no Keycloak, no Vault/OpenBao, no Kafka, no UI.
+Runs the Simpl-Open **Vocabulary Manager** (plus its Vue 3 UI) in isolation on
+a local machine, with the absolute minimum of dependencies: the Spring Boot
+service, its single backing store **Apache Jena Fuseki** (RDF triplestore),
+and an nginx-served UI build. Nothing else — no Keycloak, no Vault/OpenBao,
+no Kafka.
 
-> Upstream: [`simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager`](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager)
-> (cloned into the gitignored `repos/` at start time — no upstream code is committed here).
+> Upstream: [`simpl-vocabulary-manager`](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager) (branch `main`)
+> and [`simpl-vocabulary-manager-ui`](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager-ui) (branch `release-1.0.0` —
+> the UI's `main` is an empty stub; the app lives on `develop`/`release-1.0.0`).
+> Both cloned into the gitignored `repos/` at start time — no upstream code is committed here.
 
 ## What the component does
 
@@ -42,6 +45,7 @@ Defaults (override in `.env`):
 
 | Service | URL | Notes |
 |---------|-----|-------|
+| Vocabulary Manager UI | http://localhost:4323 | Keycloak bypassed; nginx proxies `/api/` to the backend (no CORS on the backend) |
 | Vocabulary Manager API | http://localhost:8086 | `GET /health`, `GET /vocabularies`, … |
 | Fuseki | http://localhost:3031 | admin / admin1234 — **3031** to avoid clashing with the schema-manager stack's Fuseki on 3030 |
 
@@ -65,6 +69,26 @@ export VOCAB_TOKEN='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImxvY2FsQHN
 with a junk signature.) In a real deployment the platform gateway/IAA sits in
 front of this service; the same `JWT.decode()` pattern exists in the
 schema-manager (see `../simpl-schema-manager/docs/schema-manager-bypass.md`).
+
+### UI bypass mechanics
+
+The UI shares the schema-manager family's `isAuthenticationEnabled()` switch
+(`src/services/keycloak.ts`): empty `PUBLIC_AUTH_KEYCLOAK_*` values in
+`env-config.js` make the router guard pass without any login flow. Two extra
+wrinkles, both handled by our `env-config.local.js`:
+
+1. **Role gates**: components check `GA_VOCABULARY_ADMIN` /
+   `GA_VOCABULARY_VIEWER` roles read from the `token` cookie
+   (`useVocabularyAccess`), and the API client forwards that cookie as the
+   Bearer token. So `env-config.local.js` plants a long-lived `token` cookie
+   whose payload carries `email` + `roles:["GA_VOCABULARY_ADMIN"]` (expiry
+   2100-01-01).
+2. **`PUBLIC_AUTH_DEV_MOCK_TOKEN` doesn't work in production builds** — it's
+   behind `import.meta.env.DEV`, compiled out by Vite — hence the cookie
+   approach instead.
+
+The UI calls the API at relative `/api/`, which `nginx-ui.conf` proxies to the
+backend container — necessary because the backend has no CORS configuration.
 
 ### Example: upload a vocabulary (verified working)
 
@@ -94,11 +118,12 @@ no cached external vocabulary is registered for it, by design.
 
 ## Known limitations
 
-- **UI**: the upstream `simpl-vocabulary-manager-ui` repository is an empty
-  stub (LICENSE + README only) — there is no UI to run; this stack is
-  API-only by necessity, not by choice.
+- **UI branch pin**: the UI's `main` branch is an empty stub upstream; this
+  stack pins `release-1.0.0` (= `develop` + security dependency bumps,
+  2026-06-12). When upstream finally merges to `main`, drop the branch pin in
+  `start.sh`.
 - **Auth**: see above — uploads attribute changes to whatever `email` claim
-  you put in the token.
+  the token carries (UI uploads appear as `local@simpl.local`).
 - The image build pins `PROJECT_RELEASE_VERSION=0.0.1-local` (upstream reads
   the project version from the environment).
 - The pinned `simpl-semantic-validation-sdk` version
