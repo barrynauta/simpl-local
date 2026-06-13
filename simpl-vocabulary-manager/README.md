@@ -19,6 +19,10 @@ validation dependencies, run semantic validation (including a bounded OWL
 reasoner), and serve vocabulary content as `text/turtle`. Metadata lives in
 the `ds_vocabularies` / `ds_external_vocabularies` Fuseki datasets.
 
+For an architecture diagram (component map + upload/validation sequence) and the
+production-vs-local breakdown, see
+[`docs/vocabulary-manager-architecture.md`](docs/vocabulary-manager-architecture.md).
+
 ## Prerequisites
 
 | Tool | Notes |
@@ -115,6 +119,10 @@ no cached external vocabulary is registered for it, by design.
 - **Verified end-to-end 2026-06-12**: `/health` UP, seed data loaded (4 demo
   vocabularies), upload with dummy JWT → HTTP 201 (`SampleVocabulary` v1
   ACTIVE), content roundtrip serves the Turtle back.
+- **UI verified 2026-06-12**: renders at `:4323` with role gates open
+  (admin cookie), `/api/` proxy and SPA deep links working. Gotcha fixed
+  along the way: upstream production builds bake base `/vocabulary-ui/`,
+  overridden to `/` in `Dockerfile.local-ui`.
 
 ## Known limitations
 
