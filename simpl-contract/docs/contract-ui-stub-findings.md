@@ -1,7 +1,7 @@
 # Assessment finding — `contract-ui` is a non-functional stub
 
 **Date:** 2026-06-26
-**Assessor:** Barry Nauta (DG Connect architecture)
+**Assessor:** Barry Nauta 
 **Component:** Contract-Billing → `contract-ui`
 **Source:** `code.europa.eu/simpl/simpl-open/development/contract-billing/contract-ui`,
 branch **`develop`**, commit `c39df8238ec48f154f61bb89f74570f5bb9fa40a`
@@ -69,11 +69,11 @@ and a single page of hardcoded placeholder text.
 ## Significance
 
 This is the same **"form without substance"** pattern previously documented for
-the Notification Service changelogs and the D1.3.2 Architecture Specification: a
+the Notification Service changelogs and the Architecture Specification: a
 deliverable that exists and "passes" structurally (repo present, builds, renders)
 while delivering no usable capability. For Contract-Billing specifically it means
 the component's front-end is **scaffolding, not an implementation** — relevant to
-acceptance (no demonstrable contract UI) and to the SC-3 handover.
+acceptance (no demonstrable contract UI).
 
 ## Reproduction
 
