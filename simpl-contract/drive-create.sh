@@ -32,10 +32,31 @@ echo "==> Producing create-contract-request (negotiationId=${NEG_ID})"
 echo "$REQ" | docker exec -i "$KAFKA" bash -lc \
   "$BIN/kafka-console-producer.sh --bootstrap-server localhost:9092 --producer.config /tmp/client.properties --topic create-contract-request"
 
-echo "==> Reading create-contract-response (up to 20s)..."
-docker exec "$KAFKA" bash -lc \
+echo "==> Reading create-contract-response for ${NEG_ID} (up to 20s)..."
+# The topic is read --from-beginning, so it replays every prior response; we
+# filter to THIS run's negotiationId and pretty-print the rendered contract.
+RESP=$(docker exec "$KAFKA" bash -lc \
   "$BIN/kafka-console-consumer.sh --bootstrap-server localhost:9092 --consumer.config /tmp/client.properties --topic create-contract-response --from-beginning --timeout-ms 20000" \
-  2>/dev/null || true
+  2>/dev/null || true)
 
-echo ""
-echo "(If nothing printed: check 'docker logs simpl-contract' for the consumer + catalogue-stub calls.)"
+MATCH=$(printf '%s\n' "$RESP" | grep -F "$NEG_ID" | tail -1 || true)
+
+if [ -z "$MATCH" ]; then
+  echo "  (no response matched ${NEG_ID} — check 'docker logs simpl-contract')"
+  exit 1
+fi
+
+if command -v python3 >/dev/null 2>&1; then
+  printf '%s' "$MATCH" | python3 -c '
+import sys, json
+outer = json.loads(sys.stdin.read())
+rd = json.loads(outer["responseData"])
+print("  errorCode :", rd.get("errorCode"))
+print("  hash      :", rd.get("hash"))
+print("  rendered contract (humanReadable):")
+print()
+print(rd.get("humanReadable", ""))
+'
+else
+  echo "$MATCH"
+fi

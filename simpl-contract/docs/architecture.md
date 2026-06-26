@@ -20,21 +20,117 @@ EDC-mediated contract negotiation with:
 It is a participant-side service: this stack runs it in `MODE=PROVIDER`
 (the data-provider role); the same image runs as `CONSUMER` elsewhere.
 
-```
-        ┌──────────────────────────────────────────────────────────┐
-        │                 Participant (provider)                    │
-        │                                                            │
-        │   contract-ui ──(HTTP, when integrated)──▶ contract       │
-        │   (React SPA)                              (Spring Boot)   │
-        │       │                                        │          │
-        │       └── Keycloak (OIDC/PKCE) ◀───────────────┘          │
-        │                                                │          │
-        └────────────────────────────────────────────────┼─────────┘
-                                                          │
-        Postgres ── Kafka ── EDC connector ── Signer ── VC-issuer ── Catalogue
+### 1a. Local stack — as built (dependencies stripped)
+
+What this stack actually runs. Real dependencies (signer, vc-issuer, wallet, EDC
+connector, Keycloak) are **not** present — they are replaced by an inert URL, a
+WireMock catalogue, or removed (auth disabled). This is the modularity-proof
+footprint: the backend boots and serves on **Postgres + Kafka alone**.
+
+```mermaid
+flowchart TB
+    Browser["Browser"]
+    Driver["drive-create.sh / curl<br/>(host)"]
+
+    subgraph net["Docker network — simpl-contract"]
+        UI["contract-ui · nginx :4323<br/>React SPA — auth DISABLED<br/>(VITE_PUBLIC_AUTH_MODE)"]
+        BE["contract · Spring Boot :8086<br/>REST + Kafka consumers/producers"]
+        PG[("postgres :5433")]
+        K{{"kafka :9095"}}
+        KUI["kafka-ui :9002"]
+        CAT["catalogue-stub<br/>WireMock"]
+    end
+
+    Browser -->|"http :4323"| UI
+    UI -->|"proxy /contract/* + inject X-Api-Key"| BE
+    Driver -->|"GET /agreements/{id}"| BE
+    Driver -->|"produce create-contract-request"| K
+    BE -->|"JDBC"| PG
+    BE <-->|"consume / produce"| K
+    BE -->|"advancedSearch · self-descriptions"| CAT
+    KUI -.->|"inspect"| K
+    BE -.->|"sign / verify flows only"| INERT["signer · vc-issuer · wallet · EDC<br/>http://stub.invalid — NOT run"]
+
+    classDef real fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef store fill:#ede7f6,stroke:#5e35b1
+    classDef stub fill:#fff8e1,stroke:#f9a825
+    classDef absent fill:#eceff1,stroke:#90a4ae,stroke-dasharray:4 3,color:#546e7a
+    class UI,BE real
+    class PG,K store
+    class CAT,KUI stub
+    class INERT absent
 ```
 
-> The `contract-ui ──▶ contract` arrow is **not yet implemented** — see §5.
+### 1b. Full topology — all dependencies
+
+The real production picture the component assumes. Node colour shows how each
+piece is handled in the local stack (legend below).
+
+```mermaid
+flowchart TB
+    User["Participant user (browser)"]
+
+    subgraph tier1["Tier-1 access / identity"]
+        GW["Tier-1 gateway / ingress"]
+        KC["Keycloak — OIDC/PKCE<br/>realm participant · client frontend-cli"]
+    end
+
+    UI["contract-ui<br/>React/Vite SPA"]
+    BFF["contract-ui-backend<br/>BFF (develop)"]
+
+    subgraph cb["Contract-Billing — contract service"]
+        BE["contract · Spring Boot<br/>REST + Kafka choreography"]
+        CMN["common-components (simpl-common)<br/>X-Api-Key auth · ExternalRequestService · error handling"]
+    end
+
+    PG[("Postgres")]
+    K{{"Kafka"}}
+    VAULT["Vault / secrets<br/>(API keys)"]
+
+    subgraph deps["Contract-Billing dependency services"]
+        SIGN["signing-service<br/>/v1/documents/sign"]
+        VC["vc-issuer-service<br/>/v1/credentials/issue · /verify"]
+        WAL["wallet-service<br/>/v1/wallets · /credentials"]
+    end
+
+    CAT["Federated Catalogue<br/>advancedSearch · self-descriptions/{did}"]
+    EDC["EDC connector (counterpart)<br/>drives sign/verify/create over Kafka · /management/v3"]
+
+    User --> GW --> UI
+    UI -->|"login"| KC
+    UI -->|"REST + Bearer"| BFF --> BE
+    BE --- CMN
+    BE -->|"JDBC"| PG
+    BE <-->|"request / response topics"| K
+    EDC <-->|"sign-contract-request, …"| K
+    BE -->|"X-Api-Key"| SIGN
+    BE -->|"X-Api-Key"| VC
+    BE -->|"X-Api-Key"| WAL
+    BE -->|"contract data"| CAT
+    BE -->|"contract agreement"| EDC
+    CMN -.->|"reads"| VAULT
+
+    classDef real fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef store fill:#ede7f6,stroke:#5e35b1
+    classDef stub fill:#fff8e1,stroke:#f9a825
+    classDef absent fill:#eceff1,stroke:#90a4ae,stroke-dasharray:4 3,color:#546e7a
+    class BE,CMN,UI real
+    class PG,K store
+    class CAT stub
+    class SIGN,VC,WAL,EDC,GW,KC,BFF,VAULT absent
+```
+
+**Legend / local-stack status**
+
+| Colour | Meaning | In this stack |
+|---|---|---|
+| 🟩 green | runs for real | `contract` backend (+`simpl-common` bundled in the jar), `contract-ui` (+ overlay), Postgres, Kafka |
+| 🟨 amber | stubbed | Federated Catalogue → WireMock `catalogue-stub`; Kafka-UI is a viewer |
+| ⬜ grey (dashed) | absent / bypassed | Keycloak + Tier-1 gateway (auth disabled; nginx stands in), signer / vc-issuer / wallet / EDC connector (not run → `stub.invalid`), `contract-ui-backend` (not run), Vault (API key via env) |
+
+> The `contract-ui → contract` read path **is** implemented in this stack (via
+> `ui-overlay/`); the create/sign **write** path is not — it needs the grey
+> services above. See §5.
 
 ---
 
