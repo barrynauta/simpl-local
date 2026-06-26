@@ -26,7 +26,13 @@ It is the runtime service behind contract establishment (R17 family).
 
 See [`docs/architecture.md`](docs/architecture.md) for the component context,
 runtime dependency graph, boot-vs-functional dependencies, the Kafka topic map,
-and the UI integration gap.
+and the UI integration gap. It opens with **two Mermaid diagrams**:
+
+- **§1a — Local stack, as built (dependencies stripped):** what actually runs
+  (contract + Postgres + Kafka + nginx UI + WireMock catalogue-stub).
+- **§1b — Full topology (all dependencies):** the production picture — Keycloak/
+  Tier-1, common-components, signer, vc-issuer, wallet, catalogue, EDC connector —
+  colour-coded by how each is handled locally (real / stubbed / absent).
 
 ---
 

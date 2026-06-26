@@ -60,18 +60,6 @@ flowchart TB
     class CAT,KUI stub
     class INERT absent
 ```
-        ┌──────────────────────────────────────────────────────────┐
-        │                 Participant (provider)                   │
-        │                                                          │
-        │   contract-ui ──(HTTP, when integrated)──▶ contract      │
-        │   (React SPA)                              (Spring Boot) │
-        │       │                                        │         │
-        │       └── Keycloak (OIDC/PKCE) ◀───────────────┘         │
-        │                                                │         │
-        └────────────────────────────────────────────────┼─────────┘
-                                                         │
-        Postgres ── Kafka ── EDC connector ── Signer ── VC-issuer ── Catalogue
-```
 
 ### 1b. Full topology — all dependencies
 
