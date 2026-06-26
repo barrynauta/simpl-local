@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Local Maven settings for building the contract backend.
+
+  The upstream ci_settings.xml authenticates the gitlab-maven server with a
+  CI Job-Token (only valid inside a GitLab pipeline). For a local build we
+  instead send a Personal Access Token via the "Private-Token" header, taken
+  from the GITLAB_TOKEN env var passed as a Docker build arg.
+
+  If GITLAB_TOKEN is empty, Maven still attempts the repositories anonymously,
+  which succeeds for any publicly-readable package in the Simpl-Open registry.
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
+  <servers>
+    <server>
+      <id>gitlab-maven</id>
+      <configuration>
+        <httpHeaders>
+          <property>
+            <name>Private-Token</name>
+            <value>${env.GITLAB_TOKEN}</value>
+          </property>
+        </httpHeaders>
+      </configuration>
+    </server>
+  </servers>
+</settings>

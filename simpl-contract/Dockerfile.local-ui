@@ -1,0 +1,47 @@
+# Multi-stage local build for contract-ui (the develop-branch React/Vite SPA).
+#
+# NOTE: contract-ui is a non-integrated shell — it was scaffolded from the
+# Monitoring front-end (package.json name is still "monitoring-reporting-fe")
+# and contains no code that calls the contract backend. This image lets you
+# SEE it render; it does not give a working front-to-back flow.
+#
+# Keycloak settings are BUILD-TIME (Vite bakes import.meta.env into the bundle),
+# so they are passed as build args and exported before `npm run build`.
+#
+# Build context: the local stack root (simpl-contract/).
+# Requires repos/contract-ui (checked out on `develop`) to be populated by start.sh.
+
+# ─── Stage 1: Vite build ──────────────────────────────────────────────────────
+FROM node:22-alpine AS builder
+
+ARG VITE_PUBLIC_AUTH_MODE=keycloak
+ARG VITE_PUBLIC_AUTH_KEYCLOAK_SERVER_URL
+ARG VITE_PUBLIC_AUTH_KEYCLOAK_REALM
+ARG VITE_PUBLIC_AUTH_KEYCLOAK_CLIENT_ID
+ENV VITE_PUBLIC_AUTH_MODE=${VITE_PUBLIC_AUTH_MODE}
+ENV VITE_PUBLIC_AUTH_KEYCLOAK_SERVER_URL=${VITE_PUBLIC_AUTH_KEYCLOAK_SERVER_URL}
+ENV VITE_PUBLIC_AUTH_KEYCLOAK_REALM=${VITE_PUBLIC_AUTH_KEYCLOAK_REALM}
+ENV VITE_PUBLIC_AUTH_KEYCLOAK_CLIENT_ID=${VITE_PUBLIC_AUTH_KEYCLOAK_CLIENT_ID}
+
+WORKDIR /build
+COPY repos/contract-ui/package.json ./
+# Lockfile may or may not be present on develop; fall back to `npm install`.
+COPY repos/contract-ui/package-lock.jso[n] ./
+RUN if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; \
+    else npm install --no-audit --no-fund; fi
+
+COPY repos/contract-ui/ ./
+
+# Overlay the local-stack patch (configurable auth switch) over the pristine
+# clone — see ui-overlay/README.md.
+COPY ui-overlay/ ./
+
+RUN npm run build
+
+# ─── Stage 2: nginx serving ───────────────────────────────────────────────────
+FROM nginxinc/nginx-unprivileged:1
+
+COPY --chown=nginx nginx.conf /etc/nginx/nginx.conf
+COPY --from=builder --chown=nginx /build/dist /usr/share/nginx/html
+
+EXPOSE 8080

@@ -1,0 +1,179 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: simpl-contract-postgres
+    environment:
+      POSTGRES_DB: contract
+      POSTGRES_USER: contract
+      POSTGRES_PASSWORD: contract
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    networks:
+      - simpl-contract-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U contract -d contract"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  kafka:
+    image: bitnamilegacy/kafka:3.3.2
+    container_name: simpl-contract-kafka
+    # SASL_PLAINTEXT / PLAIN is required: application.yaml resolves
+    # security.protocol=SASL_PLAINTEXT and sasl.mechanism=PLAIN. Credentials
+    # are fake (simpl / simpl-local) — they satisfy the handshake only, there
+    # is no real security boundary in the local stack.
+    environment:
+      KAFKA_CFG_NODE_ID: 0
+      KAFKA_CFG_CONTROLLER_BROKER_ID: 0
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:SASL_PLAINTEXT,PLAINTEXT:SASL_PLAINTEXT
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CFG_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_INTER_BROKER_USER: simpl
+      KAFKA_INTER_BROKER_PASSWORD: simpl-local
+      KAFKA_CLIENT_USERS: simpl
+      KAFKA_CLIENT_PASSWORDS: simpl-local
+    ports:
+      - "${KAFKA_HOST_PORT:-9095}:9094"
+    networks:
+      - simpl-contract-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: simpl-contract-kafka-ui
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: dev-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM: PLAIN
+      KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="simpl" password="simpl-local";'
+    ports:
+      - "${KAFKA_UI_PORT:-9002}:8080"
+    networks:
+      - simpl-contract-net
+
+  # ── Catalogue stub (Step 2: create-contract-data round-trip) ──────────────
+  # WireMock standing in for the federated catalogue. The contract backend's
+  # CatalogConnector calls it during create-contract-data:
+  #   POST /v1/selfDescriptions/advancedSearch  → returns a claimsGraphUri (DID)
+  #   GET  /self-descriptions/{did}             → returns a CatalogRecordDto
+  # Responses are crafted to match the DTOs the backend deserialises + renders.
+  catalogue-stub:
+    image: wiremock/wiremock:3.9.2
+    container_name: simpl-contract-catalogue-stub
+    command: ["--port", "8080", "--disable-banner"]
+    volumes:
+      - ./catalogue-stub/mappings:/home/wiremock/mappings:ro
+    networks:
+      - simpl-contract-net
+
+  contract:
+    image: simpl-contract:local
+    container_name: simpl-contract
+    # Built by start.sh from Dockerfile.local (multi-stage Maven + runtime).
+    # Runs the env-driven `default` profile (NOT application-local.yaml, which
+    # hardcodes localhost and only works for a host-run jar).
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      catalogue-stub:
+        condition: service_started
+    environment:
+      # ── Datasource ──
+      DB_URL: jdbc:postgresql://postgres:5432/contract
+      DB_USER: contract
+      DBPASSWORD: contract
+
+      # ── Kafka ──
+      KAFKA_BOOTSTRAP_SERVER: kafka:9092
+      KAFKA_CLIENT_USER: simpl
+      KAFKA_CLIENT_PASSWORDS: simpl-local
+      KAFKA_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      KAFKA_SASL_MECHANISM: PLAIN
+      KAFKA_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="simpl" password="simpl-local";'
+
+      # ── Kafka topics (names mirror application-local.yaml) ──
+      TOPIC_SIGN_CONTRACT_REQUEST: sign-contract-req
+      TOPIC_SIGN_CONTRACT_REQUEST_DLT: sign-contract-req-dlt
+      TOPIC_SIGN_CONTRACT_RESPONSE: sign-contract-resp
+      TOPIC_SIGN_CONTRACT_RESPONSE_DLT: sign-contract-resp-dlt
+      TOPIC_STATUS_UPDATE: status-update
+      TOPIC_STATUS_UPDATE_DLT: status-update-dlt
+      TOPIC_SEARCH_CONTRACT_REQUEST: search-contract-request
+      TOPIC_SEARCH_CONTRACT_REQUEST_DLT: search-contract-request-dlt
+      TOPIC_SEARCH_CONTRACT_RESPONSE: search-contract-response
+      TOPIC_SEARCH_CONTRACT_RESPONSE_DLT: search-contract-response-dlt
+      TOPIC_CREATE_CONTRACT_REQUEST: create-contract-request
+      TOPIC_CREATE_CONTRACT_REQUEST_DLT: create-contract-request-dlt
+      TOPIC_CREATE_CONTRACT_RESPONSE: create-contract-response
+      TOPIC_CREATE_CONTRACT_RESPONSE_DLT: create-contract-response-dlt
+      TOPIC_VERIFICATION_REQUEST: verification-request
+      TOPIC_VERIFICATION_REQUEST_DLT: verification-request-dlt
+      TOPIC_VERIFICATION_RESPONSE: verification-response
+      TOPIC_VERIFICATION_RESPONSE_DLT: verification-response-dlt
+
+      # ── External services ──
+      # These are called only on specific contract flows (sign / verify /
+      # negotiate / search), NOT at boot. They point at inert placeholders so
+      # the service starts clean; wire real stubs (or the simpl-edc stack) to
+      # exercise those flows. See README "Known limitations".
+      MODE: PROVIDER
+      API_KEY: apikey
+      SIGNER_URL: http://stub.invalid:8083/signingService
+      VC_ISSUER_URL: http://stub.invalid:8084/vcIssuerService
+      WALLET_URL: http://stub.invalid:8085/wallet
+      STUBS_URL: http://stub.invalid:8091
+      EDC_URL: http://stub.invalid:8091
+      CATALOG_SEARCH_URL: http://catalogue-stub:8080/
+      CATALOG_GET_URL: http://catalogue-stub:8080/
+      KEY_ALIAS: actor_1
+      TSA_URL: ""
+      SIGNER_API_KEY: apikey
+      VC_CLIENT_ID: actor_1
+      VC_ISSUER_API_KEY: apikey
+      VC_CONTEXT_URL: ""
+      WALLET_API_KEY: apikey
+
+      SPRING_PROFILES_ACTIVE: default
+    ports:
+      - "${CONTRACT_API_PORT:-8086}:8080"
+    networks:
+      - simpl-contract-net
+    healthcheck:
+      # Health is exposed at management base-path /contract/v1 and only checks
+      # diskspace + db, so it goes UP once Postgres is reachable.
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/contract/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  contract-ui:
+    image: simpl-contract-ui:local
+    container_name: simpl-contract-ui
+    # Built by start.sh from Dockerfile.local-ui (Vite build → nginx).
+    # NON-INTEGRATED SHELL: the UI has no code that calls the contract backend
+    # (httpClient is unused, no API base URL). nginx still proxies /contract/*
+    # to the backend so the wiring is ready when the UI gains integration.
+    depends_on:
+      contract:
+        condition: service_started
+    ports:
+      - "${UI_PORT:-4323}:8080"
+    networks:
+      - simpl-contract-net
+
+networks:
+  simpl-contract-net:
+    driver: bridge

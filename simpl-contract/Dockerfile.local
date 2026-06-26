@@ -1,0 +1,61 @@
+# Multi-stage local build for the contract backend (eu.europa.ec.simpl:CONTRACTS).
+#
+# The upstream Dockerfile is single-stage (copies a pre-built JAR from CI and
+# adds a remote OpenTelemetry agent pointing at dev.simpl-europe.eu). This
+# replaces it with a self-contained build that produces the JAR locally and
+# runs plain java -jar (no remote OTel calls).
+#
+# Dependency chain:
+#   eu.europa.ec.simpl:simpl-common:3.3.0  ← Maven artifact from the Simpl-Open
+#                                             GitLab Package Registry (group 4086)
+#   eu.europa.ec.simpl:CONTRACTS           ← the target
+#
+# simpl-common is resolved FIRST anonymously; if the registry returns 401 the
+# build re-tries with a Private-Token header populated from GITLAB_TOKEN (a
+# code.europa.eu PAT with read_api). See maven-settings.local.xml.
+#
+# Build context: the local stack root (simpl-contract/).
+# Requires repos/contract to be populated by start.sh first.
+# Built by start.sh — do not run docker build directly.
+
+# ─── Stage 1: Maven build ─────────────────────────────────────────────────────
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+
+ARG GITLAB_TOKEN=""
+ENV GITLAB_TOKEN=${GITLAB_TOKEN}
+
+# The pom declares its registry as ${CI_API_V4_URL}/groups/4086/-/packages/maven.
+# CI_API_V4_URL is a GitLab-CI-only variable; outside a pipeline it is undefined,
+# so Maven would try to fetch from a URL containing the literal placeholder and
+# fail. Define it here so the URL resolves to the real EU registry root.
+ARG CI_API_V4_URL="https://code.europa.eu/api/v4"
+ENV CI_API_V4_URL=${CI_API_V4_URL}
+
+WORKDIR /build
+COPY repos/contract /build/contract
+COPY maven-settings.local.xml /build/settings.xml
+
+# PROJECT_RELEASE_VERSION is set in case the pom references it as the artifact
+# version (as sibling Simpl components do); harmless if unused.
+# CI_API_V4_URL is passed both as env (above) and as a -D system property so the
+# pom's <repository><url> interpolates correctly during dependency resolution.
+RUN cd /build/contract && \
+    chmod +x mvnw && \
+    PROJECT_RELEASE_VERSION=local \
+    ./mvnw -B -s /build/settings.xml \
+      -DCI_API_V4_URL="${CI_API_V4_URL}" \
+      -DskipTests -q clean package
+
+# ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
+FROM eclipse-temurin:21-jdk-alpine
+
+COPY --from=builder /build/contract/target/*.jar /simpl-contracts.jar
+
+RUN mkdir /files && chmod 775 /files && \
+    adduser -u 8877 -D dockeruser && \
+    chown -R dockeruser:dockeruser /files
+
+USER dockeruser
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "/simpl-contracts.jar"]
