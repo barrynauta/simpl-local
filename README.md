@@ -171,6 +171,9 @@ System minimums vary per subproject. Allocate at least 8 GB to Docker if running
 ```
 simpl-local/
 ├── README.md                         This file — umbrella index.
+├── documentation/                    Repo-wide reference docs (not tied to one stack).
+│   ├── README.md                     Documentation index.
+│   └── simpl-dssc-mapping.md         Simpl-Open ↔ DSSC Blueprint V3.0 mapping.
 ├── simpl-catalogue/                  Federated Catalogue local stack.
 │   ├── README.md                     Walkthrough, status, architecture observations.
 │   ├── docker-compose.yml
@@ -198,6 +201,14 @@ simpl-local/
 ```
 
 Each subproject was previously a standalone repository (`simpl-catalogue-local`, `simpl-notification-service-local`, `simpl-orchestration-local`) and was absorbed into this monorepo via `git subtree add`, preserving full commit history. The original repositories on GitHub have been archived. `simpl-schema-manager/` was added directly into the monorepo (no prior standalone repo).
+
+---
+
+## Documentation
+
+Cross-cutting reference material lives in [`documentation/`](./documentation/README.md). Per-stack docs stay under each subproject's own `docs/` folder.
+
+- [`documentation/simpl-dssc-mapping.md`](./documentation/simpl-dssc-mapping.md) — full mapping of Simpl-Open onto the DSSC Data Spaces Blueprint V3.0 (key concepts and building blocks), with diagrams, coverage ratings, divergences, and standards alignment.
 
 ---
 
