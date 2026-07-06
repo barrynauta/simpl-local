@@ -1,0 +1,43 @@
+{
+  "name": "catalogue-adapter (tier2 /adapter): single resource description — SearchAPISelfDescriptionDocument (VC-shaped) for the details overlay",
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/adapter/participants/resourceDescriptions/[^/]+"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "@context": ["https://www.w3.org/2018/credentials/v1"],
+      "type": "VerifiableCredential",
+      "issuer": "did:web:sd-local-participant",
+      "issuanceDate": "2026-07-01T09:00:00Z",
+      "credentialSubject": {
+        "@id": "local:did:sample-resource-1",
+        "rdf:type": { "@id": "simpl:DataOffering" },
+        "simpl:generalServiceProperties": {
+          "rdf:type": { "@id": "simpl:GeneralServiceProperties" },
+          "simpl:name": "Sample stubbed resource description",
+          "simpl:description": "Canned entry served by the peer-stubs WireMock",
+          "simpl:offeringType": "data",
+          "simpl:sharingMethodId": "MINIO_S3",
+          "simpl:inLanguage": "en",
+          "dct:identifier": "urn:simpl-local:data-offering:sample-resource-1",
+          "schema:version": "1"
+        },
+        "dct:conformsTo": {
+          "@type": "dct:Standard",
+          "dct:schemaName": "DataSchema",
+          "dct:hasVersion": "1.0.0"
+        }
+      },
+      "proof": {
+        "type": "JsonWebSignature2020",
+        "created": "2026-07-01T09:00:00Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:sd-local-participant#key-1",
+        "jws": "stub-signature-not-cryptographically-valid"
+      }
+    }
+  }
+}

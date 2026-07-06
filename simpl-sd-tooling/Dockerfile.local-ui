@@ -1,0 +1,50 @@
+# Local build for simpl-sd-ui (Astro SSR, Node standalone adapter).
+#
+# Mirrors the upstream Dockerfile (node:22, npm install, npm run build, run
+# dist/server/entry.mjs) with two local additions:
+#   - .npmrc generated at build time so @simpl/vue-components resolves from
+#     the code.europa.eu npm registry. Anonymous resolution works for public
+#     packages (proven by the simpl-vocabulary-manager stack); GITLAB_TOKEN
+#     is only a fallback.
+#   - USE_MOCK_APIS is a BUILD-TIME switch (Vite inlines import.meta.env in
+#     the server bundle), and upstream treats ANY non-empty value as true
+#     (`=== 'true' || !!value` in serviceSelector.ts) — the string "false"
+#     ENABLES mocks. So the variable must be entirely ABSENT during
+#     `npm run build` for real backends. The build args are therefore named
+#     MOCK_APIS / MOCK_IDENTITY_ATTRIBUTES (ARGs leak into the RUN env, so
+#     they must not shadow the real names) and are only exported as the real
+#     variables when explicitly "true".
+#
+# PUBLIC_* backend URLs are NOT baked in: the server reads process.env at
+# request time, so they come from docker-compose environment.
+#
+# Build context: the stack root (simpl-sd-tooling/).
+# Requires repos/simpl-sd-ui to be populated by start.sh first.
+# Built by start.sh — do not run docker build directly.
+
+FROM node:22
+
+ARG GITLAB_TOKEN=""
+ARG MOCK_APIS=false
+ARG MOCK_IDENTITY_ATTRIBUTES=false
+
+WORKDIR /app
+COPY repos/simpl-sd-ui /app
+
+RUN printf '@simpl:registry=https://code.europa.eu/api/v4/packages/npm/\n' > /app/.npmrc && \
+    if [ -n "$GITLAB_TOKEN" ]; then \
+      printf '//code.europa.eu/api/v4/packages/npm/:_authToken=%s\n' "$GITLAB_TOKEN" >> /app/.npmrc; \
+    fi && \
+    npm install --ignore-scripts
+
+RUN if [ "$MOCK_APIS" = "true" ]; then export USE_MOCK_APIS=true; fi; \
+    if [ "$MOCK_IDENTITY_ATTRIBUTES" = "true" ]; then export USE_MOCK_IDENTITY_ATTRIBUTES=true; fi; \
+    npm run build
+
+ENV HOST=0.0.0.0
+ENV PORT=4322
+ENV NODE_ENV=production
+EXPOSE 4322
+
+USER node
+CMD ["node", "./dist/server/entry.mjs"]

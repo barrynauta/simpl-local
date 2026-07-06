@@ -1,0 +1,13 @@
+{
+  "name": "vc-issuer: issue credential — wraps the submitted SD in an unsigned mock VC (finalize step)",
+  "request": {
+    "method": "POST",
+    "urlPath": "/v1/credentials/issue"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "body": "{\"@context\":[\"https://www.w3.org/2018/credentials/v1\"],\"id\":\"urn:uuid:{{randomValue type='UUID'}}\",\"type\":[\"VerifiableCredential\"],\"issuer\":\"did:web:sd-local-vc-issuer\",\"issuanceDate\":\"2026-01-01T00:00:00Z\",\"expirationDate\":\"{{jsonPath request.body '$.expirationDate'}}\",\"credentialSubject\":{{{jsonPath request.body '$.credentialSubject'}}},\"proof\":{\"type\":\"JsonWebSignature2020\",\"created\":\"2026-01-01T00:00:00Z\",\"proofPurpose\":\"assertionMethod\",\"verificationMethod\":\"did:web:sd-local-vc-issuer#key-1\",\"jws\":\"stub-signature-not-cryptographically-valid\"}}",
+    "transformers": ["response-template"]
+  }
+}

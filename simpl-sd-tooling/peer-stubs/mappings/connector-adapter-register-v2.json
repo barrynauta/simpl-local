@@ -1,0 +1,13 @@
+{
+  "name": "connector-adapter: register v2 — echoes $.sdJson back with the EDC fields the real adapter adds (edcConnector, edcRegistration), which the final SHACL validation requires",
+  "request": {
+    "method": "POST",
+    "urlPath": "/v2/selfDescriptions/enriched"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "body": "{\"simpl:edcConnector\":{\"simpl:providerEndpointURL\":\"http://peer-stubs:8080/edc\"},\"simpl:edcRegistration\":{\"simpl:contractDefinitionId\":\"stub-contract-definition-1\",\"simpl:servicePolicyId\":\"stub-service-policy-1\",\"simpl:accessPolicyId\":\"stub-access-policy-1\",\"simpl:assetId\":\"stub-asset-1\"},{{{substring (jsonPath request.body '$.sdJson') 1}}}",
+    "transformers": ["response-template"]
+  }
+}

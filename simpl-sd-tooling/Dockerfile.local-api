@@ -1,0 +1,46 @@
+# Multi-stage local build for sdtooling-api-be.
+#
+# The upstream Dockerfile copies a pre-built target/*.jar (built by CI), so it
+# cannot be used directly. This builds the jar in stage 1 with the same Maven
+# registry handling as the other simpl-local stacks:
+#   - CI_API_V4_URL is a GitLab-CI-only variable interpolated in the pom's
+#     <repository><url>; define it so the URL resolves outside a pipeline.
+#   - eu.europa.ec.simpl:* artifacts resolve anonymously from group 4086;
+#     GITLAB_TOKEN (code.europa.eu PAT, read_api) is only a fallback.
+#
+# Build context: the stack root (simpl-sd-tooling/).
+# Requires repos/sdtooling-api-be to be populated by start.sh first.
+# Built by start.sh — do not run docker build directly.
+
+# ─── Stage 1: Maven build ─────────────────────────────────────────────────────
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+
+ARG GITLAB_TOKEN=""
+ENV GITLAB_TOKEN=${GITLAB_TOKEN}
+ARG CI_API_V4_URL="https://code.europa.eu/api/v4"
+ENV CI_API_V4_URL=${CI_API_V4_URL}
+
+WORKDIR /build
+COPY repos/sdtooling-api-be /build/src
+COPY maven-settings.local.xml /build/settings.xml
+
+# The pom's <version> is ${env.PROJECT_RELEASE_VERSION} (CI-only variable) —
+# Maven refuses a non-constant version unless the env var exists.
+RUN cd /build/src && \
+    PROJECT_RELEASE_VERSION=local \
+    mvn -B -s /build/settings.xml \
+      -DCI_API_V4_URL="${CI_API_V4_URL}" \
+      -DskipTests clean package
+
+# ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
+FROM eclipse-temurin:21-jre-alpine
+
+COPY --from=builder /build/src/target/*.jar /app.jar
+
+RUN adduser -u 8877 -D simpluser && \
+    mkdir -p /data/schemas && chown -R simpluser:simpluser /data
+
+USER simpluser
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "/app.jar"]
