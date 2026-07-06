@@ -6,14 +6,14 @@ cd "$SCRIPT_DIR"
 REBUILD=false
 for arg in "$@"; do
   case "$arg" in
-    --rebuild) REBUILD=true ;;
+ --rebuild) REBUILD=true ;;
   esac
 done
 
 # ── 1. Environment ──────────────────────────────────────────────────────────
 if [ ! -f .env ]; then
   cp .env.example .env
-  echo ".env created from .env.example — edit ports/token if needed"
+  echo ".env created from .env.example - edit ports/token if needed"
 fi
 # shellcheck disable=SC1091
 source .env 2>/dev/null || true
@@ -34,7 +34,7 @@ clone_branch() {
     git clone --branch "$branch" "$url" "$dir"
   else
     echo "Pulling latest $label..."
-    git -C "$dir" pull --ff-only || echo "  (pull skipped — local changes or detached HEAD)"
+    git -C "$dir" pull --ff-only || echo "  (pull skipped - local changes or detached HEAD)"
   fi
 }
 
@@ -71,10 +71,10 @@ build_image() {
   if [ -z "$(docker images -q "$image" 2>/dev/null)" ] || [ "$REBUILD" = true ]; then
     echo "Building $label..."
     if ! docker build \
-        --build-arg GITLAB_TOKEN="${GITLAB_TOKEN:-}" \
+ --build-arg GITLAB_TOKEN="${GITLAB_TOKEN:-}" \
         "$@" \
-        -f "$SCRIPT_DIR/$dockerfile" \
-        -t "$image" \
+ -f "$SCRIPT_DIR/$dockerfile" \
+ -t "$image" \
         "$SCRIPT_DIR/"; then
       echo "" >&2
       echo "$label build failed. Most common cause: an eu.europa.ec.simpl artifact" >&2
@@ -94,8 +94,8 @@ build_image simpl-sdtooling-api:local        Dockerfile.local-api        "SD Too
 # MOCK_APIS defaults to false; upstream treats ANY non-empty USE_MOCK_APIS as
 # true, so the Dockerfile only exports it when the arg is exactly "true".
 build_image simpl-sd-ui:local                Dockerfile.local-ui         "SD UI (npm install + astro build on first run)" \
-  --build-arg MOCK_APIS=false \
-  --build-arg MOCK_IDENTITY_ATTRIBUTES=false
+ --build-arg MOCK_APIS=false \
+ --build-arg MOCK_IDENTITY_ATTRIBUTES=false
 
 # ── 6. Start services ────────────────────────────────────────────────────────
 echo "Starting services..."
@@ -109,7 +109,7 @@ wait_healthy() {
     sleep 3
     elapsed=$((elapsed + 3))
     if [ "$elapsed" -ge "$timeout" ]; then
-      echo "  (not healthy after ${timeout}s — check: docker logs $container)"
+      echo "  (not healthy after ${timeout}s - check: docker logs $container)"
       return 1
     fi
   done

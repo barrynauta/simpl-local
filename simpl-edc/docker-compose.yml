@@ -1,0 +1,91 @@
+services:
+  provider-db:
+    image: postgres:16
+    container_name: simpl-edc-provider-db
+    environment:
+      POSTGRES_USER: ${EDC_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${EDC_DB_PASSWORD:-postgres}
+    ports:
+      - "${PROVIDER_DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  consumer-db:
+    image: postgres:16
+    container_name: simpl-edc-consumer-db
+    environment:
+      POSTGRES_USER: ${EDC_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${EDC_DB_PASSWORD:-postgres}
+    ports:
+      - "${CONSUMER_DB_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: simpl-edc-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-minioadmin}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      # Console remapped to 9090 — schema-manager's Kafka UI claims 9001.
+      - "${MINIO_CONSOLE_PORT:-9090}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "mc ready local || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: simpl-edc-minio-init
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: ["/bin/sh", "/init-minio.sh"]
+    volumes:
+      - ./scripts/init-minio.sh:/init-minio.sh:ro
+      - ./samples/example-s3.txt:/seed/example-s3.txt:ro
+
+  provider:
+    image: simpl-edc-connector:local
+    container_name: simpl-edc-provider
+    depends_on:
+      provider-db:
+        condition: service_healthy
+    volumes:
+      - ./config/provider.properties:/config/connector.properties:ro
+    ports:
+      - "19191:19191"  # api
+      - "19192:19192"  # control
+      - "19193:19193"  # management
+      - "19194:19194"  # dsp protocol
+      - "19291:19291"  # public (dataplane)
+
+  consumer:
+    image: simpl-edc-connector:local
+    container_name: simpl-edc-consumer
+    depends_on:
+      consumer-db:
+        condition: service_healthy
+    volumes:
+      - ./config/consumer.properties:/config/connector.properties:ro
+    ports:
+      - "29191:29191"  # api
+      - "29192:29192"  # control
+      - "29193:29193"  # management
+      - "29194:29194"  # dsp protocol
+      - "29291:29291"  # public (dataplane)
+
+volumes:
+  minio-data:

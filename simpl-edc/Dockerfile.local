@@ -1,0 +1,30 @@
+# Local-evaluation build for the Simpl EDC connector.
+# One image runs as either provider or consumer — the role is decided entirely
+# by the config file mounted at /config/connector.properties (EDC reads it via
+# the -Dedc.fs.config system property + the configuration-filesystem extension).
+# Build context: the stack root. Requires repos/simpl-edc (cloned by start.sh).
+
+# ─── Stage 1: Maven build ─────────────────────────────────────────────────────
+# EDC pulls a large dependency tree; the first build is slow (~10 min).
+# Java 21: the project compiles to 17, but the vendored Gaia-X MinIO S3
+# extension (libs/*.jar) is compiled for Java 21 — a 17 runtime fails at boot
+# with UnsupportedClassVersionError on fr.gxfs.edc.extension.s3.
+FROM maven:3.9-eclipse-temurin-21 AS build
+
+# Upstream pom reads its version from the environment.
+ENV PROJECT_RELEASE_VERSION=0.0.1-local
+
+WORKDIR /build
+COPY repos/simpl-edc/ ./
+# spring-boot-maven-plugin repackage produces target/basic-connector.jar
+# (finalName basic-connector, mainClass EDC BaseRuntime). Tests need live infra.
+RUN mvn -q -DskipTests package
+
+# ─── Stage 2: runtime ─────────────────────────────────────────────────────────
+FROM eclipse-temurin:21-jre
+
+COPY --from=build /build/target/basic-connector.jar /app/basic-connector.jar
+
+# Config is mounted at runtime (provider.properties / consumer.properties).
+# JVM args must precede -jar so EDC sees edc.fs.config at boot.
+ENTRYPOINT ["java", "-Dedc.fs.config=/config/connector.properties", "-jar", "/app/basic-connector.jar"]

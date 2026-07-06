@@ -17,21 +17,21 @@ services:
     container_name: simpl-sd-tooling-peer-stubs
     command: ["--port", "8080", "--disable-banner", "--global-response-templating"]
     volumes:
-      - ./peer-stubs/mappings:/home/wiremock/mappings:ro
+ - ./peer-stubs/mappings:/home/wiremock/mappings:ro
     ports:
-      - "${STUBS_PORT:-8089}:8080"
+ - "${STUBS_PORT:-8089}:8080"
     networks:
-      - simpl-sd-tooling-net
+ - simpl-sd-tooling-net
 
-  # ── SD Validation API — stateless SHACL/JSON-schema validator ─────────────
+  # ── SD Validation API - stateless SHACL/JSON-schema validator ─────────────
   # No datastores, no auth, no outbound calls. Leaf service called by the api.
   sdtooling-validation:
     image: simpl-sdtooling-validation:local
     container_name: simpl-sd-tooling-validation
     ports:
-      - "${VALIDATION_API_PORT:-8088}:8080"
+ - "${VALIDATION_API_PORT:-8088}:8080"
     networks:
-      - simpl-sd-tooling-net
+ - simpl-sd-tooling-net
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/status || exit 1"]
       interval: 10s
@@ -39,7 +39,7 @@ services:
       retries: 12
       start_period: 20s
 
-  # ── SD Tooling API — the Creation Wizard backend ───────────────────────────
+  # ── SD Tooling API - the Creation Wizard backend ───────────────────────────
   # Schemas come from a host-mounted directory (seeded by start.sh from the
   # upstream repo's samples) instead of the schema-sync-adapter, which would
   # drag in Postgres + Kafka + IAA for no local benefit.
@@ -78,16 +78,16 @@ services:
       CATALOGUE_ADAPTER_MOCK_REVOKE_RESOURCE_DESCRIPTION: "true"
       CATALOGUE_ADAPTER_MOCK_GET_ALL_RESOURCE_DESCRIPTIONS_BY_VERSION: "true"
 
-      # vc-issuer credentials: @Value with no default — must exist to boot.
+      # vc-issuer credentials: @Value with no default - must exist to boot.
       # Values are arbitrary; the WireMock vc-issuer ignores them.
       VC_ISSUER_API_KEY: local-api-key
       VC_ISSUER_CLIENT_ID: sd-local
     volumes:
-      - ./schemas:/data/schemas
+ - ./schemas:/data/schemas
     ports:
-      - "${SDTOOLING_API_PORT:-8087}:8080"
+ - "${SDTOOLING_API_PORT:-8087}:8080"
     networks:
-      - simpl-sd-tooling-net
+ - simpl-sd-tooling-net
     healthcheck:
       # /status is on the bearer-token skip list upstream, so this works even
       # if the auth bypass is ever switched off.
@@ -97,7 +97,7 @@ services:
       retries: 12
       start_period: 30s
 
-  # ── simpl-sd-ui — Astro SSR (Node) frontend on 4322 ───────────────────────
+  # ── simpl-sd-ui - Astro SSR (Node) frontend on 4322 ───────────────────────
   # PUBLIC_* vars are read from process.env AT REQUEST TIME by the BFF, so
   # service-name URLs work: the browser only ever calls same-origin /api/*.
   # Keycloak is disabled the upstream-supported way: all three PUBLIC_AUTH_*
@@ -120,9 +120,9 @@ services:
       # out of scope (see README "Known limitations").
       PUBLIC_DEPLOYMENT_SCRIPT_UPLOAD_URL: ""
     ports:
-      - "${UI_PORT:-4324}:4322"
+ - "${UI_PORT:-4324}:4322"
     networks:
-      - simpl-sd-tooling-net
+ - simpl-sd-tooling-net
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:4322/status').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))"]
       interval: 10s

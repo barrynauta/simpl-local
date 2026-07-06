@@ -118,35 +118,81 @@ Infrastructure Provider (blue), reflecting its cloud-to-edge mandate.*
 
 ## 3. Building blocks
 
-### 3.1 Technical building block coverage at a glance
+### 3.1 Building-block coverage at a glance (full blueprint)
+
+One map, every building block of the blueprint (business, governance, legal, technical), coloured by
+Simpl's **dominant** coverage today. Each node names the block, the dominant rating, and the key
+Simpl realisation; the numbered ⟳ markers refer to the divergences in section 5.
 
 ```mermaid
 flowchart TB
   classDef full fill:#c6efce,stroke:#2e7d32,color:#000
   classDef partial fill:#ffeb9c,stroke:#b7791f,color:#000
+  classDef roadmap fill:#ffe0b2,stroke:#e65100,color:#000
   classDef gap fill:#ffc7ce,stroke:#c62828,color:#000
   classDef diverge fill:#bbdefb,stroke:#1565c0,color:#000
+  classDef baseline fill:#eceff1,stroke:#90a4ae,color:#000
 
-  subgraph DI["Data Interoperability"]
-    di1["Foundational standards"]:::full
-    di2["Data Models"]:::full
-    di3["Data Exchange - EDC / DSP"]:::full
-    di4["Descriptions - SD / DCAT-AP"]:::full
-    di5["Publication and Discovery - Federated Catalogue"]:::full
-    di6["Provenance, Traceability and Observability"]:::gap
+  subgraph BUS["Business"]
+    direction TB
+    b1["Business Model 🟡<br/><i>BP03A monetisation; commercial layer at DOME</i>"]:::partial
+    b2["Use Case Development ✅<br/><i>Simpl-Live waves, SC-5 Simpl-Life</i>"]:::full
+    b3["Data Space Offerings 🟡<br/><i>SD Tooling; GA AI Services (R85, in design)</i>"]:::partial
+    b4["Intermediaries and Operators ✅ ⟳<br/><i>Simpl-Open is the operator tooling</i>"]:::diverge
   end
-  subgraph DS["Data Sovereignty and Trust"]
-    ds1["Identity Attestation and Management"]:::diverge
-    ds2["Access and Usage Policy Enforcement - ODRL"]:::partial
-    ds3["Trust Framework"]:::full
+
+  subgraph GOV["Governance"]
+    direction TB
+    g1["Organisational Form and GA ✅<br/><i>GA + GA Agent, one per data space</i>"]:::full
+    g2["Participation Management ✅<br/><i>Onboarding, document validation, roles, offboarding</i>"]:::full
   end
-  subgraph DV["Data Value Creation"]
-    dv1["Value Creation Services"]:::partial
+
+  subgraph LEG["Legal"]
+    direction TB
+    l1["Regulatory Compliance 🟡 ⟳<br/><i>eIDAS / EUDI, GDPR posture, EUCS / NFR14 (enablers only)</i>"]:::partial
+    l2["Contractual Framework ✅<br/><i>Contract Manager, templates, ODRL</i>"]:::full
   end
+
+  subgraph TECH["Technical"]
+    direction TB
+    subgraph DI["Data Interoperability"]
+      direction TB
+      di2["Data Models ✅<br/><i>Schema Mgmt, Vocabulary Mgmt, SHACL / RDF</i>"]:::full
+      di3["Data Exchange ✅<br/><i>EDC + DSP, S3-PUSH; eDelivery roadmap</i>"]:::full
+      di4["Descriptions ✅<br/><i>Gaia-X SD / SD Tooling; DCAT-AP roadmap (piveau)</i>"]:::full
+      di5["Publication and Discovery ✅<br/><i>XFSC Federated Catalogue + Neo4j</i>"]:::full
+      di6["Provenance and Traceability 🔴 (⟳4)<br/><i>no PROV-O; lineage roadmap-only; observability ≠ provenance</i>"]:::gap
+    end
+    subgraph DS["Data Sovereignty and Trust"]
+      direction TB
+      ds1["Identity Attestation and Mgmt ⟳2 ➕<br/><i>X.509 / EJBCA + Tier-1 / Tier-2; VC / limited DID on top</i>"]:::diverge
+      ds2["Access and Usage Policy Enforcement 🟡 (⟳5)<br/><i>ODRL PAP / PDP / PEP; stops at handover</i>"]:::partial
+      ds3["Trust Framework ✅ ⟳<br/><i>GA-run PKI trust root, GX-Trustframework</i>"]:::full
+    end
+    subgraph DV["Data Value Creation"]
+      direction TB
+      dv1["Value-Creation Services 🟠 (⟳3, ⟳6)<br/><i>contract ✅ / billing 🟠 split; marketplace externalised to DOME; analytics + R85 in flight</i>"]:::roadmap
+    end
+  end
+
+  FOUND["Foundational standards (baseline, not a scored block): HTTP / JSON-LD, OAuth2 / OIDC, X.509, DSP, ODRL"]:::baseline
+
+  BUS ~~~ GOV ~~~ LEG
+  TECH ~~~ FOUND
 ```
 
-*Colour: green = full, amber = partial, red = gap, blue = divergent by design. Provenance /
-traceability is the standout technical gap; identity is the standout divergence.*
+*Colour: green = full, amber = partial, orange = roadmap, red = gap, blue = divergent by design,
+grey = baseline. Each node shows one dominant rating; mixed ratings from the tables below are
+resolved to the weakest element that matters (e.g. Value-Creation Services is orange because
+billing and analytics are roadmap even though contract is built). Provenance / traceability is the
+standout technical gap; identity is the standout divergence.*
+
+> **Placement caveat (verify against the v3 figure):** this diagram keeps this document's current
+> pillar grouping, with Descriptions and Publication & Discovery under *Data Interoperability*.
+> Blueprint v1.x grouped both under *Data Value Creation* (with "Marketplaces and Usage
+> Accounting" as the third block there). Confirm which grouping v3.0 uses before re-baselining
+> against the upcoming blueprint version; if they belong under Value Creation, that pillar is
+> mostly ✅ rather than thin, and the section 1 narrative should be adjusted accordingly.
 
 ### 3.2 Technical - Data Interoperability
 

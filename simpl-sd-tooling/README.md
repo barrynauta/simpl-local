@@ -1,11 +1,11 @@
-# simpl-sd-tooling — SD Tooling local stack
+# simpl-sd-tooling - SD Tooling local stack
 
 Local-evaluation stack for the **SD Tooling component** of Simpl-Open: the
 Creation Wizard a provider uses to author, validate, sign, and publish
 **Self-Descriptions** (Resource Descriptions) for data, application, and
 infrastructure offerings.
 
-**Status: verified end-to-end 2026-07-06** — schemas served (3 seeded), UI
+**Status: verified end-to-end 2026-07-06** - schemas served (3 seeded), UI
 renders with SHACL-generated wizard forms (8 steps from `DataSchema.ttl`),
 landing list + BFF wiring green, and the full API authoring loop green:
 `/v3/selfDescriptions/enriched` (two real SHACL validations + stub round-trips)
@@ -38,7 +38,7 @@ Both backends are descendants of the Eclipse XFSC `sd-creation-wizard-api` /
 First run: ~10-15 min (Maven dependency tree for two Spring Boot services +
 npm install / astro build for the UI). Subsequent starts are seconds.
 
-Open **http://localhost:4324** — no login (auth disabled, see below). The
+Open **http://localhost:4324** - no login (auth disabled, see below). The
 wizard's schema picker should list the three seeded schemas (Application,
 Data, Infra).
 
@@ -57,7 +57,7 @@ curl -s http://localhost:8089/__admin/requests | jq .       # what hit the stubs
     never verifies the JWT signature anyway; it decodes and forwards the
     bearer to downstream services (the known Simpl pass-through pattern).
   - UI: the three `PUBLIC_AUTH_KEYCLOAK_*` vars are empty, which flips the
-    upstream `isAuthenticationEnabled()` switch — no login, no redirect.
+    upstream `isAuthenticationEnabled()` switch - no login, no redirect.
   - Validation API: has no auth at all upstream.
 - **No Vault.** The only secrets (`VC_ISSUER_API_KEY`, `VC_ISSUER_CLIENT_ID`)
   are plain env vars; they must exist for the API to boot but their values
@@ -79,7 +79,7 @@ curl -s http://localhost:8089/__admin/requests | jq .       # what hit the stubs
   the participant's private key and certificate chain from the
   authentication-provider before every call. `gen-auth-stubs.sh` (run by
   `start.sh`) generates a self-signed RSA keypair and embeds it in a
-  gitignored WireMock mapping — the material only has to parse; over the
+  gitignored WireMock mapping - the material only has to parse; over the
   stack's plain-HTTP wiring it is never used in a TLS handshake.
 
 ## What works vs what is stubbed
@@ -89,13 +89,13 @@ curl -s http://localhost:8089/__admin/requests | jq .       # what hit the stubs
 - The full wizard UI: SHACL-driven form generation (`@simpl/vue-components`),
   resource-address templates and UI-schemas (baked into the api-be jar).
 - SHACL validation of the authored SD against the schema, and JSON-schema
-  validation of resource addresses — the whole validation service is real.
+  validation of resource addresses - the whole validation service is real.
 - The enrich pipeline in the api-be: offering type, sharing method,
   participant id injection, hash generation, id/identifier/version stamping,
   final SHACL validation.
 
 **Stubbed** (WireMock, so only the protocol is exercised, not the semantics):
-- Connector-adapter registration (EDC asset creation does not happen — pair
+- Connector-adapter registration (EDC asset creation does not happen - pair
   with the `simpl-edc` stack if you want that for real).
 - Workflow registration in the asset-orchestrator (see `simpl-orchestration`
   for the real Dagster stack).

@@ -1,4 +1,4 @@
-# simpl-sd-tooling — architecture
+# simpl-sd-tooling - architecture
 
 ## Component view
 
@@ -59,19 +59,19 @@ UI BFF ──POST /v3/selfDescriptions/enriched?schemaId=──▶ sdtooling-api
   4. set offeringType / sharingMethod
   5. set participantId                       [stub: GET /tier1/v2/participant]
   6. generate hashes
-  7. register with connector-adapter         [stub: POST /v2/selfDescriptions/enriched
-                                              — response BECOMES the SD, so the
-                                              stub echoes $.sd back (templating)]
+  7. register with connector-adapter         [stub: POST /v2/selfDescriptions/enriched;
+                                              response BECOMES the SD, so the
+                                              stub echoes $.sdJson back (templating)]
   8. register workflow                       [stub: POST /v1/workflowDefinitions]
   9. strip providerDataAddress, set metadata, @id (local:did:<uuid>),
      identifier, version
  10. validate final SD against schema        [sdtooling-validation  REAL]
 finalize (POST /v1/selfDescriptions/finalized) = all of the above, then:
- 11. sign via vc-issuer                      [stub: POST /v1/credentials/issue
-                                              — wraps SD in fake VC]
+ 11. sign via vc-issuer                      [stub: POST /v1/credentials/issue;
+                                              wraps SD in fake VC]
 publish (POST /v1/selfDescriptions/publications):
- 12. federated catalogue create              [stub: POST /fc/self-descriptions
-                                              — XFSC-shaped response]
+ 12. federated catalogue create              [stub: POST /fc/self-descriptions;
+                                              XFSC-shaped response]
 ```
 
 Step 7 is the reason the connector-adapter stubs use WireMock response
@@ -85,7 +85,7 @@ real adapter adds them and step 10 rejects an SD without them.
 
 The two tier2 Feign clients do not simply call their URL: on every call
 `Tier2ClientDefaultConfig` builds a SimplClient whose keystore comes from the
-authentication-provider —
+authentication-provider:
 
 ```
 GET /tier1/v2/keypairs/active     → {"privateKey": "<PEM>"}   (BouncyCastle-parsed)
@@ -105,9 +105,9 @@ Three different mechanisms, deliberately:
 
 | Call | Mechanism |
 |---|---|
-| list resource descriptions (`GET /adapter/participants/resourceDescriptions`) | WireMock (canned single entry) — upstream has **no** built-in mock for this one |
+| list resource descriptions (`GET /adapter/participants/resourceDescriptions`) | WireMock (canned single entry) - upstream has **no** built-in mock for this one |
 | versions of an RD | api-be built-in mock aspect (`CATALOGUE_ADAPTER_MOCK_GET_ALL_RESOURCE_DESCRIPTIONS_BY_VERSION=true`, upstream default) |
-| revoke an RD | api-be built-in mock aspect (`CATALOGUE_ADAPTER_MOCK_REVOKE_RESOURCE_DESCRIPTION=true`, upstream default is false — flipped here so revoke never tries the real tier2 gateway) |
+| revoke an RD | api-be built-in mock aspect (`CATALOGUE_ADAPTER_MOCK_REVOKE_RESOURCE_DESCRIPTION=true`, upstream default is false - flipped here so revoke never tries the real tier2 gateway) |
 
 The tier2 gateway URLs (`catalogue-adapter.tier2-gateway.url`,
 `federated-catalogue.tier2-gateway.url`) point at WireMock with the upstream
@@ -132,16 +132,16 @@ real gateway routes.
 
 - Both backends: no Maven wrapper in the repos; built with the `maven:3.9`
   image. `CI_API_V4_URL` must be defined (GitLab-CI-only variable interpolated
-  in the pom's registry URL) — same gotcha as the simpl-contract stack.
-- `sdtooling-api-be` depends on `eu.europa.ec.simpl:simpl-schema-versioning:1.0.0-SNAPSHOT`
-  — a SNAPSHOT from the group 4086 registry. If anonymous snapshot resolution
+  in the pom's registry URL) - same gotcha as the simpl-contract stack.
+- `sdtooling-api-be` depends on `eu.europa.ec.simpl:simpl-schema-versioning:1.0.0-SNAPSHOT`,
+  a SNAPSHOT from the group 4086 registry. If anonymous snapshot resolution
   fails, set `GITLAB_TOKEN` in `.env`.
 - The validation repo's own Dockerfile expects a CI-generated
   `resolved_settings.xml` that is not in the repo; `Dockerfile.local-validation`
   replaces it.
 - UI: `@simpl/vue-components` resolves from the code.europa.eu npm registry
   (anonymous works for public packages). `USE_MOCK_APIS` is inlined by Vite at
-  build time — a build arg, not runtime env. The `PUBLIC_*` URLs by contrast
+  build time - a build arg, not runtime env. The `PUBLIC_*` URLs by contrast
   are read from `process.env` per request (`src/util/getEnv.ts`), so they are
   plain compose environment.
 

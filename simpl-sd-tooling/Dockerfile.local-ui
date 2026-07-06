@@ -2,13 +2,13 @@
 #
 # Mirrors the upstream Dockerfile (node:22, npm install, npm run build, run
 # dist/server/entry.mjs) with two local additions:
-#   - .npmrc generated at build time so @simpl/vue-components resolves from
+# - .npmrc generated at build time so @simpl/vue-components resolves from
 #     the code.europa.eu npm registry. Anonymous resolution works for public
 #     packages (proven by the simpl-vocabulary-manager stack); GITLAB_TOKEN
 #     is only a fallback.
-#   - USE_MOCK_APIS is a BUILD-TIME switch (Vite inlines import.meta.env in
+# - USE_MOCK_APIS is a BUILD-TIME switch (Vite inlines import.meta.env in
 #     the server bundle), and upstream treats ANY non-empty value as true
-#     (`=== 'true' || !!value` in serviceSelector.ts) — the string "false"
+#     (`=== 'true' || !!value` in serviceSelector.ts) - the string "false"
 #     ENABLES mocks. So the variable must be entirely ABSENT during
 #     `npm run build` for real backends. The build args are therefore named
 #     MOCK_APIS / MOCK_IDENTITY_ATTRIBUTES (ARGs leak into the RUN env, so
@@ -20,7 +20,7 @@
 #
 # Build context: the stack root (simpl-sd-tooling/).
 # Requires repos/simpl-sd-ui to be populated by start.sh first.
-# Built by start.sh — do not run docker build directly.
+# Built by start.sh - do not run docker build directly.
 
 FROM node:22
 

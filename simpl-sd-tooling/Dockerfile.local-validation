@@ -6,7 +6,7 @@
 #
 # Build context: the stack root (simpl-sd-tooling/).
 # Requires repos/sdtooling-validation-api-be to be populated by start.sh first.
-# Built by start.sh — do not run docker build directly.
+# Built by start.sh - do not run docker build directly.
 
 # ─── Stage 1: Maven build ─────────────────────────────────────────────────────
 FROM maven:3.9-eclipse-temurin-21-alpine AS builder
@@ -20,13 +20,13 @@ WORKDIR /build
 COPY repos/sdtooling-validation-api-be /build/src
 COPY maven-settings.local.xml /build/settings.xml
 
-# The pom's <version> is ${env.PROJECT_RELEASE_VERSION} (CI-only variable) —
+# The pom's <version> is ${env.PROJECT_RELEASE_VERSION} (CI-only variable) - 
 # Maven refuses a non-constant version unless the env var exists.
 RUN cd /build/src && \
     PROJECT_RELEASE_VERSION=local \
     mvn -B -s /build/settings.xml \
-      -DCI_API_V4_URL="${CI_API_V4_URL}" \
-      -DskipTests clean package
+ -DCI_API_V4_URL="${CI_API_V4_URL}" \
+ -DskipTests clean package
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
 FROM eclipse-temurin:21-jre-alpine

@@ -8,7 +8,7 @@
 # authentication-provider. The material only has to PARSE (BouncyCastle PEM →
 # PKCS12 keystore); over the stack's plain-HTTP wiring it is never used in a
 # TLS handshake. A throwaway self-signed RSA keypair is generated here and
-# embedded into a WireMock mapping — gitignored, regenerated when absent.
+# embedded into a WireMock mapping - gitignored, regenerated when absent.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MAPPING="$SCRIPT_DIR/peer-stubs/mappings/auth-provider-keypair.generated.json"
@@ -22,8 +22,8 @@ TMPDIR_CERTS="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR_CERTS"' EXIT
 
 openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
-  -keyout "$TMPDIR_CERTS/key.pem" -out "$TMPDIR_CERTS/cert.pem" \
-  -subj "/CN=sd-local-participant" >/dev/null 2>&1
+ -keyout "$TMPDIR_CERTS/key.pem" -out "$TMPDIR_CERTS/cert.pem" \
+ -subj "/CN=sd-local-participant" >/dev/null 2>&1
 
 python3 - "$TMPDIR_CERTS" "$MAPPING" <<'PYEOF'
 import json, sys, pathlib
