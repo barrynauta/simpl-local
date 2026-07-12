@@ -11,21 +11,41 @@ Same shape as the [`simpl-orchestration-local`](https://github.com/barrynauta/si
 
 ---
 
-## Quick start
+## Quick start — `docker compose up`
+
+The whole stack builds and runs from a clean checkout with one command. Cloning
+the three source repos, building the images, and the Neo4j n10s init all happen
+**inside** Docker Compose (BuildKit git build contexts + a one-shot init
+service), so there is no host-side Maven, no `repos/` clone and no manual
+seeding step.
 
 ```bash
 git clone https://github.com/barrynauta/simpl-catalogue-local.git
 cd simpl-catalogue-local
-./start.sh
+docker compose up --build -d --wait
 ```
 
-First run takes 10–20 minutes (clones upstream, builds the JAR, builds the image, pulls Neo4j + Postgres, runs n10s init). Subsequent starts are under 30 seconds. When ready you'll see service URLs printed.
+Or run `./start.sh`, which does exactly that and then prints a smoke test and
+the service URLs.
 
-Test it:
+- **First run takes 10–20 minutes**: it clones and builds three source repos
+  (fc-service and query-mapper with Maven, the UI with npm) and pulls Neo4j +
+  Postgres. Later starts are seconds.
+- `--build` is needed the first time (and after updates); plain
+  `docker compose up -d --wait` afterwards.
+- No code.europa.eu token is required; everything resolves anonymously.
+
+### Test it and what to expect
+
 ```bash
-curl http://localhost:8081/self-descriptions   # → {"totalCount":0,"items":[]}
-curl http://localhost:8081/schemas             # → 4 default schemas
+curl http://localhost:8081/self-descriptions   # → {"totalCount":0,"items":[]}  (HTTP 200)
+curl http://localhost:8081/schemas             # → the 4 default schemas        (HTTP 200)
+curl -o /dev/null -w '%{http_code}\n' http://localhost:4321/   # → 200 (the catalogue UI)
 ```
+
+Open the **Catalogue UI** at <http://localhost:4321> and the **Neo4j Browser**
+at <http://localhost:7474> (login `neo4j` / `neo12345`). The fc-service root `/`
+returns a 404 by design (REST backend); use `/self-descriptions`.
 
 (Optional) Seed it with example Gaia-X self-descriptions so you have data to query:
 ```bash

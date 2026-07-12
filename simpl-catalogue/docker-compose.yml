@@ -58,15 +58,48 @@ services:
     networks:
       - simpl-cat-net
     healthcheck:
-      test: ["CMD-SHELL", "/var/lib/neo4j/bin/neo4j status"]
-      interval: 20s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
+      # "healthy" = query-ready. `neo4j status` returns before bolt accepts
+      # queries; the n10s init and fc-service both need real query readiness.
+      test: ["CMD-SHELL", "cypher-shell -u ${NEO4J_USER:-neo4j} -p ${NEO4J_PASSWORD:-neo12345} 'RETURN 1;' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+
+  # One-shot: initialise the n10s (neosemantics) graph config + uniqueness
+  # constraint once Neo4j is query-ready. Idempotent; replaces the post-start
+  # cypher step the old start.sh did. fc-service waits for this to complete.
+  neo4j-init:
+    image: neo4j:5.14.0
+    container_name: simpl-cat-neo4j-init
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+      NEO4J_USER: ${NEO4J_USER:-neo4j}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-neo12345}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        cypher-shell -a bolt://neo4j:7687 -u "$$NEO4J_USER" -p "$$NEO4J_PASSWORD" \
+          "CALL n10s.graphconfig.init({handleVocabUris:'MAP',handleMultival:'ARRAY',multivalPropList:['http://w3id.org/gaia-x/service#claimsGraphUri']});" \
+          || echo "graphconfig.init already done (idempotent)"
+        cypher-shell -a bolt://neo4j:7687 -u "$$NEO4J_USER" -p "$$NEO4J_PASSWORD" \
+          "CREATE CONSTRAINT n10s_unique_uri IF NOT EXISTS FOR (r:Resource) REQUIRE r.uri IS UNIQUE;" \
+          || true
+        echo "neo4j n10s init complete"
+    networks:
+      - simpl-cat-net
 
   fc-service:
     image: simpl-fc-service:local
     container_name: simpl-cat-fc-service
+    build:
+      context: .
+      dockerfile: Dockerfile.local-fc-service
+      additional_contexts:
+        src: "https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-fc-service.git#main"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fed_cat
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
@@ -103,10 +136,16 @@ services:
         condition: service_healthy
       neo4j:
         condition: service_healthy
-    # No healthcheck declared — /actuator/health returns 404 in current upstream
-    # (spring-boot-starter-actuator is not on the classpath). For liveness, use a
-    # real catalogue endpoint instead:
-    #   curl -fsS http://localhost:8081/self-descriptions
+      neo4j-init:
+        condition: service_completed_successfully
+    healthcheck:
+      # /actuator/health is 404 upstream (actuator not on the classpath), so probe
+      # a real catalogue endpoint. busybox wget ships in the alpine runtime.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8081/self-descriptions || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 24
+      start_period: 40s
 
   query-mapper-adapter:
     # Aka catalogue-adapter / poc-gaia-edc / "query-mapper" depending on the doc.
@@ -114,6 +153,11 @@ services:
     # PUBLIC_QUERY_MAPPER_ADAPTER_API_URL is set, bypassing xfsc-advsearch-be.
     image: query-mapper-adapter:local
     container_name: simpl-cat-qma
+    build:
+      context: .
+      dockerfile: Dockerfile.local-qma
+      additional_contexts:
+        src: "https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/poc-gaia-edc.git#main"
     environment:
       # Note the typo "FEDERATED_CATALOOGUE" (extra O) in upstream
       # application.properties — env var must match the typo'd property name.
@@ -132,6 +176,15 @@ services:
   ui:
     image: simpl-catalogue-client:local
     container_name: simpl-cat-ui
+    build:
+      context: .
+      dockerfile: Dockerfile.local-ui
+      additional_contexts:
+        src: "https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-catalogue-client.git#main"
+      args:
+        PUBLIC_FEDERATED_CATALOGUE_API_URL: "http://localhost:${FC_SERVICE_PORT:-8081}"
+        PUBLIC_SEARCH_API_URL: "http://localhost:${FC_SERVICE_PORT:-8081}"
+        PUBLIC_QUERY_MAPPER_ADAPTER_API_URL: "http://localhost:${QMA_PORT:-8084}"
     environment:
       HOST: 0.0.0.0
       PORT: 4321
@@ -167,6 +220,12 @@ services:
     # container we map localhost to host-gateway so SSR fetches reach the same
     # endpoint. Without this, server-side rendered pages would fail to fetch
     # catalogue data.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4321/').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
     extra_hosts:
       - "localhost:host-gateway"
 

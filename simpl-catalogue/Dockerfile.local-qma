@@ -1,0 +1,21 @@
+# Multi-stage local build for the query-mapper-adapter (poc-gaia-edc).
+#
+# Upstream's Dockerfile only copies a pre-built jar, so this builds it in stage
+# 1 from the "src" git context declared in docker-compose.yml. PROJECT_RELEASE_VERSION
+# is a CI-only variable the pom expects; define it so the build works outside a pipeline.
+
+# ─── Stage 1: Maven build ─────────────────────────────────────────────────────
+# Use the repo's own Maven wrapper (./mvnw), matching the old host build.
+FROM eclipse-temurin:21-jdk AS builder
+WORKDIR /build
+COPY --from=src . /build
+RUN chmod +x mvnw && PROJECT_RELEASE_VERSION=local ./mvnw -B -DskipTests clean install
+
+# ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
+FROM eclipse-temurin:21-jdk-alpine
+COPY --from=builder /build/target/*.jar /poc.jar
+RUN mkdir /files && chmod 775 /files && \
+    adduser -u 8877 -D dockerUser && chown -R dockerUser:dockerUser /files
+USER dockerUser
+EXPOSE 8084
+ENTRYPOINT ["java", "-jar", "/poc.jar"]
