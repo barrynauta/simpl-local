@@ -1,0 +1,186 @@
+name: simpl-infrastructure
+
+# Two-component local stack: the infrastructure provisioning backend
+# (infrastructure-be) and its React SPA (infrastructure-fe), plus the only
+# infra they need (Postgres + a plain single-node Kafka).
+#
+# Deliberately omitted (see docs/ and README): Keycloak/Tier-1 gateway (the
+# backend disables auth in code; the SPA needs a Keycloak only for an
+# interactive login), Vault/OpenBao, Gitea, mailer, ArgoCD/Crossplane provisioner.
+
+networks:
+  simpl-infra-net:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: simpl-infra-postgres
+    networks: [simpl-infra-net]
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: infra
+      POSTGRES_PASSWORD: infra
+      POSTGRES_DB: infra
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U infra -d infra"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Plain PLAINTEXT single-node Kafka (KRaft, no Zookeeper, no SASL).
+  # Upstream ships SASL_PLAINTEXT; the app runs with kafka.sasl.enabled=false.
+  kafka:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: simpl-infra-kafka
+    networks: [simpl-infra-net]
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
+      KAFKA_LISTENERS: "PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,EXTERNAL://0.0.0.0:9092"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,EXTERNAL://localhost:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      CLUSTER_ID: "simpl-infra-local-cluster1"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+  infrastructure-be:
+    build:
+      context: ${INFRA_BE_REPO}
+      dockerfile: Dockerfile
+    image: simpl-infrastructure-be:local
+    container_name: simpl-infra-be
+    networks: [simpl-infra-net]
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      PROJECT_RELEASE_VERSION: 2.2.0-local
+
+      LOCAL_DB_URL: jdbc:postgresql://postgres:5432/infra
+      LOCAL_DB_USERNAME: infra
+      LOCAL_DB_PASSWORD: infra
+
+      # Work around upstream bug: the 'local' profile's
+      # defer-datasource-initialization=true plus the unconditional custom Flyway
+      # bean form a circular depends-on and the context cannot start. Mirror the
+      # working docker profile: Flyway owns the schema, Hibernate validates none.
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "false"
+      SPRING_SQL_INIT_MODE: "never"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "none"
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_FLYWAY_LOCATIONS: "classpath:db/migration"
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_SASL_ENABLED: "false"
+
+      # Lazy deps: dummy values satisfy @Value binding at startup
+      LOCAL_VAULT_TOKEN: local-not-used
+      LOCAL_URL: http://vault-not-used:8200/v1/secret
+      LOCAL_SPRING_MAIL_HOST: localhost
+      LOCAL_SPRING_MAIL_PORT: "2525"
+      LOCAL_SPRING_MAIL_USERNAME: local
+      LOCAL_SPRING_MAIL_PASSWORD: local
+
+      # Mandatory @Value keys with no default (context fails without them)
+      INFRASTRUCTURE_API_CONFIG_VALUE: local-config
+      GITEA_URL: http://gitea-not-used:3000
+      GITEA_USER: local
+      GITEA_TOKEN: local
+      PARTICIPANT_TOKEN_USER: local
+      PARTICIPANT_TOKEN_PASSWORD: local
+
+      OTEL_SDK_DISABLED: "true"
+      OTEL_LOGS_EXPORTER: none
+    # Upstream Dockerfile pins an OTEL javaagent; run the plain jar instead.
+    entrypoint: ["java", "-jar", "infrastructure-be.jar"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/infrastructureProvisioning/v1/status >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  infrastructure-fe:
+    build:
+      context: ${INFRA_FE_REPO}
+      # Inline Dockerfile mirrors the upstream multi-stage build but relaxes one
+      # broken pin: the upstream Dockerfile pins libcap=2.70-r0, which no longer
+      # resolves because nginx:1.27.x-alpine was rebuilt on a newer Alpine
+      # (libcap 2.78). See docs/fe-findings.md F-FE-5. The VITE_ values are the
+      # fixed local values, baked directly here (the browser runs on the host, so
+      # the API base is the host-mapped backend port).
+      dockerfile_inline: |
+        FROM node:18.20.4-bullseye AS build
+        ENV VITE_API_BASE_URL=http://localhost:8080/api/infrastructureProvisioning/v1
+        ENV VITE_PUBLIC_AUTH_KEYCLOAK_SERVER_URL=http://localhost:8081
+        ENV VITE_PUBLIC_AUTH_KEYCLOAK_REALM=participant
+        ENV VITE_PUBLIC_AUTH_KEYCLOAK_CLIENT_ID=frontend-cli
+        WORKDIR /app
+        COPY package*.json ./
+        RUN npm install --ignore-scripts
+        COPY . .
+        RUN npm run build-vite
+        FROM nginx:1.27.2-alpine
+        RUN apk add --no-cache libcap libcap-utils \
+            && addgroup -S app && adduser -S app -G app
+        COPY --from=build /app/dist /usr/share/nginx/html
+        COPY 99-custom-env.sh /docker-entrypoint.d/
+        COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+        COPY nginx/nginx.conf /etc/nginx/nginx.conf
+        RUN mkdir -p /var/cache/nginx /var/log/nginx /var/run/nginx \
+            && chown -R app:app /usr/share/nginx/html /etc/nginx/conf.d /var/cache/nginx /var/log/nginx /var/run/nginx \
+            && setcap "cap_net_bind_service=+ep" /usr/sbin/nginx
+        USER app
+        EXPOSE 80
+        CMD ["nginx", "-g", "daemon off;"]
+    image: simpl-infrastructure-fe:local
+    container_name: simpl-infra-fe
+    networks: [simpl-infra-net]
+    ports:
+      - "3001:80"
+    depends_on:
+      - infrastructure-be
+
+  # Bruno API smoke tests. Not started by default; run with:
+  #   docker compose --profile tests up bruno-smoke-test
+  bruno-smoke-test:
+    image: node:20-alpine
+    container_name: simpl-infra-bruno
+    profiles: ["tests"]
+    networks: [simpl-infra-net]
+    working_dir: /bruno
+    depends_on:
+      infrastructure-be:
+        condition: service_healthy
+    volumes:
+      - ./bruno:/bruno:ro
+    command: >
+      sh -c "
+        npm install -g @usebruno/cli --silent 2>/dev/null &&
+        echo 'Simpl infrastructure-be API smoke tests (Bruno)' &&
+        bru run --env docker -r;
+      "
+
+volumes:
+  pgdata:

@@ -1,0 +1,22 @@
+meta {
+  name: OpenAPI document is served
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_root}}/v3/api-docs
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("OpenAPI paths include the provisioning API", function() {
+    const paths = Object.keys(res.getBody().paths || {});
+    expect(paths.some(p => p.indexOf("/scripts/trigger") !== -1)).to.be.true;
+  });
+}

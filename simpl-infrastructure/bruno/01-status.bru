@@ -1,0 +1,23 @@
+meta {
+  name: Status endpoint is up
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/status
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("status is ok and a version is reported", function() {
+    const b = res.getBody();
+    expect(b.status).to.equal("ok");
+    expect(b).to.have.property("version");
+  });
+}

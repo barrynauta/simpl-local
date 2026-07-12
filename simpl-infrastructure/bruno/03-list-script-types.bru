@@ -1,0 +1,22 @@
+meta {
+  name: List script types (seeded)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/scripts/types
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("seeded script types are present", function() {
+    const names = res.getBody().payload.content.map(t => t.name);
+    expect(names).to.include.members(["VM", "KUBERNETES", "PAAS"]);
+  });
+}

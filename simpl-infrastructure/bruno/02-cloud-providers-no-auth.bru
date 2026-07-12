@@ -1,0 +1,28 @@
+meta {
+  name: Cloud providers readable with NO auth token (F1 demonstration)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/cloudProviders
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  // No Authorization header is sent. A 200 with data proves authentication
+  // is disabled in the service (finding F1 in docs/findings.md).
+  test("returns 200 with no credential", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("seeded providers Ionos, Aruba, Ovh are present", function() {
+    const names = res.getBody().payload.map(p => p.cloudProviderName);
+    expect(names).to.include.members(["Ionos", "Aruba", "Ovh"]);
+  });
+}

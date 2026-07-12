@@ -1,0 +1,27 @@
+meta {
+  name: Create a script type with NO auth token (write path)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/scripts/types
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "SMOKETF",
+    "description": "bruno smoke test type"
+  }
+}
+
+tests {
+  // No Authorization header is sent. 201 on a clean DB, 409 if the type already
+  // exists (persisted volume): both prove the unauthenticated write path is
+  // reachable and enforced by the service (finding F1 in docs/be-findings.md).
+  test("unauthenticated write path is reachable (201 created or 409 exists)", function() {
+    expect([201, 409]).to.include(res.status);
+  });
+}
