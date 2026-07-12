@@ -1,0 +1,31 @@
+# Multi-stage local build for simpl-fc-service (Federated Catalogue).
+#
+# Upstream's Dockerfile only copies a pre-built jar (CI builds it first), so it
+# cannot be used from a clean checkout. This builds the jar in stage 1 from the
+# "src" git context declared in docker-compose.yml, so `docker compose up`
+# needs no host-side Maven step and no repos/ clone.
+#
+# fc-service resolves its dependencies from Maven Central + the repos declared
+# in its own pom (no code.europa.eu registry auth needed), so no token here.
+
+# ─── Stage 1: Maven build ─────────────────────────────────────────────────────
+# Use the repo's own Maven wrapper (./mvnw) so the pinned Maven version matches
+# exactly what the old host build used.
+FROM eclipse-temurin:21-jdk AS builder
+WORKDIR /build
+COPY --from=src . /build
+# Multi-module reactor build, then locate the server jar wherever it landed
+# (robust to module-path changes across upstream revisions).
+RUN chmod +x mvnw && ./mvnw -B -DskipTests clean install && \
+    JAR="$(find /build -path '*/target/*' -name 'fc-service-server*.jar' \
+            ! -name '*-sources.jar' ! -name '*-javadoc.jar' ! -name '*-tests.jar' | head -1)" && \
+    echo "Located server jar: $JAR" && \
+    cp "$JAR" /fc-service-server.jar
+
+# ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
+FROM eclipse-temurin:21-jdk-alpine
+COPY --from=builder /fc-service-server.jar /fc-service-server.jar
+RUN mkdir /files && chmod 775 /files && \
+    adduser -u 8877 -D dockerUser && chown -R dockerUser:dockerUser /files
+USER dockerUser
+ENTRYPOINT ["java", "-jar", "/fc-service-server.jar"]

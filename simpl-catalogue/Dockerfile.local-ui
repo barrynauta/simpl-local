@@ -1,0 +1,45 @@
+# Local build for simpl-catalogue-client (Astro SSR).
+#
+# Source comes from the "src" git context declared in docker-compose.yml, so no
+# repos/ clone is needed. Upstream's Dockerfile self-builds (npm install + build);
+# the only local addition is the .env that Astro/dotenvx bakes into the CLIENT
+# bundle at build time. start.sh used to write that file into the cloned source;
+# here it is generated inside the build from the PUBLIC_* build args below.
+# The SSR (server-side) path reads the same vars again from the runtime
+# environment set in docker-compose.yml.
+
+FROM node:22
+WORKDIR /app
+
+ARG PUBLIC_FEDERATED_CATALOGUE_API_URL="http://localhost:8081"
+ARG PUBLIC_SEARCH_API_URL="http://localhost:8081"
+ARG PUBLIC_SEARCH_API_VERSION="v1"
+ARG PUBLIC_QUERY_MAPPER_ADAPTER_API_URL="http://localhost:8084"
+ARG PUBLIC_QUERY_MAPPER_ADAPTER_API_VERSION="v1"
+ARG PUBLIC_AGENT_TYPE="consumer"
+
+COPY --from=src . /app
+
+# Baked into the client bundle at build time (empty Keycloak vars disable auth).
+RUN printf '%s\n' \
+      'PUBLIC_AUTH_KEYCLOAK_SERVER_URL=' \
+      'PUBLIC_AUTH_KEYCLOAK_REALM=' \
+      'PUBLIC_AUTH_KEYCLOAK_CLIENT_ID=' \
+      "PUBLIC_FEDERATED_CATALOGUE_API_URL=${PUBLIC_FEDERATED_CATALOGUE_API_URL}" \
+      "PUBLIC_SEARCH_API_URL=${PUBLIC_SEARCH_API_URL}" \
+      "PUBLIC_SEARCH_API_VERSION=${PUBLIC_SEARCH_API_VERSION}" \
+      "PUBLIC_QUERY_MAPPER_ADAPTER_API_URL=${PUBLIC_QUERY_MAPPER_ADAPTER_API_URL}" \
+      "PUBLIC_QUERY_MAPPER_ADAPTER_API_VERSION=${PUBLIC_QUERY_MAPPER_ADAPTER_API_VERSION}" \
+      'PUBLIC_CONTRACT_CONSUMPTION_API_URL=' \
+      'PUBLIC_CONTRACT_CONSUMPTION_API_VERSION=v1' \
+      "PUBLIC_AGENT_TYPE=${PUBLIC_AGENT_TYPE}" \
+      'USE_MOCK_APIS=false' \
+      > /app/.env && \
+    npm install --ignore-scripts && npm run build
+
+ENV HOST=0.0.0.0
+ENV PORT=4321
+EXPOSE 4321
+RUN groupadd -g 1001 simplgroup && useradd -u 1001 -g simplgroup -m simpluser
+USER simpluser
+CMD ["node", "./dist/server/entry.mjs"]
