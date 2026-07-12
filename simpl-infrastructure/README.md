@@ -1,6 +1,6 @@
 # simpl-infrastructure (local)
 
-Local-evaluation Docker stack for the two SIMPL infrastructure-provisioning
+Local-evaluation Docker stack for the two Simpl infrastructure-provisioning
 components: **`infrastructure-be`** (Spring Boot backend, artifact `script-service`)
 and **`infrastructure-fe`** (React SPA), plus the infra they need (Postgres and a
 single-node Kafka). Built and verified 2026-07-12.
