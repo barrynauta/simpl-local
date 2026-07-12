@@ -1,17 +1,19 @@
 # Local-evaluation build for simpl-vocabulary-manager-ui (Vue 3 + Vite).
-# Mirrors the schema-manager stack's UI build. Build context: the stack root.
-# Requires repos/simpl-vocabulary-manager-ui (branch release-1.0.0), cloned
-# by start.sh. The @simpl/vue-components dependency resolves anonymously from
-# the public code.europa.eu npm registry via package-lock resolved URLs.
+# Mirrors the schema-manager stack's UI build.
+# Source comes from the "src" git context declared in docker-compose.yml (pinned
+# to tag v1.1.0 there; the UI's main is an empty stub), so no repos/
+# clone is needed. nginx-ui.conf and env-config.local.js come from the default
+# context (the stack root). The @simpl/vue-components dependency resolves
+# anonymously from the public code.europa.eu npm registry.
 
 # ─── Stage 1: Vite build ──────────────────────────────────────────────────────
 FROM node:22-alpine AS builder
 
 WORKDIR /build
-COPY repos/simpl-vocabulary-manager-ui/package.json repos/simpl-vocabulary-manager-ui/package-lock.json ./
+COPY --from=src package.json package-lock.json ./
 RUN npm ci --prefer-offline --no-audit --no-fund
 
-COPY repos/simpl-vocabulary-manager-ui/ ./
+COPY --from=src . ./
 # Upstream vite.config bakes base '/vocabulary-ui/' into production builds
 # (gateway path prefix in real deployments). We serve at the root, so
 # override — the CLI flag wins over the config file, and the router follows

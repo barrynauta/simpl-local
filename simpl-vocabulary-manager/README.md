@@ -7,8 +7,8 @@ and an nginx-served UI build. Nothing else — no Keycloak, no Vault/OpenBao,
 no Kafka.
 
 > Upstream: [`simpl-vocabulary-manager`](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager) (branch `main`)
-> and [`simpl-vocabulary-manager-ui`](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager-ui) (branch `release-1.0.0` —
-> the UI's `main` is an empty stub; the app lives on `develop`/`release-1.0.0`).
+> and [`simpl-vocabulary-manager-ui`](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager-ui) (branch `v1.1.0` —
+> the UI's `main` is an empty stub; the app lives on `develop`/`v1.1.0`).
 > Both cloned into the gitignored `repos/` at start time — no upstream code is committed here.
 
 ## What the component does
@@ -36,13 +36,48 @@ build stage (`Dockerfile.local`). The internal `simpl-semantic-validation-sdk`
 dependency is pulled **anonymously** from the public code.europa.eu Maven
 registry (verified working 2026-06-12); no token, no sibling checkout.
 
-## Usage
+## Quick start — `docker compose up`
+
+The whole stack builds and runs from a clean checkout with one command. Cloning
+both source repos (backend `main`, UI `v1.1.0`), building the images and
+waiting for Fuseki all happen **inside** Docker Compose (BuildKit git build
+contexts + a one-shot `fuseki-wait` service), so there is no host-side Maven,
+no `repos/` clone and no token.
 
 ```bash
-./start.sh              # clone upstream, build image (first run ~5 min), start, smoke-test
-./start.sh --seed       # same + load upstream demo vocabularies into Fuseki
-./start.sh --rebuild    # force image rebuild (e.g. after upstream pull)
-./stop.sh               # stop containers (add -v to wipe Fuseki data)
+git clone https://github.com/barrynauta/simpl-vocabulary-manager-local.git
+cd simpl-vocabulary-manager-local
+docker compose up --build -d --wait
+```
+
+Or run `./start.sh`, which does exactly that and then prints a smoke test and
+the URLs. First run builds two source repos (Maven + Vite), about 10 minutes;
+later starts are seconds. `--build` is only needed the first time and after
+updates.
+
+### Test it and what to expect
+
+```bash
+curl http://localhost:8086/v1/health                 # → {"status":"UP"}                 (HTTP 200)
+curl -o /dev/null -w '%{http_code}\n' http://localhost:8086/v1/vocabularies    # → 200
+curl -o /dev/null -w '%{http_code}\n' http://localhost:4323/                # → 200 (UI)
+curl -o /dev/null -w '%{http_code}\n' http://localhost:4323/api/vocabularies # → 200 (nginx proxy to backend)
+```
+
+Open the **UI** at <http://localhost:4323> and **Fuseki** at
+<http://localhost:3031> (admin / admin1234). To load the upstream demo
+vocabularies into Fuseki:
+
+```bash
+docker compose --profile seed run --rm seed     # or: ./start.sh --seed
+```
+
+### Other commands
+
+```bash
+./start.sh --seed       # up + load the demo vocabularies
+docker compose logs -f  # tail logs
+docker compose down     # stop (add -v to wipe Fuseki data)
 ```
 
 Defaults (override in `.env`):
@@ -99,7 +134,7 @@ backend container — necessary because the backend has no CORS configuration.
 All four form fields are **required** (`name` PascalCase, 3–64 alphanumeric):
 
 ```bash
-curl -X POST "http://localhost:8086/vocabularies" \
+curl -X POST "http://localhost:8086/v1/vocabularies" \
   -H "Authorization: Bearer $VOCAB_TOKEN" \
   -F "vocabularyFile=@samples/sample-vocabulary.ttl" \
   -F "name=SampleVocabulary" \
@@ -107,7 +142,7 @@ curl -X POST "http://localhost:8086/vocabularies" \
   -F "changelog=Initial version"
 
 # Roundtrip — serves the stored Turtle back:
-curl http://localhost:8086/content/SampleVocabulary
+curl http://localhost:8086/v1/content/SampleVocabulary
 ```
 
 Expect non-blocking `externalReferenceSkipped` validation warnings for the
@@ -127,7 +162,7 @@ no cached external vocabulary is registered for it, by design.
 ## Known limitations
 
 - **UI branch pin**: the UI's `main` branch is an empty stub upstream; this
-  stack pins `release-1.0.0` (= `develop` + security dependency bumps,
+  stack pins `v1.1.0` (= `develop` + security dependency bumps,
   2026-06-12). When upstream finally merges to `main`, drop the branch pin in
   `start.sh`.
 - **Auth**: see above — uploads attribute changes to whatever `email` claim

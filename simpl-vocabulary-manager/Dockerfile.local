@@ -3,13 +3,16 @@
 # The internal simpl-semantic-validation-sdk dependency is pulled anonymously
 # from the public code.europa.eu group Maven registry (verified 2026-06-12) —
 # no credentials, no sibling SDK checkout needed.
+#
+# Source comes from the "src" git context declared in docker-compose.yml, so no
+# repos/ clone is needed. Build with `docker compose up`, not a bare docker build.
 FROM maven:3.9-eclipse-temurin-21 AS build
 
 # Upstream pom reads the project version from the environment.
 ENV PROJECT_RELEASE_VERSION=0.0.1-local
 
 WORKDIR /build
-COPY repos/simpl-vocabulary-manager/ ./
+COPY --from=src . ./
 
 # skipTests: repository tests expect a live Fuseki. Spotless/license/jacoco
 # are CI concerns, skipped for the local image.

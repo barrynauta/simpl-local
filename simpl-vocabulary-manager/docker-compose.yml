@@ -14,11 +14,39 @@ services:
       - fuseki-data:/fuseki-base/databases
       - fuseki-configuration:/fuseki-base/configuration
 
+  # One-shot: wait until Fuseki accepts HTTP, so the backend (which contacts
+  # Fuseki at boot to ensure its datasets) does not start too early. Replaces
+  # the host-side readiness wait the old start.sh did.
+  fuseki-wait:
+    image: curlimages/curl:8.10.1
+    container_name: simpl-vocabulary-fuseki-wait
+    depends_on:
+      - fuseki
+    entrypoint:
+      - /bin/sh
+      - -c
+      - "until curl -sf http://fuseki:3030/ >/dev/null 2>&1; do echo 'waiting for fuseki'; sleep 2; done; echo 'fuseki ready'"
+
   vocabulary-manager:
     image: simpl-vocabulary-manager:local
     container_name: simpl-vocabulary-manager
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+      additional_contexts:
+        src: "https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager.git#main"
     depends_on:
-      - fuseki
+      fuseki:
+        condition: service_started
+      fuseki-wait:
+        condition: service_completed_successfully
+    healthcheck:
+      # Backend versions its API under /v1 (Spring path-segment API versioning).
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8086/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
     ports:
       - "${VOCABULARY_MANAGER_PORT:-8086}:8086"
     environment:
@@ -31,10 +59,41 @@ services:
   vocabulary-manager-ui:
     image: simpl-vocabulary-manager-ui:local
     container_name: simpl-vocabulary-manager-ui
+    build:
+      context: .
+      dockerfile: Dockerfile.local-ui
+      additional_contexts:
+        # UI main is an empty stub upstream; the app is released as tags. The old
+        # release-1.0.0 branch is gone; v1.1.0 is the current stable release tag.
+        src: "https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager-ui.git#v1.1.0"
     depends_on:
       - vocabulary-manager
     ports:
       - "${UI_PORT:-4323}:8080"
+
+  # Optional demo data: `docker compose --profile seed run --rm seed`
+  # (or ./start.sh --seed) loads the upstream example vocabularies into Fuseki.
+  # Clones the backend repo just for its seed script; runs after the backend is
+  # healthy so the datasets already exist.
+  seed:
+    profiles: ["seed"]
+    image: alpine:3.20
+    container_name: simpl-vocabulary-seed
+    depends_on:
+      vocabulary-manager:
+        condition: service_healthy
+    environment:
+      FUSEKI_BASE_URL: "http://fuseki:3030"
+      ADMIN_USERNAME: "${FUSEKI_ADMIN_USER:-admin}"
+      ADMIN_PASSWORD: "${FUSEKI_ADMIN_PASSWORD:-admin1234}"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        apk add --no-cache git bash curl >/dev/null
+        git clone --depth 1 https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-vocabulary-manager.git /src
+        FUSEKI_BASE_URL="$$FUSEKI_BASE_URL" ADMIN_USERNAME="$$ADMIN_USERNAME" ADMIN_PASSWORD="$$ADMIN_PASSWORD" \
+          bash /src/scripts/load-fuseki-seed-data.sh
 
 volumes:
   fuseki-data:
