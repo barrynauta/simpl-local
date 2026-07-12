@@ -12,26 +12,50 @@ services:
   #   signer (UI-side)         POST /v1/credential
   # Response templating is global: the register stubs echo the request SD back
   # because the api-be pipeline keeps working on the connector-adapter response.
+  # ── One-shot: generate the auth-provider keypair stub into the mappings dir ─
+  # Containerised twin of the old host gen-auth-stubs.sh, so `docker compose up`
+  # needs no host openssl/python. Writes the throwaway self-signed keypair
+  # mapping (skipped if already present), then exits; peer-stubs waits for it.
+  auth-stub-gen:
+    image: alpine:3.20
+    container_name: simpl-sd-tooling-auth-stub-gen
+    volumes:
+      - ./peer-stubs/mappings:/mappings
+      - ./gen-auth-stub-container.sh:/gen-auth-stub-container.sh:ro
+    entrypoint: ["/bin/sh", "/gen-auth-stub-container.sh"]
+    networks:
+      - simpl-sd-tooling-net
+
   peer-stubs:
     image: wiremock/wiremock:3.9.2
     container_name: simpl-sd-tooling-peer-stubs
+    depends_on:
+      auth-stub-gen:
+        condition: service_completed_successfully
     command: ["--port", "8080", "--disable-banner", "--global-response-templating"]
     volumes:
- - ./peer-stubs/mappings:/home/wiremock/mappings:ro
+      - ./peer-stubs/mappings:/home/wiremock/mappings:ro
     ports:
- - "${STUBS_PORT:-8089}:8080"
+      - "${STUBS_PORT:-8089}:8080"
     networks:
- - simpl-sd-tooling-net
+      - simpl-sd-tooling-net
 
   # ── SD Validation API - stateless SHACL/JSON-schema validator ─────────────
   # No datastores, no auth, no outbound calls. Leaf service called by the api.
   sdtooling-validation:
     image: simpl-sdtooling-validation:local
     container_name: simpl-sd-tooling-validation
+    build:
+      context: .
+      dockerfile: Dockerfile.local-validation
+      additional_contexts:
+        src: "https://code.europa.eu/simpl/simpl-open/development/data1/sdtooling-validation-api-be.git#main"
+      args:
+        GITLAB_TOKEN: ${GITLAB_TOKEN:-}
     ports:
- - "${VALIDATION_API_PORT:-8088}:8080"
+      - "${VALIDATION_API_PORT:-8088}:8080"
     networks:
- - simpl-sd-tooling-net
+      - simpl-sd-tooling-net
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/status || exit 1"]
       interval: 10s
@@ -46,6 +70,13 @@ services:
   sdtooling-api:
     image: simpl-sdtooling-api:local
     container_name: simpl-sd-tooling-api
+    build:
+      context: .
+      dockerfile: Dockerfile.local-api
+      additional_contexts:
+        src: "https://code.europa.eu/simpl/simpl-open/development/data1/sdtooling-api-be.git#main"
+      args:
+        GITLAB_TOKEN: ${GITLAB_TOKEN:-}
     depends_on:
       sdtooling-validation:
         condition: service_healthy
@@ -82,12 +113,12 @@ services:
       # Values are arbitrary; the WireMock vc-issuer ignores them.
       VC_ISSUER_API_KEY: local-api-key
       VC_ISSUER_CLIENT_ID: sd-local
-    volumes:
- - ./schemas:/data/schemas
+    # Schemas are baked into the image from the source context (Dockerfile.local-api).
+    # To supply your own instead, add: volumes: ["./schemas:/data/schemas"].
     ports:
- - "${SDTOOLING_API_PORT:-8087}:8080"
+      - "${SDTOOLING_API_PORT:-8087}:8080"
     networks:
- - simpl-sd-tooling-net
+      - simpl-sd-tooling-net
     healthcheck:
       # /status is on the bearer-token skip list upstream, so this works even
       # if the auth bypass is ever switched off.
@@ -105,6 +136,15 @@ services:
   sd-ui:
     image: simpl-sd-ui:local
     container_name: simpl-sd-tooling-ui
+    build:
+      context: .
+      dockerfile: Dockerfile.local-ui
+      additional_contexts:
+        src: "https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-sd-ui.git#main"
+      args:
+        GITLAB_TOKEN: ${GITLAB_TOKEN:-}
+        MOCK_APIS: "false"
+        MOCK_IDENTITY_ATTRIBUTES: "false"
     depends_on:
       sdtooling-api:
         condition: service_healthy
@@ -120,9 +160,9 @@ services:
       # out of scope (see README "Known limitations").
       PUBLIC_DEPLOYMENT_SCRIPT_UPLOAD_URL: ""
     ports:
- - "${UI_PORT:-4324}:4322"
+      - "${UI_PORT:-4324}:4322"
     networks:
- - simpl-sd-tooling-net
+      - simpl-sd-tooling-net
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:4322/status').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))"]
       interval: 10s
