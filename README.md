@@ -175,7 +175,9 @@ simpl-local/
 ├── README.md                         This file — umbrella index.
 ├── documentation/                    Repo-wide reference docs (not tied to one stack).
 │   ├── README.md                     Documentation index.
-│   └── simpl-dssc-mapping.md         Simpl-Open ↔ DSSC Blueprint V3.0 mapping.
+│   ├── simpl-dataspace-landscape.md  Non-technical map of the European data-space landscape.
+│   ├── simpl-dssc-mapping.md         Simpl-Open ↔ DSSC Blueprint V3.0 mapping.
+│   └── simpl-tractusx-comparison.md  Simpl-Open ↔ Tractus-X / Catena-X technical comparison.
 ├── simpl-catalogue/                  Federated Catalogue local stack.
 │   ├── README.md                     Walkthrough, status, architecture observations.
 │   ├── docker-compose.yml
@@ -210,7 +212,9 @@ Each subproject was previously a standalone repository (`simpl-catalogue-local`,
 
 Cross-cutting reference material lives in [`documentation/`](./documentation/README.md). Per-stack docs stay under each subproject's own `docs/` folder.
 
+- [`documentation/simpl-dataspace-landscape.md`](./documentation/simpl-dataspace-landscape.md) - non-technical orientation guide to how Simpl, Gaia-X, DSSC, IDSA, EDC, Tractus-X, Catena-X, Prometheus-X, X-Road, and FIWARE relate to each other.
 - [`documentation/simpl-dssc-mapping.md`](./documentation/simpl-dssc-mapping.md) — full mapping of Simpl-Open onto the DSSC Data Spaces Blueprint V3.0 (key concepts and building blocks), with diagrams, coverage ratings, divergences, and standards alignment.
+- [`documentation/simpl-tractusx-comparison.md`](./documentation/simpl-tractusx-comparison.md) - technical comparison of Simpl-Open with Eclipse Tractus-X / Catena-X (shared EDC/DSP foundations, identity and semantics divergences, component mapping, local-evaluation tooling).
 
 ---
 
