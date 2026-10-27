@@ -20,7 +20,7 @@ Configuration (environment variables):
   JIRA_URL      Jira base URL                 (default https://jira.simplprogramme.eu)
   JIRA_PAT      personal access token         (required)
   OLLAMA_URL    Ollama base URL               (default http://localhost:11434)
-  OLLAMA_MODEL  model name                    (default qwen3:30b-a3b-instruct-2507-q4_K_M)
+  OLLAMA_MODEL  model name                    (default mistral-small3.2)
 
 Usage:
   collect_stories.py --out specs/stories SIMPL-18161 SIMPL-18162 ...
@@ -39,7 +39,7 @@ import urllib.request
 
 JIRA_URL = os.environ.get("JIRA_URL", "https://jira.simplprogramme.eu").rstrip("/")
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434").rstrip("/")
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen3:30b-a3b-instruct-2507-q4_K_M")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "mistral-small3.2")
 MIN_RATIO = 0.98  # share of words that must match the source, in order
 
 PROMPT = """Convert the Jira wiki markup below to plain Markdown.
@@ -48,6 +48,7 @@ Rules:
 - Keep every word exactly as it is. Do not add, remove, reword, translate, correct or summarise anything.
 - Remove the markup only: *bold*, _italic_, {_}, {{monospace}}, {color}, h1. to h6., [text|url] links.
 - Write links as [text](url). Write bullet lists with "- ".
+- Keep table rows as they are, one row per line: |cell|cell|. Do not split cells over lines.
 - Keep the line structure: each line of the source stays its own line. Keep empty lines between blocks.
 - Output only the converted text, nothing before or after it.
 

@@ -14,7 +14,7 @@ After step 3: copy the build into `generated/runN/` (without `node_modules`, `ta
 
 ## Step 0: collecting the stories locally
 
-`collect_stories.py` fetches the stories with a Jira personal access token and converts them with a local model through Ollama, so the story text does not pass through any external service. A word-by-word check against the source catches any change the model makes; on a mismatch it retries once and then falls back to a plain conversion without the model. It prints counts only. Run: `JIRA_PAT=... python3 pipeline/collect_stories.py --out specs/stories --keys-from specs/stories`.
+`collect_stories.py` fetches the stories with a Jira personal access token and converts them with a local model through Ollama (default Mistral Small 3.2: open weights, Apache 2.0, from the French company Mistral AI; any Ollama model can be set with `OLLAMA_MODEL`), so the story text does not pass through any external service. A word-by-word check against the source catches any change the model makes; on a mismatch it retries once and then falls back to a plain conversion without the model. It prints counts only. Run: `JIRA_PAT=... python3 pipeline/collect_stories.py --out specs/stories --keys-from specs/stories`.
 
 The later steps (1 to 4) ran on Claude in run 1. To keep non-public material on the machine end to end, those steps would need a local model too.
 

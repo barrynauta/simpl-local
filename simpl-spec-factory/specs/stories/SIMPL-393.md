@@ -6,7 +6,7 @@
 
 ## Description and acceptance criteria
 
-*Status:* Topic is confirmed by the customer and will be part of R0.1
+Status: Topic is confirmed by the customer and will be part of R0.1
 
 **As a** governance authority agent
 
@@ -14,10 +14,10 @@
 
 **So that** I can use the vocabulary for semantic validation and to check search parameter.
 
-*AC:*\
+AC:\
 - The onthology is visible while executing endpoint to fetch all onthologies\
 - We are able to fetch details of stored onthology
 
 ------------------
 
-- to de defined with customer, whether it is enough, that the mentioned schemas are already provided as initial setup in the catalogues [see SIMPL-390](https://jira.simplprogramme.eu/browse/SIMPL-390) or whether a generic solution to uploads schemas in a vocabulary hub is requested [see SIMPL-395](https://jira.simplprogramme.eu/browse/SIMPL-395). -
+- to de defined with customer, whether it is enough, that the mentioned schemas are already provided as initial setup in the catalogues ([see SIMPL-390](https://jira.simplprogramme.eu/browse/SIMPL-390)) or whether a generic solution to uploads schemas in a vocabulary hub is requested ([[see SIMPL-395](https://jira.simplprogramme.eu/browse/SIMPL-395)]).-
