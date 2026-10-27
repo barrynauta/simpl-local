@@ -1,0 +1,1628 @@
+openapi: 3.0.1
+info:
+  title: Vocabulary Management API
+  description: This API allows the Governance Authority to manage internal vocabularies.
+  version: 1.0.0
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  contact:
+    name: Simpl Programme
+    email: cnect-simpl@ec.europa.eu
+    url: https://simpl-programme.ec.europa.eu/
+servers:
+  - url: https://vocabulary-manager.dev.simpl-europe.eu/v1
+    description: Development gateway
+security:
+  - OAuth2Auth: []
+tags:
+  - name: Vocabulary management
+    description: Manage vocabularies and vocabulary versions.
+  - name: External vocabulary management
+    description: Manage copied external vocabularies used as validation dependencies.
+  - name: Health
+    description: API availability.
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      operationId: getHealth
+      summary: Get API health status.
+      security: []
+      responses:
+        "200":
+          description: The API is up or partially available.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              examples:
+                up:
+                  value:
+                    status: UP
+                degraded:
+                  value:
+                    status: DEGRADED
+        "503":
+          description: The API is down.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: DOWN
+
+  /vocabularies:
+    get:
+      tags:
+        - Vocabulary management
+      operationId: getVocabularies
+      summary: Get the latest version metadata for vocabularies.
+      parameters:
+        - $ref: "#/components/parameters/VocabularyNameQuery"
+        - $ref: "#/components/parameters/VocabularyStatusQuery"
+        - $ref: "#/components/parameters/CreationDateQuery"
+        - $ref: "#/components/parameters/LastUpdatedQuery"
+        - $ref: "#/components/parameters/VocabularyListSortQuery"
+        - $ref: "#/components/parameters/PageQuery"
+        - $ref: "#/components/parameters/PageSizeQuery"
+      responses:
+        "200":
+          description: Vocabularies matching the filters. Empty result sets return an empty `items` array.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetVocabularyListResponse"
+              examples:
+                populated:
+                  value:
+                    page: 1
+                    totalPages: 2
+                    total: 3
+                    pageSize: 20
+                    self: /vocabularies?page=1&pageSize=20&sort=name
+                    first: /vocabularies?page=1&pageSize=20&sort=name
+                    next: /vocabularies?page=2&pageSize=20&sort=name
+                    last: /vocabularies?page=2&pageSize=20&sort=name
+                    items:
+                      - href: /vocabularies/HealthcareVocabulary
+                        contentHref: https://authority.example/vocabulary-manager/content/HealthcareVocabulary
+                        name: HealthcareVocabulary
+                        version: 3
+                        description: Vocabulary defining healthcare resource types.
+                        status: ACTIVE
+                        createdBy: johndoe@example.com
+                        creationDate: "2024-03-01T00:00:00Z"
+                        lastUpdateDate: "2024-03-01T00:00:00Z"
+                      - href: /vocabularies/LegalEntityVocabulary
+                        contentHref: https://authority.example/vocabulary-manager/content/LegalEntityVocabulary
+                        name: LegalEntityVocabulary
+                        version: 1
+                        description: Vocabulary defining legal entity types.
+                        status: DEPRECATED
+                        creationDate: "2024-01-15T00:00:00Z"
+                        lastUpdateDate: "2024-01-15T00:00:00Z"
+                empty:
+                  value:
+                    page: 1
+                    totalPages: 0
+                    total: 0
+                    pageSize: 20
+                    self: /vocabularies?page=1&pageSize=20
+                    first: /vocabularies?page=1&pageSize=20
+                    items: []
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    post:
+      tags:
+        - Vocabulary management
+      operationId: createVocabulary
+      summary: Create a new internal vocabulary.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/CreateVocabularyPayload"
+      responses:
+        "201":
+          description: Vocabulary created. Version 1 is ACTIVE.
+          headers:
+            Location:
+              description: Relative URL of the created vocabulary version.
+              schema:
+                type: string
+                example: /vocabularies/HealthcareVocabulary/versions/1
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabularyVersionMetadataResponse"
+              example:
+                href: /vocabularies/HealthcareVocabulary/versions/1
+                contentHref: https://authority.example/vocabulary-manager/content/HealthcareVocabulary/versions/1
+                name: HealthcareVocabulary
+                version: 1
+                description: Vocabulary defining healthcare resource types.
+                changelog: Initial version.
+                status: ACTIVE
+                creationDate: "2024-03-01T00:00:00Z"
+                lastUpdateDate: "2024-03-01T00:00:00Z"
+                validationWarnings:
+                  - code: externalReferenceSkipped
+                    description: Cannot resolve external namespace 'http://purl.org/dc/terms/' because no cached external vocabulary is registered.
+                    location: prefix 'dcterms' -> 'http://purl.org/dc/terms/'
+        "400":
+          $ref: "#/components/responses/VocabularyValidationBadRequestResponse"
+        "413":
+          $ref: "#/components/responses/UploadTooLargeResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "409":
+          $ref: "#/components/responses/ConflictResponse"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaTypeResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+  /vocabularies/searches:
+    post:
+      tags:
+        - Vocabulary management
+      operationId: searchVocabularies
+      summary: Search local vocabulary metadata for semantic reference resolution.
+      description: Resolves multiple local latest or versioned vocabulary metadata references in one read-only search request. Missing references are omitted from `items`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VocabularySearchRequest"
+            example:
+              items:
+                - name: HealthcareVocabulary
+                - name: LegacyVocabulary
+                  version: 1
+      responses:
+        "200":
+          description: Matching local vocabulary metadata. Missing vocabulary names or versions are omitted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabularySearchResponse"
+              example:
+                items:
+                  - href: /vocabularies/HealthcareVocabulary
+                    contentHref: https://authority.example/vocabulary-manager/content/HealthcareVocabulary
+                    name: HealthcareVocabulary
+                    version: 3
+                    status: ACTIVE
+                    latest: true
+                  - href: /vocabularies/LegacyVocabulary/versions/1
+                    contentHref: https://authority.example/vocabulary-manager/content/LegacyVocabulary/versions/1
+                    name: LegacyVocabulary
+                    version: 1
+                    status: DEPRECATED
+                    latest: false
+                page: 1
+                pageSize: 20
+                total: 2
+                totalPages: 1
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaTypeResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+  /vocabularies/{vocabularyName}:
+    get:
+      tags:
+        - Vocabulary management
+      operationId: getVocabulary
+      summary: Get the latest metadata for a vocabulary.
+      parameters:
+        - $ref: "#/components/parameters/VocabularyNamePath"
+      responses:
+        "200":
+          description: Latest vocabulary metadata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabularyCategory"
+              example:
+                href: /vocabularies/HealthcareVocabulary
+                contentHref: https://authority.example/vocabulary-manager/content/HealthcareVocabulary
+                name: HealthcareVocabulary
+                version: 3
+                description: Vocabulary defining healthcare resource types.
+                status: ACTIVE
+                createdBy: johndoe@example.com
+                creationDate: "2024-03-01T00:00:00Z"
+                lastUpdateDate: "2024-03-01T00:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "404":
+          $ref: "#/components/responses/VocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    patch:
+      tags:
+        - Vocabulary management
+      operationId: updateVocabularyStatus
+      summary: Update the status of an existing vocabulary.
+      parameters:
+        - $ref: "#/components/parameters/VocabularyNamePath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VocabularyStatusPatchRequest"
+      responses:
+        "200":
+          description: Vocabulary status updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabularyCategory"
+              example:
+                href: /vocabularies/HealthcareVocabulary
+                contentHref: https://authority.example/vocabulary-manager/content/HealthcareVocabulary
+                name: HealthcareVocabulary
+                version: 3
+                description: Vocabulary defining healthcare resource types.
+                status: DEPRECATED
+                createdBy: johndoe@example.com
+                creationDate: "2024-03-01T00:00:00Z"
+                lastUpdateDate: "2024-03-01T00:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "404":
+          $ref: "#/components/responses/VocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "409":
+          $ref: "#/components/responses/ConflictResponse"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaTypeResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /vocabularies/{vocabularyName}/versions:
+    get:
+      tags:
+        - Vocabulary management
+      operationId: getVocabularyVersions
+      summary: Get version metadata for a vocabulary.
+      parameters:
+        - $ref: "#/components/parameters/VocabularyNamePath"
+        - $ref: "#/components/parameters/SortQuery"
+        - $ref: "#/components/parameters/PageQuery"
+        - $ref: "#/components/parameters/PageSizeQuery"
+      responses:
+        "200":
+          description: Vocabulary version history.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetVocabularyVersionListResponse"
+              example:
+                page: 1
+                totalPages: 1
+                total: 2
+                pageSize: 20
+                self: /vocabularies/HealthcareVocabulary/versions?page=1&pageSize=20
+                first: /vocabularies/HealthcareVocabulary/versions?page=1&pageSize=20
+                last: /vocabularies/HealthcareVocabulary/versions?page=1&pageSize=20
+                items:
+                  - href: /vocabularies/HealthcareVocabulary/versions/2
+                    contentHref: https://authority.example/vocabulary-manager/content/HealthcareVocabulary/versions/2
+                    name: HealthcareVocabulary
+                    version: 2
+                    description: Vocabulary defining healthcare resource types.
+                    changelog: Added new concept scheme for diagnostics.
+                    status: ACTIVE
+                    creationDate: "2024-03-01T00:00:00Z"
+                    lastUpdateDate: "2024-03-01T00:00:00Z"
+                  - href: /vocabularies/HealthcareVocabulary/versions/1
+                    contentHref: https://authority.example/vocabulary-manager/content/HealthcareVocabulary/versions/1
+                    name: HealthcareVocabulary
+                    version: 1
+                    description: Initial vocabulary for healthcare resource types.
+                    changelog: Initial version.
+                    status: DEPRECATED
+                    creationDate: "2024-01-15T00:00:00Z"
+                    lastUpdateDate: "2024-03-01T00:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "404":
+          $ref: "#/components/responses/VocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    post:
+      tags:
+        - Vocabulary management
+      operationId: createVocabularyVersion
+      summary: Create a new version of an existing internal vocabulary.
+      description: The API assigns the next version number automatically. Requests must not provide a `version` form field.
+      parameters:
+        - $ref: "#/components/parameters/VocabularyNamePath"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/CreateNewVocabularyVersionPayload"
+      responses:
+        "201":
+          description: Vocabulary version created. The previous active version is deprecated.
+          headers:
+            Location:
+              description: Relative URL of the created vocabulary version.
+              schema:
+                type: string
+                example: /vocabularies/HealthcareVocabulary/versions/2
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabularyVersionMetadataResponse"
+              example:
+                href: /vocabularies/HealthcareVocabulary/versions/2
+                contentHref: https://authority.example/vocabulary-manager/content/HealthcareVocabulary/versions/2
+                name: HealthcareVocabulary
+                version: 2
+                description: Vocabulary defining healthcare resource types.
+                changelog: Added new concept scheme for diagnostics.
+                status: ACTIVE
+                creationDate: "2024-03-01T00:00:00Z"
+                lastUpdateDate: "2024-03-01T00:00:00Z"
+                validationWarnings:
+                  - code: deprecatedVocabularyReference
+                    description: Referenced internal vocabulary 'LegacyVocabulary' version 1 is deprecated.
+                    location: prefix 'legacy' -> 'https://authority.example/vocabulary-manager/content/LegacyVocabulary/versions/1#'
+        "400":
+          $ref: "#/components/responses/VocabularyValidationBadRequestResponse"
+        "413":
+          $ref: "#/components/responses/UploadTooLargeResponse"
+        "404":
+          $ref: "#/components/responses/VocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaTypeResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /vocabularies/{vocabularyName}/versions/{version}:
+    get:
+      tags:
+        - Vocabulary management
+      operationId: getVocabularyVersion
+      summary: Get metadata for a specific vocabulary version.
+      parameters:
+        - $ref: "#/components/parameters/VocabularyNamePath"
+        - name: version
+          in: path
+          required: true
+          description: Version number of the vocabulary.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Vocabulary version metadata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabularyMetadata"
+              example:
+                href: /vocabularies/HealthcareVocabulary/versions/2
+                contentHref: https://authority.example/vocabulary-manager/content/HealthcareVocabulary/versions/2
+                name: HealthcareVocabulary
+                version: 2
+                description: Vocabulary defining healthcare resource types.
+                changelog: Added new concept scheme for diagnostics.
+                status: ACTIVE
+                creationDate: "2024-03-01T00:00:00Z"
+                lastUpdateDate: "2024-03-01T00:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "404":
+          $ref: "#/components/responses/VocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    patch:
+      tags:
+        - Vocabulary management
+      operationId: updateVocabularyVersionStatus
+      summary: Update the status of a vocabulary version.
+      parameters:
+        - $ref: "#/components/parameters/VocabularyNamePath"
+        - name: version
+          in: path
+          required: true
+          description: Version number of the vocabulary.
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VocabularyStatusPatchRequest"
+      responses:
+        "200":
+          description: Vocabulary version status updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabularyMetadata"
+              example:
+                href: /vocabularies/HealthcareVocabulary/versions/2
+                contentHref: https://authority.example/vocabulary-manager/content/HealthcareVocabulary/versions/2
+                name: HealthcareVocabulary
+                version: 2
+                description: Vocabulary defining healthcare resource types.
+                changelog: Added new concept scheme for diagnostics.
+                status: DEPRECATED
+                creationDate: "2024-03-01T00:00:00Z"
+                lastUpdateDate: "2024-03-02T00:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "404":
+          $ref: "#/components/responses/VocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "409":
+          $ref: "#/components/responses/ConflictResponse"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaTypeResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /content/{vocabularyName}:
+    get:
+      tags:
+        - Vocabulary management
+      operationId: downloadVocabulary
+      summary: Download the latest vocabulary content in Turtle format.
+      parameters:
+        - $ref: "#/components/parameters/VocabularyNamePath"
+      responses:
+        "200":
+          description: Turtle content for the latest vocabulary version.
+          headers:
+            Content-Disposition:
+              description: Attachment filename for the downloaded Turtle file.
+              schema:
+                type: string
+                example: attachment; filename="HealthcareVocabulary.ttl"
+          content:
+            text/turtle:
+              schema:
+                type: string
+              example: "@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n@prefix hc: <https://example.eu/healthcare#> .\nhc:HealthcareScheme a skos:ConceptScheme ;\n  skos:prefLabel \"Healthcare Concept Scheme\"@en ."
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "404":
+          $ref: "#/components/responses/VocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /content/{vocabularyName}/versions/{version}:
+    get:
+      tags:
+        - Vocabulary management
+      operationId: downloadVocabularyVersion
+      summary: Download a specific vocabulary version in Turtle format.
+      parameters:
+        - $ref: "#/components/parameters/VocabularyNamePath"
+        - name: version
+          in: path
+          required: true
+          description: Version number of the vocabulary.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Turtle content for the requested vocabulary version.
+          headers:
+            Content-Disposition:
+              description: Attachment filename for the downloaded Turtle file.
+              schema:
+                type: string
+                example: attachment; filename="HealthcareVocabulary-v2.ttl"
+          content:
+            text/turtle:
+              schema:
+                type: string
+              example: "@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n@prefix hc: <https://example.eu/healthcare#> .\nhc:HealthcareScheme a skos:ConceptScheme ;\n  skos:prefLabel \"Healthcare Concept Scheme\"@en ."
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "404":
+          $ref: "#/components/responses/VocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /external-vocabularies:
+    get:
+      tags:
+        - External vocabulary management
+      operationId: getExternalVocabularies
+      summary: Get cached external vocabularies.
+      parameters:
+        - $ref: "#/components/parameters/PageQuery"
+        - $ref: "#/components/parameters/PageSizeQuery"
+      responses:
+        "200":
+          description: Cached external vocabularies. Empty result sets return an empty `items` array.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetExternalVocabularyListResponse"
+              example:
+                page: 1
+                totalPages: 1
+                total: 1
+                pageSize: 20
+                self: /external-vocabularies?page=1&pageSize=20
+                first: /external-vocabularies?page=1&pageSize=20
+                last: /external-vocabularies?page=1&pageSize=20
+                items:
+                  - href: /external-vocabularies/DublinCoreTerms
+                    name: DublinCoreTerms
+                    namespaceUri: http://purl.org/dc/terms
+                    aliasUris:
+                      - https://purl.org/dc/terms
+                    sourceUri: https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl
+                    description: Cached copy of DCMI Metadata Terms for validation.
+                    createdBy: johndoe@example.com
+                    creationDate: "2024-03-01T00:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    post:
+      tags:
+        - External vocabulary management
+      operationId: createExternalVocabulary
+      summary: Create a cached external vocabulary for validation.
+      description: Uploads a copied Turtle vocabulary. The content is exposed through `/external-vocabularies/{name}/content`; the legacy `/external-vocabularies/content` endpoint remains available for namespace-based downloads.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/CreateExternalVocabularyPayload"
+      responses:
+        "201":
+          description: Cached external vocabulary created.
+          headers:
+            Location:
+              description: Relative URL of the cached external vocabulary metadata.
+              schema:
+                type: string
+                example: /external-vocabularies/DublinCoreTerms
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExternalVocabulary"
+              example:
+                href: /external-vocabularies/DublinCoreTerms
+                name: DublinCoreTerms
+                namespaceUri: http://purl.org/dc/terms
+                aliasUris:
+                  - https://purl.org/dc/terms
+                sourceUri: https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl
+                description: Cached copy of DCMI Metadata Terms for validation.
+                createdBy: johndoe@example.com
+                creationDate: "2024-03-01T00:00:00Z"
+        "400":
+          $ref: "#/components/responses/VocabularyValidationBadRequestResponse"
+        "413":
+          $ref: "#/components/responses/UploadTooLargeResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "409":
+          $ref: "#/components/responses/ConflictResponse"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaTypeResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /external-vocabulary/searches:
+    post:
+      tags:
+        - External vocabulary management
+      operationId: searchExternalVocabularies
+      summary: Search cached external vocabulary metadata.
+      description: Searches cached external vocabularies by canonical namespace URI or by one registered alias URI. The search is processed synchronously and has no side effects.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExternalVocabularySearchRequest"
+            examples:
+              byNamespace:
+                value:
+                  namespaceUri: http://purl.org/dc/terms
+              byAlias:
+                value:
+                  aliasUri: https://purl.org/dc/terms
+              batch:
+                value:
+                  namespaceUris:
+                    - http://purl.org/dc/terms
+                    - https://schema.org
+                  aliasUris:
+                    - https://purl.org/dc/terms
+      responses:
+        "200":
+          description: Matching cached external vocabulary metadata. No match returns an empty `items` array.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetExternalVocabularyListResponse"
+              example:
+                items:
+                  - href: /external-vocabularies/DublinCoreTerms
+                    name: DublinCoreTerms
+                    namespaceUri: http://purl.org/dc/terms
+                    aliasUris:
+                      - https://purl.org/dc/terms
+                page: 1
+                pageSize: 20
+                total: 1
+                totalPages: 1
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaTypeResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /external-vocabularies/content:
+    post:
+      tags:
+        - External vocabulary management
+      operationId: downloadExternalVocabularyContent
+      summary: Download cached external vocabulary content in Turtle format.
+      description: Resolves the cached external vocabulary by the namespace URI used in a vocabulary definition prefix. The namespace URI is normalized before lookup and can match either the registered canonical namespace URI or one of its aliases.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExternalVocabularyContentRequest"
+            example:
+              namespaceUri: http://purl.org/dc/terms/
+      responses:
+        "200":
+          description: Turtle content for the resolved cached external vocabulary.
+          headers:
+            Content-Disposition:
+              description: Attachment filename for the downloaded Turtle file.
+              schema:
+                type: string
+                example: attachment; filename="DublinCoreTerms.ttl"
+          content:
+            text/turtle:
+              schema:
+                type: string
+              example: "@prefix dcterms: <http://purl.org/dc/terms/> .\ndcterms:title a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> ."
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "404":
+          $ref: "#/components/responses/ExternalVocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaTypeResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /external-vocabularies/{name}/content:
+    get:
+      tags:
+        - External vocabulary management
+      operationId: getExternalVocabularyContentByName
+      summary: Download cached external vocabulary content by name in Turtle format.
+      description: Returns the Turtle graph attached to a cached external vocabulary document.
+      parameters:
+        - $ref: "#/components/parameters/ExternalVocabularyNamePath"
+      responses:
+        "200":
+          description: Turtle content for the cached external vocabulary.
+          headers:
+            Content-Disposition:
+              description: Attachment filename for the downloaded Turtle file.
+              schema:
+                type: string
+                example: attachment; filename="DublinCoreTerms.ttl"
+          content:
+            text/turtle:
+              schema:
+                type: string
+              example: "@prefix dcterms: <http://purl.org/dc/terms/> .\ndcterms:title a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> ."
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "404":
+          $ref: "#/components/responses/ExternalVocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /external-vocabularies/{name}:
+    get:
+      tags:
+        - External vocabulary management
+      operationId: getExternalVocabulary
+      summary: Get cached external vocabulary metadata.
+      parameters:
+        - $ref: "#/components/parameters/ExternalVocabularyNamePath"
+      responses:
+        "200":
+          description: Cached external vocabulary metadata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExternalVocabulary"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "404":
+          $ref: "#/components/responses/VocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    delete:
+      tags:
+        - External vocabulary management
+      operationId: deleteExternalVocabulary
+      summary: Delete a cached external vocabulary.
+      description: Hard deletes the metadata and content graphs from the external vocabulary dataset.
+      parameters:
+        - $ref: "#/components/parameters/ExternalVocabularyNamePath"
+      responses:
+        "204":
+          description: Cached external vocabulary deleted.
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "404":
+          $ref: "#/components/responses/VocabularyNotFoundResponse"
+        "406":
+          $ref: "#/components/responses/NotAcceptableResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+components:
+  securitySchemes:
+    OAuth2Auth:
+      type: oauth2
+      description: OAuth2 authentication provided by the gateway.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.com/oauth/authorize
+          tokenUrl: https://auth.example.com/oauth/token
+          scopes:
+            read: Read access
+            write: Write access
+
+  parameters:
+    VocabularyNamePath:
+      name: vocabularyName
+      in: path
+      required: true
+      description: Vocabulary name in PascalCase, alphanumeric.
+      schema:
+        type: string
+        minLength: 3
+        maxLength: 64
+        pattern: "^[A-Z][a-zA-Z0-9]*$"
+    ExternalVocabularyNamePath:
+      name: name
+      in: path
+      required: true
+      description: External vocabulary name in PascalCase, alphanumeric.
+      schema:
+        type: string
+        minLength: 3
+        maxLength: 64
+        pattern: "^[A-Z][a-zA-Z0-9]*$"
+    VocabularyNameQuery:
+      name: name
+      in: query
+      required: false
+      description: Filter by vocabulary name. Must be in PascalCase, alphanumeric.
+      schema:
+        type: string
+        minLength: 3
+        maxLength: 64
+        pattern: "^[A-Z][a-zA-Z0-9]*$"
+    VocabularyStatusQuery:
+      name: status
+      in: query
+      required: false
+      description: Filter by vocabulary status.
+      schema:
+        $ref: "#/components/schemas/VocabularyStatus"
+    CreationDateQuery:
+      name: creationDate
+      in: query
+      required: false
+      description: Filter by ISO 8601 creation date or date-time.
+      schema:
+        type: string
+        pattern: '^\d{4}-\d{2}-\d{2}(T.*)?$'
+        example: "2024-03-01T00:00:00Z"
+    LastUpdatedQuery:
+      name: lastUpdated
+      in: query
+      required: false
+      description: Filter by ISO 8601 last-updated date or date-time.
+      schema:
+        type: string
+        pattern: '^\d{4}-\d{2}-\d{2}(T.*)?$'
+        example: "2024-03-01T00:00:00Z"
+    VocabularyListSortQuery:
+      name: sort
+      in: query
+      required: false
+      description: Sort vocabularies by a supported field. Prefix with `-` for descending order.
+      schema:
+        type: string
+        enum:
+          - name
+          - "-name"
+          - status
+          - "-status"
+          - creationDate
+          - "-creationDate"
+          - lastUpdated
+          - "-lastUpdated"
+    SortQuery:
+      name: sort
+      in: query
+      required: false
+      description: Sort by a supported field. Prefix with `-` for descending order.
+      schema:
+        type: string
+        enum:
+          - name
+          - "-name"
+          - status
+          - "-status"
+          - creationDate
+          - "-creationDate"
+    PageQuery:
+      name: page
+      in: query
+      required: false
+      description: Page number to display.
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    PageSizeQuery:
+      name: pageSize
+      in: query
+      required: false
+      description: Number of items per page.
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+
+  responses:
+    BadRequestResponse:
+      description: Bad Request.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/InputValidationProblem"
+          example:
+            type: urn:problem-type:belgif:badRequest
+            href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+            title: Bad Request
+            status: 400
+            detail: The input message is incorrect
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+            issues:
+              - type: urn:problem-type:belgif:input-validation:schemaViolation
+                href: https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html
+                title: Input isn't valid with respect to schema
+                detail: Query parameter 'sort' must be one of [name, -name, status, -status, creationDate, -creationDate, lastUpdated, -lastUpdated].
+                in: query
+                name: sort
+                value: invalid
+    VocabularyValidationBadRequestResponse:
+      description: Bad Request caused by invalid vocabulary file content, Turtle syntax, or semantic validation.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/VocabularyValidationProblem"
+          examples:
+            syntaxError:
+              value:
+                type: urn:problem-type:belgif:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: The input message is incorrect
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                issues:
+                  - type: urn:problem-type:belgif:input-validation:invalidInput
+                    href: https://www.belgif.be/specification/rest/api-guide/issues/invalidInput.html
+                    title: Invalid input
+                    detail: Encountered invalid Turtle syntax.
+                    in: body
+                    name: vocabularyFile
+                    location: line 3, column 14
+            semanticError:
+              value:
+                type: urn:problem-type:belgif:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: The input message is incorrect
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                issues:
+                  - type: urn:problem-type:belgif:input-validation:invalidInput
+                    href: https://www.belgif.be/specification/rest/api-guide/issues/invalidInput.html
+                    title: Invalid input
+                    detail: Literal value for object property
+                    in: body
+                    name: vocabularyFile
+                    location: statement 'http://example.org/subject http://example.org/predicate invalid-literal'
+    UploadTooLargeResponse:
+      description: Uploaded vocabulary file is larger than the configured upload limit.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: urn:problem-type:simpl:payloadTooLarge
+            title: Payload Too Large
+            status: 413
+            detail: Uploaded vocabulary file is too large. The maximum allowed upload size is 5 MB. Please upload a smaller Turtle file.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+            issues:
+              - type: urn:problem-type:belgif:input-validation:invalidInput
+                href: https://www.belgif.be/specification/rest/api-guide/issues/invalidInput.html
+                title: Invalid input
+                detail: Uploaded vocabulary file is too large. The maximum allowed upload size is 5 MB. Please upload a smaller Turtle file.
+                in: body
+                name: vocabularyFile
+    VocabularyNotFoundResponse:
+      description: Resource Not Found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: urn:problem-type:belgif:resourceNotFound
+            href: https://www.belgif.be/specification/rest/api-guide/problems/resourceNotFound.html
+            title: Resource Not Found
+            status: 404
+            detail: Vocabulary with name 'HealthcareVocabulary' was not found.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+            issues:
+              - in: path
+                name: vocabularyName
+                detail: Vocabulary with name 'HealthcareVocabulary' was not found.
+    ExternalVocabularyNotFoundResponse:
+      description: External vocabulary or external vocabulary content was not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: urn:problem-type:belgif:resourceNotFound
+            href: https://www.belgif.be/specification/rest/api-guide/problems/resourceNotFound.html
+            title: Resource Not Found
+            status: 404
+            detail: External vocabulary with namespaceUri 'http://purl.org/dc/terms' was not found.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    NotAcceptableResponse:
+      description: Not Acceptable. Returned only when the requested response media type cannot be served.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: urn:problem-type:simpl:notAcceptable
+            title: Not Acceptable
+            status: 406
+            detail: Requested media type cannot be served.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    ConflictResponse:
+      description: Conflict.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: urn:problem-type:simpl:conflict
+            title: Conflict
+            status: 409
+            detail: Vocabulary is already in status ACTIVE
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    UnsupportedMediaTypeResponse:
+      description: Unsupported Media Type.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: urn:problem-type:simpl:unsupportedMediaType
+            title: Unsupported Media Type
+            status: 415
+            detail: Request content type is not supported.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    InternalServerErrorResponse:
+      description: Internal Server Error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: urn:problem-type:belgif:internalServerError
+            href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+            title: Internal Server Error
+            status: 500
+            detail: Internal Server Error
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+
+  schemas:
+    HealthStatus:
+      type: string
+      enum:
+        - UP
+        - DEGRADED
+        - DOWN
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: "#/components/schemas/HealthStatus"
+
+    Problem:
+      type: object
+      description: Problem Details object as defined by RFC 9457.
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        issues:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProblemIssue"
+    InputValidationProblem:
+      allOf:
+        - $ref: "#/components/schemas/Problem"
+        - type: object
+          properties:
+            issues:
+              type: array
+              items:
+                $ref: "#/components/schemas/InputValidationIssue"
+    VocabularyValidationProblem:
+      allOf:
+        - $ref: "#/components/schemas/InputValidationProblem"
+        - type: object
+          properties:
+            issues:
+              type: array
+              items:
+                $ref: "#/components/schemas/VocabularyValidationIssue"
+    ProblemIssue:
+      type: object
+      description: An issue entry attached to a problem response.
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        detail:
+          type: string
+        in:
+          type: string
+          enum:
+            - body
+            - header
+            - path
+            - query
+        name:
+          type: string
+        value:
+          nullable: true
+        location:
+          type: string
+          description: Free-form location emitted by the backend to pinpoint the failing part of the payload or RDF content.
+    InputValidationIssue:
+      allOf:
+        - $ref: "#/components/schemas/ProblemIssue"
+      description: An issue detected during request validation.
+    VocabularyValidationIssue:
+      allOf:
+        - $ref: "#/components/schemas/InputValidationIssue"
+        - type: object
+          description: An issue detected while validating uploaded vocabulary content.
+          properties:
+            location:
+              type: string
+              description: |
+                Validation-specific location string. Depending on the failure this can be a Turtle parser position,
+                `document`, a namespace reference, or an RDF statement/resource identifier.
+
+    VocabularyValidationWarning:
+      type: object
+      description: A non-blocking issue detected while validating uploaded vocabulary content.
+      properties:
+        code:
+          type: string
+          description: Machine-readable warning code.
+          example: deprecatedVocabularyReference
+        description:
+          type: string
+          description: Human-readable warning description.
+          example: Referenced internal vocabulary 'LegacyVocabulary' version 1 is deprecated.
+        location:
+          type: string
+          description: Validation-specific location string, usually a namespace reference or RDF statement/resource identifier.
+          example: prefix 'legacy' -> 'https://authority.example/vocabulary-manager/content/LegacyVocabulary/versions/1#'
+
+    VocabularyStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - DEPRECATED
+
+    CreateVocabularyPayload:
+      type: object
+      required:
+        - vocabularyFile
+        - name
+        - description
+        - changelog
+      properties:
+        vocabularyFile:
+          type: string
+          format: binary
+          description: Vocabulary file in Turtle format.
+        name:
+          type: string
+          example: HealthcareVocabulary
+          minLength: 3
+          maxLength: 64
+          pattern: "^[A-Z][a-zA-Z0-9]*$"
+        description:
+          type: string
+          example: Vocabulary defining healthcare resource types.
+        changelog:
+          type: string
+          example: Initial version.
+    CreateNewVocabularyVersionPayload:
+      type: object
+      required:
+        - vocabularyFile
+        - description
+        - changelog
+      description: Submit only the content and metadata for the new version. Do not include a `version` field; the API assigns it automatically.
+      properties:
+        vocabularyFile:
+          type: string
+          format: binary
+          description: Vocabulary file in Turtle format.
+        description:
+          type: string
+          example: Vocabulary defining healthcare resource types with extended diagnostics.
+        changelog:
+          type: string
+          example: Added new concept scheme for diagnostics.
+    CreateExternalVocabularyPayload:
+      type: object
+      required:
+        - vocabularyFile
+        - name
+        - namespaceUri
+      properties:
+        vocabularyFile:
+          type: string
+          format: binary
+          description: External vocabulary file in Turtle format.
+        name:
+          type: string
+          example: DublinCoreTerms
+          minLength: 3
+          maxLength: 64
+          pattern: "^[A-Z][a-zA-Z0-9]*$"
+        namespaceUri:
+          type: string
+          format: uri
+          example: http://purl.org/dc/terms/
+        aliasUris:
+          type: array
+          description: Optional alternate namespace URIs matched during validation.
+          items:
+            type: string
+            format: uri
+          example:
+            - https://purl.org/dc/terms/
+        description:
+          type: string
+          example: Cached copy of DCMI Metadata Terms for validation.
+        sourceUri:
+          type: string
+          format: uri
+          example: https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl
+    ExternalVocabularyContentRequest:
+      type: object
+      required:
+        - namespaceUri
+      properties:
+        namespaceUri:
+          type: string
+          format: uri
+          description: Namespace URI as used in the vocabulary definition prefix. The value can be the canonical namespace URI or a registered alias.
+          example: http://purl.org/dc/terms/
+    ExternalVocabularySearchRequest:
+      type: object
+      additionalProperties: false
+      description: Submit exactly one single-value search criterion, or one batch request with at least one namespace URI or alias URI candidate.
+      oneOf:
+        - required:
+            - namespaceUri
+        - required:
+            - aliasUri
+        - anyOf:
+            - required:
+                - namespaceUris
+            - required:
+                - aliasUris
+      properties:
+        namespaceUri:
+          type: string
+          format: uri
+          description: Canonical namespace URI registered for the cached external vocabulary.
+          example: http://purl.org/dc/terms
+        aliasUri:
+          type: string
+          format: uri
+          description: One registered alias URI for the cached external vocabulary.
+          example: https://purl.org/dc/terms
+        namespaceUris:
+          type: array
+          description: Canonical namespace URI candidates. Values are normalized and deduplicated before lookup.
+          items:
+            type: string
+            format: uri
+          example:
+            - http://purl.org/dc/terms
+            - https://schema.org
+        aliasUris:
+          type: array
+          description: Alias URI candidates. Values are normalized and deduplicated before lookup.
+          items:
+            type: string
+            format: uri
+          example:
+            - https://purl.org/dc/terms
+    VocabularySearchRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/VocabularySearchItemRequest"
+    VocabularySearchItemRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 64
+          pattern: "^[A-Z][a-zA-Z0-9]*$"
+          example: HealthcareVocabulary
+        version:
+          type: integer
+          minimum: 1
+          description: Omit to resolve latest vocabulary metadata.
+          example: 1
+    VocabularySearchResponse:
+      allOf:
+        - $ref: "#/components/schemas/CollectionPage"
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/VocabularySearchItem"
+    VocabularySearchItem:
+      type: object
+      properties:
+        href:
+          type: string
+          example: /vocabularies/HealthcareVocabulary
+        contentHref:
+          type: string
+          format: uri
+          example: https://authority.example/vocabulary-manager/content/HealthcareVocabulary
+        name:
+          type: string
+          example: HealthcareVocabulary
+        version:
+          type: integer
+          example: 3
+        status:
+          $ref: "#/components/schemas/VocabularyStatus"
+        latest:
+          type: boolean
+          description: True when the result came from latest vocabulary metadata; false when it came from explicit version metadata.
+          example: true
+
+    GetVocabularyListResponse:
+      allOf:
+        - $ref: "#/components/schemas/CollectionPage"
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/VocabularyCategory"
+    GetExternalVocabularyListResponse:
+      allOf:
+        - $ref: "#/components/schemas/CollectionPage"
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/ExternalVocabulary"
+    GetVocabularyVersionListResponse:
+      allOf:
+        - $ref: "#/components/schemas/CollectionPage"
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/VocabularyMetadata"
+    CollectionPage:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        totalPages:
+          type: integer
+          example: 2
+        total:
+          type: integer
+          format: int64
+          example: 5
+        pageSize:
+          type: integer
+          example: 20
+        self:
+          type: string
+          example: /vocabularies?page=1&pageSize=20
+        first:
+          type: string
+          example: /vocabularies?page=1&pageSize=20
+        prev:
+          type: string
+          nullable: true
+          example: /vocabularies?page=1&pageSize=20
+        next:
+          type: string
+          nullable: true
+          example: /vocabularies?page=2&pageSize=20
+        last:
+          type: string
+          nullable: true
+          example: /vocabularies?page=2&pageSize=20
+
+    VocabularyCategory:
+      type: object
+      properties:
+        href:
+          type: string
+          example: /vocabularies/HealthcareVocabulary
+        contentHref:
+          type: string
+          format: uri
+          example: https://authority.example/vocabulary-manager/content/HealthcareVocabulary
+        name:
+          type: string
+          example: HealthcareVocabulary
+        version:
+          type: integer
+          example: 2
+        description:
+          type: string
+          example: Vocabulary defining healthcare resource types.
+        status:
+          $ref: "#/components/schemas/VocabularyStatus"
+        createdBy:
+          type: string
+          example: johndoe@example.com
+        creationDate:
+          type: string
+          format: date-time
+          example: "2024-03-01T00:00:00Z"
+        lastUpdateDate:
+          type: string
+          format: date-time
+          example: "2024-03-01T00:00:00Z"
+    VocabularyMetadata:
+      type: object
+      properties:
+        href:
+          type: string
+          example: /vocabularies/HealthcareVocabulary/versions/2
+        contentHref:
+          type: string
+          format: uri
+          example: https://authority.example/vocabulary-manager/content/HealthcareVocabulary/versions/2
+        latestVersionHref:
+          type: string
+          nullable: true
+          example: /vocabularies/HealthcareVocabulary/versions/3
+        name:
+          type: string
+          example: HealthcareVocabulary
+        version:
+          type: integer
+          example: 2
+        description:
+          type: string
+          example: Vocabulary defining healthcare resource types.
+        changelog:
+          type: string
+          example: Added new concept scheme for diagnostics.
+        status:
+          $ref: "#/components/schemas/VocabularyStatus"
+        creationDate:
+          type: string
+          format: date-time
+          example: "2024-03-01T00:00:00Z"
+        lastUpdateDate:
+          type: string
+          format: date-time
+          example: "2024-03-01T00:00:00Z"
+    VocabularyVersionMetadataResponse:
+      type: object
+      properties:
+        href:
+          type: string
+          example: /vocabularies/HealthcareVocabulary/versions/2
+        contentHref:
+          type: string
+          format: uri
+          example: https://authority.example/vocabulary-manager/content/HealthcareVocabulary/versions/2
+        name:
+          type: string
+          example: HealthcareVocabulary
+        version:
+          type: integer
+          example: 2
+        description:
+          type: string
+          example: Vocabulary defining healthcare resource types.
+        changelog:
+          type: string
+          example: Added new concept scheme for diagnostics.
+        status:
+          $ref: "#/components/schemas/VocabularyStatus"
+        creationDate:
+          type: string
+          format: date-time
+          example: "2024-03-01T00:00:00Z"
+        lastUpdateDate:
+          type: string
+          format: date-time
+          example: "2024-03-01T00:00:00Z"
+        validationWarnings:
+          type: array
+          description: Non-blocking validation warnings returned when vocabulary creation succeeds despite warnings.
+          items:
+            $ref: "#/components/schemas/VocabularyValidationWarning"
+          example:
+            - code: deprecatedVocabularyReference
+              description: Referenced internal vocabulary 'LegacyVocabulary' version 1 is deprecated.
+              location: prefix 'legacy' -> 'https://authority.example/vocabulary-manager/content/LegacyVocabulary/versions/1#'
+    ExternalVocabulary:
+      type: object
+      properties:
+        href:
+          type: string
+          example: /external-vocabularies/DublinCoreTerms
+        name:
+          type: string
+          example: DublinCoreTerms
+        namespaceUri:
+          type: string
+          format: uri
+          example: http://purl.org/dc/terms
+        aliasUris:
+          type: array
+          items:
+            type: string
+            format: uri
+          example:
+            - https://purl.org/dc/terms
+        sourceUri:
+          type: string
+          format: uri
+          example: https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl
+        description:
+          type: string
+          example: Cached copy of DCMI Metadata Terms for validation.
+        createdBy:
+          type: string
+          example: johndoe@example.com
+        creationDate:
+          type: string
+          format: date-time
+          example: "2024-03-01T00:00:00Z"
+
+    VocabularyStatusPatchRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: "#/components/schemas/VocabularyStatus"
