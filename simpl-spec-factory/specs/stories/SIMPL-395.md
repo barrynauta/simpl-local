@@ -2,9 +2,9 @@
 - Status: DevTeam PBI is ready for Implementation check
 - Type: Story
 - Created: 2024-05-24, updated: 2026-05-19
-- Source: https://jira.simplprogramme.eu/browse/SIMPL-395 (copied 2026-10-27)
+- Source: https://jira.simplprogramme.eu/browse/SIMPL-395 (collected 2026-10-27)
 
-## Description and acceptance criteria (as shown on the Jira issue page)
+## Description and acceptance criteria
 
 Status: Grooming / Ovi will add further Subtasks + AC and will be discussed in the next Grooming
 
@@ -30,4 +30,6 @@ The UI should allow to upload new schema/vocabulary to the catalogue (files are 
 
 The UI should not be an extension of the existing search UI. The reason is that this needs to deploy later in different nodes. But it makes sense to use common components to build this UI.
 
-a generic vocabulary Hub to upload vocabulary definitions in OWL like IDSA Vocabulary Hub and the used vocabulary provider vocob
+!https://confluence.simplprogramme.eu/download/attachments/151552237/vocab.png?version=1&modificationDate=1722428680146&api=v2|width=470,height=422!
+
+a generic vocabulary Hub to upload vocabulary definitions in OWL like [IDSA Vocabulary Hub](https://github.com/International-Data-Spaces-Association/IDS-VocabularyProvider?tab=readme-ov-file) and the used vocabulary provider [vocob](https://gitlab.cc-asp.fraunhofer.de/vocoreg/public-ids-vp/vocol)

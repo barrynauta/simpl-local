@@ -1,12 +1,12 @@
 # Input specs: Vocabulary Manager
 
-Frozen input set for the first factory run, collected **2026-10-27**. The factory works from these files only. Do not refresh them in place: a new copy is a new, dated input set.
+Frozen input set for the first factory run, collected **2026-10-27**. The stories were collected again the same day with the local collection script; the text is the same. The factory works from these files only. Do not refresh them in place: a new copy is a new, dated input set.
 
 ## What is here
 
 | Folder | Content | Source |
 |---|---|---|
-| `stories/` | 35 user stories, one file each: key, summary, status, dates and the description with the Given/When/Then acceptance criteria, as shown on each Jira issue page (rendered text, so link targets and formatting are not kept). Layout: one line per clause, with the story keywords (**As a**, **I want**, **so that**) and the scenario keywords (**Given**, **When**, **Then**, **And**) in bold and capitalised; otherwise the words are unchanged. Review comments, links and authors are left out. | Jira SIMPL, copied from the issue pages in the browser |
+| `stories/` | 35 user stories, one file each: key, summary, status, dates and the description with the Given/When/Then acceptance criteria. Layout: one line per clause, with the story keywords (**As a**, **I want**, **So that**) and the scenario keywords (**Given**, **When**, **Then**, **And**) in bold and capitalised; otherwise the words are unchanged. Review comments, links to other issues and authors are left out. | Jira SIMPL, collected with [`pipeline/collect_stories.py`](../pipeline/collect_stories.py): a personal access token for Jira and a local model (Ollama) for the conversion, so the story text does not leave the machine |
 | `api/vocabulary_openapi-tier1.yaml` | OpenAPI 3, "Vocabulary Management API" 1.0.0, 13 paths | code.europa.eu `simpl/simpl-open/data/semantics-and-vocabulary/vocabulary-hub/vocabulary-manager/vocabulary-manager-be`, commit `7755e1f` (main, 2026-09-29) |
 | `functional/bp02b-manage-vocabularies.md` | Business process "Manage vocabularies" | code.europa.eu `simpl/simpl-open/foundations/business-processes`, commit `8090f32` (main, 2026-10-23); canonical source: simpl-programme.ec.europa.eu |
 | R07.02 tech description (not copied here) | Roadmap item tech description: scope, roles, domain model, lifecycle and validation rules, draft API | Confluence page 137235370, v5 (2026-05-20). Not yet published, so only referenced; the spec digest quotes what it uses. |

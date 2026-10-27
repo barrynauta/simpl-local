@@ -4,12 +4,19 @@ The prompts that drive the factory, one file per step, so a run can be repeated.
 
 | Step | File | Who | Reads | Writes |
 |---|---|---|---|---|
+| 0 | [`collect_stories.py`](./collect_stories.py) | script, local model | Jira (personal access token) | `specs/stories/` |
 | 1 | [`01-spec-digest.md`](./01-spec-digest.md) | main session | `specs/` | `spec-digest.md` |
 | 2 | [`02-test-writer-api.md`](./02-test-writer-api.md) | test writer | `specs/`, digest | `tests/` (API scenarios, UI Gherkin) |
 | 3 | [`03-code-writer.md`](./03-code-writer.md) | code writer | its own copy of `specs/` and the digest | the build, in its own workspace |
 | 4 | [`04-test-writer-ui.md`](./04-test-writer-ui.md) | test writer | `specs/`, digest, `tests/`, the running UIs | UI browser steps |
 
 After step 3: copy the build into `generated/runN/` (without `node_modules`, `target`, `dist`), run the suite against it, and do the two checks below. Record everything in `findings.md`.
+
+## Step 0: collecting the stories locally
+
+`collect_stories.py` fetches the stories with a Jira personal access token and converts them with a local model through Ollama, so the story text does not pass through any external service. A word-by-word check against the source catches any change the model makes; on a mismatch it retries once and then falls back to a plain conversion without the model. It prints counts only. Run: `JIRA_PAT=... python3 pipeline/collect_stories.py --out specs/stories --keys-from specs/stories`.
+
+The later steps (1 to 4) ran on Claude in run 1. To keep non-public material on the machine end to end, those steps would need a local model too.
 
 ## Placeholders
 
