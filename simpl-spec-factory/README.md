@@ -208,7 +208,7 @@ Where it is useful today:
 ## Layout
 
 ```
-specs/       collected input specs, as fetched (stories, ACs, FRs, OpenAPI)
+specs/       collected input specs (stories, ACs, FRs, OpenAPI)
 generated/   the factory output: code, tests, docs
 pipeline/    the prompts that drive each step, so a run can be repeated
 findings.md  what worked, what did not, spec gaps found
