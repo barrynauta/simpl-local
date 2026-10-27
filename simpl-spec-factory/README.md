@@ -16,6 +16,50 @@ Status: **run 1 done** (2026-10-27): the generated build passes 74 of 74 black-b
 - **Swap test:** either UI runs on either backend, and upstream's own Postman checks give the same result on both. Existing data needs a migration (one SPARQL update, tested on 306 vocabularies). See [`findings.md`](./findings.md), step 5, and the [diagram](./experiments/swap/swap-overview.svg).
 - **Effort:** one working day, of which about 30 minutes for the code writer and about 45 minutes for the UI test steps. Hardware needs are close to upstream (see [Hardware](#hardware-compared-with-upstream)).
 
+## The 30 decisions
+
+Where the specs are silent or disagree, the factory made one written decision, used by both the test writer and the code writer. Full rows, with what each source says, are in [`spec-digest.md`](./spec-digest.md#3-decisions). Decisions marked *open* are also questions for the spec owners.
+
+**[API and access](./spec-digest.md#api-and-access)**
+- D1: follow the OpenAPI paths and payloads; the older draft API in the tech description is superseded.
+- D2: every endpoint needs a token, except `/health`. *Open:* should downloads be public?
+- D3: the viewer role may read and search; the admin role may do everything.
+- D4: 401 without a valid token, 403 without the role, both as Problem Details. The OpenAPI defines neither.
+- D5: errors follow the OpenAPI Problem schema. *Open:* should the API guidelines be part of the input?
+- D6: a local identity provider with three test users and the roles in a `roles` claim (environment choice).
+
+**[Lifecycle and versioning](./spec-digest.md#lifecycle-and-versioning)**
+- D7: version numbers are whole numbers, starting at 1.
+- D8: a request that sets a version number itself is rejected with 400.
+- D9: a new version becomes active and deprecates all older versions, in one step.
+- D10: deprecating a vocabulary deprecates all its versions; re-activating it re-activates only the latest. *Open.*
+- D11: no new version on a deprecated vocabulary (409). *Open.*
+- D12: the UI sends "Initial version" as the change log on creation.
+- D13: a duplicate name gives 409, shown as a field error in the UI.
+- D14: no separate publish step: a valid stored version is "Active".
+
+**[Validation](./spec-digest.md#validation)**
+- D15: Turtle only; anything else gives 415.
+- D16: syntax means the file parses; structure means it declares an ontology or concept scheme. *Open.*
+- D17: the semantic checks: unknown, deprecated or missing referenced terms, and one IRI as both class and property. *Open, the largest gap.*
+- D18: a vocabulary references a version of another by namespace IRI, `{base}/{Name}/{n}#`. *Open.*
+- D19: a missing reference is 400, not 404.
+- D20: warnings do not block; they come back with the 201 response.
+
+**[UI](./spec-digest.md#ui)**
+- D21: no Figma design was available, so the UI uses a plain component library.
+- D22: the list shows the columns the story names, no file format column.
+- D23: the name filter is a case-insensitive "contains". *Open:* the OpenAPI pattern and the UI example do not fit.
+- D24: "full details" download means the Turtle file of that version.
+- D25: deprecation warnings show everywhere a deprecated vocabulary appears.
+- D26: viewers do not see admin actions; the API still refuses them with 403.
+
+**[Other](./spec-digest.md#other)**
+- D27: Apache Jena Fuseki as the store.
+- D28: the API response is the validation report; no separate notification.
+- D29: page size at most 100. *Open.*
+- D30: upload limit 10 MB, configurable.
+
 ---
 
 ## The question
