@@ -6,6 +6,15 @@ Status: **run 1 done** (2026-10-27): the generated build passes 74 of 74 black-b
 
 **Personal test project.** This is a personal experiment, for testing purposes only. It is not commissioned by, endorsed by or speaking for the European Commission, the Simpl programme or any of its contractors. **Purpose:** see how feasible spec-driven generation is, and learn which parts of the specs could be made more precise. It is not meant to show what is wrong with Simpl. Every gap found is a pointer to where the specs can be improved.
 
+## Summary
+
+- **What:** the Simpl-Open Vocabulary Manager (backend and UI) was generated from its specifications only: the OpenAPI, 32 user stories with acceptance criteria and the business process. No upstream source code was used. It starts with one `docker compose up`.
+- **How:** first a written list of 30 decisions where the specs are silent or disagree ([`spec-digest.md`](./spec-digest.md)). Then two separate AI agents: a test writer and a code writer, neither seeing the other's work.
+- **Result:** the generated build passes 74 of 74 API scenarios and 22 of 22 UI scenarios. The same suite on the local upstream stack: 58 of 74 and 9 of 22. Upstream differs mostly on the points where the specs leave room, which is exactly what the decision list settles.
+- **Main lesson:** the specs are close to buildable. What they need is the decision list written down: structure and semantic validation rules, how a vocabulary references a version of another, vocabulary vs version status, 401 and 403 in the OpenAPI, and a few UI wordings. See [`findings.md`](./findings.md).
+- **Caveat:** both writers used the same decision list, so the result shows that "specs plus decisions" is buildable, not the raw specs alone. See [How realistic is this?](#how-realistic-is-this).
+- **Effort:** one working day, of which about 30 minutes for the code writer and about 45 minutes for the UI test steps. Hardware needs are close to upstream (see [Hardware](#hardware-compared-with-upstream)).
+
 ---
 
 ## The question
@@ -105,6 +114,95 @@ Rules for the factory, to keep the result honest:
 - Do they also pass against the **upstream** component? Differences are either generator errors or spec ambiguities, and both are findings.
 - How many acceptance criteria are covered, and how many could not be generated because the spec was unclear or missing?
 - How much human correction was needed, and where?
+
+## Modularity: what can be changed or replaced
+
+There are two levels: the factory itself, and the component it built.
+
+### The factory
+
+Each step hands over to the next through plain files, so each part can be changed on its own.
+
+| Part | What it hands over | How to change or replace it |
+|---|---|---|
+| Input set (`specs/`) | Markdown stories, OpenAPI, functional description | Another component: a new `specs/` folder, then the same steps. The candidate scan already lists the next ones (Schema Manager, SD Tooling). |
+| Spec digest | One table of numbered decisions | Change a decision and rerun the writers. Every test scenario carries the decision it depends on (`@Dnn`), so a change shows which scenarios it touches. |
+| Test suite (`tests/`) | Gherkin scenarios over HTTP and a browser, configured by environment variables | Runs unchanged against any implementation; it already runs against two (the build and upstream). Another Gherkin runner can reuse the `.feature` files. |
+| Code writer | A `docker compose` stack | Another stack (run 2), another model, or a human team. The same suite judges the result. |
+| Identity provider for the tests | Contract D6: password grant, three users, a `roles` claim | Any OIDC issuer set up that way. |
+
+Limits today:
+
+- The prompts for the test writer and the code writer are not yet stored in `pipeline/`. Until they are, a rerun depends on the session record. This is the next step to make runs repeatable.
+- The UI steps follow the story wording. A UI with other labels fails by design, so a change of wording in a story means a change in the steps.
+- The UI steps assume a single page application on a JSON API and a standard login page.
+- One component only. Flows across components (for example Schema Manager on the same Fuseki) are not tried yet.
+
+### The generated component
+
+The containers talk through standard interfaces, so each one can be swapped.
+
+| Part | Interface | How to change or replace it |
+|---|---|---|
+| Identity (Keycloak) | OIDC and JWT: issuer, JWKS, a configurable roles claim | Any OIDC provider, for example the Simpl Tier 1 Keycloak, by configuration. The UI reads its issuer and client from `config.json` at runtime, without a rebuild. |
+| Storage (Fuseki) | SPARQL 1.1 over HTTP | Any SPARQL store, by URL. A non-RDF database is more work: the services use the Jena store class directly, so `store/` would need an interface and a new implementation. |
+| UI and API | The OpenAPI, under `/v1` | Either side can be replaced on its own. Running the upstream UI on the generated API, or the other way round, is not tested yet. |
+| Rules inside the backend | `domain/` (lifecycle as pure functions, no I/O) and one validator class each for syntax, structure and semantics | When the spec owners answer the open questions on structure and semantic rules (D16, D17), the change lands in one class each. |
+
+Limit: the backend serialises writes with a lock inside the process, so it assumes one instance. Running several needs another way to handle concurrent writes.
+
+## Hardware compared with upstream
+
+Measured on 27 Oct 2026 on one laptop (Docker, no memory limits set), at rest and at the peak of a full run of the 74 API scenarios. Both stacks were already built.
+
+| Container | Upstream, rest / peak | Build, rest / peak |
+|---|---|---|
+| UI (nginx) | 14 / 13 MiB | 17 / 17 MiB |
+| Backend (Java) | 236 / 295 MiB | 406 / 464 MiB |
+| Fuseki | 226 / 387 MiB | 221 / 321 MiB |
+| **Total without Keycloak** | **476 / 695 MiB** | **644 / 802 MiB** |
+| Keycloak | not in the local stack (bypassed) | 1,428 / 1,521 MiB |
+
+| | Upstream | Build |
+|---|---|---|
+| Images | backend 251 MB, UI 178 MB, Fuseki 324 MB | backend 382 MB, UI 50 MB, Fuseki 324 MB, Keycloak 443 MB |
+| Start time (images built) | 9 s | 22 s, mostly Keycloak |
+| Code, without tests | Java 5,474 lines, UI 6,962 lines | Java 2,889 lines, UI 1,374 lines |
+| CPU | short peaks during uploads, idle otherwise | the same |
+
+How to read this:
+
+- Without the identity provider the two are close: the build uses about 15 to 35% more memory, mostly in the backend. The Java memory figures depend on the JVM's defaults; neither side was tuned.
+- Keycloak is the biggest item, but it is there only to make the build self-contained. In Simpl the identity provider is shared (Tier 1), so it does not count against the component. The local upstream stack skips it altogether.
+- The upstream Helm chart reserves 250m CPU and 2 GiB memory each for the backend and Fuseki. The build fits inside that same envelope.
+- Upstream does more in places, for example an OWL reasoner during validation. That explains part of its larger code size.
+- To run the build on a laptop: about 2.5 GB free memory for Docker with Keycloak, under 1 GB without.
+
+## How realistic is this?
+
+Honest answer: realistic as a **spec check and a reference build**, not yet as a replacement for a development team.
+
+What made it work here:
+
+- **A good candidate.** The Vocabulary Manager is small, has one backing service, a detailed OpenAPI and stories with Given/When/Then criteria. The specs were in good shape to start with, which is a credit to the people who wrote them.
+- **Decisions made up front.** The 30 decisions in the digest did most of the work. Making them took judgement, and in a real project they belong to the product owner and the architects, not to a model or a single person.
+- **A comparison point.** Upstream existed, so every difference could be checked.
+
+What a real project still needs, and this experiment does not show:
+
+- **Simpl integration:** the Tier 1 gateway, the shared Keycloak, Helm charts and the deployment pipeline. Here everything runs in one compose file.
+- **Production qualities:** scaling beyond one instance, security review, performance, accessibility, translations, monitoring, and data migration from an existing installation.
+- **The design:** the Figma files were not available, so the UI follows the story text only.
+- **Maintenance:** how the generated code holds up through a year of change requests is the real test, and it is not tried here.
+- **Independence:** the test writer and the code writer are the same model family, so they may share blind spots. A human review of the scenarios, or a second stack (run 2), would reduce that.
+- **Memory instead of specs:** upstream is public, so the model may have seen it. The contamination check found little overlap, but it cannot rule this out.
+- **Scale:** one component of about 30 stories. Components with Kafka, several peers or cross-component flows are harder.
+
+Where it is useful today:
+
+- **Checking specs before development starts.** Writing the decision list and the scenarios is quick and points straight at what is unclear.
+- **Acceptance tests from the stories.** The black-box suite runs against any implementation, including the upstream one.
+- **A reference implementation** to compare against when a behaviour is disputed.
 
 ## Layout (planned)
 
