@@ -1,0 +1,11 @@
+# Runs the upstream local stack on COPIES of its Fuseki volumes, so the
+# original volumes are never written by these experiments.
+# Copies are made by setup-volumes.sh (swap-up-fuseki-data, swap-up-fuseki-configuration).
+# Use: docker compose -f <upstream>/docker-compose.yml -f upstream-on-copy.override.yml up -d --wait
+volumes:
+  fuseki-data:
+    external: true
+    name: swap-up-fuseki-data
+  fuseki-configuration:
+    external: true
+    name: swap-up-fuseki-configuration

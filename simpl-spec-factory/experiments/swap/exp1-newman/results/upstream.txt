@@ -1,0 +1,71 @@
+newman
+
+SIMPL Vocabulary Manager API
+
+❏ Vocabulary management
+↳ Get vocabularies
+  GET http://host.docker.internal:8086/v1/vocabularies?page=1&pageSize=20 [200 OK, 7.09kB, 194ms]
+  ✓  Status code is 200
+
+↳ Create vocabulary
+  POST http://host.docker.internal:8086/v1/vocabularies [201 Created, 1.11kB, 314ms]
+  ✓  Status code is 201
+
+↳ Get vocabulary version history
+  GET http://host.docker.internal:8086/v1/vocabularies/Swap1321092389/versions?page=1&pageSize=20 [200 OK, 794B, 38ms]
+  ✓  Status code is 200
+
+↳ Get vocabulary version detail
+  GET http://host.docker.internal:8086/v1/vocabularies/Swap1321092389/versions/1 [200 OK, 535B, 16ms]
+  ✓  Status code is 200
+
+↳ Create new vocabulary version
+  POST http://host.docker.internal:8086/v1/vocabularies/Swap1321092389/versions [201 Created, 1.11kB, 153ms]
+  ✓  Status code is 201
+
+↳ Update vocabulary status
+  PATCH http://host.docker.internal:8086/v1/vocabularies/Swap1321092389 [200 OK, 518B, 71ms]
+  ✓  Status code is 200
+
+↳ Update vocabulary version status
+  PATCH http://host.docker.internal:8086/v1/vocabularies/Swap1321092389/versions/2 [409 Conflict, 373B, 13ms]
+  1. Status code is 200
+
+↳ Get external vocabularies
+  GET http://host.docker.internal:8086/v1/external-vocabularies?page=1&pageSize=20 [200 OK, 327B, 17ms]
+
+↳ Create external vocabulary
+  POST http://host.docker.internal:8086/v1/external-vocabularies [201 Created, 445B, 82ms]
+
+↳ Get external vocabulary detail
+  GET http://host.docker.internal:8086/v1/external-vocabularies/DublinCoreTerms11407 [200 OK, 385B, 9ms]
+
+↳ Delete external vocabulary
+  DELETE http://host.docker.internal:8086/v1/external-vocabularies/DublinCoreTerms11407 [204 No Content, 112B, 42ms]
+
+┌─────────────────────────┬───────────────────┬──────────────────┐
+│                         │          executed │           failed │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              iterations │                 1 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│                requests │                11 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│            test-scripts │                 7 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│      prerequest-scripts │                 0 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              assertions │                 7 │                1 │
+├─────────────────────────┴───────────────────┴──────────────────┤
+│ total run duration: 1195ms                                     │
+├────────────────────────────────────────────────────────────────┤
+│ total data received: 10.86kB (approx)                          │
+├────────────────────────────────────────────────────────────────┤
+│ average response time: 86ms [min: 9ms, max: 314ms, s.d.: 92ms] │
+└────────────────────────────────────────────────────────────────┘
+
+  #  failure         detail                                                            
+                                                                                       
+ 1.  AssertionError  Status code is 200                                                
+                     expected response to have status code 200 but got 409             
+                     at assertion:0 in test-script                                     
+                     inside "Vocabulary management / Update vocabulary version status" 

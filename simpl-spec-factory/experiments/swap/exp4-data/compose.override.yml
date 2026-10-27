@@ -1,0 +1,28 @@
+# Experiment 4: the build backend on a Fuseki that holds a COPY of upstream's data.
+# Adds a Fuseki like upstream's (same image, same config) on the copied volumes, published on 3032
+# for inspection, and points the build backend at its ds_vocabularies dataset.
+services:
+  fuseki-upcopy:
+    image: secoresearch/fuseki:5.3.0
+    environment:
+      ADMIN_PASSWORD: admin1234
+      ENABLE_DATA_WRITE: "true"
+      ENABLE_UPDATE: "true"
+    ports:
+      - "3032:3030"
+    volumes:
+      - upcopy-data:/fuseki-base/databases
+      - upcopy-config:/fuseki-base/configuration
+  backend:
+    environment:
+      APP_FUSEKI_URL: http://fuseki-upcopy:3030/ds_vocabularies
+    depends_on:
+      fuseki-upcopy:
+        condition: service_started
+volumes:
+  upcopy-data:
+    external: true
+    name: swap-exp4-fuseki-data
+  upcopy-config:
+    external: true
+    name: swap-exp4-fuseki-configuration

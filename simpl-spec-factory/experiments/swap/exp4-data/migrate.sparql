@@ -1,0 +1,51 @@
+# Experiment 4: map the upstream layout (dataset ds_vocabularies) to the build layout, in place.
+# Upstream graphs are left untouched; the build graphs are added next to them.
+#   upstream: <urn:simpl-vocabulary-manager:categories>                 one node per vocabulary
+#             <urn:simpl:vocabulary:{Name}:version:{n}:metadata>        version metadata (subject = graph IRI)
+#             <urn:simpl:vocabulary:{Name}:version:{n}:content>         parsed triples of the version
+#   build:    <urn:simpl:vm:meta:{Name}>          vocabulary + all versions (vm: = https://vocabulary.simpl.local/ns#)
+#             <urn:simpl:vm:content:{Name}:{n}>   parsed triples
+#             <urn:simpl:vm:raw:{Name}:{n}>       uploaded Turtle text as one literal (filled by migrate.py, not SPARQL)
+PREFIX up:  <urn:simpl-vocabulary-manager:>
+PREFIX vm:  <https://vocabulary.simpl.local/ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+# 1. vocabularies
+INSERT { GRAPH ?meta { ?v a vm:Vocabulary ; vm:name ?name ; vm:status ?status ; vm:createdBy ?by ;
+                       vm:creationDate ?c ; vm:lastUpdateDate ?m } }
+WHERE {
+  GRAPH <urn:simpl-vocabulary-manager:categories> {
+    ?cat a up:VocabularyCategory ; up:name ?n0 ; up:status ?s0 ; up:created ?c0 ; up:modified ?m0 .
+    OPTIONAL { ?cat up:createdBy ?b0 } }
+  BIND(STR(?n0) AS ?name) BIND(STR(?s0) AS ?status) BIND(COALESCE(STR(?b0), "unknown") AS ?by)
+  BIND(STRDT(STR(?c0), xsd:dateTime) AS ?c) BIND(STRDT(STR(?m0), xsd:dateTime) AS ?m)
+  BIND(IRI(CONCAT("urn:simpl:vm:meta:", ?name)) AS ?meta)
+  BIND(IRI(CONCAT("urn:simpl:vm:vocabulary:", ?name)) AS ?v)
+} ;
+
+# 2. versions (upstream has no creator per version: the vocabulary creator is used)
+INSERT { GRAPH ?meta { ?v vm:hasVersion ?vn . ?vn a vm:Version ; vm:version ?num ; vm:description ?d ;
+                       vm:changelog ?cl ; vm:status ?st ; vm:createdBy ?by ; vm:creationDate ?c ; vm:lastUpdateDate ?m } }
+WHERE {
+  GRAPH ?g { ?g up:name ?n0 ; up:version ?ver0 ; up:status ?st0 ; up:created ?c0 ; up:modified ?m0 .
+             OPTIONAL { ?g up:description ?d0 } OPTIONAL { ?g up:changelog ?cl0 } }
+  FILTER(STRSTARTS(STR(?g), "urn:simpl:vocabulary:") && STRENDS(STR(?g), ":metadata"))
+  BIND(STR(?n0) AS ?name)
+  OPTIONAL { GRAPH <urn:simpl-vocabulary-manager:categories> { ?cat up:name ?cn ; up:createdBy ?b0 } FILTER(STR(?cn) = ?name) }
+  BIND(COALESCE(STR(?b0), "unknown") AS ?by)
+  BIND(xsd:integer(STR(?ver0)) AS ?num) BIND(STR(?st0) AS ?st)
+  BIND(COALESCE(STR(?d0), "") AS ?d) BIND(COALESCE(STR(?cl0), "") AS ?cl)
+  BIND(STRDT(STR(?c0), xsd:dateTime) AS ?c) BIND(STRDT(STR(?m0), xsd:dateTime) AS ?m)
+  BIND(IRI(CONCAT("urn:simpl:vm:meta:", ?name)) AS ?meta)
+  BIND(IRI(CONCAT("urn:simpl:vm:vocabulary:", ?name)) AS ?v)
+  BIND(IRI(CONCAT("urn:simpl:vm:version:", ?name, ":", STR(?num))) AS ?vn)
+} ;
+
+# 3. parsed content
+INSERT { GRAPH ?cg { ?s ?p ?o } }
+WHERE {
+  GRAPH ?g { ?s ?p ?o }
+  FILTER(STRSTARTS(STR(?g), "urn:simpl:vocabulary:") && STRENDS(STR(?g), ":content"))
+  BIND(IRI(CONCAT("urn:simpl:vm:content:",
+       REPLACE(STR(?g), "^urn:simpl:vocabulary:(.*):version:([0-9]+):content$", "$1:$2"))) AS ?cg)
+}

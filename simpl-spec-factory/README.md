@@ -13,6 +13,7 @@ Status: **run 1 done** (2026-10-27): the generated build passes 74 of 74 black-b
 - **Result:** the generated build passes 74 of 74 API scenarios and 22 of 22 UI scenarios. The same suite on the local upstream stack: 58 of 74 and 9 of 22. Upstream differs mostly on the points where the specs leave room, which is exactly what the decision list settles.
 - **Main lesson:** the specs are close to buildable. What they need is the decision list written down: structure and semantic validation rules, how a vocabulary references a version of another, vocabulary vs version status, 401 and 403 in the OpenAPI, and a few UI wordings. See [`findings.md`](./findings.md).
 - **Caveat:** both writers used the same decision list, so the result shows that "specs plus decisions" is buildable, not the raw specs alone. See [How realistic is this?](#how-realistic-is-this).
+- **Swap test:** either UI runs on either backend, and upstream's own Postman checks give the same result on both. Existing data needs a migration (one SPARQL update, tested on 306 vocabularies). See [`findings.md`](./findings.md), step 5.
 - **Effort:** one working day, of which about 30 minutes for the code writer and about 45 minutes for the UI test steps. Hardware needs are close to upstream (see [Hardware](#hardware-compared-with-upstream)).
 
 ---
@@ -133,7 +134,7 @@ Each step hands over to the next through plain files, so each part can be change
 
 Limits today:
 
-- The prompts for the test writer and the code writer are not yet stored in `pipeline/`. Until they are, a rerun depends on the session record. This is the next step to make runs repeatable.
+- The prompts are stored in [`pipeline/`](./pipeline/README.md). Steps 3 and 4 are the prompts as used; steps 1 and 2 ran in the main session and are reconstructed briefs. A rerun from them has not been tried yet.
 - The UI steps follow the story wording. A UI with other labels fails by design, so a change of wording in a story means a change in the steps.
 - The UI steps assume a single page application on a JSON API and a standard login page.
 - One component only. Flows across components (for example Schema Manager on the same Fuseki) are not tried yet.
@@ -204,11 +205,11 @@ Where it is useful today:
 - **Acceptance tests from the stories.** The black-box suite runs against any implementation, including the upstream one.
 - **A reference implementation** to compare against when a behaviour is disputed.
 
-## Layout (planned)
+## Layout
 
 ```
 specs/       collected input specs, as fetched (stories, ACs, FRs, OpenAPI)
 generated/   the factory output: code, tests, docs
-pipeline/    prompts and scripts that drive the generation, so a run can be repeated
+pipeline/    the prompts that drive each step, so a run can be repeated
 findings.md  what worked, what did not, spec gaps found
 ```

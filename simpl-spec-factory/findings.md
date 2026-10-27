@@ -53,3 +53,24 @@ Running log of what the factory got right, what needed correction, and what the 
 - **Story wording too vague for a strict test (spec findings):** "New Vocabulary +" (text or icon?), "clear warning message" (wording and placement), "chronological" (which direction), how to reach the history, the status-change action, confirmation and error texts, "hidden or disabled", how required fields are marked, and how to "select or reference a version" (D18). A Figma reference would settle most of these, but it is not in the input set (D21).
 - **Feature text changed by the test writer** (all logged in its report): filter and sort scenarios made robust against a paged, shared list and an unspecified default sort; download-newest no longer repeats the label check; the duplicate-name check split into two submits; a creation notification no story asks for removed; the new-version confirmation must name version 2 (SIMPL-18189 AC3).
 - **Seen but not tested:** the build reports one syntax error for a file with two; SIMPL-18180 AC7 asks for all errors.
+
+## 2026-10-27: step 5, swap with the existing implementation
+
+Can the generated build replace upstream? Tried locally, by configuration only (no code changes on either side). Everything to repeat it is in [`experiments/swap/`](./experiments/swap/README.md).
+
+| Experiment | Result |
+|---|---|
+| 1. Upstream's own Postman collection | Same on both: 11 of 11 requests give the same status, 6 of 7 assertions pass on both. The one failure is in the collection itself (it deprecates the vocabulary first, so the version PATCH gets 409 on both). The collection does not test external vocabularies, `/content`, search or health. |
+| 2. Existing UI on the new backend | Works. Sign-in through the build's Keycloak by configuration (a runtime client, a top-level `roles` claim, an nginx mapping for the legacy `/auth` prefix). Our UI suite: 13 of 22, against 9 for the existing UI on its own backend. The 9 failures are the existing UI's own wording and features; no failure is caused by the swap. |
+| 3. New UI on the existing backend | Works. 21 of 22; the one failure is D17 (upstream accepts an IRI that is both class and property). Note: the viewer scenario passes only because the UI hides the actions; the existing backend would accept a viewer's write, because it relies on the gateway for role checks. |
+| 4. Existing data | Not readable as is (0 of 306 vocabularies): different graph names and predicates, two datasets instead of one, values as plain strings, no stored original file text. One SPARQL update plus a small script migrates it: 306 of 306 vocabularies and 412 of 412 versions then match field for field, and downloads and new versions work on migrated data. Most of this data was left behind by our own test runs, so it tests the shape, not real production content. 4 vocabularies have two ACTIVE versions, which the build's D10 rule does not allow; not tested further. |
+| 5. Deployment fit | Close but not ready: different container port (8080 vs 8086), UI configuration file and base path, no Fuseki credentials and no dataset creation at boot in the build, images running as root, roles read from a top-level claim only (Tier 1 Keycloak puts them in `realm_access.roles`). |
+
+Field differences found on the way: the build also returns `createdBy` and `latestVersionHref`, which the OpenAPI defines and upstream leaves out; `createdBy` is the username on the build and the email on upstream; the external `namespaceUri` keeps a trailing `/` on the build, upstream strips it ("normalized" is not defined).
+
+### Conclusions
+
+- **The OpenAPI works as a real contract.** Either UI runs on either backend, and upstream's own checks give the same result on both. That is a strong point for the specs and for the upstream team that wrote them.
+- **Where the two differ, the specs leave room:** `createdBy`, namespace normalisation, D10 and D17. Same message as before: write the decisions down.
+- **What the specs do not cover is what a replacement costs:** the data layout in Fuseki, the identity contract (which claim holds the roles, which one is the creator) and the deployment contract (port, base path, configuration keys, health, credentials). None of these is a user story, but each one decides whether two implementations can be swapped.
+- **A replacement is realistic,** with a defined amount of work: a Helm chart, Fuseki credentials, non-root images, the roles claim mapping, and a tested migration job (`migrate.py` is a working start).

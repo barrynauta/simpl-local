@@ -1,0 +1,8 @@
+# Experiment 2: upstream UI container with mounted config only (image unchanged).
+services:
+  vocabulary-manager-ui:
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./env-config.js:/usr/share/nginx/html/env-config.js:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

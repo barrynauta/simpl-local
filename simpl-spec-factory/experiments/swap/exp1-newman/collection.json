@@ -1,0 +1,707 @@
+{
+  "info": {
+    "_postman_id": "9d8142a5-4659-41f3-9be1-d67631d24d6d",
+    "name": "SIMPL Vocabulary Manager API",
+    "description": "Postman collection for the SIMPL Vocabulary Manager API. The default baseUrl points to the local Spring Boot service from README.md. For the deployed gateway, set baseUrl to https://vocabulary-manager.dev.simpl-europe.eu/v1.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Vocabulary management",
+      "description": "Endpoints exposed by eu.europa.ec.simpl.controller.VocabularyController.",
+      "item": [
+        {
+          "name": "Get vocabularies",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  const first = data && Array.isArray(data.metadata) ? data.metadata[0] : null;",
+                  "  if (first && first.name) {",
+                  "    pm.collectionVariables.set('vocabularyName', first.name);",
+                  "  }",
+                  "  if (first && first.version) {",
+                  "    pm.collectionVariables.set('vocabularyVersion', String(first.version));",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/vocabularies?name={{filterName}}&status={{filterStatus}}&creationDate={{filterCreationDate}}&sort={{sort}}&page={{page}}&pageSize={{pageSize}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vocabularies"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "{{filterName}}",
+                  "description": "Optional PascalCase vocabulary name filter.",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "{{filterStatus}}",
+                  "description": "Optional status filter: ACTIVE or DEPRECATED.",
+                  "disabled": true
+                },
+                {
+                  "key": "creationDate",
+                  "value": "{{filterCreationDate}}",
+                  "description": "Optional ISO 8601 date or date-time filter.",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "{{sort}}",
+                  "description": "Optional sort: name, -name, status, -status, creationDate, -creationDate.",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "{{pageSize}}"
+                }
+              ]
+            },
+            "description": "Returns latest metadata for vocabularies. Optional filters are included disabled by default; enable them in Postman when needed."
+          },
+          "response": []
+        },
+        {
+          "name": "Create vocabulary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "  const location = pm.response.headers.get('Location');",
+                  "  if (location) {",
+                  "    pm.collectionVariables.set('createdVocabularyLocation', location);",
+                  "  }",
+                  "",
+                  "  const data = pm.response.json();",
+                  "  if (data && data.name) {",
+                  "    pm.collectionVariables.set('vocabularyName', data.name);",
+                  "  }",
+                  "  if (data && data.version) {",
+                  "    pm.collectionVariables.set('vocabularyVersion', String(data.version));",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "vocabularyFile",
+                  "type": "file",
+                  "src": "{{vocabularyFilePath}}",
+                  "description": "Turtle (.ttl) vocabulary file."
+                },
+                {
+                  "key": "name",
+                  "value": "{{vocabularyName}}",
+                  "type": "text",
+                  "description": "PascalCase vocabulary name, 3-64 alphanumeric characters."
+                },
+                {
+                  "key": "description",
+                  "value": "{{vocabularyDescription}}",
+                  "type": "text"
+                },
+                {
+                  "key": "changelog",
+                  "value": "{{vocabularyChangelog}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vocabularies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vocabularies"
+              ]
+            },
+            "description": "Creates a vocabulary and automatically creates version 1 with ACTIVE status. Requires a bearer token with an email claim because the controller extracts createdBy from Authorization."
+          },
+          "response": []
+        },
+        {
+          "name": "Get vocabulary version history",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  const first = data && Array.isArray(data.metadata) ? data.metadata[0] : null;",
+                  "  if (first && first.version) {",
+                  "    pm.collectionVariables.set('vocabularyVersion', String(first.version));",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/vocabularies/{{vocabularyName}}/versions?sort={{sort}}&page={{page}}&pageSize={{pageSize}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vocabularies",
+                "{{vocabularyName}}",
+                "versions"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "{{sort}}",
+                  "description": "Optional sort: name, -name, status, -status, creationDate, -creationDate.",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "{{pageSize}}"
+                }
+              ]
+            },
+            "description": "Returns version metadata for one vocabulary."
+          },
+          "response": []
+        },
+        {
+          "name": "Get vocabulary version detail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/vocabularies/{{vocabularyName}}/versions/{{vocabularyVersion}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vocabularies",
+                "{{vocabularyName}}",
+                "versions",
+                "{{vocabularyVersion}}"
+              ]
+            },
+            "description": "Returns metadata and RDF/Turtle content for a specific vocabulary version."
+          },
+          "response": []
+        },
+        {
+          "name": "Create new vocabulary version",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "  const location = pm.response.headers.get('Location');",
+                  "  if (location) {",
+                  "    pm.collectionVariables.set('createdVocabularyLocation', location);",
+                  "  }",
+                  "",
+                  "  const data = pm.response.json();",
+                  "  if (data && data.version) {",
+                  "    pm.collectionVariables.set('vocabularyVersion', String(data.version));",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "vocabularyFile",
+                  "type": "file",
+                  "src": "{{vocabularyFilePath}}",
+                  "description": "Turtle (.ttl) vocabulary file."
+                },
+                {
+                  "key": "description",
+                  "value": "{{vocabularyDescription}}",
+                  "type": "text"
+                },
+                {
+                  "key": "changelog",
+                  "value": "{{vocabularyChangelog}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vocabularies/{{vocabularyName}}/versions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vocabularies",
+                "{{vocabularyName}}",
+                "versions"
+              ]
+            },
+            "description": "Creates the next version of an existing vocabulary, marks the previous ACTIVE version as DEPRECATED, and returns metadata for the new ACTIVE version."
+          },
+          "response": []
+        },
+        {
+          "name": "Update vocabulary status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  if (data && data.status) {",
+                  "    pm.collectionVariables.set('vocabularyStatus', data.status);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"{{vocabularyStatus}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vocabularies/{{vocabularyName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vocabularies",
+                "{{vocabularyName}}"
+              ]
+            },
+            "description": "Updates the status of an existing vocabulary. status is required and must be ACTIVE or DEPRECATED."
+          },
+          "response": []
+        },
+        {
+          "name": "Update vocabulary version status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  if (data && data.status) {",
+                  "    pm.collectionVariables.set('vocabularyStatus', data.status);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"{{vocabularyStatus}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vocabularies/{{vocabularyName}}/versions/{{vocabularyVersion}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vocabularies",
+                "{{vocabularyName}}",
+                "versions",
+                "{{vocabularyVersion}}"
+              ]
+            },
+            "description": "Updates the status of a specific vocabulary version. status is required and must be ACTIVE or DEPRECATED."
+          },
+          "response": []
+        },
+        {
+          "name": "Get external vocabularies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/external-vocabularies?page={{page}}&pageSize={{pageSize}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "external-vocabularies"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "{{pageSize}}"
+                }
+              ]
+            },
+            "description": "Returns cached external vocabularies used as validation dependencies."
+          }
+        },
+        {
+          "name": "Create external vocabulary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "vocabularyFile",
+                  "type": "file",
+                  "src": "{{vocabularyFilePath}}",
+                  "description": "External Turtle (.ttl) vocabulary file."
+                },
+                {
+                  "key": "name",
+                  "value": "{{externalVocabularyName}}",
+                  "type": "text"
+                },
+                {
+                  "key": "namespaceUri",
+                  "value": "{{externalNamespaceUri}}",
+                  "type": "text"
+                },
+                {
+                  "key": "aliasUris",
+                  "value": "{{externalAliasUri}}",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "description",
+                  "value": "{{vocabularyDescription}}",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "sourceUri",
+                  "value": "{{externalSourceUri}}",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/external-vocabularies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "external-vocabularies"
+              ]
+            },
+            "description": "Creates an immutable cached external vocabulary. Requires a bearer token with an email claim."
+          }
+        },
+        {
+          "name": "Get external vocabulary detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/external-vocabularies/{{externalVocabularyName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "external-vocabularies",
+                "{{externalVocabularyName}}"
+              ]
+            },
+            "description": "Returns metadata for one cached external vocabulary."
+          }
+        },
+        {
+          "name": "Delete external vocabulary",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/external-vocabularies/{{externalVocabularyName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "external-vocabularies",
+                "{{externalVocabularyName}}"
+              ]
+            },
+            "description": "Hard deletes cached external vocabulary metadata and content graphs."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8086",
+      "type": "string",
+      "description": "Local service URL. Use https://vocabulary-manager.dev.simpl-europe.eu/v1 for the deployed gateway."
+    },
+    {
+      "key": "bearerToken",
+      "value": "",
+      "type": "string",
+      "description": "OAuth2/JWT bearer token. The create endpoint expects an email claim."
+    },
+    {
+      "key": "vocabularyName",
+      "value": "HealthcareVocabulary",
+      "type": "string"
+    },
+    {
+      "key": "vocabularyVersion",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "vocabularyFilePath",
+      "value": "",
+      "type": "string",
+      "description": "Set this to the local path of a .ttl file before sending multipart requests."
+    },
+    {
+      "key": "vocabularyDescription",
+      "value": "Vocabulary defining healthcare resource types.",
+      "type": "string"
+    },
+    {
+      "key": "vocabularyChangelog",
+      "value": "Initial version.",
+      "type": "string"
+    },
+    {
+      "key": "vocabularyStatus",
+      "value": "DEPRECATED",
+      "type": "string"
+    },
+    {
+      "key": "filterName",
+      "value": "HealthcareVocabulary",
+      "type": "string"
+    },
+    {
+      "key": "filterStatus",
+      "value": "ACTIVE",
+      "type": "string"
+    },
+    {
+      "key": "filterCreationDate",
+      "value": "2024-03-01T00:00:00Z",
+      "type": "string"
+    },
+    {
+      "key": "sort",
+      "value": "name",
+      "type": "string"
+    },
+    {
+      "key": "page",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "pageSize",
+      "value": "20",
+      "type": "string"
+    },
+    {
+      "key": "createdVocabularyLocation",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "externalVocabularyName",
+      "value": "DublinCoreTerms",
+      "type": "string"
+    },
+    {
+      "key": "externalNamespaceUri",
+      "value": "http://purl.org/dc/terms/",
+      "type": "string"
+    },
+    {
+      "key": "externalAliasUri",
+      "value": "https://purl.org/dc/terms/",
+      "type": "string"
+    },
+    {
+      "key": "externalSourceUri",
+      "value": "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
+      "type": "string"
+    }
+  ]
+}
