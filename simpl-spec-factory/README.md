@@ -13,8 +13,14 @@ Status: **run 1 done** (2026-10-27): the generated build passes 74 of 74 black-b
 - **Result:** the generated build passes 74 of 74 API scenarios and 22 of 22 UI scenarios. The same suite on the local upstream stack: 58 of 74 and 9 of 22. Upstream differs mostly on the points where the specs leave room, which is exactly what the decision list settles.
 - **Main lesson:** the specs are close to buildable. What they need is the decision list written down: structure and semantic validation rules, how a vocabulary references a version of another, vocabulary vs version status, 401 and 403 in the OpenAPI, and a few UI wordings. See [`findings.md`](./findings.md).
 - **Caveat:** both writers used the same decision list, so the result shows that "specs plus decisions" is buildable, not the raw specs alone. See [How realistic is this?](#how-realistic-is-this).
-- **Swap test:** either UI runs on either backend, and upstream's own Postman checks give the same result on both. Existing data needs a migration (one SPARQL update, tested on 306 vocabularies). See [`findings.md`](./findings.md), step 5, and the [diagram](./experiments/swap/swap-overview.svg).
+- **Swap test:** either UI runs on either backend, and upstream's own Postman checks give the same result on both. Existing data needs a migration (one SPARQL update, tested on 306 vocabularies). See [`findings.md`](./findings.md), step 5, and the [diagram below](#test-setup-at-a-glance).
 - **Effort:** one working day, of which about 30 minutes for the code writer and about 45 minutes for the UI test steps. Hardware needs are close to upstream (see [Hardware](#hardware-compared-with-upstream)).
+
+## Test setup at a glance
+
+Both implementations, the existing one (upstream) and the generated one, run side by side. The same black-box suites test each of them. The swap test then crosses them: the existing UI on the generated back-end (2), the generated UI on the existing back-end (3), and the existing data migrated into the new layout (4).
+
+![Test setup: existing and generated UI and back-end, crossed in the swap test](./experiments/swap/swap-overview.svg)
 
 ## The 30 decisions
 
