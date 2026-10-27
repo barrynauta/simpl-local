@@ -2,6 +2,8 @@
 
 Run on 27 Oct 2026. Configuration only: no source file of either implementation was changed. Upstream ran on copies of its Fuseki volumes; the original volumes were only ever mounted read-only.
 
+![Swap test: existing and generated UI and back-end, crossed](./swap-overview.svg)
+
 Paths used below:
 
 ```

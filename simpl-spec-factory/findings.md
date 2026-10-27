@@ -58,6 +58,8 @@ Running log of what the factory got right, what needed correction, and what the 
 
 Can the generated build replace upstream? Tried locally, by configuration only (no code changes on either side). Everything to repeat it is in [`experiments/swap/`](./experiments/swap/README.md).
 
+![Swap test: existing and generated UI and back-end, crossed](./experiments/swap/swap-overview.svg)
+
 | Experiment | Result |
 |---|---|
 | 1. Upstream's own Postman collection | Same on both: 11 of 11 requests give the same status, 6 of 7 assertions pass on both. The one failure is in the collection itself (it deprecates the vocabulary first, so the version PATCH gets 409 on both). The collection does not test external vocabularies, `/content`, search or health. |
