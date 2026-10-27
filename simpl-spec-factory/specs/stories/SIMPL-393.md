@@ -8,17 +8,17 @@
 
 Status: Topic is confirmed by the customer and will be part of R0.1
 
-As a governance authority agent
+**As a** governance authority agent
 
-I want  to include the Core public services vocabulary
+**I want**  to include the Core public services vocabulary
 
-So that I can use the vocabulary for semantic validation and to check search parameter.
+**So that** I can use the vocabulary for semantic validation and to check search parameter.
 
- 
+
 
 AC:
 
-The onthology is visible while executing endpoint to fetch all onthologies
+The onthology is visible while executing endpoint to fetch all onthologies\
 We are able to fetch details of stored onthology
 
 ------------------

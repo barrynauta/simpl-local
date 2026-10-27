@@ -8,13 +8,13 @@
 
 Status: Grooming / Ovi will add further Subtasks + AC and will be discussed in the next Grooming
 
-As a governance authority agent
+**As a** governance authority agent
 
-I want to include additional vocabularies if needed
+**I want** to include additional vocabularies if needed
 
-So that I can use the vocabulary for semantic validation and to check search parameter.
+**So that** I can use the vocabulary for semantic validation and to check search parameter.
 
- 
+
 
 ----------------------
 
@@ -26,7 +26,7 @@ For each entry in the list the user can either remove the vocabulary from the ca
 
 The UI should allow to upload new schema/vocabulary to the catalogue (files are ttl).
 
- 
+
 
 The UI should not be an extension of the existing search UI. The reason is that this needs to deploy later in different nodes. But it makes sense to use common components to build this UI.
 
