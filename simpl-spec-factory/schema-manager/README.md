@@ -15,6 +15,8 @@ The Vocabulary Manager was well specified: paired API and UI stories, 30 decisio
 - **Upstream applies a rule no spec states:** a schema file must declare its resource type inside the Turtle. Every create in the test suite fails on it, so the upstream baseline says little about the rest.
 - **Lesson:** as with the first candidate, the specs plus a written decision list are buildable. Here the list is twice as long, and at least one rule lives only in the code. The decision list is the real deliverable for the spec owners.
 
+![Schema Manager swap test: existing and generated UI and back-end, crossed](./experiments/swap/swap-overview.svg)
+
 ## Layout
 
 | Path | What |

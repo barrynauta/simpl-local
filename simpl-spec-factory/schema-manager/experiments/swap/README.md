@@ -2,6 +2,8 @@
 
 Run on 28 Oct 2026, after run 1 of the build. Configuration only: no source file of either implementation was changed. Upstream is the local stack of August 2026 (backend `e1862b6`, UI `329924b`), with Fuseki and Kafka. The build uses PostgreSQL and HTTP webhooks, so only the API contract and the UIs are swapped, not the data.
 
+![Schema Manager swap test: existing and generated UI and back-end, crossed](./swap-overview.svg)
+
 ## Summary
 
 | Experiment | Result |

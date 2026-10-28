@@ -6,6 +6,8 @@ Status: **run 1 done** (2026-10-28). The generated build passes 458 of 459 black
 
 Chosen as the biggest one: the whole catalogue, with three backends (catalogue-be, query mapper adapter, catalogue client backend), a UI and federated search across data spaces. Its core has no user stories; the 33 live stories describe 2026 features.
 
+![Catalogue swap test: each joint crossed on its own](./experiments/swap/swap-overview.svg)
+
 ## Layout
 
 | Path | What |

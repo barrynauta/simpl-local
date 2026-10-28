@@ -4,6 +4,8 @@ Run on 28 Oct 2026, after run 1 of the build and the UI browser steps. Configura
 
 The catalogue has more joints than the earlier candidates: UI to client backend, client backend to adapter, adapter to catalogue backend. Both sides set these links in configuration, so each joint was crossed on its own, and the black-box suite was run over each combination.
 
+![Catalogue swap test: each joint between UI, client back-end, adapter and catalogue crossed on its own](./swap-overview.svg)
+
 ## Summary
 
 | Combination | Suite scenarios passed | Reference |
