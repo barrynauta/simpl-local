@@ -2,7 +2,7 @@
 
 An experiment: how far can we get generating a complete Simpl-Open component **from its specifications alone**? Not just the code, but the full test suite and the documentation too. In other words, a software factory driven by specs.
 
-Status: **run 1 done** (2026-10-27): the generated build passes 74 of 74 black-box API scenarios (upstream: 58 of 74). UI: 22 of 22 browser scenarios (upstream: 9 of 22). See [`spec-digest.md`](./spec-digest.md) and [`findings.md`](./findings.md). Candidate: Vocabulary Manager. Input set: [`specs/`](./specs/README.md).
+Status: **run 1 done** (2026-10-27): the generated build passes 74 of 74 black-box API scenarios (upstream: 58 of 74). UI: 22 of 22 browser scenarios (upstream: 9 of 22). **Run 2** (2026-10-28): a Rust backend from the same specs, also 74 of 74 after one spec clarification (D18), and both UIs run on it. See [`spec-digest.md`](./spec-digest.md) and [`findings.md`](./findings.md). Candidate: Vocabulary Manager. Input set: [`specs/`](./specs/README.md).
 
 **Personal test project.** This is a personal experiment, for testing purposes only. It is not commissioned by, endorsed by or speaking for the European Commission, the Simpl programme or any of its contractors. **Purpose:** see how feasible spec-driven generation is, and learn which parts of the specs could be made more precise. It is not meant to show what is wrong with Simpl. Every gap found is a pointer to where the specs can be improved.
 
@@ -14,6 +14,7 @@ Status: **run 1 done** (2026-10-27): the generated build passes 74 of 74 black-b
 - **Main lesson:** the specs are close to buildable. What they need is the decision list written down: structure and semantic validation rules, how a vocabulary references a version of another, vocabulary vs version status, 401 and 403 in the OpenAPI, and a few UI wordings. See [`findings.md`](./findings.md).
 - **Caveat:** both writers used the same decision list, so the result shows that "specs plus decisions" is buildable, not the raw specs alone. See [How realistic is this?](#how-realistic-is-this).
 - **Swap test:** either UI runs on either backend, and upstream's own Postman checks give the same result on both. Existing data needs a migration (one SPARQL update, tested on 306 vocabularies). See [`findings.md`](./findings.md), step 5, and the [diagram below](#test-setup-at-a-glance).
+- **Second language:** a Rust backend built from the same specs and decisions also passes 74 of 74, and both UIs and upstream's Postman checks run on it unchanged. Its first pass was 33 of 74, all from one gap in D18 that the Java build had hidden: a second independent build is a cheap spec review. See [`findings.md`](./findings.md), step 3b.
 - **Effort:** one working day, of which about 30 minutes for the code writer and about 45 minutes for the UI test steps. Hardware needs are close to upstream (see [Hardware](#hardware-compared-with-upstream)).
 
 ## Test setup at a glance
@@ -48,7 +49,7 @@ Where the specs are silent or disagree, the factory made one written decision, u
 - D15: Turtle only; anything else gives 415.
 - D16: syntax means the file parses; structure means it declares an ontology or concept scheme. *Open.*
 - D17: the semantic checks: unknown, deprecated or missing referenced terms, and one IRI as both class and property. *Open, the largest gap.*
-- D18: a vocabulary references a version of another by namespace IRI, `{base}/{Name}/{n}#`. *Open.*
+- D18: a vocabulary references a version of another by namespace IRI, `{base}/{Name}/{n}#`; a vocabulary's own namespace is not a reference (clarified after the Rust run). *Open.*
 - D19: a missing reference is 400, not 404.
 - D20: warnings do not block; they come back with the 201 response.
 

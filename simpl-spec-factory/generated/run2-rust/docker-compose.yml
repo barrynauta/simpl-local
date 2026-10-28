@@ -1,0 +1,80 @@
+name: vocab-rust
+
+services:
+  fuseki:
+    image: secoresearch/fuseki:5.3.0
+    environment:
+      ADMIN_PASSWORD: fuseki-admin
+      JAVA_OPTIONS: "-Xmx1g"
+    volumes:
+      - ./deploy/fuseki/assembler.ttl:/fuseki-base/configuration/assembler.ttl:ro
+      - fuseki-data:/fuseki-base/databases
+    # Not exposed on the host. Uncomment to inspect the data at http://localhost:3042.
+    # ports:
+    #   - "3042:3030"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3030/$$/ping >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  keycloak:
+    image: keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      # Fixed public URL: tokens always carry iss=http://localhost:8184/realms/simpl,
+      # whether they are fetched from the host (localhost:8184) or inside the network (keycloak:8080).
+      KC_HOSTNAME: http://localhost:8184
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./deploy/keycloak/simpl-realm.json:/opt/keycloak/data/import/simpl-realm.json:ro
+    ports:
+      - "8184:8080"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          grep -q '"UP"' <&3
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 20s
+
+  backend:
+    build: .
+    image: vocab-rust-backend:latest
+    depends_on:
+      fuseki:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    environment:
+      BIND_ADDR: 0.0.0.0:8080
+      PUBLIC_BASE_URL: http://localhost:8097/v1
+      STORE: fuseki
+      FUSEKI_URL: http://fuseki:3030
+      FUSEKI_DATASET: vocab
+      OIDC_ISSUERS: http://localhost:8184/realms/simpl
+      OIDC_JWKS_URL: http://keycloak:8080/realms/simpl/protocol/openid-connect/certs
+      MAX_UPLOAD_BYTES: "10485760"
+      REFERENCE_BASE: https://vocabulary.simpl.local/vocabularies
+      CORS_ALLOWED_ORIGINS: http://localhost:4333,http://localhost:4323
+      RUST_LOG: info
+    ports:
+      - "8097:8080"
+    healthcheck:
+      test: ["CMD", "vocabulary-manager", "healthcheck"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+volumes:
+  fuseki-data:

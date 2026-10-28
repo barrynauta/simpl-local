@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Experiment 1: run the upstream Postman collection (unchanged requests) with newman.
-# Usage: ./run.sh upstream|build
+# Usage: ./run.sh upstream|build|rust
 # Only collection variables are set on the command line (--env-var overrides).
 set -euo pipefail
 cd "$(dirname "$0")"
-target="${1:?upstream|build}"
+target="${1:?upstream|build|rust}"
 name="Swap$(date +%H%M%S)$RANDOM"   # unique vocabulary name per run (PascalCase)
 case "$target" in
   upstream)
@@ -15,6 +15,10 @@ case "$target" in
     base="http://host.docker.internal:8096/v1"
     token=$(curl -s -d grant_type=password -d client_id=vocabulary-tests -d username=ga-admin -d password=password \
       http://localhost:8183/realms/simpl/protocol/openid-connect/token | python3 -c 'import json,sys;print(json.load(sys.stdin)["access_token"])') ;;
+  rust)
+    base="http://host.docker.internal:8097/v1"
+    token=$(curl -s -d grant_type=password -d client_id=vocabulary-tests -d username=ga-admin -d password=password \
+      http://localhost:8184/realms/simpl/protocol/openid-connect/token | python3 -c 'import json,sys;print(json.load(sys.stdin)["access_token"])') ;;
 esac
 docker run --rm -v "$PWD:/etc/newman" -w /etc/newman postman/newman:6-alpine \
   run collection.json \

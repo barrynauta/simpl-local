@@ -76,3 +76,33 @@ Field differences found on the way: the build also returns `createdBy` and `late
 - **Where the two differ, the specs leave room:** `createdBy`, namespace normalisation, D10 and D17. Same message as before: write the decisions down.
 - **What the specs do not cover is what a replacement costs:** the data layout in Fuseki, the identity contract (which claim holds the roles, which one is the creator) and the deployment contract (port, base path, configuration keys, health, credentials). None of these is a user story, but each one decides whether two implementations can be swapped.
 - **A replacement is realistic,** with a defined amount of work: a Helm chart, Fuseki credentials, non-root images, the roles claim mapping, and a tested migration job (`migrate.py` is a working start).
+
+## 2026-10-28: step 3b, code writer in Rust (run 2, backend only)
+
+Same input as run 1 (specs and spec digest), backend in Rust instead of Java: axum, oxttl/oxrdf for Turtle, Fuseki and Keycloak as before, no UI. Prompt: [`pipeline/03b-code-writer-rust.md`](./pipeline/03b-code-writer-rust.md). The question: do the specs carry over to another stack?
+
+- **Build:** all 13 OpenAPI paths, 48 own tests green, clippy clean, a 102 MB image that does not run as root. About 23 minutes, five fix iterations.
+- **Isolation:** no file access outside its workspace, no web access apart from crates and images.
+- **Black-box suite, first pass: 33 of 74.** All 41 failures have one cause. Creating a vocabulary named X with its terms in `{base}/X#` returns 400, "referenced internal vocabulary X does not exist": the build reads the vocabulary's own namespace as a reference to itself. Most scenarios create a vocabulary first, so they fail in setup.
+- **The cause is in the digest, not only in the code.** D18 says `{base}/{Name}#` refers to vocabulary Name, and does not say that a vocabulary's own namespace is not a reference. The Java writer filled that in without noticing; the Rust writer read the rule literally. Both readings follow the text. D18 is now clarified in the digest. This is the clearest example so far of why two independent builds find gaps that one build hides.
+- **26 further spec gaps** in its build log, some new: no meaning given for the date filters, no rule for which namespaces get a warning (this decides whether a clean file comes back with warnings), whether unknown query parameters are an error, which claim fills `createdBy`, and `POST /external-vocabularies/content` being admin-only if D3 is read literally, although it is a read. It also found a conflict the digest missed: the OpenAPI example treats a reference to a deprecated version as a warning, D17 as an error.
+- **Java or Jena in the specs:** the digest itself names Spring Boot, R07.02 asks for "the same versioning library as schema management", the named-graph layout, a semantic error example that reads like Jena output, and the 5 MB upload limit that looks like a Spring default. None of these blocked the Rust build.
+- **After the D18 clarification:** the same code writer got the clarified decision only (no test details), changed two files, added two tests, rebuilt. **Black-box suite: 74 of 74**, the same as the Java build. Output: [`generated/run2-rust/`](./generated/run2-rust/).
+- **Open point it raised:** under the clarified D18, any version number in a vocabulary's own namespace counts as its own (`{base}/Foo/9#` while creating version 2 of Foo). The clarification does not say whether the number must match.
+
+### Swap: both UIs on the Rust backend
+
+Configuration only, no source change ([`experiments/swap-rust/`](./experiments/swap-rust/)):
+
+| Check | Result |
+|---|---|
+| Upstream's own Postman collection | Same as on the Java build: 11 of 11 requests give the same status, the same 6 of 7 assertions pass (the one failure is in the collection itself). |
+| Generated Vue UI on the Rust backend | 22 of 22 UI scenarios. |
+| Existing (upstream) UI on the Rust backend | 13 of 22, the same 9 failures as on the Java build and on its own backend: the existing UI's own wording and features. No failure is caused by the swap. |
+| Memory at rest | Rust backend about 11 MiB, Fuseki about 464 MiB, Keycloak about 1 GiB. The Java build used 644 MiB at rest for backend and Fuseki together. |
+
+### Conclusions
+
+- **The specs carry over to another language.** With the same decisions, a Rust backend reaches the same 74 of 74 as the Java one, and both UIs run on it unchanged. The OpenAPI is a real, language-neutral contract.
+- **A second, independent build is a cheap spec review.** The Rust writer read one rule more literally than the Java writer and exposed a gap in D18 that 74 green tests on the Java build had hidden. It also listed 26 open points, several of them new.
+- **What still ties the specs to one stack** is small and lives outside the API: the named-graph layout in Fuseki, a reference to "the same versioning library as schema management", and the 5 MB upload limit. Worth stating in the specs as requirements, not as library choices.
