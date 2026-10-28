@@ -1,0 +1,14 @@
+# References only terms that the scenario seeds in vocabulary $VOC
+# (sh:path, sh:class, sh:targetClass, sh:in). Tokens $NS and $VOC are
+# replaced by the suite before upload.
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix simpl: <https://simpl-programme.ec.europa.eu/ns/default#> .
+
+<urn:simpl:test:ResourceShape>
+    a sh:NodeShape ;
+    sh:targetClass <$NS$VOC#Asset> ;
+    sh:property [ sh:path simpl:uuid ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path simpl:version ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path <$NS$VOC#owner> ; sh:class <$NS$VOC#Party> ] ;
+    sh:property [ sh:path <$NS$VOC#kind> ; sh:in ( <$NS$VOC#Open> <$NS$VOC#Closed> ) ] .

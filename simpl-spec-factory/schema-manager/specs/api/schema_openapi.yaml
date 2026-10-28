@@ -1,0 +1,2585 @@
+openapi: 3.0.1
+security:
+  - OAuth2Auth: []
+
+info:
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  contact:
+    name: Simpl Programme
+    email: cnect-simpl@ec.europa.eu
+    url: https://simpl-programme.ec.europa.eu/
+  title: Schema Management API
+  description: This API allows the Governance authority to manage Resource Description Schemas.
+  version: 1.1.0
+servers:
+  - url: "https://schema-manager.dev.simpl-europe.eu/v1"
+    description: Generated server
+paths:
+  /schemas:
+    get:
+      tags:
+        - Schema management
+      summary: Get all schema metadata stored in simpl-schema-manager.
+      description: |
+        Returns a paginated list of schema metadata. When both `status` and `resourceType` are provided, the filters are combined with AND logic: only schemas matching both values are returned.
+
+        `resourceType` is only applicable to schemas of type RESOURCE. Providing it together with `schemaType=SEARCH` is rejected with a 400 Bad Request.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Status of the schema. By Providing it Results will be filtered by this value.
+          schema:
+            type: string
+            enum:
+              - REVOKED
+              - PUBLISHED
+        - name: resourceType
+          in: query
+          required: false
+          description: Resource type of the schema. By Providing it Results will be filtered by this value. Must be in PascalCase, alphanumeric. If combined with status, both filters must match (AND). Not accepted when schemaType is SEARCH.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+        - name: schemaType
+          in: query
+          required: false
+          description: Type of the schema. By Providing it Results will be filtered by this value. If omitted, defaults to RESOURCE so that schemas created before this property existed keep being returned unfiltered by type.
+          schema:
+            type: string
+            enum:
+              - RESOURCE
+              - SEARCH
+            default: RESOURCE
+        - name: page
+          in: query
+          required: false
+          description: Page number to display.
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of items per page to display.
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+      responses:
+        '200':
+          description: OK
+          headers:
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllSchemasResponsePayload'
+              example:
+                page: 1
+                totalPages: 2
+                total: 34
+                pageSize: 20
+                next: '/schemas?status=REVOKED&page=2&pageSize=20'
+                metadata:
+                  - name: ApplicationShape
+                    description: Schema that defines the Application Resource
+                    title: Application Shape
+                    resourceType: Application
+                    schemaType: RESOURCE
+                    version: 1
+                    changelog: Initial changelog entry.
+                    status: PUBLISHED
+                  - name: DataOfferingShape
+                    description: Schema that defines the Data Offering Resource
+                    title: Data Offering Shape
+                    resourceType: Data Offering
+                    schemaType: RESOURCE
+                    version: 1
+                    changelog: Initial changelog entry.
+                    status: PUBLISHED
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                invalidStatus:
+                  summary: Invalid status value
+                  value:
+                    type: urn:problem-type:simpl:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: Query parameter 'status' need to have value REVOKED or PUBLISHED.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                searchSchemaWithResourceType:
+                  summary: resourceType provided with schemaType=SEARCH
+                  value:
+                    type: urn:problem-type:simpl:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: Query parameter 'resourceType' is not allowed when 'schemaType' is SEARCH.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+    post:
+      tags:
+        - Schema management
+      summary: Create a new resource description schema.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateSchemaPayload'
+      responses:
+        '201':
+          description: CREATED
+          headers:
+            Location:
+              description: url that points to the newly created schema
+              schema:
+                type: string
+                example: https://schema-manager.dev.simpl-europe.eu/v1/schemas/8667b168-d462-40b8-9226-b955bab7b2da/version/1
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSchemaResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    schemaName: Application Shape
+                    schemaVersion: 1
+                    validationWarnings: []
+        '400':
+          $ref: '#/components/responses/SchemaValidationBadRequestResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '409':
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:conflict
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/409
+                title: Conflict
+                status: 409
+                detail: Schema with name 'Application shape' already exists
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+  /schemas/{schemaName}:
+    patch:
+      tags:
+        - Schema management
+      summary: Revoke an existing resource description schema.
+      parameters:
+        - name: schemaName
+          in: path
+          required: true
+          description: Schema name of the schema to update. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+        - name: resourceType
+          in: query
+          required: false
+          description: Resource type of the schema. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+        - name: schemaType
+          in: query
+          required: false
+          description: Type of the schema. If omitted, defaults to RESOURCE.
+          schema:
+            type: string
+            enum:
+              - RESOURCE
+              - SEARCH
+            default: RESOURCE
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemaStatusUpdateRequest'
+      responses:
+        '200':
+          description: OK
+          headers:
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaCategory'
+              example:
+                name: LegalPersonShape
+                title: Legal Person Shape
+                description: Schema defining legal person resource types.
+                resourceType: LegalPerson
+                schemaType: RESOURCE
+                status: REVOKED
+                latestVersion: 3
+                created: "2024-01-15T10:30:00Z"
+                modified: "2024-06-20T14:45:00Z"
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: Path parameter schemaName must contain only alphanumeric characters and follow PascalCase.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '404':
+          $ref: '#/components/responses/SchemaNotFoundResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+  /schemas/{schemaName}/versions:
+    get:
+      tags:
+        - Schema management
+      summary: Get the paginated version history for a schema.
+      description: >
+        Returns version metadata subjects for the selected schema category.
+        schemaType defaults to RESOURCE; legacy categories without a stored type
+        are treated as RESOURCE. resourceType can further filter RESOURCE
+        categories. Ordering is deterministic by version-subject URI, pagination
+        applies to complete subjects, and an empty page returns 404.
+      parameters:
+        - name: schemaName
+          in: path
+          required: true
+          description: Schema name of which we want to retrieve metadata list. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+        - name: resourceType
+          in: query
+          required: false
+          description: Optional RESOURCE category filter. SEARCH categories have no resourceType and will not match this filter. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+        - name: schemaType
+          in: query
+          required: false
+          description: Schema category type. Defaults to RESOURCE; legacy categories without a stored type are treated as RESOURCE.
+          schema:
+            type: string
+            enum:
+              - RESOURCE
+              - SEARCH
+            default: RESOURCE
+        - name: page
+          in: query
+          required: false
+          description: Page number to display.
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of items per page to display.
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+      responses:
+        '200':
+          description: OK
+          headers:
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSchemaVersionsResponsePayload'
+              example:
+                page: 1
+                totalPages: 2
+                total: 34
+                pageSize: 20
+                next: '/schemas/ApplicationShape/versions?page=2&pageSize=20&schemaType=RESOURCE'
+                metadata:
+                  - name: ApplicationShape
+                    graphName: null
+                    version: '1'
+                    changelog: Initial changelog entry.
+                    created: '2025-01-02T03:04:05Z'
+                    schemaType: RESOURCE
+                  - name: ApplicationShape
+                    graphName: null
+                    version: '2'
+                    changelog: Added new constraint.
+                    created: '2025-02-03T04:05:06Z'
+                    schemaType: RESOURCE
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: Path parameter schemaName must contain only alphanumeric characters and follow PascalCase.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '404':
+          $ref: '#/components/responses/SchemaNotFoundResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+    post:
+      tags:
+        - Schema management
+      summary: Create a new version of an existing resource description schema. Successful creation of a new version implicitly makes the previous version unavailable for creating new resource descriptions.
+      parameters:
+        - name: schemaName
+          in: path
+          required: true
+          description: Schema name of an existing schema of which we want to create a new version
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateNewSchemaVersionPayload'
+      responses:
+        '201':
+          description: CREATED
+          headers:
+            Location:
+              description: Url that points to the newly created schema
+              schema:
+                type: string
+                example: https://schema-manager.dev.simpl-europe.eu/v1/schemas/8667b168-d462-40b8-9226-b955bab7b2da/version/2
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateNewVersionSchemaResponsePayload'
+              example:
+                name: Data Offering Schema.
+                description: Schema that defines the Application Resource
+                title: Application Shape
+                resourceType: Application
+                schemaType: RESOURCE
+                version: 2
+                changelog: Provided new length constraint for property 'name'.
+                status: PUBLISHED
+                validationWarnings: []
+        '400':
+          $ref: '#/components/responses/SchemaValidationBadRequestResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '404':
+          $ref: '#/components/responses/SchemaNotFoundResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '409':
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:conflict
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/409
+                title: Conflict
+                status: 409
+                detail: Schema with version '2' already exists.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /schemas/{schemaName}/{version}:
+    get:
+      tags:
+        - Schema management
+      summary: Get a specific version of a resource description schema.
+      parameters:
+        - name: schemaName
+          in: path
+          required: true
+          description: Schema name of which we want to retrieve a specific version. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+        - name: version
+          in: path
+          required: true
+          description: Version identifier of the schema to retrieve, as returned by schema metadata. Monotonically increasing integer represented as a string (e.g. "1", "2").
+          schema:
+            type: string
+            minLength: 1
+            example: '1'
+        - name: resourceType
+          in: query
+          required: false
+          description: Resource type of the schema. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+        - name: schemaType
+          in: query
+          required: false
+          description: Type of the schema to retrieve. Since the same schemaName can exist for both RESOURCE and SEARCH schema types, provide this parameter to disambiguate which one to fetch. If omitted, defaults to RESOURCE.
+          schema:
+            type: string
+            enum:
+              - RESOURCE
+              - SEARCH
+            default: RESOURCE
+      responses:
+        '200':
+          description: OK
+          headers:
+            Location:
+              description: URL that points to the retrieved schema version.
+              schema:
+                type: string
+                format: uri
+                example: https://schema-manager.dev.simpl-europe.eu/v1/schemas/ApplicationShape/1
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            text/turtle:
+              schema:
+                type: string
+                description: The schema content in Turtle (TTL) format.
+              example: |
+                @prefix ex: <http://example.org/>.
+                ex:subject ex:predicate ex:object .
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: Path parameter schemaName must contain only alphanumeric characters and follow PascalCase.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '404':
+          description: Resource Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                schemaNotFound:
+                  summary: Schema not found
+                  value:
+                    type: urn:problem-type:iana:notFound
+                    href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
+                    title: Not Found
+                    status: 404
+                    detail: Schema with name 'ApplicationShape' was not found
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                versionNotFound:
+                  summary: Schema version not found
+                  value:
+                    type: urn:problem-type:iana:notFound
+                    href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
+                    title: Not Found
+                    status: 404
+                    detail: Schema version '9.9.9' not found for schema 'ApplicationShape'
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's Accept header.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /vocabularies:
+    get:
+      tags:
+        - Vocabulary management
+      summary: Get all vocabulary metadata stored in simpl-schema-manager. Returns the latest version of each vocabulary.
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: Name of the vocabulary. By providing it, results will be filtered to vocabularies whose name matches this value. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+        - name: status
+          in: query
+          required: false
+          description: Status of the vocabulary. By providing it, results will be filtered by this value.
+          schema:
+            type: string
+            enum:
+              - ACTIVE
+              - DEPRECATED
+        - name: creationDate
+          in: query
+          required: false
+          description: Creation date of the vocabulary (ISO 8601 date-time). By providing it, results will be filtered to vocabularies created on this date.
+          schema:
+            type: string
+            format: date-time
+            example: "2024-03-01T00:00:00Z"
+        - name: sort
+          in: query
+          required: false
+          description: >
+            Sort the results by a supported field. Prefix the field name with `-` for descending order.
+            Supported values: `name`, `-name`, `status`, `-status`, `creationDate`, `-creationDate`.
+          schema:
+            type: string
+            enum:
+              - name
+              - -name
+              - status
+              - -status
+              - creationDate
+              - -creationDate
+        - name: page
+          in: query
+          required: false
+          description: Page number to display.
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of items per page to display.
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+      responses:
+        '200':
+          description: OK
+          headers:
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVocabulariesResponsePayload'
+              example:
+                page: 1
+                totalPages: 2
+                total: 3
+                pageSize: 20
+                next: '/vocabularies?sort=name&page=2&pageSize=20'
+                metadata:
+                  - name: HealthcareVocabulary
+                    version: 3
+                    description: Vocabulary defining healthcare resource types.
+                    status: ACTIVE
+                    creationDate: '2024-03-01T00:00:00Z'
+                    lastUpdateDate: '2024-03-01T00:00:00Z'
+                  - name: LegalEntityVocabulary
+                    version: 1
+                    description: Vocabulary defining legal entity types.
+                    status: DEPRECATED
+                    creationDate: '2024-01-15T00:00:00Z'
+                    lastUpdateDate: '2024-01-15T00:00:00Z'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: Query parameter 'sort' must be one of [name, -name, status, -status, creationDate, -creationDate].
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's Accept header.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+    post:
+      tags:
+        - Vocabulary management
+      summary: Create a new internal vocabulary. Automatically creates version 1 (ACTIVE).
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateVocabularyPayload'
+      responses:
+        '201':
+          description: CREATED
+          headers:
+            Location:
+              description: URL that points to the newly created vocabulary version.
+              schema:
+                type: string
+                example: https://schema-manager.dev.simpl-europe.eu/v1/vocabularies/HealthcareVocabulary/versions/1
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VocabularyVersionMetadata'
+              example:
+                name: HealthcareVocabulary
+                version: 1
+                description: Vocabulary defining healthcare resource types.
+                changelog: Initial version.
+                status: ACTIVE
+                creationDate: '2024-03-01T00:00:00Z'
+                lastUpdateDate: '2024-03-01T00:00:00Z'
+        '400':
+          $ref: '#/components/responses/VocabularyValidationBadRequestResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's Accept header.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '409':
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:conflict
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/409
+                title: Conflict
+                status: 409
+                detail: Vocabulary with name 'HealthcareVocabulary' already exists.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /vocabularies/{vocabularyName}:
+    patch:
+      tags:
+        - Vocabulary management
+      summary: Update the status of an existing vocabulary.
+      parameters:
+        - name: vocabularyName
+          in: path
+          required: true
+          description: Name of the vocabulary to update. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VocabularyStatusUpdateRequest'
+      responses:
+        '200':
+          description: OK
+          headers:
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VocabularyListItem'
+              example:
+                name: HealthcareVocabulary
+                version: 3
+                description: Vocabulary defining healthcare resource types.
+                status: DEPRECATED
+                creationDate: '2024-03-01T00:00:00Z'
+                lastUpdateDate: '2024-03-01T00:00:00Z'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: Path parameter vocabularyName must contain only alphanumeric characters and follow PascalCase.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '404':
+          $ref: '#/components/responses/VocabularyNotFoundResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's Accept header.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '409':
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:conflict
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/409
+                title: Conflict
+                status: 409
+                detail: Vocabulary 'HealthcareVocabulary' already has status DEPRECATED.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /vocabularies/{vocabularyName}/versions:
+    get:
+      tags:
+        - Vocabulary management
+      summary: Get all version metadata for a given vocabulary name stored in simpl-schema-manager.
+      parameters:
+        - name: vocabularyName
+          in: path
+          required: true
+          description: Name of the vocabulary of which we want to retrieve version history. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+        - name: sort
+          in: query
+          required: false
+          description: >
+            Sort the results by a supported field. Prefix the field name with `-` for descending order.
+            Supported values: `name`, `-name`, `status`, `-status`, `creationDate`, `-creationDate`.
+          schema:
+            type: string
+            enum:
+              - name
+              - -name
+              - status
+              - -status
+              - creationDate
+              - -creationDate
+        - name: page
+          in: query
+          required: false
+          description: Page number to display.
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of items per page to display.
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+      responses:
+        '200':
+          description: OK
+          headers:
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllVocabulariesResponsePayload'
+              example:
+                page: 1
+                totalPages: 1
+                total: 2
+                pageSize: 20
+                next: null
+                metadata:
+                  - name: HealthcareVocabulary
+                    version: 2
+                    description: Vocabulary defining healthcare resource types.
+                    changelog: Added new concept scheme for diagnostics.
+                    status: ACTIVE
+                    creationDate: '2024-03-01T00:00:00Z'
+                    lastUpdateDate: '2024-03-01T00:00:00Z'
+                  - name: HealthcareVocabulary
+                    version: 1
+                    description: Initial vocabulary for healthcare resource types.
+                    changelog: Initial version.
+                    status: DEPRECATED
+                    creationDate: '2024-01-15T00:00:00Z'
+                    lastUpdateDate: '2024-03-01T00:00:00Z'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: Path parameter vocabularyName must contain only alphanumeric characters and follow PascalCase.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '404':
+          $ref: '#/components/responses/VocabularyNotFoundResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's Accept header.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+    post:
+      tags:
+        - Vocabulary management
+      summary: Create a new version of an existing internal vocabulary. Automatically increments the version number and sets the previous ACTIVE version to DEPRECATED.
+      parameters:
+        - name: vocabularyName
+          in: path
+          required: true
+          description: Name of the vocabulary for which a new version is to be created. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateNewVocabularyVersionPayload'
+      responses:
+        '201':
+          description: CREATED
+          headers:
+            Location:
+              description: URL that points to the newly created vocabulary version.
+              schema:
+                type: string
+                example: https://schema-manager.dev.simpl-europe.eu/v1/vocabularies/HealthcareVocabulary/versions/2
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VocabularyVersionMetadata'
+              example:
+                name: HealthcareVocabulary
+                version: 2
+                description: Vocabulary defining healthcare resource types.
+                changelog: Added new concept scheme for diagnostics.
+                status: ACTIVE
+                creationDate: '2024-03-01T00:00:00Z'
+                lastUpdateDate: '2024-03-01T00:00:00Z'
+        '400':
+          $ref: '#/components/responses/VocabularyValidationBadRequestResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '404':
+          $ref: '#/components/responses/VocabularyNotFoundResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's Accept header.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /vocabularies/{vocabularyName}/versions/{version}:
+    get:
+      tags:
+        - Vocabulary management
+      summary: Get the full details of a specific vocabulary version, including its metadata and RDF/Turtle content.
+      parameters:
+        - name: vocabularyName
+          in: path
+          required: true
+          description: Name of the vocabulary. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+        - name: version
+          in: path
+          required: true
+          description: Version number of the vocabulary to retrieve.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: OK
+          headers:
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VocabularyVersionDetailResponsePayload'
+              example:
+                name: HealthcareVocabulary
+                version: 2
+                description: Vocabulary defining healthcare resource types.
+                changelog: Added new concept scheme for diagnostics.
+                status: ACTIVE
+                creationDate: '2024-03-01T00:00:00Z'
+                lastUpdateDate: '2024-03-01T00:00:00Z'
+                content: "@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n@prefix hc: <https://example.eu/healthcare#> .\nhc:HealthcareScheme a skos:ConceptScheme ;\n  skos:prefLabel \"Healthcare Concept Scheme\"@en ."
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: Path parameter vocabularyName must contain only alphanumeric characters and follow PascalCase.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '404':
+          $ref: '#/components/responses/VocabularyNotFoundResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's Accept header.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /metadataQualityProfiles/{metadataQualityProfileName}:
+    patch:
+      tags:
+        - Quality profile
+      summary: Update Metadata Quality Profile status.
+      parameters:
+        - name: metadataQualityProfileName
+          in: path
+          required: true
+          description: Metadata Quality Profile name to update. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: ^[A-Z][a-zA-Z0-9]*$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetadataQualityProfileStatusUpdateRequest'
+            example:
+              status: REVOKED
+      responses:
+        '200':
+          description: OK
+          headers:
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateMetadataQualityProfileResponsePayload'
+              example:
+                metadataQualityProfileName: DataOfferingMqp
+                mqpVersion: 1
+                status: REVOKED
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: The provided metadataQualityProfileName does not satisfy naming constraints.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '404':
+          description: Resource Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notFound
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
+                title: Resource Not Found
+                status: 404
+                detail: Metadata Quality Profile with name 'DataOfferingMqp' was not found.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's Accept header.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+    delete:
+      tags:
+        - Quality profile
+      operationId: deleteMetadataQualityProfile
+      summary: Revoke a Metadata Quality Profile.
+      description: >-
+        Soft-deletes the Metadata Quality Profile by transitioning its status to REVOKED.
+        Revoked profiles remain readable for audit, compliance, and operational recovery,
+        but are excluded from the active quality assessment pipeline for newly published
+        resources. Bulk update jobs scheduled before the revocation timestamp are allowed
+        to complete; jobs started after revocation skip the profile. Only callers with the
+        GA_SCHEMA_ADMIN realm role may invoke this operation. Deletion is rejected when
+        the profile is the sole PUBLISHED profile for its resourceType; publish a
+        replacement profile first.
+      security:
+        - OAuth2Auth: []
+      parameters:
+        - name: metadataQualityProfileName
+          in: path
+          required: true
+          description: Metadata Quality Profile name to revoke. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][a-zA-Z0-9]*$'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: Path parameter metadataQualityProfileName must contain only alphanumeric characters and follow PascalCase.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unauthorized
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401
+                title: Unauthorized
+                status: 401
+                detail: Authentication is required to delete a Metadata Quality Profile.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:forbidden
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403
+                title: Forbidden
+                status: 403
+                detail: Realm role GA_SCHEMA_ADMIN is required to delete a Metadata Quality Profile.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '404':
+          description: Resource Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:sms:metadataQualityProfileNotFound
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
+                title: Resource Not Found
+                status: 404
+                detail: Metadata Quality Profile with name 'DataOfferingMqp' was not found.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's Accept header.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '409':
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:sms:activeProfileDeletion
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/409
+                title: Conflict
+                status: 409
+                detail: Metadata Quality Profile 'DataOfferingMqp' is the only PUBLISHED profile for resource type 'DataOffering'. Assign a replacement profile before deleting this one.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /schemas/{schemaName}/qualityProfiles/active:
+    get:
+      tags:
+        - Quality profile
+      operationId: getActiveQualityProfile
+      summary: Get the active Metadata Quality Profile for a schema.
+      description: >-
+        Returns the active Metadata Quality Profile resolved for the latest published schema version for the provided schema name.
+      parameters:
+        - name: schemaName
+          in: path
+          required: true
+          description: Schema name for which the active Metadata Quality Profile is resolved. Must be in PascalCase, alphanumeric.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: ^[A-Z][a-zA-Z0-9]*$
+      responses:
+        '200':
+          description: OK
+          headers:
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/ActiveMetadataQualityProfileResponsePayload'
+              example:
+                '@context':
+                  simpl: https://simpl-programme.ec.europa.eu/simpl/mqp/
+                  dqv: http://www.w3.org/ns/dqv#
+                  dcterms: http://purl.org/dc/terms/
+                  xsd: http://www.w3.org/2001/XMLSchema#
+                '@graph':
+                  - '@id': http://example.org/profile/DataOffering
+                    '@type': simpl:QualityProfile
+                    dcterms:title:
+                      '@language': en
+                      '@value': Data Offering Quality Profile
+                    simpl:includesDimension:
+                      '@id': http://example.org/dimension/Completeness
+                  - '@id': http://example.org/dimension/Completeness
+                    '@type': dqv:Dimension
+                    simpl:dimensionWeight:
+                      '@type': xsd:decimal
+                      '@value': '1.0'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: Path parameter schemaName must contain only alphanumeric characters and follow PascalCase.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '404':
+          description: Resource Not Found. Returned either when the schema does not exist (urn:problem-type:simpl:schemaNotFound)
+            or when the schema exists but has no active Metadata Quality Profile (urn:problem-type:simpl:activeQualityProfileNotFound).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                schemaNotFound:
+                  summary: Schema does not exist
+                  value:
+                    type: urn:problem-type:simpl:schemaNotFound
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/resourceNotFound.html
+                    title: Resource Not Found
+                    status: 404
+                    detail: Schema with name 'ApplicationShape' was not found.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                activeQualityProfileNotFound:
+                  summary: Schema exists but has no active Metadata Quality Profile
+                  value:
+                    type: urn:problem-type:simpl:activeQualityProfileNotFound
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/resourceNotFound.html
+                    title: Resource Not Found
+                    status: 404
+                    detail: No active Metadata Quality Profile is linked to schema 'ApplicationShape'.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's Accept header.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+  /webhooks:
+    get:
+      tags:
+        - Webhook management
+      summary: Get all webhook subscriptions.
+      responses:
+        '200':
+          description: OK
+          headers:
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Webhook'
+              examples:
+                listWebhooks:
+                  value:
+                    - webhookId: "12345678-1234-1234-1234-123456789abc"
+                      targetUrl: "https://catalogue.example.com/internal/events/simpl-sms"
+                      events: ["SchemaPublished", "SchemaRevoked"]
+                    - webhookId: "87654321-4321-4321-4321-cba987654321"
+                      targetUrl: "https://partner-system.example.org/webhooks/schema-events"
+                      events: ["SchemaPublished"]
+                    - webhookId: "abcdef12-3456-7890-abcd-ef1234567890"
+                      targetUrl: "https://monitoring.internal.eu/api/schema-notifications"
+                      events: ["SchemaRevoked"]
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+    post:
+      tags:
+        - Webhook management
+      summary: Create a new webhook subscription to receive event notifications.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWebhookRequest'
+            example:
+              targetUrl: "https://catalogue.example.com/internal/events/simpl-sms"
+              events: ["SchemaPublished", "SchemaRevoked"]
+      responses:
+        '201':
+          description: CREATED
+          headers:
+            Vary:
+              description: Indicates the response varies based on the Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Webhook'
+              example:
+                webhookId: "12345678-1234-1234-1234-123456789abc"
+                targetUrl: "https://catalogue.example.com/internal/events/simpl-sms"
+                events: ["SchemaPublished", "SchemaRevoked"]
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: The targetUrl is invalid or malformed.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '406':
+          description: Not Acceptable. Returned for an unsupported webhook event value or when the response cannot satisfy content negotiation headers.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                unsupportedEvent:
+                  value:
+                    type: urn:problem-type:simpl:notAcceptable
+                    href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                    title: Not Acceptable
+                    status: 406
+                    detail: "'test' is not a valid event type. Valid event types are: SchemaPublished, SchemaRevoked"
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                contentNegotiation:
+                  value:
+                    type: urn:problem-type:simpl:notAcceptable
+                    href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                    title: Not Acceptable
+                    status: 406
+                    detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive content negotiation headers.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '409':
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:conflict
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/409
+                title: Conflict
+                status: 409
+                detail: Webhook with the same targetUrl and events already exists.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+  /webhooks/{webhookId}:
+    delete:
+      tags:
+        - Webhook management
+      summary: Delete a webhook subscription.
+      parameters:
+        - name: webhookId
+          in: path
+          required: true
+          description: Unique identifier of the webhook subscription to delete.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: No Content
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notFound
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
+                title: Resource Not Found
+                status: 404
+                detail: Webhook with id '12345678-1234-1234-1234-123456789abc' was not found
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive content negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+components:
+  securitySchemes:
+    OAuth2Auth:
+      type: oauth2
+      description: OAuth2 authentication provided by gateway
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.com/oauth/authorize
+          tokenUrl: https://auth.example.com/oauth/token
+          scopes:
+            read: Read access
+            write: Write access
+
+  responses:
+    VocabularyValidationBadRequestResponse:
+      description: Bad Request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:badRequest
+            href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+            title: Bad Request
+            status: 400
+            detail: "Syntax Error: Expected '.' or '}' but found 'skos'"
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    VocabularyNotFoundResponse:
+      description: Resource Not Found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:notFound
+            href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
+            title: Resource Not Found
+            status: 404
+            detail: Vocabulary with name 'HealthcareVocabulary' was not found.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    SchemaValidationBadRequestResponse:
+      description: Bad Request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:badRequest
+            href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+            title: Bad Request
+            status: 400
+            detail: Syntax validation errors detected in provided file.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+            issues:
+              - code: localReferenceUnavailable
+                description: Local namespace does not match any known vocabulary namespace.
+                location: namespace 'https://authority.example/vocabulary-manager/content/UnknownVocabulary'
+    SchemaNotFoundResponse:
+      description: Resource Not Found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:notFound
+            href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
+            title: Resource Not Found
+            status: 404
+            detail: Schema with name 'Application Shape' was not found
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    UnauthorizedErrorResponse:
+      description: Unauthorized
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:unauthorized
+            href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401
+            title: Invalid or expired token
+            status: 401
+            detail: Invalid or expired token
+            instance: urn:uuid:24a550c4-d7a8-4c06-91aa-35a80244776e
+    ForbiddenResponse:
+      description: Forbidden
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:forbidden
+            href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403
+            title: Forbidden
+            status: 403
+            detail: Access to the requested resource is forbidden.
+            instance: urn:uuid:6cfcb022-4ead-47fd-a7c3-3c5350ff7068
+    InternalServerErrorResponse:
+      description: Internal Server error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:internalServerError
+            href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+            title: Internal Server Error
+            status: 500
+            detail: Internal Server Error
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    NotAcceptableResponse:
+      description: Not Acceptable
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:notAcceptable
+            href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+            title: Not Acceptable
+            status: 406
+            detail: Server cannot produce a response matching the list of acceptable values defined in the request's Accept header.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    UnsupportedMediaTypeResponse:
+      description: Unsupported Media Type
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:unsupportedMediaType
+            href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+            title: Unsupported Media Type
+            status: 415
+            detail: Server refused to accept the request because the message content format is not supported.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  schemas:
+    MetadataQualityProfileStatus:
+      type: string
+      description: Dedicated status lifecycle values for Metadata Quality Profiles.
+      enum:
+        - PUBLISHED
+        - REVOKED
+      example: PUBLISHED
+    CreateMetadataQualityProfileResponsePayload:
+      type: object
+      properties:
+        metadataQualityProfileName:
+          type: string
+          description: Metadata Quality Profile name.
+          example: DataOfferingMqp
+        mqpVersion:
+          type: string
+          description: Profile version. Monotonically increasing integer represented as a string (e.g. "1", "2").
+          example: 1
+        status:
+          $ref: '#/components/schemas/MetadataQualityProfileStatus'
+    MetadataQualityProfileStatusUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: '#/components/schemas/MetadataQualityProfileStatus'
+    Problem:
+      description: |
+        A Problem Details object (RFC 9457).
+
+        Additional properties specific to the problem type may be present.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the problem type
+          default: about:blank  # kept for backwards-compatibility, type will be mandatory in problem-v2
+        href:
+          type: string
+          format: uri
+          description: An absolute URI that, when dereferenced, provides human-readable documentation for the problem type (e.g. using HTML).
+        title:
+          type: string
+          description: A short summary of the problem type. Written in English and readable for engineers (usually not suited for non technical stakeholders and not localized).
+          example: Service Unavailable
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          exclusiveMaximum: true
+          example: 503
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem
+        instance:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the specific occurrence of the problem. It may or may not yield further information if dereferenced.
+        issues:
+          type: array
+          description: Structured schema validation issues.
+          items:
+            $ref: '#/components/schemas/SchemaValidationIssue'
+      example:
+        type: urn:problem-type:exampleOrganization:exampleProblem # "exampleOrganization" should be a short identifier for the organization that defines the problem type. "belgif" is used for problem types standardized in the Belgif REST guide
+        href: "https://www.belgif.be/specification/rest/api-guide/#standardized-problem-types" # optional, should refer to documentation of the problem type, either of a belgif standardized or a custom problem type
+        title: Description of the type of problem that occurred
+        status: 400 # HTTP response status, appropriate for the problem type
+        detail: Description of specific occurrence of the problem
+        instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+
+    CreateSchemaPayload:
+      type: object
+      required:
+        - schemaFile
+        - name
+        - description
+        - title
+      properties:
+        schemaFile:
+          type: string
+          format: binary
+          description: The schema file in .ttl format.
+        name:
+          type: string
+          example: Application Shape
+          description: The name of the schema.
+          minLength: 3
+          maxLength: 64
+          pattern: '^[A-Z][a-zA-Z0-9]*$'
+        description:
+          type: string
+          example: Schema that defines the Application Resource
+          description: The Description of the schema.
+        title:
+          type: string
+          example: Application Shape
+          description: Longer version for the name, can have spaces and such.
+        resourceType:
+          type: string
+          example: Application
+          description: What resource type this schema applies to. Must be in PascalCase, alphanumeric.
+          minLength: 3
+          maxLength: 64
+          pattern: '^[A-Z][a-zA-Z0-9]*$'
+        schemaType:
+          type: string
+          enum:
+            - RESOURCE
+            - SEARCH
+          default: RESOURCE
+          example: RESOURCE
+          description: Type of the schema being created. Optional for backward compatibility; defaults to RESOURCE.
+
+    CreateNewSchemaVersionPayload:
+      type: object
+      required:
+        - schemaFile
+        - changelog
+      properties:
+        schemaFile:
+          type: string
+          format: binary
+          description: The schema file in .ttl format.
+        changelog:
+          type: string
+          example: Provided new length constraint for property 'name'.
+          description: Short description of introduced changes.
+        resourceType:
+          type: string
+          example: Application
+          description: What resource type this schema applies to. Must be in PascalCase, alphanumeric.
+          minLength: 3
+          maxLength: 64
+          pattern: '^[A-Z][a-zA-Z0-9]*$'
+        schemaType:
+          type: string
+          enum:
+            - RESOURCE
+            - SEARCH
+          default: RESOURCE
+          example: RESOURCE
+          description: Type of the schema being created. Optional for backward compatibility; defaults to RESOURCE.
+
+    GetAllSchemasResponsePayload:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number.
+          example: 1
+        totalPages:
+          type: integer
+          description: Total number of pages.
+          example: 4
+        total:
+          type: integer
+          description: Total number of items.
+          example: 34
+        pageSize:
+          type: integer
+          description: Number of items per page.
+          example: 20
+        next:
+          type: string
+          description: URL to the next page. Value will be null on the last page.
+          example: '/schemas?status=REVOKED&page=1&pageSize=20'
+        metadata:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of the schema.
+                example: Application Shape
+              description:
+                type: string
+                description: Description of the schema.
+                example: Schema that defines the Application Resource
+              title:
+                type: string
+                description: Longer version for the name, can have spaces and such.
+                example: Application Shape
+              resourceType:
+                type: string
+                description: What resource type this schema applies to.
+                example: Application
+              schemaType:
+                type: string
+                enum:
+                  - RESOURCE
+                  - SEARCH
+                default: RESOURCE
+                description: Type of the schema. Can be either RESOURCE or SEARCH. Schemas created before this property existed are treated as RESOURCE.
+                example: RESOURCE
+              version:
+                type: string
+                description: The version of the schema. Monotonically increasing integer represented as a string (e.g. "1", "2").
+                example: 3
+              changelog:
+                type: string
+                description: Short description of introduced changes.
+                example: Provided new length constraint for property 'name'.
+              status:
+                type: string
+                enum:
+                  - PUBLISHED
+                  - REVOKED
+                description: Status of the schema. Can be either PUBLISHED or REVOKED.
+                example: PUBLISHED
+    GetSchemaVersionsResponsePayload:
+      $ref: ./common/common-components.yaml#/components/schemas/GetSchemaVersionsResponsePayload
+    CreateSchemaResponsePayload:
+      type: object
+      properties:
+        schemaName:
+          type: string
+          example: Application Shape
+          description: The name of the schema.
+        schemaVersion:
+          type: string
+          example: 1
+          description: The version of the schema. Monotonically increasing integer represented as a string (e.g. "1", "2").
+        validationWarnings:
+          type: array
+          description: Non-blocking semantic validation warnings.
+          items:
+            $ref: '#/components/schemas/SchemaValidationIssue'
+    CreateNewVersionSchemaResponsePayload:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Application Shape
+          description: The name of the schema.
+        description:
+          type: string
+          example: Schema that defines the Application Resource
+          description: The Description of the schema.
+        title:
+          type: string
+          example: Application Shape
+          description: Longer version for the name, can have spaces and such.
+        resourceType:
+          type: string
+          example: Application
+          description: What resource type this schema applies to.
+        schemaType:
+          type: string
+          enum:
+            - RESOURCE
+            - SEARCH
+          default: RESOURCE
+          example: RESOURCE
+          description: Type of the schema. Can be either RESOURCE or SEARCH.
+        version:
+          type: string
+          example: 2
+          description: The version of the schema. Monotonically increasing integer represented as a string (e.g. "1", "2").
+        changelog:
+          type: string
+          example: Provided new length constraint for property 'name'.
+          description: Short description of introduced changes.
+        status:
+          type: string
+          enum:
+            - PUBLISHED
+            - REVOKED
+          example: PUBLISHED
+          description: Status of the schema. Can be either PUBLISHED or REVOKED.
+        validationWarnings:
+          type: array
+          description: Non-blocking semantic validation warnings.
+          items:
+            $ref: '#/components/schemas/SchemaValidationIssue'
+
+    SchemaValidationIssue:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Machine-readable semantic validation issue code.
+          example: externalReferenceSkipped
+        description:
+          type: string
+          description: Human-readable issue description.
+          example: Cannot resolve external namespace 'https://example.org/vocab/' because no cached external vocabulary is registered.
+        location:
+          type: string
+          description: Location of the issue in the schema document.
+          example: prefix 'ex' -> 'https://example.org/vocab/'
+
+    UpdateSchemaPayload:
+      type: object
+      properties:
+        description:
+          type: string
+          example: Updated schema that defines the Application Resource
+          description: The description of the schema.
+        title:
+          type: string
+          example: Updated Application Shape
+          description: Longer version for the name, can have spaces and such.
+        resourceType:
+          type: string
+          example: Application
+          description: What resource type this schema applies to.
+
+    UpdateSchemaResponsePayload:
+      type: object
+      properties:
+        name:
+          type: string
+          example: ApplicationShape
+          description: The name of the schema.
+        description:
+          type: string
+          example: Updated schema that defines the Application Resource
+          description: The description of the schema.
+        title:
+          type: string
+          example: Updated Application Shape
+          description: Longer version for the name, can have spaces and such.
+        resourceType:
+          type: string
+          example: Application
+          description: What resource type this schema applies to.
+        version:
+          type: string
+          example: 1
+          description: The version of the schema. Monotonically increasing integer represented as a string (e.g. "1", "2").
+        changelog:
+          type: string
+          example: Updated description and title
+          description: Short description of introduced changes.
+        status:
+          type: string
+          enum:
+            - PUBLISHED
+            - REVOKED
+          example: PUBLISHED
+          description: Status of the schema. Can be either PUBLISHED or REVOKED.
+
+    SchemaStatusUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - REVOKED
+          example: REVOKED
+          description: Status to update the schema to. Only REVOKED is supported for this endpoint.
+
+    VocabularyStatusUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - DEPRECATED
+          example: DEPRECATED
+          description: The new status to set for the vocabulary.
+        reason:
+          type: string
+          example: No longer maintained.
+          description: Optional reason for the status change.
+        effectiveDate:
+          type: string
+          format: date-time
+          example: "2024-03-01T00:00:00Z"
+          description: Optional effective date for the status change.
+
+    SchemaCategory:
+      type: object
+      required:
+        - name
+        - status
+      properties:
+        name:
+          type: string
+          example: LegalPersonShape
+          description: The name of the schema category.
+        title:
+          type: string
+          example: Legal Person Shape
+          description: Human-readable title of the schema category.
+        description:
+          type: string
+          example: Schema defining legal person resource types.
+          description: Detailed description of the schema category.
+        resourceType:
+          type: string
+          example: LegalPerson
+          description: The resource type associated with the schema category.
+        schemaType:
+          type: string
+          enum:
+            - RESOURCE
+            - SEARCH
+          default: RESOURCE
+          example: RESOURCE
+          description: Type of the schema. Can be either RESOURCE or SEARCH.
+        status:
+          type: string
+          enum:
+            - PUBLISHED
+            - REVOKED
+          example: REVOKED
+          description: The status of the schema category.
+        latestVersion:
+          type: string
+          example: 3
+          description: Reference to the most recent version of the schema. Monotonically increasing integer represented as a string (e.g. "1", "2").
+        created:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+          description: Timestamp when the schema category was created.
+        modified:
+          type: string
+          format: date-time
+          example: "2024-06-20T14:45:00Z"
+          description: Timestamp when the schema category was last modified.
+
+    Webhook:
+      type: object
+      required:
+        - webhookId
+        - targetUrl
+        - events
+      properties:
+        webhookId:
+          type: string
+          example: "12345678-1234-1234-1234-123456789abc"
+          description: Unique identifier for the webhook subscription
+        targetUrl:
+          type: string
+          format: uri
+          example: "https://catalogue.example.com/internal/events/simpl-sms"
+          description: The URL to which webhook events will be sent via HTTP POST
+        events:
+          type: array
+          items:
+            type: string
+            enum:
+              - SchemaPublished
+              - SchemaRevoked
+          example: ["SchemaPublished", "SchemaRevoked"]
+          description: List of event types subscribed to
+
+    CreateWebhookRequest:
+      type: object
+      required:
+        - targetUrl
+        - events
+      properties:
+        targetUrl:
+          type: string
+          format: uri
+          example: "https://catalogue.example.com/internal/events/simpl-sms"
+          description: The URL to which webhook events will be sent via HTTP POST
+        events:
+          type: array
+          items:
+            type: string
+            enum:
+              - SchemaPublished
+              - SchemaRevoked
+          example: [ "SchemaPublished", "SchemaRevoked" ]
+          description: List of event types subscribed to
+          minItems: 1
+          uniqueItems: true
+
+
+    CreateVocabularyPayload:
+      type: object
+      required:
+        - vocabularyFile
+        - name
+        - description
+        - changelog
+      properties:
+        vocabularyFile:
+          type: string
+          format: binary
+          description: The vocabulary file in .ttl format.
+        name:
+          type: string
+          example: HealthcareVocabulary
+          description: The name of the vocabulary. Must be in PascalCase, alphanumeric.
+          minLength: 3
+          maxLength: 64
+          pattern: '^[A-Z][a-zA-Z0-9]*$'
+        description:
+          type: string
+          example: Vocabulary defining healthcare resource types.
+          description: Description of the vocabulary.
+        changelog:
+          type: string
+          example: Initial version.
+          description: Short description of changes introduced in this version.
+
+    CreateNewVocabularyVersionPayload:
+      type: object
+      required:
+        - vocabularyFile
+        - description
+        - changelog
+      properties:
+        vocabularyFile:
+          type: string
+          format: binary
+          description: The vocabulary file in .ttl format.
+        description:
+          type: string
+          example: Vocabulary defining healthcare resource types with extended diagnostics.
+          description: Description of the new vocabulary version.
+        changelog:
+          type: string
+          example: Added new concept scheme for diagnostics.
+          description: Short description of changes introduced in this version.
+
+    GetVocabulariesResponsePayload:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number.
+          example: 1
+        totalPages:
+          type: integer
+          description: Total number of pages.
+          example: 2
+        total:
+          type: integer
+          description: Total number of items.
+          example: 5
+        pageSize:
+          type: integer
+          description: Number of items per page.
+          example: 20
+        next:
+          type: string
+          nullable: true
+          description: URL to the next page. Value will be null on the last page.
+          example: '/vocabularies?sort=name&page=2&pageSize=20'
+        metadata:
+          type: array
+          items:
+            $ref: '#/components/schemas/VocabularyListItem'
+
+    VocabularyListItem:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the vocabulary.
+          example: HealthcareVocabulary
+        version:
+          type: integer
+          description: The version number of the vocabulary.
+          example: 2
+        description:
+          type: string
+          description: Description of the vocabulary version.
+          example: Vocabulary defining healthcare resource types.
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - DEPRECATED
+          description: Status of the vocabulary.
+          example: ACTIVE
+        creationDate:
+          type: string
+          format: date-time
+          description: Date the vocabulary version was created.
+          example: '2024-03-01T00:00:00Z'
+        lastUpdateDate:
+          type: string
+          format: date-time
+          description: Date the vocabulary version was last updated.
+          example: '2024-03-01T00:00:00Z'
+
+    GetAllVocabulariesResponsePayload:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number.
+          example: 1
+        totalPages:
+          type: integer
+          description: Total number of pages.
+          example: 2
+        total:
+          type: integer
+          description: Total number of items.
+          example: 5
+        pageSize:
+          type: integer
+          description: Number of items per page.
+          example: 20
+        next:
+          type: string
+          nullable: true
+          description: URL to the next page. Value will be null on the last page.
+          example: '/vocabularies?status=ACTIVE&page=2&pageSize=20'
+        metadata:
+          type: array
+          items:
+            $ref: '#/components/schemas/VocabularyVersionMetadata'
+
+    VocabularyVersionMetadata:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the vocabulary.
+          example: HealthcareVocabulary
+        version:
+          type: integer
+          description: The version number of the vocabulary.
+          example: 2
+        description:
+          type: string
+          description: Description of the vocabulary version.
+          example: Vocabulary defining healthcare resource types.
+        changelog:
+          type: string
+          description: Short description of changes introduced in this version.
+          example: Added new concept scheme for diagnostics.
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - DEPRECATED
+          description: Status of the vocabulary version.
+          example: ACTIVE
+        creationDate:
+          type: string
+          format: date-time
+          description: Date the vocabulary version was created.
+          example: '2024-03-01T00:00:00Z'
+        lastUpdateDate:
+          type: string
+          format: date-time
+          description: Date the vocabulary version was last updated.
+          example: '2024-03-01T00:00:00Z'
+
+    ActiveMetadataQualityProfileResponsePayload:
+      type: object
+      description: >-
+        A valid JSON-LD serialization of the stored Metadata Quality Profile RDF graph. JSON-LD compaction,
+        property names, value objects, arrays, and RDF list representation are serializer-dependent; consumers
+        must interpret the RDF semantics rather than rely on a specific JSON layout.
+      required:
+        - '@graph'
+      properties:
+        '@context':
+          description: Optional JSON-LD context generated by the RDF serializer.
+          oneOf:
+            - type: string
+            - type: array
+            - type: object
+              additionalProperties: true
+        '@graph':
+          type: array
+          minItems: 1
+          description: JSON-LD graph containing a simpl:QualityProfile resource and its related RDF resources.
+          items:
+            type: object
+            additionalProperties: true
+      additionalProperties: true
+    VocabularyVersionDetailResponsePayload:
+      allOf:
+        - $ref: '#/components/schemas/VocabularyVersionMetadata'
+        - type: object
+          properties:
+            content:
+              type: string
+              description: The full Turtle (.ttl) content of the vocabulary version.
+              example: "@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n@prefix hc: <https://example.eu/healthcare#> .\nhc:HealthcareScheme a skos:ConceptScheme ;\n  skos:prefLabel \"Healthcare Concept Scheme\"@en ."

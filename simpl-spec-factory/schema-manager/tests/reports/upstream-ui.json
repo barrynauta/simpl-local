@@ -1,0 +1,3073 @@
+[
+{
+  "description": [
+    "SIMPL-13355 and SIMPL-32800 (form, schema type, three 409 paths), SIMPL-24172,",
+    "SIMPL-24173 and SIMPL-24174 (validation messages shown from the problem",
+    "detail). Decision D49."
+  ],
+  "elements": [
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/create_schema.feature:8",
+      "name": "The form defaults to RESOURCE with the resource type enabled",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/create_schema.feature:9",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "result": {
+            "duration": 0.9190959930419922,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/create_schema.feature:10",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas/new"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas/new\"",
+          "result": {
+            "duration": 1.0550098419189453,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/create_schema.feature:11",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "value": "field-schema-type"
+              },
+              {
+                "name": "value",
+                "value": "RESOURCE"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:567"
+          },
+          "name": "\"field-schema-type\" has the value \"RESOURCE\"",
+          "result": {
+            "duration": 6.030557870864868,
+            "error_message": "Assertion Failed: no visible element with data-testid 'field-schema-type' (D46) on http://localhost:4322/schemas/new",
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:12",
+          "name": "\"field-schema-type\" offers the options \"RESOURCE,SEARCH\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:13",
+          "name": "\"field-resource-type\" offers the options \"Data,Application,Infrastructure\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:14",
+          "name": "\"field-resource-type\" is enabled",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:15",
+          "name": "\"submit-button\" is disabled",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32800",
+        "D49"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/create_schema.feature:18",
+      "name": "Choosing SEARCH disables and clears the resource type",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/create_schema.feature:19",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "result": {
+            "duration": 0.9183759689331055,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/create_schema.feature:20",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas/new"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas/new\"",
+          "result": {
+            "duration": 1.0506312847137451,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:21",
+          "match": {
+            "arguments": [
+              {
+                "name": "value",
+                "value": "Data"
+              },
+              {
+                "name": "testid",
+                "value": "field-resource-type"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:430"
+          },
+          "name": "I select \"Data\" in \"field-resource-type\"",
+          "result": {
+            "duration": 10.001631021499634,
+            "error_message": "Assertion Failed: no visible element with data-testid 'field-resource-type' (D46) on http://localhost:4322/schemas/new",
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:22",
+          "name": "I select \"SEARCH\" in \"field-schema-type\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/create_schema.feature:23",
+          "name": "\"field-resource-type\" is disabled",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:24",
+          "name": "\"field-resource-type\" is empty",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32800",
+        "D49"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/create_schema.feature:27",
+      "name": "An invalid name keeps the submit button disabled",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/create_schema.feature:28",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "result": {
+            "duration": 0.9037051200866699,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/create_schema.feature:29",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas/new"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas/new\"",
+          "result": {
+            "duration": 1.0553009510040283,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:30",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "Data"
+              },
+              {
+                "name": "fixture",
+                "value": "valid-resource.ttl"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "I fill the create form for the RESOURCE schema \"$A\" with resource type \"Data\" and file \"valid-resource.ttl\"",
+          "result": {
+            "duration": 10.001387119293213,
+            "error_message": "Assertion Failed: no visible element with data-testid 'field-name' (D46) on http://localhost:4322/schemas/new",
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:31",
+          "name": "I fill \"field-name\" with \"lower case\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/create_schema.feature:32",
+          "name": "\"submit-button\" is disabled",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13355",
+        "SIMPL-32800",
+        "D12",
+        "D49"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/create_schema.feature:35",
+      "name": "A successful create shows the success text and opens the details page",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/create_schema.feature:36",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "result": {
+            "duration": 0.9223668575286865,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/create_schema.feature:37",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas/new"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas/new\"",
+          "result": {
+            "duration": 1.0520591735839844,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:38",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "Data"
+              },
+              {
+                "name": "fixture",
+                "value": "valid-resource.ttl"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "I fill the create form for the RESOURCE schema \"$A\" with resource type \"Data\" and file \"valid-resource.ttl\"",
+          "result": {
+            "duration": 10.002226114273071,
+            "error_message": "Assertion Failed: no visible element with data-testid 'field-name' (D46) on http://localhost:4322/schemas/new",
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:39",
+          "name": "I click \"submit-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/create_schema.feature:40",
+          "name": "\"notification-success\" shows 'Schema \"$A\" created successfully.'",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:41",
+          "name": "the browser shows the page \"/schemas/$A?schemaType=RESOURCE\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13355",
+        "SIMPL-32800",
+        "D49"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/create_schema.feature:44",
+      "name": "Creating a SEARCH schema sends no resource type",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/create_schema.feature:45",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/api_steps.py:328"
+          },
+          "name": "no SEARCH schema is published",
+          "result": {
+            "duration": 0.03764081001281738,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:46",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "result": {
+            "duration": 0.9104049205780029,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/create_schema.feature:47",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas/new"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas/new\"",
+          "result": {
+            "duration": 1.0520801544189453,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:48",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$S"
+              },
+              {
+                "name": "fixture",
+                "value": "valid-search.ttl"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:458"
+          },
+          "name": "I fill the create form for the SEARCH schema \"$S\" with file \"valid-search.ttl\"",
+          "result": {
+            "duration": 10.001848936080933,
+            "error_message": "Assertion Failed: no visible element with data-testid 'field-name' (D46) on http://localhost:4322/schemas/new",
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:49",
+          "name": "I click \"submit-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/create_schema.feature:50",
+          "name": "the UI sent the request \"POST /schemas\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:51",
+          "name": "\"notification-success\" shows 'Schema \"$S\" created successfully.'",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32800",
+        "D49",
+        "search-serial"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/create_schema.feature:54",
+      "name": "A name clash shows the fixed text and stays on the form",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/create_schema.feature:55",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.030286788940429688,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:a6249665-fb90-4dca-930b-4a7e88c70127\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:56",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/create_schema.feature:57",
+          "name": "I open the page \"/schemas/new\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:58",
+          "name": "I fill the create form for the RESOURCE schema \"$A\" with resource type \"Data\" and file \"valid-resource.ttl\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:59",
+          "name": "I click \"submit-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/create_schema.feature:60",
+          "name": "\"notification-error\" shows \"A schema with that name already exists.\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:61",
+          "name": "the browser shows the page \"/schemas/new\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13355",
+        "SIMPL-32800",
+        "D49"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/create_schema.feature:64",
+      "name": "A second SEARCH schema shows the fixed text",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/create_schema.feature:65",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/api_steps.py:328"
+          },
+          "name": "no SEARCH schema is published",
+          "result": {
+            "duration": 0.030991077423095703,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:66",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$S"
+              }
+            ],
+            "location": "features/steps/api_steps.py:302"
+          },
+          "name": "the SEARCH schema \"$S\" exists",
+          "result": {
+            "duration": 0.004003047943115234,
+            "error_message": "Assertion Failed: create SEARCH $S: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Required request parameter 'resourceType' for method parameter type String is not present\",\"instance\":\"urn:uuid:3c83bef3-6cfc-4688-800f-eed3bcdad300\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:67",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/create_schema.feature:68",
+          "name": "I open the page \"/schemas/new\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:69",
+          "name": "I fill the create form for the SEARCH schema \"$T\" with file \"valid-search.ttl\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:70",
+          "name": "I click \"submit-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/create_schema.feature:71",
+          "name": "\"notification-error\" shows \"A published federated search schema already exists.\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32800",
+        "D17",
+        "D49",
+        "search-serial"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/create_schema.feature:74",
+      "name": "A syntax error shows the problem detail",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/create_schema.feature:75",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "result": {
+            "duration": 0.9080190658569336,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/create_schema.feature:76",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas/new"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas/new\"",
+          "result": {
+            "duration": 1.0529201030731201,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:77",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "Data"
+              },
+              {
+                "name": "fixture",
+                "value": "syntax-error.ttl"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "I fill the create form for the RESOURCE schema \"$A\" with resource type \"Data\" and file \"syntax-error.ttl\"",
+          "result": {
+            "duration": 10.002377033233643,
+            "error_message": "Assertion Failed: no visible element with data-testid 'field-name' (D46) on http://localhost:4322/schemas/new",
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:78",
+          "name": "I click \"submit-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/create_schema.feature:79",
+          "name": "\"notification-error\" shows \"Syntax Error: \"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:80",
+          "name": "the browser shows the page \"/schemas/new\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-24172",
+        "SIMPL-13355",
+        "D33",
+        "D45"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/create_schema.feature:83",
+      "name": "Missing default properties show the problem detail",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/create_schema.feature:84",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "result": {
+            "duration": 0.9052238464355469,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/create_schema.feature:85",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas/new"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas/new\"",
+          "result": {
+            "duration": 1.0514287948608398,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:86",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "Data"
+              },
+              {
+                "name": "fixture",
+                "value": "missing-defaults.ttl"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "I fill the create form for the RESOURCE schema \"$A\" with resource type \"Data\" and file \"missing-defaults.ttl\"",
+          "result": {
+            "duration": 10.001503944396973,
+            "error_message": "Assertion Failed: no visible element with data-testid 'field-name' (D46) on http://localhost:4322/schemas/new",
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:87",
+          "name": "I click \"submit-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/create_schema.feature:88",
+          "name": "\"notification-error\" shows \"Default Properties Error: \"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-24173",
+        "D33",
+        "D45"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/create_schema.feature:91",
+      "name": "A semantic error shows the problem detail",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/create_schema.feature:92",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "result": {
+            "duration": 0.9167196750640869,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/create_schema.feature:93",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas/new"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas/new\"",
+          "result": {
+            "duration": 1.053081750869751,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:94",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "Data"
+              },
+              {
+                "name": "fixture",
+                "value": "semantic-unresolved-shape.ttl"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "I fill the create form for the RESOURCE schema \"$A\" with resource type \"Data\" and file \"semantic-unresolved-shape.ttl\"",
+          "result": {
+            "duration": 10.001575946807861,
+            "error_message": "Assertion Failed: no visible element with data-testid 'field-name' (D46) on http://localhost:4322/schemas/new",
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:95",
+          "name": "I click \"submit-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/create_schema.feature:96",
+          "name": "\"notification-error\" shows \"Semantic Validation Error: \"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-24174",
+        "D33",
+        "D45"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/create_schema.feature:99",
+      "name": "A valid schema shows no validation error",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/create_schema.feature:100",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "result": {
+            "duration": 0.9104409217834473,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/create_schema.feature:101",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas/new"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas/new\"",
+          "result": {
+            "duration": 1.0519740581512451,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:102",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "Infrastructure"
+              },
+              {
+                "name": "fixture",
+                "value": "valid-resource.ttl"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "I fill the create form for the RESOURCE schema \"$A\" with resource type \"Infrastructure\" and file \"valid-resource.ttl\"",
+          "result": {
+            "duration": 10.001289129257202,
+            "error_message": "Assertion Failed: no visible element with data-testid 'field-name' (D46) on http://localhost:4322/schemas/new",
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/create_schema.feature:103",
+          "name": "I click \"submit-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/create_schema.feature:104",
+          "name": "\"notification-error\" is not rendered",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-24172",
+        "SIMPL-24173",
+        "SIMPL-24174",
+        "D33"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/create_schema.feature:2",
+  "name": "Create Schema form",
+  "status": "failed",
+  "tags": [
+    "ui",
+    "D46"
+  ]
+},
+
+{
+  "description": [
+    "SIMPL-13358, replaced in part by SIMPL-32808 (schema type) and SIMPL-20770",
+    "(no version field). Decision D50."
+  ],
+  "elements": [
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/new_version.feature:7",
+      "name": "The form has changelog and file, a read-only schema type and no version field",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/new_version.feature:8",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.032061100006103516,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:44f98b24-f627-4182-a9eb-9e13e73bf447\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:9",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/new_version.feature:10",
+          "name": "I open the page \"/schemas/$A/versions/new?schemaType=RESOURCE\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/new_version.feature:11",
+          "name": "\"field-changelog\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:12",
+          "name": "\"field-file\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:13",
+          "name": "\"field-schema-type\" is read-only and shows \"RESOURCE\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:14",
+          "name": "\"submit-button\" is disabled",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-20770",
+        "SIMPL-32808",
+        "D50",
+        "D55"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/new_version.feature:17",
+      "name": "A blank changelog or no file keeps the submit button disabled",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/new_version.feature:18",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.019372940063476562,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:28627205-eea6-4b41-8ef1-20d39d25b5d2\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:19",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/new_version.feature:20",
+          "name": "I open the page \"/schemas/$A/versions/new?schemaType=RESOURCE\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:21",
+          "name": "I fill \"field-changelog\" with \"A change.\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/new_version.feature:22",
+          "name": "\"submit-button\" is disabled",
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/new_version.feature:23",
+          "name": "I choose the file \"valid-resource-v2.ttl\" in \"field-file\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/new_version.feature:24",
+          "name": "\"submit-button\" is enabled",
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/new_version.feature:25",
+          "name": "I clear \"field-changelog\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/new_version.feature:26",
+          "name": "\"submit-button\" is disabled",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13358",
+        "SIMPL-32808",
+        "D50"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/new_version.feature:29",
+      "name": "A new version is submitted without a version field and shown on the details page",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/new_version.feature:30",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.018819093704223633,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:1555035f-788e-493e-a3f2-c92b44f83ec2\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:31",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/new_version.feature:32",
+          "name": "I open the page \"/schemas/$A/versions/new?schemaType=RESOURCE\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:33",
+          "name": "I fill \"field-changelog\" with \"A change.\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:34",
+          "name": "I choose the file \"valid-resource-v2.ttl\" in \"field-file\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:35",
+          "name": "I click \"submit-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/new_version.feature:36",
+          "name": "the UI sent the request \"POST /schemas/$A/versions\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:37",
+          "name": "the browser shows the page \"/schemas/$A?schemaType=RESOURCE\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:38",
+          "name": "\"version-row-2\" is visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13358",
+        "SIMPL-32808",
+        "SIMPL-20770",
+        "D50"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/new_version.feature:41",
+      "name": "A new version of a SEARCH schema keeps the schema type SEARCH",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/new_version.feature:42",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/api_steps.py:328"
+          },
+          "name": "no SEARCH schema is published",
+          "result": {
+            "duration": 0.03161191940307617,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:43",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$S"
+              }
+            ],
+            "location": "features/steps/api_steps.py:302"
+          },
+          "name": "the SEARCH schema \"$S\" exists",
+          "result": {
+            "duration": 0.003499746322631836,
+            "error_message": "Assertion Failed: create SEARCH $S: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Required request parameter 'resourceType' for method parameter type String is not present\",\"instance\":\"urn:uuid:e13f8e4e-b6b9-46f1-b0fa-57b83c161494\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:44",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/new_version.feature:45",
+          "name": "I open the page \"/schemas/$S/versions/new?schemaType=SEARCH\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/new_version.feature:46",
+          "name": "\"field-schema-type\" is read-only and shows \"SEARCH\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32808",
+        "D50",
+        "search-serial"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/new_version.feature:49",
+      "name": "An API error keeps me on the form with the detail at the top",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/new_version.feature:50",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.013328790664672852,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:8730e722-da0c-43c9-8de3-772dc9ae7c8d\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:51",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/new_version.feature:52",
+          "name": "I open the page \"/schemas/$A/versions/new?schemaType=RESOURCE\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:53",
+          "name": "I fill \"field-changelog\" with \"A change.\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:54",
+          "name": "I choose the file \"syntax-error.ttl\" in \"field-file\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:55",
+          "name": "I click \"submit-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/new_version.feature:56",
+          "name": "\"notification-error\" shows \"Syntax Error: \"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/new_version.feature:57",
+          "name": "the browser shows the page \"/schemas/$A/versions/new?schemaType=RESOURCE\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13358",
+        "SIMPL-24172",
+        "D50"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/new_version.feature:2",
+  "name": "Create New Version form",
+  "status": "failed",
+  "tags": [
+    "ui",
+    "D46"
+  ]
+},
+
+{
+  "description": [
+    "SIMPL-13346 and SIMPL-32787 (versions table), SIMPL-13365 and SIMPL-32797",
+    "(download a version). Decisions D54 and D57."
+  ],
+  "elements": [
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_details.feature:7",
+      "name": "The details page shows the header and the versions table",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_details.feature:8",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.013655900955200195,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:bfd6f36e-042a-45b4-a766-926da3ad7a38\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:9",
+          "name": "schema \"$A\" has a new version",
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:10",
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_details.feature:11",
+          "name": "I open the page \"/schemas/$A?schemaType=RESOURCE\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_details.feature:12",
+          "name": "the UI sent the request \"GET /schemas/$A/versions?schemaType=RESOURCE\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:13",
+          "name": "\"versions-table\" has the column headers \"Version,Status,Schema Type,Resource Type,Creation Date,Creator,Latest Change\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:14",
+          "name": "the rows of \"versions-table\" are ordered by \"Version\" descending",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:15",
+          "name": "the row \"version-row-2\" shows \"PUBLISHED\" in the column \"Status\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:16",
+          "name": "the row \"version-row-1\" shows \"REVOKED\" in the column \"Status\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:17",
+          "name": "the row \"version-row-1\" shows \"Initial version.\" in the column \"Latest Change\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:18",
+          "name": "the row \"version-row-1\" shows \"RESOURCE\" in the column \"Schema Type\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13346",
+        "SIMPL-32787",
+        "D54"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_details.feature:21",
+      "name": "The versions table sorts by Version and by Creation Date in the browser",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_details.feature:22",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.01643991470336914,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:7114a112-dd9a-4085-9702-74fce8b00efd\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:23",
+          "name": "schema \"$A\" has a new version",
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:24",
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_details.feature:25",
+          "name": "I open the page \"/schemas/$A?schemaType=RESOURCE\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:26",
+          "name": "I click the column header \"Version\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_details.feature:27",
+          "name": "the rows of \"versions-table\" are ordered by \"Version\" ascending",
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_details.feature:28",
+          "name": "I click the column header \"Creation Date\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_details.feature:29",
+          "name": "the rows of \"versions-table\" are ordered by \"Creation Date\" ascending",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:30",
+          "name": "the UI sent no request to the API",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13346",
+        "SIMPL-32787",
+        "D54"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_details.feature:33",
+      "name": "The details page of a SEARCH schema asks for SEARCH versions",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_details.feature:34",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/api_steps.py:328"
+          },
+          "name": "no SEARCH schema is published",
+          "result": {
+            "duration": 0.02081894874572754,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:35",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$S"
+              }
+            ],
+            "location": "features/steps/api_steps.py:302"
+          },
+          "name": "the SEARCH schema \"$S\" exists",
+          "result": {
+            "duration": 0.0032439231872558594,
+            "error_message": "Assertion Failed: create SEARCH $S: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Required request parameter 'resourceType' for method parameter type String is not present\",\"instance\":\"urn:uuid:21795494-a4b4-415a-b06b-b7304258a1b9\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:36",
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_details.feature:37",
+          "name": "I open the page \"/schemas/$S?schemaType=SEARCH\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_details.feature:38",
+          "name": "the UI sent the request \"GET /schemas/$S/versions?schemaType=SEARCH\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:39",
+          "name": "the row \"version-row-1\" shows \"SEARCH\" in the column \"Schema Type\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32787",
+        "D54",
+        "search-serial"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_details.feature:42",
+      "name": "Download a version from the versions table",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_details.feature:43",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.015538930892944336,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:91814616-ba1d-4634-9da4-fe1350eb72a9\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:44",
+          "name": "schema \"$A\" has a new version",
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:45",
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_details.feature:46",
+          "name": "I open the page \"/schemas/$A?schemaType=RESOURCE\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:47",
+          "name": "I click \"action-download-version-1\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_details.feature:48",
+          "name": "the UI sent the request \"GET /schemas/$A/1?schemaType=RESOURCE\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:49",
+          "name": "a file named \"$A-1.ttl\" is downloaded with the content uploaded for version \"1\" of schema \"$A\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:50",
+          "name": "\"notification-success\" shows \"Schema version 1 downloaded successfully.\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13365",
+        "SIMPL-32797",
+        "D57"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_details.feature:53",
+      "name": "The download page has no schema type selection box",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_details.feature:54",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.015204191207885742,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:35993262-10f7-4dcf-ab20-fb2d684c8cac\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:55",
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_details.feature:56",
+          "name": "I open the page \"/schemas/$A?schemaType=RESOURCE\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_details.feature:57",
+          "name": "\"field-schema-type\" is not rendered",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32797",
+        "D57"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_details.feature:60",
+      "name": "The New Version button is shown to admins only",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_details.feature:61",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.01666116714477539,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:b6413cee-6953-4ee7-90da-acab34eb67fe\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_details.feature:62",
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_details.feature:63",
+          "name": "I open the page \"/schemas/$A?schemaType=RESOURCE\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_details.feature:64",
+          "name": "\"action-new-version-$A\" is not rendered",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13358",
+        "SIMPL-20530",
+        "D48",
+        "D54"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/schema_details.feature:2",
+  "name": "Schema details page with the versions table",
+  "status": "failed",
+  "tags": [
+    "ui",
+    "D46"
+  ]
+},
+
+{
+  "description": [
+    "SIMPL-15837 and SIMPL-32790 (list, filters, sorting, errors), SIMPL-20067",
+    "(download latest), D48 (role-dependent actions), D53 and D56. Test ids of D46."
+  ],
+  "elements": [
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_list.feature:7",
+      "name": "The list shows the columns of D53 and calls GET /schemas",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_list.feature:8",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.012113809585571289,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:5bc6065a-95f7-41d2-a8ba-3ce9d23d7ae5\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:9",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_list.feature:10",
+          "name": "I open the page \"/schemas\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_list.feature:11",
+          "name": "\"schema-list-table\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:12",
+          "name": "\"schema-list-table\" has the column headers \"Schema Name,Title,Description,Schema Type,Resource Type,Latest Version,Status,Creation Date,Creator,Actions\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:13",
+          "name": "the UI sent the request \"GET /schemas?schemaType=RESOURCE&page=1&pageSize=20\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:14",
+          "name": "\"filter-schema-type\" has the value \"RESOURCE\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-15837",
+        "SIMPL-32790",
+        "D45",
+        "D53"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_list.feature:17",
+      "name": "Changing a filter reloads page 1 with the matching query",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_list.feature:18",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.017129898071289062,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:3624d097-6614-48c5-ae92-a11b5e65c8ba\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:19",
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_list.feature:20",
+          "name": "I open the page \"/schemas\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:21",
+          "name": "I select \"PUBLISHED\" in \"filter-status\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_list.feature:22",
+          "name": "the UI sent the request \"GET /schemas?status=PUBLISHED&schemaType=RESOURCE&page=1&pageSize=20\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_list.feature:23",
+          "name": "I select \"Data\" in \"filter-resource-type\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_list.feature:24",
+          "name": "the UI sent the request \"GET /schemas?status=PUBLISHED&resourceType=Data&schemaType=RESOURCE&page=1&pageSize=20\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-15837",
+        "SIMPL-32790",
+        "D53"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_list.feature:27",
+      "name": "The SEARCH filter disables the resource type filter",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_list.feature:28",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-viewer"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "result": {
+            "duration": 0.9090850353240967,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_list.feature:29",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas\"",
+          "result": {
+            "duration": 1.0228939056396484,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:30",
+          "match": {
+            "arguments": [
+              {
+                "name": "value",
+                "value": "SEARCH"
+              },
+              {
+                "name": "testid",
+                "value": "filter-schema-type"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:430"
+          },
+          "name": "I select \"SEARCH\" in \"filter-schema-type\"",
+          "result": {
+            "duration": 10.000829935073853,
+            "error_message": "Assertion Failed: no visible element with data-testid 'filter-schema-type' (D46) on http://localhost:4322/schemas",
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_list.feature:31",
+          "name": "\"filter-resource-type\" is disabled",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:32",
+          "name": "the UI sent the request \"GET /schemas?schemaType=SEARCH&page=1&pageSize=20\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32790",
+        "D53"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_list.feature:35",
+      "name": "Sorting by name happens in the browser",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_list.feature:36",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-viewer"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "result": {
+            "duration": 0.9077670574188232,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_list.feature:37",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas\"",
+          "result": {
+            "duration": 1.0273261070251465,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:38",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "value": "Schema Name"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:408"
+          },
+          "name": "I click the column header \"Schema Name\"",
+          "result": {
+            "duration": 0.012592315673828125,
+            "error_message": "Assertion Failed: no column header 'Schema Name'",
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_list.feature:39",
+          "name": "the rows of \"schema-list-table\" are ordered by \"Schema Name\" ascending",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:40",
+          "name": "the UI sent no request to the API",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-15837",
+        "D53"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_list.feature:43",
+      "name": "Clicking a name opens the details page",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_list.feature:44",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.024734973907470703,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:ebcb6e32-dbdb-481f-9cca-4590ed486ed7\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:45",
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_list.feature:46",
+          "name": "I open the page \"/schemas\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:47",
+          "name": "I click \"schema-row-$A\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_list.feature:48",
+          "name": "the browser shows the page \"/schemas/$A?schemaType=RESOURCE\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-15837",
+        "SIMPL-32790",
+        "D45",
+        "D53"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_list.feature:51",
+      "name": "No match for the filters shows the empty state",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_list.feature:52",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/api_steps.py:328"
+          },
+          "name": "no SEARCH schema is published",
+          "result": {
+            "duration": 0.022438764572143555,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:53",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-viewer"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "result": {
+            "duration": 0.9021260738372803,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_list.feature:54",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas\"",
+          "result": {
+            "duration": 1.026298999786377,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:55",
+          "match": {
+            "arguments": [
+              {
+                "name": "value",
+                "value": "SEARCH"
+              },
+              {
+                "name": "testid",
+                "value": "filter-schema-type"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:430"
+          },
+          "name": "I select \"SEARCH\" in \"filter-schema-type\"",
+          "result": {
+            "duration": 10.002010822296143,
+            "error_message": "Assertion Failed: no visible element with data-testid 'filter-schema-type' (D46) on http://localhost:4322/schemas",
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:56",
+          "name": "I select \"PUBLISHED\" in \"filter-status\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_list.feature:57",
+          "name": "\"empty-state\" shows \"No schemas match the selected filters.\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:58",
+          "name": "\"pagination-next\" is not rendered",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-15837",
+        "D53",
+        "search-serial"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_list.feature:61",
+      "name": "A user without a schema role sees no table",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_list.feature:62",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "value": "ga-norole"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:353"
+          },
+          "name": "I am signed in to the UI as \"ga-norole\"",
+          "result": {
+            "duration": 0.9059748649597168,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_list.feature:63",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "value": "/schemas"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:371"
+          },
+          "name": "I open the page \"/schemas\"",
+          "result": {
+            "duration": 1.0270512104034424,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_list.feature:64",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "value": "error-state"
+              },
+              {
+                "name": "text",
+                "value": "You do not have permission to view this page."
+              }
+            ],
+            "location": "features/steps/ui_steps.py:557"
+          },
+          "name": "\"error-state\" shows \"You do not have permission to view this page.\"",
+          "result": {
+            "duration": 20.184866666793823,
+            "error_message": "Assertion Failed: 'error-state' is not visible",
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:65",
+          "name": "\"schema-list-table\" is not rendered",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-15837",
+        "SIMPL-32790",
+        "D48"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_list.feature:68",
+      "name": "A viewer sees downloads but no create or status actions",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_list.feature:69",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.023355722427368164,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:17f38a37-d25a-4ced-9adb-5323394281ad\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:70",
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_list.feature:71",
+          "name": "I open the page \"/schemas\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_list.feature:72",
+          "name": "\"action-download-$A\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:73",
+          "name": "\"create-schema-button\" is not rendered",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:74",
+          "name": "\"action-revoke-$A\" is not rendered",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:75",
+          "name": "\"action-new-version-$A\" is not rendered",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-20530",
+        "D48"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/schema_list.feature:78",
+      "name": "Download the latest content from the list",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/schema_list.feature:79",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.021563053131103516,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:7be83f13-4522-4157-8ee1-51ac3c6913c9\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:80",
+          "name": "schema \"$A\" has a new version",
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:81",
+          "name": "I am signed in to the UI as \"ga-viewer\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_list.feature:82",
+          "name": "I open the page \"/schemas\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_list.feature:83",
+          "name": "the first action of \"schema-row-$A\" is \"action-download-$A\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/schema_list.feature:84",
+          "name": "I click \"action-download-$A\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/schema_list.feature:85",
+          "name": "the UI sent the request \"GET /schemas/$A\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/schema_list.feature:86",
+          "name": "a file named \"$A-2.ttl\" is downloaded with the content uploaded for version \"2\" of schema \"$A\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-20067",
+        "D56"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/schema_list.feature:2",
+  "name": "Schemas list page",
+  "status": "failed",
+  "tags": [
+    "ui",
+    "D46"
+  ]
+},
+
+{
+  "description": [
+    "SIMPL-13361 (revoke with confirmation), SIMPL-20530 (revoke and publish),",
+    "SIMPL-14701 and SIMPL-32497 (a revoked schema stays visible). D51, D52."
+  ],
+  "elements": [
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/status_change.feature:7",
+      "name": "Revoke asks for confirmation and Cancel sends nothing",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/status_change.feature:8",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.01304173469543457,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:1cdce669-523e-4289-8292-0bb1875f16ee\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:9",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/status_change.feature:10",
+          "name": "I open the page \"/schemas\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:11",
+          "name": "I click \"action-revoke-$A\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/status_change.feature:12",
+          "name": "\"confirm-dialog\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/status_change.feature:13",
+          "name": "I click \"cancel-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/status_change.feature:14",
+          "name": "\"confirm-dialog\" is not rendered",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:15",
+          "name": "the UI sent no request to the API",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13361",
+        "SIMPL-20530",
+        "D51"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/status_change.feature:18",
+      "name": "Confirmed revoke shows the success text and the row shows REVOKED",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/status_change.feature:19",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.012401342391967773,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:d488822b-4456-46a1-b602-4c52fecd7970\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:20",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/status_change.feature:21",
+          "name": "I open the page \"/schemas\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:22",
+          "name": "I click \"action-revoke-$A\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:23",
+          "name": "I click \"confirm-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/status_change.feature:24",
+          "name": "the UI sent the request \"PATCH /schemas/$A\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:25",
+          "name": "\"notification-success\" shows 'Schema \"$A\" revoked successfully.'",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:26",
+          "name": "the row \"schema-row-$A\" shows \"REVOKED\" in the column \"Status\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:27",
+          "name": "\"action-publish-$A\" is visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13361",
+        "SIMPL-20530",
+        "SIMPL-14701",
+        "SIMPL-32497",
+        "D51"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/status_change.feature:30",
+      "name": "Publish a revoked schema",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/status_change.feature:31",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.013156890869140625,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:e9bf8b99-8371-47fb-b315-a15961afe864\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:32",
+          "name": "schema \"$A\" has been revoked",
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:33",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/status_change.feature:34",
+          "name": "I open the page \"/schemas\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:35",
+          "name": "I click \"action-publish-$A\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/status_change.feature:36",
+          "name": "\"confirm-dialog\" is not rendered",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:37",
+          "name": "\"notification-success\" shows \"Schema $A published successfully!\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:38",
+          "name": "the row \"schema-row-$A\" shows \"PUBLISHED\" in the column \"Status\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-20530",
+        "D52"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/status_change.feature:41",
+      "name": "Publishing while another schema of the resource type is published shows the 409 detail",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/status_change.feature:42",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.012026071548461914,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:210fac7d-10e6-4df9-8c2c-05171743d777\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:43",
+          "name": "the RESOURCE schema \"$B\" exists for resource type \"$RT\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:44",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/status_change.feature:45",
+          "name": "I open the page \"/schemas\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:46",
+          "name": "I click \"action-publish-$B\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/status_change.feature:47",
+          "name": "\"notification-error\" shows \"Another schema is in PUBLISHED state for the resource type.\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:48",
+          "name": "the row \"schema-row-$B\" shows \"REVOKED\" in the column \"Status\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-20530",
+        "D18",
+        "D52"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/status_change.feature:51",
+      "name": "Revoke is offered only on published rows and Publish only on revoked rows",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/status_change.feature:52",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "value": "$A"
+              },
+              {
+                "name": "rt",
+                "value": "$RT"
+              }
+            ],
+            "location": "features/steps/api_steps.py:291"
+          },
+          "name": "the RESOURCE schema \"$A\" exists for resource type \"$RT\"",
+          "result": {
+            "duration": 0.01300191879272461,
+            "error_message": "Assertion Failed: create $A: expected 201, got 400: {\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"VERROR_NO_OTHER_TOP_LEVEL: only one resource type expected in file. Got: []\",\"instance\":\"urn:uuid:16a94c7e-ae39-43b9-bd69-8ff7c8731318\"}",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:53",
+          "name": "the RESOURCE schema \"$B\" exists for resource type \"$RT\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:54",
+          "name": "I am signed in to the UI as \"ga-admin\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/status_change.feature:55",
+          "name": "I open the page \"/schemas\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/status_change.feature:56",
+          "name": "\"action-revoke-$A\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:57",
+          "name": "\"action-publish-$A\" is not rendered",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:58",
+          "name": "\"action-publish-$B\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/status_change.feature:59",
+          "name": "\"action-revoke-$B\" is not rendered",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-13361",
+        "D51"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/status_change.feature:2",
+  "name": "Revoke and publish from the schemas list",
+  "status": "failed",
+  "tags": [
+    "ui",
+    "D46"
+  ]
+}
+]

@@ -1,0 +1,107 @@
+{
+  "realm": "simpl",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 900,
+  "roles": {
+    "realm": [
+      { "name": "GA_SCHEMA_ADMIN", "description": "Schema management" },
+      { "name": "GA_SCHEMA_VIEWER", "description": "Schema viewing" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "schema-tests",
+      "name": "Schema Manager API tests",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "realm roles in top-level roles claim",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "schema-ui",
+      "name": "Schema Manager UI",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "protocol": "openid-connect",
+      "redirectUris": ["http://localhost:4334/*"],
+      "webOrigins": ["http://localhost:4334"],
+      "rootUrl": "http://localhost:4334",
+      "baseUrl": "/",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:4334/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "realm roles in top-level roles claim",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "ga-admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "Admin",
+      "email": "ga-admin@simpl.test",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": ["GA_SCHEMA_ADMIN"]
+    },
+    {
+      "username": "ga-viewer",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "Viewer",
+      "email": "ga-viewer@simpl.test",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": ["GA_SCHEMA_VIEWER"]
+    },
+    {
+      "username": "ga-norole",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "NoRole",
+      "email": "ga-norole@simpl.test",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": []
+    }
+  ]
+}
