@@ -1,0 +1,138 @@
+{
+  "realm": "dataspace-c",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 600,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "default-roles",
+        "description": "default"
+      }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles"
+  },
+  "clients": [
+    {
+      "clientId": "test-client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "participant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "jsonType.label": "String",
+            "user.attribute": "participant_id",
+            "claim.name": "participant_id",
+            "multivalued": "false"
+          }
+        },
+        {
+          "name": "identity_attributes",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "jsonType.label": "String",
+            "user.attribute": "identity_attributes",
+            "claim.name": "identity_attributes",
+            "multivalued": "true"
+          }
+        }
+      ],
+      "fullScopeAllowed": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "implicitFlowEnabled": false,
+      "frontchannelLogout": false
+    },
+    {
+      "clientId": "qma-c-federation",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "participant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "jsonType.label": "String",
+            "user.attribute": "participant_id",
+            "claim.name": "participant_id",
+            "multivalued": "false"
+          }
+        },
+        {
+          "name": "identity_attributes",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "jsonType.label": "String",
+            "user.attribute": "identity_attributes",
+            "claim.name": "identity_attributes",
+            "multivalued": "true"
+          }
+        }
+      ],
+      "fullScopeAllowed": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "implicitFlowEnabled": false,
+      "frontchannelLogout": false,
+      "secret": "qma-c-federation-secret",
+      "clientAuthenticatorType": "client-secret"
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-qma-c-federation",
+      "enabled": true,
+      "serviceAccountClientId": "qma-c-federation",
+      "realmRoles": [
+        "default-roles"
+      ]
+    }
+  ],
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"validations\": {\"length\": {\"min\": 3, \"max\": 255}, \"username-prohibited-characters\": {}, \"up-username-not-idn-homograph\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}, {\"name\": \"email\", \"displayName\": \"${email}\", \"validations\": {\"email\": {}, \"length\": {\"max\": 255}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"validations\": {\"length\": {\"max\": 255}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"validations\": {\"length\": {\"max\": 255}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}], \"groups\": [{\"name\": \"user-metadata\", \"displayHeader\": \"User metadata\", \"displayDescription\": \"Attributes, which refer to user metadata\"}], \"unmanagedAttributePolicy\": \"ENABLED\"}"
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+server:
+  port: ${PORT:8000}
+  error:
+    whitelabel:
+      enabled: false
+spring:
+  application:
+    name: catalogue-be
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://catalogue-db:5432/cat_a}
+    username: ${DB_USER:catalogue}
+    password: ${DB_PASSWORD:catalogue}
+  sql:
+    init:
+      mode: always
+  mvc:
+    problemdetails:
+      enabled: false
+simpl:
+  security:
+    issuer-base: ${ISSUER_BASE:http://localhost:18080/realms/}
+    jwks-base: ${JWKS_BASE:http://keycloak:8080/realms/}
+    own-realm: ${OWN_REALM:dataspace-a}
+  cat:
+    quality-stub-url: ${QUALITY_STUB_URL:http://quality-stub:8000}
+    seed-dirs: ${SEED_DIRS:/seed/schemas,/seed/catalogue-only-schemas}
+    key-registry: ${KEY_REGISTRY:/config/participant-keys.json}
+logging:
+  level:
+    root: INFO

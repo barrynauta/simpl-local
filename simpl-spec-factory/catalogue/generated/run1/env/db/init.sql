@@ -1,0 +1,2 @@
+CREATE DATABASE cat_a;
+CREATE DATABASE cat_b;

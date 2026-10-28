@@ -14,7 +14,8 @@ Chosen as the biggest one: the whole catalogue, with three backends (catalogue-b
 | [`spec-digest.md`](./spec-digest.md) | Step 1: component map, scope, decisions D1 to D83, notes N1 to N13, environment contract |
 | [`tests/`](./tests/README.md) | Step 2: 459 API and 26 UI scenarios (behave, requests), signing helper, fixtures, reports |
 | [`pipeline/`](./pipeline/) | The briefs for steps 1 to 3 as used |
+| [`generated/run1/`](./generated/run1/) | Step 3: the build (backends, UI, stubs, Keycloak realms, federation and seed files), with `TRACEABILITY.md`, `BUILD-LOG.md` and `docs/`. The keys, passwords and client secrets in it are the throwaway test values of the digest (D23, section 5) |
 | [`experiments/swap/`](./experiments/swap/README.md) | Step 5: swap experiments per joint |
 | [`findings.md`](./findings.md) | Findings per step |
 
-The build itself lives outside the repository for now (`spec-factory-build-cat`, compose project `simpl-catalogue-factory`), with its own `TRACEABILITY.md` and `BUILD-LOG.md`.
+Run the build with `cd generated/run1 && docker compose -p simpl-catalogue-factory up -d --build --wait`.

@@ -1,0 +1,373 @@
+{
+  "realm": "dataspace-a",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 600,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "default-roles",
+        "description": "default"
+      },
+      {
+        "name": "CATALOGUE_SEARCHER"
+      },
+      {
+        "name": "DATA_PROVIDER_PUBLISHER"
+      },
+      {
+        "name": "APP_PROVIDER_PUBLISHER"
+      },
+      {
+        "name": "INFRA_PROVIDER_PUBLISHER"
+      },
+      {
+        "name": "GA_SCHEMA_VIEWER"
+      },
+      {
+        "name": "GA_SCHEMA_ADMIN"
+      }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles"
+  },
+  "clients": [
+    {
+      "clientId": "catalogue-ui",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "participant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "jsonType.label": "String",
+            "user.attribute": "participant_id",
+            "claim.name": "participant_id",
+            "multivalued": "false"
+          }
+        },
+        {
+          "name": "identity_attributes",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "jsonType.label": "String",
+            "user.attribute": "identity_attributes",
+            "claim.name": "identity_attributes",
+            "multivalued": "true"
+          }
+        }
+      ],
+      "fullScopeAllowed": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "implicitFlowEnabled": false,
+      "frontchannelLogout": false,
+      "redirectUris": [
+        "http://localhost:18104/*"
+      ],
+      "webOrigins": [
+        "http://localhost:18104"
+      ],
+      "rootUrl": "http://localhost:18104",
+      "baseUrl": "/",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:18104/*"
+      }
+    },
+    {
+      "clientId": "test-client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "participant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "jsonType.label": "String",
+            "user.attribute": "participant_id",
+            "claim.name": "participant_id",
+            "multivalued": "false"
+          }
+        },
+        {
+          "name": "identity_attributes",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "jsonType.label": "String",
+            "user.attribute": "identity_attributes",
+            "claim.name": "identity_attributes",
+            "multivalued": "true"
+          }
+        }
+      ],
+      "fullScopeAllowed": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "implicitFlowEnabled": false,
+      "frontchannelLogout": false
+    },
+    {
+      "clientId": "qma-a-federation",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "participant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "jsonType.label": "String",
+            "user.attribute": "participant_id",
+            "claim.name": "participant_id",
+            "multivalued": "false"
+          }
+        },
+        {
+          "name": "identity_attributes",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "jsonType.label": "String",
+            "user.attribute": "identity_attributes",
+            "claim.name": "identity_attributes",
+            "multivalued": "true"
+          }
+        }
+      ],
+      "fullScopeAllowed": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "implicitFlowEnabled": false,
+      "frontchannelLogout": false,
+      "secret": "qma-a-federation-secret",
+      "clientAuthenticatorType": "client-secret"
+    }
+  ],
+  "users": [
+    {
+      "username": "consumer-a",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "consumer-a@example.org",
+      "firstName": "consumer-a",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles",
+        "CATALOGUE_SEARCHER"
+      ],
+      "attributes": {
+        "participant_id": [
+          "consumer-a"
+        ],
+        "identity_attributes": [
+          "CONSUMER",
+          "RESEARCHER"
+        ]
+      }
+    },
+    {
+      "username": "provider-a",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "provider-a@example.org",
+      "firstName": "provider-a",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles",
+        "DATA_PROVIDER_PUBLISHER",
+        "APP_PROVIDER_PUBLISHER",
+        "INFRA_PROVIDER_PUBLISHER",
+        "CATALOGUE_SEARCHER"
+      ],
+      "attributes": {
+        "participant_id": [
+          "provider-a"
+        ],
+        "identity_attributes": [
+          "PROVIDER"
+        ]
+      }
+    },
+    {
+      "username": "provider-a2",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "provider-a2@example.org",
+      "firstName": "provider-a2",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles",
+        "DATA_PROVIDER_PUBLISHER"
+      ],
+      "attributes": {
+        "participant_id": [
+          "provider-a2"
+        ],
+        "identity_attributes": [
+          "PROVIDER"
+        ]
+      }
+    },
+    {
+      "username": "schema-viewer-a",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "schema-viewer-a@example.org",
+      "firstName": "schema-viewer-a",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles",
+        "GA_SCHEMA_VIEWER"
+      ],
+      "attributes": {
+        "participant_id": [
+          "schema-viewer-a"
+        ]
+      }
+    },
+    {
+      "username": "schema-admin-a",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "schema-admin-a@example.org",
+      "firstName": "schema-admin-a",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles",
+        "GA_SCHEMA_ADMIN"
+      ],
+      "attributes": {
+        "participant_id": [
+          "schema-admin-a"
+        ]
+      }
+    },
+    {
+      "username": "nobody-a",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "nobody-a@example.org",
+      "firstName": "nobody-a",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles"
+      ],
+      "attributes": {
+        "participant_id": [
+          "nobody-a"
+        ],
+        "identity_attributes": [
+          "CONSUMER"
+        ]
+      }
+    },
+    {
+      "username": "service-account-qma-a-federation",
+      "enabled": true,
+      "serviceAccountClientId": "qma-a-federation",
+      "realmRoles": [
+        "default-roles"
+      ]
+    }
+  ],
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"validations\": {\"length\": {\"min\": 3, \"max\": 255}, \"username-prohibited-characters\": {}, \"up-username-not-idn-homograph\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}, {\"name\": \"email\", \"displayName\": \"${email}\", \"validations\": {\"email\": {}, \"length\": {\"max\": 255}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"validations\": {\"length\": {\"max\": 255}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"validations\": {\"length\": {\"max\": 255}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}], \"groups\": [{\"name\": \"user-metadata\", \"displayHeader\": \"User metadata\", \"displayDescription\": \"Attributes, which refer to user metadata\"}], \"unmanagedAttributePolicy\": \"ENABLED\"}"
+          ]
+        }
+      }
+    ]
+  }
+}

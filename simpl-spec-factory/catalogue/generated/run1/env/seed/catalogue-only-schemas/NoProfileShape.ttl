@@ -1,0 +1,27 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix simpl: <http://w3id.org/gaia-x/simpl#> .
+
+simpl:NoProfileShape a sh:NodeShape ;
+  sh:targetClass simpl:DataOffering ;
+  sh:property [ sh:path simpl:generalServiceProperties ; sh:node simpl:GeneralServicePropertiesShape ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path simpl:providerInformation ; sh:node simpl:ProviderInformationShape ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path simpl:offeringPrice ; sh:node simpl:OfferingPriceShape ; sh:maxCount 1 ] .
+
+simpl:GeneralServicePropertiesShape a sh:NodeShape ;
+  sh:targetClass simpl:GeneralServiceProperties ;
+  sh:property [ sh:path simpl:name ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path simpl:description ; sh:datatype xsd:string ; sh:maxCount 1 ] ;
+  sh:property [ sh:path simpl:inLanguage ; sh:datatype xsd:string ; sh:maxCount 1 ] ;
+  sh:property [ sh:path simpl:offeringType ; sh:in ( "data" "application" "infrastructure" ) ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path simpl:serviceAccessPoint ; sh:datatype xsd:anyURI ; sh:maxCount 1 ] .
+
+simpl:ProviderInformationShape a sh:NodeShape ;
+  sh:targetClass simpl:ProviderInformation ;
+  sh:property [ sh:path simpl:providedBy ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path simpl:contact ; sh:datatype xsd:string ; sh:maxCount 1 ] .
+
+simpl:OfferingPriceShape a sh:NodeShape ;
+  sh:targetClass simpl:OfferingPrice ;
+  sh:property [ sh:path simpl:price ; sh:datatype xsd:decimal ; sh:maxCount 1 ] ;
+  sh:property [ sh:path simpl:currency ; sh:datatype xsd:string ; sh:maxCount 1 ] .

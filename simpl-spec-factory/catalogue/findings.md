@@ -33,7 +33,7 @@ Written by a fresh agent from the specs and digest only ([`tests/`](./tests/)).
 
 ## 2026-10-28: step 3, code writer (run 1)
 
-A separate agent built everything from `specs/` and `spec-digest.md` only, in its own workspace: three Spring Boot backends in one Maven reactor (about 5,100 lines of Java, against about 19,000 for upstream's catalogue backend alone), a Vue 3 UI, two Node stubs (Schema Manager and quality scoring), Keycloak with three realms, 11 containers. About 45 minutes, four fix iterations, no compile errors; the stack came up healthy on the first start, smoke test and `mvn verify` (37 tests) green.
+A separate agent built everything from `specs/` and `spec-digest.md` only, in its own workspace (output: [`generated/run1/`](./generated/run1/)): three Spring Boot backends in one Maven reactor (about 5,100 lines of Java, against about 19,000 for upstream's catalogue backend alone), a Vue 3 UI, two Node stubs (Schema Manager and quality scoring), Keycloak with three realms, 11 containers. About 45 minutes, four fix iterations, no compile errors; the stack came up healthy on the first start, smoke test and `mvn verify` (37 tests) green.
 
 - **26 further spec gaps** in its build log. Notable: the quality profile has no field for the threshold value; no problem type for a revoke or delete by a non-owner; 400 or 422 for a missing `dct:conformsTo`; whether `@id` values are searchable; the group order; paging fields for a search over several catalogues.
 - **Black-box suite: 458 of 459 API scenarios pass.** The one failure is a real deviation: for a signature whose verification method is not the issuer's, the build checks the key registry first and answers 403 `providerMismatch`, where D14 puts the signature check first (422 `invalidSignature`).

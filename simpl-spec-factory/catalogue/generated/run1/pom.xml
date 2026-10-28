@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.5.13</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>eu.simpl.catalogue</groupId>
+  <artifactId>catalogue-factory-parent</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+  <name>Simpl-Open Catalogue (spec factory build)</name>
+
+  <modules>
+    <module>backend/common</module>
+    <module>backend/catalogue-be</module>
+    <module>backend/query-mapper-adapter</module>
+    <module>backend/catalogue-client-be</module>
+  </modules>
+
+  <properties>
+    <java.version>21</java.version>
+    <jena.version>5.5.0</jena.version>
+    <bouncycastle.version>1.80</bouncycastle.version>
+    <okhttp.version>4.12.0</okhttp.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>eu.simpl.catalogue</groupId>
+        <artifactId>catalogue-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-shacl</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-arq</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk18on</artifactId>
+        <version>${bouncycastle.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.erdtman</groupId>
+        <artifactId>java-json-canonicalization</artifactId>
+        <version>1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>mockwebserver</artifactId>
+        <version>${okhttp.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>${okhttp.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <executions>
+            <execution>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
