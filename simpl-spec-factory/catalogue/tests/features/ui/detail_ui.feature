@@ -1,4 +1,4 @@
-@ui @wip @bp06 @detail
+@ui @bp06 @D70 @detail
 Feature: Detail page on ui-a
   One detail page for own and federated RDs (D75): every credentialSubject property as a path
   and value row, quality for own RDs only, an error and no rows on any error. No schema (D42).

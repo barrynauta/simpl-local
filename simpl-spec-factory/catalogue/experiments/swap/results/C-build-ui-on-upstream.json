@@ -1,0 +1,4768 @@
+[
+{
+  "description": [
+    "One detail page for own and federated RDs (D75): every credentialSubject property as a path",
+    "and value row, quality for own RDs only, an error and no rows on any error. No schema (D42)."
+  ],
+  "elements": [
+    {
+      "keyword": "Background",
+      "location": "features/ui/detail_ui.feature:6",
+      "name": "",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "step_type": "given"
+        }
+      ],
+      "type": "background"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/detail_ui.feature:10",
+      "name": "The detail of an own resource description shows all properties and the quality",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.600120544433594e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:11",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"own\"",
+                "value": "own"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"own\"",
+          "result": {
+            "duration": 0.04693889617919922,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/detail_ui.feature:12",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.282231092453003,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:13",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"search-input\"",
+          "result": {
+            "duration": 0.0066759586334228516,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:14",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:146"
+          },
+          "name": "I click \"search-button\"",
+          "result": {
+            "duration": 0.02625894546508789,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:15",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"own\"",
+                "value": "own"
+              },
+              {
+                "name": "testid",
+                "original": "\"results-panel-catalogue-a\"",
+                "value": "results-panel-catalogue-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:192"
+          },
+          "name": "I open the result row of \"own\" in \"results-panel-catalogue-a\"",
+          "result": {
+            "duration": 0.06860685348510742,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/detail_ui.feature:16",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"own\"",
+                "value": "own"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:429"
+          },
+          "name": "the detail page shows a property row for every property of \"own\"",
+          "result": {
+            "duration": 10.002833127975464,
+            "error_message": [
+              "Assertion Failed: no detail-property rows",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" locator(\"[data-testid=\\\"detail-property\\\"]\").first with timeout 10000ms",
+              "  - waiting for locator(\"[data-testid=\\\"detail-property\\\"]\").first",
+              "",
+              "Aria snapshot:",
+              "- banner:",
+              "  - strong: Simpl-Open Catalogue",
+              "  - text: consumer-a",
+              "  - button \"Sign out\"",
+              "- main:",
+              "  - paragraph:",
+              "    - link \"Back to search\":",
+              "      - /url: /",
+              "  - paragraph: \"The resource description could not be retrieved (404): Not Found\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:17",
+          "name": "the detail page shows the property \"simpl:generalServiceProperties/simpl:name\" with the value \"{token} own data\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:18",
+          "name": "\"detail-quality-overall-score\" shows the text \"100\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:19",
+          "name": "\"detail-quality-overall-classification\" shows the text \"Green\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:20",
+          "name": "\"detail-quality-dimension-Completeness\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:21",
+          "name": "\"detail-quality-dimension-Accuracy\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:22",
+          "name": "\"detail-quality-dimension-Validity\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:23",
+          "name": "\"detail-error\" is not visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31143",
+        "D75",
+        "D57"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/detail_ui.feature:26",
+      "name": "The detail of a federated resource description looks the same without quality",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.719329833984375e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:27",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-b\"",
+                "value": "provider-b"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"partner\"",
+                "value": "partner"
+              },
+              {
+                "name": "attrs",
+                "value": "\"PARTNER_CONSUMER\""
+              }
+            ],
+            "location": "features/steps/rd_steps.py:150"
+          },
+          "name": "\"provider-b\" has published a \"DataOffering\" resource description \"partner\" discoverable by \"PARTNER_CONSUMER\"",
+          "result": {
+            "duration": 0.03771495819091797,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/detail_ui.feature:28",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"partner\"",
+                "value": "partner"
+              },
+              {
+                "name": "cid",
+                "original": "\"catalogue-b\"",
+                "value": "catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:203"
+          },
+          "name": "I open the detail page of \"partner\" in the catalogue \"catalogue-b\"",
+          "result": {
+            "duration": 1.7796390056610107,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/detail_ui.feature:29",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"partner\"",
+                "value": "partner"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:429"
+          },
+          "name": "the detail page shows a property row for every property of \"partner\"",
+          "result": {
+            "duration": 10.001379013061523,
+            "error_message": [
+              "Assertion Failed: no detail-property rows",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" locator(\"[data-testid=\\\"detail-property\\\"]\").first with timeout 10000ms",
+              "  - waiting for locator(\"[data-testid=\\\"detail-property\\\"]\").first",
+              "",
+              "Aria snapshot:",
+              "- banner:",
+              "  - strong: Simpl-Open Catalogue",
+              "  - text: consumer-a",
+              "  - button \"Sign out\"",
+              "- main:",
+              "  - paragraph:",
+              "    - link \"Back to search\":",
+              "      - /url: /",
+              "  - paragraph: \"The resource description could not be retrieved (404): Not Found\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:30",
+          "name": "the detail page shows the property \"simpl:providerInformation/simpl:providedBy\" with the value \"provider-b\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:31",
+          "name": "\"detail-quality-overall-score\" is not visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:32",
+          "name": "\"detail-error\" is not visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31148",
+        "D75",
+        "D42"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/detail_ui.feature:35",
+      "name": "A downstream failure shows an error and no details",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.0067901611328125e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/detail_ui.feature:36",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"missing\"",
+                "value": "missing"
+              },
+              {
+                "name": "cid",
+                "original": "\"catalogue-c\"",
+                "value": "catalogue-c"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:203"
+          },
+          "name": "I open the detail page of \"missing\" in the catalogue \"catalogue-c\"",
+          "result": {
+            "duration": 1.790510654449463,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/detail_ui.feature:37",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-error\"",
+                "value": "detail-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"detail-error\" is visible",
+          "result": {
+            "duration": 0.014495134353637695,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:38",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:422"
+          },
+          "name": "the detail page shows no property rows",
+          "result": {
+            "duration": 0.0017802715301513672,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31148",
+        "D75"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/detail_ui.feature:41",
+      "name": "An invalid detail request shows an error and no details",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.814697265625e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/detail_ui.feature:42",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"missing\"",
+                "value": "missing"
+              },
+              {
+                "name": "cid",
+                "original": "\"catalogue-zz\"",
+                "value": "catalogue-zz"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:203"
+          },
+          "name": "I open the detail page of \"missing\" in the catalogue \"catalogue-zz\"",
+          "result": {
+            "duration": 1.7931811809539795,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/detail_ui.feature:43",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-error\"",
+                "value": "detail-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"detail-error\" is visible",
+          "result": {
+            "duration": 0.013514995574951172,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:44",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:422"
+          },
+          "name": "the detail page shows no property rows",
+          "result": {
+            "duration": 0.0013768672943115234,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31148",
+        "D75"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/detail_ui.feature:47",
+      "name": "A resource description the Consumer may not discover shows an error",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 2.4080276489257812e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:48",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"other\"",
+                "value": "other"
+              },
+              {
+                "name": "attrs",
+                "value": "\"OTHER\""
+              }
+            ],
+            "location": "features/steps/rd_steps.py:150"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"other\" discoverable by \"OTHER\"",
+          "result": {
+            "duration": 0.015862226486206055,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/detail_ui.feature:49",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"other\"",
+                "value": "other"
+              },
+              {
+                "name": "cid",
+                "original": "\"catalogue-a\"",
+                "value": "catalogue-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:203"
+          },
+          "name": "I open the detail page of \"other\" in the catalogue \"catalogue-a\"",
+          "result": {
+            "duration": 1.7587220668792725,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/detail_ui.feature:50",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-error\"",
+                "value": "detail-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"detail-error\" is visible",
+          "result": {
+            "duration": 0.015431880950927734,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:51",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:422"
+          },
+          "name": "the detail page shows no property rows",
+          "result": {
+            "duration": 0.0016601085662841797,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "D75",
+        "D30"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/detail_ui.feature:2",
+  "name": "Detail page on ui-a",
+  "status": "failed",
+  "tags": [
+    "ui",
+    "bp06",
+    "D70",
+    "detail"
+  ]
+},
+
+{
+  "description": [
+    "Quick and advanced search, catalogue selection, quality filters and result tabs. Selectors",
+    "of digest section 7. Behaviour of D71 to D74."
+  ],
+  "elements": [
+    {
+      "keyword": "Background",
+      "location": "features/ui/search_ui.feature:6",
+      "name": "",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "step_type": "given"
+        }
+      ],
+      "type": "background"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:12",
+      "name": "The quick search tab offers the own and the federated catalogues",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.981590270996094e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:13",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.2936339378356934,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:14",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v1/catalogues\"",
+                "value": "/api/v1/catalogues"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "the browser requested \"/api/v1/catalogues\"",
+          "result": {
+            "duration": 0.00040984153747558594,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:15",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-local\"",
+                "value": "catalogue-option-local"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"catalogue-option-local\" is visible",
+          "result": {
+            "duration": 0.0013060569763183594,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:16",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-local\"",
+                "value": "catalogue-option-local"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:239"
+          },
+          "name": "\"catalogue-option-local\" is checked",
+          "result": {
+            "duration": 0.0021140575408935547,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:17",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-b\"",
+                "value": "catalogue-option-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"catalogue-option-catalogue-b\" is visible",
+          "result": {
+            "duration": 0.0009210109710693359,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:18",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-c\"",
+                "value": "catalogue-option-catalogue-c"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"catalogue-option-catalogue-c\" is visible",
+          "result": {
+            "duration": 0.0007352828979492188,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:19",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-slow\"",
+                "value": "catalogue-option-catalogue-slow"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"catalogue-option-catalogue-slow\" is visible",
+          "result": {
+            "duration": 0.0007579326629638672,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:20",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-d\"",
+                "value": "catalogue-option-catalogue-d"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:232"
+          },
+          "name": "\"catalogue-option-catalogue-d\" is disabled",
+          "result": {
+            "duration": 0.003654956817626953,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:21",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-error\"",
+                "value": "catalogue-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:219"
+          },
+          "name": "\"catalogue-error\" is not visible",
+          "result": {
+            "duration": 0.0010099411010742188,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31102",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:24",
+      "name": "The advanced search tab offers the own and the federated catalogues",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.1948089599609375e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:25",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 1.2959401607513428,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:26",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v1/catalogues\"",
+                "value": "/api/v1/catalogues"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "the browser requested \"/api/v1/catalogues\"",
+          "result": {
+            "duration": 0.0003368854522705078,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:27",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-local\"",
+                "value": "catalogue-option-local"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:239"
+          },
+          "name": "\"catalogue-option-local\" is checked",
+          "result": {
+            "duration": 0.0020589828491210938,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:28",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-b\"",
+                "value": "catalogue-option-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"catalogue-option-catalogue-b\" is visible",
+          "result": {
+            "duration": 0.025489091873168945,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:29",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-d\"",
+                "value": "catalogue-option-catalogue-d"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:232"
+          },
+          "name": "\"catalogue-option-catalogue-d\" is disabled",
+          "result": {
+            "duration": 0.0021424293518066406,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31103",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:32",
+      "name": "A failing catalogue list leaves only the own catalogue and shows an error",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.600120544433594e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:33",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v1/catalogues\"",
+                "value": "/api/v1/catalogues"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:105"
+          },
+          "name": "the browser request to \"/api/v1/catalogues\" fails",
+          "result": {
+            "duration": 0.0005028247833251953,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:34",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.3145768642425537,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:35",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-error\"",
+                "value": "catalogue-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"catalogue-error\" is visible",
+          "result": {
+            "duration": 0.0013339519500732422,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:36",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-local\"",
+                "value": "catalogue-option-local"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"catalogue-option-local\" is visible",
+          "result": {
+            "duration": 0.001020193099975586,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:37",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-b\"",
+                "value": "catalogue-option-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:219"
+          },
+          "name": "\"catalogue-option-catalogue-b\" is not visible",
+          "result": {
+            "duration": 0.0010449886322021484,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31102",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:40",
+      "name": "A failing catalogue list on the advanced tab shows an error",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.6716461181640625e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:41",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v1/catalogues\"",
+                "value": "/api/v1/catalogues"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:105"
+          },
+          "name": "the browser request to \"/api/v1/catalogues\" fails",
+          "result": {
+            "duration": 0.0003688335418701172,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:42",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 1.3217508792877197,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:43",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-error\"",
+                "value": "catalogue-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"catalogue-error\" is visible",
+          "result": {
+            "duration": 0.027144908905029297,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:44",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-b\"",
+                "value": "catalogue-option-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:219"
+          },
+          "name": "\"catalogue-option-catalogue-b\" is not visible",
+          "result": {
+            "duration": 0.0013928413391113281,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31103",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:47",
+      "name": "At least one catalogue must be selected to search",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.719329833984375e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:48",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.2723498344421387,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:49",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"anything\"",
+                "value": "anything"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"anything\" into \"search-input\"",
+          "result": {
+            "duration": 0.0059201717376708984,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:50",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-local\"",
+                "value": "catalogue-option-local"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I uncheck \"catalogue-option-local\"",
+          "result": {
+            "duration": 0.02809286117553711,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:51",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:232"
+          },
+          "name": "\"search-button\" is disabled",
+          "result": {
+            "duration": 0.0020437240600585938,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:56",
+      "name": "The quick search tab has the quality filters",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 4.00543212890625e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:57",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.279576063156128,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:58",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"min-score-input\"",
+                "value": "min-score-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"min-score-input\" is visible",
+          "result": {
+            "duration": 0.0015752315521240234,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:59",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"min-classification-select\"",
+                "value": "min-classification-select"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"min-classification-select\" is visible",
+          "result": {
+            "duration": 0.0010099411010742188,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:60",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"min-classification-select\"",
+                "value": "min-classification-select"
+              },
+              {
+                "name": "options",
+                "original": "\", Red, Yellow, Green\"",
+                "value": ", Red, Yellow, Green"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:277"
+          },
+          "name": "\"min-classification-select\" has the options \", Red, Yellow, Green\" in this order",
+          "result": {
+            "duration": 0.010906219482421875,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:63",
+      "name": "The advanced search tab has the quality filters",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.0994415283203125e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:64",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 1.2505409717559814,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:65",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"min-score-input\"",
+                "value": "min-score-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"min-score-input\" is visible",
+          "result": {
+            "duration": 0.002019166946411133,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:66",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"min-classification-select\"",
+                "value": "min-classification-select"
+              },
+              {
+                "name": "options",
+                "original": "\", Red, Yellow, Green\"",
+                "value": ", Red, Yellow, Green"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:277"
+          },
+          "name": "\"min-classification-select\" has the options \", Red, Yellow, Green\" in this order",
+          "result": {
+            "duration": 0.013391256332397461,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29293",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/search_ui.feature:78",
+      "name": "An invalid minimum score shows an error and blocks the search (101) -- @1.1 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.1948089599609375e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:70",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.2802131175994873,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:71",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"anything\"",
+                "value": "anything"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"anything\" into \"search-input\"",
+          "result": {
+            "duration": 0.0053861141204833984,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:72",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"101\"",
+                "value": "101"
+              },
+              {
+                "name": "testid",
+                "original": "\"min-score-input\"",
+                "value": "min-score-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"101\" into \"min-score-input\"",
+          "result": {
+            "duration": 0.004956245422363281,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:73",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"min-score-error\"",
+                "value": "min-score-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"min-score-error\" is visible",
+          "result": {
+            "duration": 0.0007958412170410156,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:74",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:232"
+          },
+          "name": "\"search-button\" is disabled",
+          "result": {
+            "duration": 0.0017788410186767578,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/search_ui.feature:79",
+      "name": "An invalid minimum score shows an error and blocks the search (-1) -- @1.2 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.0994415283203125e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:70",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.285937786102295,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:71",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"anything\"",
+                "value": "anything"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"anything\" into \"search-input\"",
+          "result": {
+            "duration": 0.005859851837158203,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:72",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"-1\"",
+                "value": "-1"
+              },
+              {
+                "name": "testid",
+                "original": "\"min-score-input\"",
+                "value": "min-score-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"-1\" into \"min-score-input\"",
+          "result": {
+            "duration": 0.005467891693115234,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:73",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"min-score-error\"",
+                "value": "min-score-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"min-score-error\" is visible",
+          "result": {
+            "duration": 0.0008289813995361328,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:74",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:232"
+          },
+          "name": "\"search-button\" is disabled",
+          "result": {
+            "duration": 0.0023670196533203125,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/search_ui.feature:80",
+      "name": "An invalid minimum score shows an error and blocks the search (high) -- @1.3 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.528594970703125e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:70",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.2705211639404297,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:71",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"anything\"",
+                "value": "anything"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"anything\" into \"search-input\"",
+          "result": {
+            "duration": 0.005733013153076172,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:72",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"high\"",
+                "value": "high"
+              },
+              {
+                "name": "testid",
+                "original": "\"min-score-input\"",
+                "value": "min-score-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"high\" into \"min-score-input\"",
+          "result": {
+            "duration": 0.005191802978515625,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:73",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"min-score-error\"",
+                "value": "min-score-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"min-score-error\" is visible",
+          "result": {
+            "duration": 0.0007789134979248047,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:74",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:232"
+          },
+          "name": "\"search-button\" is disabled",
+          "result": {
+            "duration": 0.0021059513092041016,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:83",
+      "name": "Quick search with a minimum score shows only matching own results",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.6716461181640625e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:84",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"green\"",
+                "value": "green"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"green\"",
+          "result": {
+            "duration": 0.02438497543334961,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:85",
+          "match": {
+            "arguments": [
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"yellow\"",
+                "value": "yellow"
+              },
+              {
+                "name": "provider",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:31"
+          },
+          "name": "a \"DataOffering\" resource description \"yellow\" by \"provider-a\"",
+          "result": {
+            "duration": 0.00016999244689941406,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:86",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"yellow\"",
+                "value": "yellow"
+              },
+              {
+                "name": "scores",
+                "original": "\"overall=75\"",
+                "value": "overall=75"
+              }
+            ],
+            "location": "features/steps/quality_schema_steps.py:26"
+          },
+          "name": "the quality stub scores \"yellow\" with \"overall=75\"",
+          "result": {
+            "duration": 0.0024590492248535156,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:87",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "alias",
+                "original": "\"yellow\"",
+                "value": "yellow"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:139"
+          },
+          "name": "\"provider-a\" has published \"yellow\"",
+          "result": {
+            "duration": 0.011828899383544922,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:88",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.2684757709503174,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:89",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"search-input\"",
+          "result": {
+            "duration": 0.004857778549194336,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:90",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"80\"",
+                "value": "80"
+              },
+              {
+                "name": "testid",
+                "original": "\"min-score-input\"",
+                "value": "min-score-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"80\" into \"min-score-input\"",
+          "result": {
+            "duration": 0.0041620731353759766,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:91",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:146"
+          },
+          "name": "I click \"search-button\"",
+          "result": {
+            "duration": 0.023494243621826172,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:92",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-panel-catalogue-a\"",
+                "value": "results-panel-catalogue-a"
+              },
+              {
+                "name": "alias",
+                "original": "\"green\"",
+                "value": "green"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:333"
+          },
+          "name": "\"results-panel-catalogue-a\" shows the result row of \"green\"",
+          "result": {
+            "duration": 0.0281219482421875,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:93",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-panel-catalogue-a\"",
+                "value": "results-panel-catalogue-a"
+              },
+              {
+                "name": "alias",
+                "original": "\"yellow\"",
+                "value": "yellow"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:339"
+          },
+          "name": "\"results-panel-catalogue-a\" does not show the result row of \"yellow\"",
+          "result": {
+            "duration": 10.002478122711182,
+            "error_message": [
+              "Assertion Failed: results-panel-catalogue-a: result row of yellow is shown",
+              "Actual value: visible ",
+              "Call log:",
+              "  - Expect \"to_be_hidden\" get_by_test_id(\"results-panel-catalogue-a\").locator(\"[data-testid=\\\"result-row\\\"][data-sd-id=\\\"did:web:test.simpl.local:DataOffering:e3a5f467-5953-491e-8bb6-d3ffb4a53cd7\\\"]\") with timeout 10000ms",
+              "  - waiting for get_by_test_id(\"results-panel-catalogue-a\").locator(\"[data-testid=\\\"result-row\\\"][data-sd-id=\\\"did:web:test.simpl.local:DataOffering:e3a5f467-5953-491e-8bb6-d3ffb4a53cd7\\\"]\")",
+              "    24 \u00d7 locator resolved to <tr data-testid=\"result-row\" data-sd-id=\"did:web:test.simpl.local:DataOffering:e3a5f467-5953-491e-8bb6-d3ffb4a53cd7\">\u2026</tr>",
+              "       - unexpected value \"visible\"",
+              "",
+              "Aria snapshot:",
+              "- row \"t3cbcfd3475 yellow data t3cbcfd3475 description of yellow data en https://provider.example.org/data\":",
+              "  - cell \"t3cbcfd3475 yellow data\"",
+              "  - cell \"t3cbcfd3475 description of yellow\"",
+              "  - cell \"data\"",
+              "  - cell \"en\"",
+              "  - cell \"https://provider.example.org/data\"",
+              "  - cell",
+              "  - cell"
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72",
+        "D54"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:96",
+      "name": "Empty quality filters are not sent",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 4.410743713378906e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:97",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"green\"",
+                "value": "green"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"green\"",
+          "result": {
+            "duration": 0.011693000793457031,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:98",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.2950477600097656,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:99",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"search-input\"",
+          "result": {
+            "duration": 0.005706071853637695,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:100",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:146"
+          },
+          "name": "I click \"search-button\"",
+          "result": {
+            "duration": 0.026805877685546875,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:101",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v1/selfDescriptions?q={token}\"",
+                "value": "/api/v1/selfDescriptions?q={token}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "the browser requested \"/api/v1/selfDescriptions?q={token}\"",
+          "result": {
+            "duration": 0.0003566741943359375,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:102",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v1/selfDescriptions\"",
+                "value": "/api/v1/selfDescriptions"
+              },
+              {
+                "name": "name",
+                "original": "\"minimumScore\"",
+                "value": "minimumScore"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:470"
+          },
+          "name": "no browser request to \"/api/v1/selfDescriptions\" had the parameter \"minimumScore\"",
+          "result": {
+            "duration": 0.0002770423889160156,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:103",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v1/selfDescriptions\"",
+                "value": "/api/v1/selfDescriptions"
+              },
+              {
+                "name": "name",
+                "original": "\"minimumClassification\"",
+                "value": "minimumClassification"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:470"
+          },
+          "name": "no browser request to \"/api/v1/selfDescriptions\" had the parameter \"minimumClassification\"",
+          "result": {
+            "duration": 0.00029087066650390625,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:104",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-panel-catalogue-a\"",
+                "value": "results-panel-catalogue-a"
+              },
+              {
+                "name": "alias",
+                "original": "\"green\"",
+                "value": "green"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:333"
+          },
+          "name": "\"results-panel-catalogue-a\" shows the result row of \"green\"",
+          "result": {
+            "duration": 0.02942204475402832,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:107",
+      "name": "Advanced search with a minimum classification shows only matching own results",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.5762786865234375e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:108",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"green\"",
+                "value": "green"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"green\"",
+          "result": {
+            "duration": 0.02207803726196289,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:109",
+          "match": {
+            "arguments": [
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"yellow\"",
+                "value": "yellow"
+              },
+              {
+                "name": "provider",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:31"
+          },
+          "name": "a \"DataOffering\" resource description \"yellow\" by \"provider-a\"",
+          "result": {
+            "duration": 0.0002040863037109375,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:110",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"yellow\"",
+                "value": "yellow"
+              },
+              {
+                "name": "scores",
+                "original": "\"overall=75\"",
+                "value": "overall=75"
+              }
+            ],
+            "location": "features/steps/quality_schema_steps.py:26"
+          },
+          "name": "the quality stub scores \"yellow\" with \"overall=75\"",
+          "result": {
+            "duration": 0.0022809505462646484,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:111",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "alias",
+                "original": "\"yellow\"",
+                "value": "yellow"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:139"
+          },
+          "name": "\"provider-a\" has published \"yellow\"",
+          "result": {
+            "duration": 0.008786916732788086,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:112",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 1.2735559940338135,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:113",
+          "match": {
+            "arguments": [
+              {
+                "name": "value",
+                "original": "\"DataOfferingShape\"",
+                "value": "DataOfferingShape"
+              },
+              {
+                "name": "testid",
+                "original": "\"schema-select\"",
+                "value": "schema-select"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:171"
+          },
+          "name": "I select \"DataOfferingShape\" in \"schema-select\"",
+          "result": {
+            "duration": 0.01677703857421875,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:114",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"adv-field-GeneralServiceProperties-name\"",
+                "value": "adv-field-GeneralServiceProperties-name"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"adv-field-GeneralServiceProperties-name\"",
+          "result": {
+            "duration": 0.030679941177368164,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:115",
+          "match": {
+            "arguments": [
+              {
+                "name": "value",
+                "original": "\"Green\"",
+                "value": "Green"
+              },
+              {
+                "name": "testid",
+                "original": "\"min-classification-select\"",
+                "value": "min-classification-select"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:171"
+          },
+          "name": "I select \"Green\" in \"min-classification-select\"",
+          "result": {
+            "duration": 0.006052970886230469,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:116",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:146"
+          },
+          "name": "I click \"search-button\"",
+          "result": {
+            "duration": 0.026558876037597656,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:117",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-panel-catalogue-a\"",
+                "value": "results-panel-catalogue-a"
+              },
+              {
+                "name": "alias",
+                "original": "\"green\"",
+                "value": "green"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:333"
+          },
+          "name": "\"results-panel-catalogue-a\" shows the result row of \"green\"",
+          "result": {
+            "duration": 10.00175404548645,
+            "error_message": [
+              "Assertion Failed: results-panel-catalogue-a: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"results-panel-catalogue-a\") with timeout 10000ms",
+              "  - waiting for get_by_test_id(\"results-panel-catalogue-a\")",
+              "",
+              "Aria snapshot:",
+              "- banner:",
+              "  - strong: Simpl-Open Catalogue",
+              "  - text: consumer-a",
+              "  - button \"Sign out\"",
+              "- main:",
+              "  - button \"Quick search\"",
+              "  - button \"Advanced search\"",
+              "  - group \"Catalogues\":",
+              "    - text: Catalogues",
+              "    - checkbox \"Own catalogue\" [checked]",
+              "    - text: Own catalogue",
+              "    - checkbox \"Data space B catalogue\"",
+              "    - text: Data space B catalogue",
+              "    - checkbox \"Data space C catalogue\"",
+              "    - text: Data space C catalogue",
+              "    - checkbox \"Slow catalogue\"",
+              "    - text: Slow catalogue",
+              "    - checkbox \"Data space D catalogue (inactive)\" [disabled]",
+              "    - text: Data space D catalogue (inactive)",
+              "  - text: Schema",
+              "  - combobox \"Schema\":",
+              "    - option \"Choose a schema\"",
+              "    - option \"Application Offering Shape\"",
+              "    - option \"Data Offering Shape\" [selected]",
+              "    - option \"Infrastructure Offering Shape\"",
+              "  - group \"simpl:GeneralServiceProperties\":",
+              "    - text: simpl:GeneralServiceProperties name",
+              "    - textbox \"name\": t49dd577de0",
+              "    - text: description",
+              "    - textbox \"description\"",
+              "    - text: inLanguage",
+              "    - textbox \"inLanguage\"",
+              "    - text: offeringType",
+              "    - textbox \"offeringType\"",
+              "    - text: serviceAccessPoint",
+              "    - textbox \"serviceAccessPoint\"",
+              "  - group \"simpl:ProviderInformation\":",
+              "    - text: simpl:ProviderInformation providedBy",
+              "    - textbox \"providedBy\"",
+              "    - text: contact",
+              "    - textbox \"contact\"",
+              "  - group \"simpl:OfferingPrice\":",
+              "    - text: simpl:OfferingPrice price operator",
+              "    - combobox \"price operator\":",
+              "      - option \"=\" [selected]",
+              "      - option \">\"",
+              "      - option \">=\"",
+              "      - option \"<\"",
+              "      - option \"<=\"",
+              "    - text: value",
+              "    - textbox \"value\"",
+              "    - text: second operator",
+              "    - combobox \"second operator\":",
+              "      - option [selected]",
+              "      - option \"=\"",
+              "      - option \">\"",
+              "      - option \">=\"",
+              "      - option \"<\"",
+              "      - option \"<=\"",
+              "    - text: second value",
+              "    - textbox \"second value\"",
+              "    - text: currency",
+              "    - textbox \"currency\"",
+              "  - text: Minimum score (0 to 100)",
+              "  - textbox \"Minimum score (0 to 100)\"",
+              "  - text: Minimum classification",
+              "  - combobox \"Minimum classification\":",
+              "    - option",
+              "    - option \"Red\"",
+              "    - option \"Yellow\"",
+              "    - option \"Green\" [selected]",
+              "  - button \"Search\"",
+              "  - text: \"Search failed: No Properties defined in minimumClassification node. Please provide at least one property with searched value.\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:118",
+          "name": "\"results-panel-catalogue-a\" does not show the result row of \"yellow\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29293",
+        "D72",
+        "D54"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:123",
+      "name": "Results come in one tab per catalogue with main properties",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.2928924560546875e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:124",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"own\"",
+                "value": "own"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"own\"",
+          "result": {
+            "duration": 0.01456904411315918,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:125",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-b\"",
+                "value": "provider-b"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"partner\"",
+                "value": "partner"
+              },
+              {
+                "name": "attrs",
+                "value": "\"PARTNER_CONSUMER\""
+              }
+            ],
+            "location": "features/steps/rd_steps.py:150"
+          },
+          "name": "\"provider-b\" has published a \"DataOffering\" resource description \"partner\" discoverable by \"PARTNER_CONSUMER\"",
+          "result": {
+            "duration": 0.01355886459350586,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:126",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.2664010524749756,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:127",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-b\"",
+                "value": "catalogue-option-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:155"
+          },
+          "name": "I check \"catalogue-option-catalogue-b\"",
+          "result": {
+            "duration": 0.03327608108520508,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:128",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"search-input\"",
+          "result": {
+            "duration": 0.0054590702056884766,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:129",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:146"
+          },
+          "name": "I click \"search-button\"",
+          "result": {
+            "duration": 0.028175830841064453,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:130",
+          "match": {
+            "arguments": [
+              {
+                "name": "ids",
+                "value": "\"catalogue-a, catalogue-b\""
+              }
+            ],
+            "location": "features/steps/ui_steps.py:316"
+          },
+          "name": "the result tabs are \"catalogue-a, catalogue-b\" in this order",
+          "result": {
+            "duration": 0.03286886215209961,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:131",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-tab-catalogue-a\"",
+                "value": "results-tab-catalogue-a"
+              },
+              {
+                "name": "text",
+                "original": "\"Data space A catalogue\"",
+                "value": "Data space A catalogue"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:268"
+          },
+          "name": "\"results-tab-catalogue-a\" contains the text \"Data space A catalogue\"",
+          "result": {
+            "duration": 0.002065896987915039,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:132",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-tab-catalogue-b\"",
+                "value": "results-tab-catalogue-b"
+              },
+              {
+                "name": "text",
+                "original": "\"Data space B catalogue\"",
+                "value": "Data space B catalogue"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:268"
+          },
+          "name": "\"results-tab-catalogue-b\" contains the text \"Data space B catalogue\"",
+          "result": {
+            "duration": 0.0015668869018554688,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:133",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-panel-catalogue-a\"",
+                "value": "results-panel-catalogue-a"
+              },
+              {
+                "name": "alias",
+                "original": "\"own\"",
+                "value": "own"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:333"
+          },
+          "name": "\"results-panel-catalogue-a\" shows the result row of \"own\"",
+          "result": {
+            "duration": 0.001796722412109375,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:134",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-panel-catalogue-a\"",
+                "value": "results-panel-catalogue-a"
+              },
+              {
+                "name": "alias",
+                "original": "\"partner\"",
+                "value": "partner"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:339"
+          },
+          "name": "\"results-panel-catalogue-a\" does not show the result row of \"partner\"",
+          "result": {
+            "duration": 0.0016090869903564453,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:135",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"own\"",
+                "value": "own"
+              },
+              {
+                "name": "testid",
+                "original": "\"results-panel-catalogue-a\"",
+                "value": "results-panel-catalogue-a"
+              },
+              {
+                "name": "child",
+                "original": "\"result-score\"",
+                "value": "result-score"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:345"
+          },
+          "name": "the result row of \"own\" in \"results-panel-catalogue-a\" shows \"result-score\"",
+          "result": {
+            "duration": 0.003292083740234375,
+            "error_message": "Assertion Failed: row of own: result-score is empty",
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:136",
+          "name": "the result row of \"own\" in \"results-panel-catalogue-a\" shows \"result-classification\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:137",
+          "name": "I click \"results-tab-catalogue-b\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:138",
+          "name": "\"results-panel-catalogue-b\" shows the result row of \"partner\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:139",
+          "name": "the result row of \"partner\" in \"results-panel-catalogue-b\" does not show \"result-score\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31141",
+        "SIMPL-31142",
+        "D73"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:142",
+      "name": "A failing federated catalogue shows a message in its tab",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.1948089599609375e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:143",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"own\"",
+                "value": "own"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"own\"",
+          "result": {
+            "duration": 0.012698888778686523,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:144",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.2782270908355713,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:145",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-c\"",
+                "value": "catalogue-option-catalogue-c"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:155"
+          },
+          "name": "I check \"catalogue-option-catalogue-c\"",
+          "result": {
+            "duration": 0.032933950424194336,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:146",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"search-input\"",
+          "result": {
+            "duration": 0.004654884338378906,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:147",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:146"
+          },
+          "name": "I click \"search-button\"",
+          "result": {
+            "duration": 0.028213024139404297,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:148",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-panel-catalogue-a\"",
+                "value": "results-panel-catalogue-a"
+              },
+              {
+                "name": "alias",
+                "original": "\"own\"",
+                "value": "own"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:333"
+          },
+          "name": "\"results-panel-catalogue-a\" shows the result row of \"own\"",
+          "result": {
+            "duration": 0.028508901596069336,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:149",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-tab-catalogue-c\"",
+                "value": "results-tab-catalogue-c"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:146"
+          },
+          "name": "I click \"results-tab-catalogue-c\"",
+          "result": {
+            "duration": 0.03814387321472168,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:150",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"group-status-catalogue-c\"",
+                "value": "group-status-catalogue-c"
+              },
+              {
+                "name": "text",
+                "original": "\"Data space C catalogue\"",
+                "value": "Data space C catalogue"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:268"
+          },
+          "name": "\"group-status-catalogue-c\" contains the text \"Data space C catalogue\"",
+          "result": {
+            "duration": 0.001949310302734375,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:151",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-panel-catalogue-c\"",
+                "value": "results-panel-catalogue-c"
+              },
+              {
+                "name": "n",
+                "original": "0",
+                "value": 0
+              }
+            ],
+            "location": "features/steps/ui_steps.py:363"
+          },
+          "name": "\"results-panel-catalogue-c\" shows 0 result rows",
+          "result": {
+            "duration": 0.0017828941345214844,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31140",
+        "D73",
+        "D39"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:154",
+      "name": "An empty catalogue shows No results",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.3855438232421875e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:155",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.245382308959961,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:156",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"search-input\"",
+          "result": {
+            "duration": 0.005574226379394531,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:157",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:146"
+          },
+          "name": "I click \"search-button\"",
+          "result": {
+            "duration": 0.027550220489501953,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:158",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"group-status-catalogue-a\"",
+                "value": "group-status-catalogue-a"
+              },
+              {
+                "name": "text",
+                "original": "\"No results\"",
+                "value": "No results"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:259"
+          },
+          "name": "\"group-status-catalogue-a\" shows the text \"No results\"",
+          "result": {
+            "duration": 0.028642654418945312,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31140",
+        "D73"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:161",
+      "name": "Paging one tab leaves the other tabs alone",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.910064697265625e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:162",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"first\"",
+                "value": "first"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"first\"",
+          "result": {
+            "duration": 0.01625990867614746,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:163",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"second\"",
+                "value": "second"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"second\"",
+          "result": {
+            "duration": 0.009310007095336914,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:164",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"third\"",
+                "value": "third"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"third\"",
+          "result": {
+            "duration": 0.008332014083862305,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:165",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-b\"",
+                "value": "provider-b"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"partner\"",
+                "value": "partner"
+              },
+              {
+                "name": "attrs",
+                "value": "\"PARTNER_CONSUMER\""
+              }
+            ],
+            "location": "features/steps/rd_steps.py:150"
+          },
+          "name": "\"provider-b\" has published a \"DataOffering\" resource description \"partner\" discoverable by \"PARTNER_CONSUMER\"",
+          "result": {
+            "duration": 0.009385108947753906,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:166",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 1.2864811420440674,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:167",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-b\"",
+                "value": "catalogue-option-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:155"
+          },
+          "name": "I check \"catalogue-option-catalogue-b\"",
+          "result": {
+            "duration": 0.03331923484802246,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:168",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"search-input\"",
+          "result": {
+            "duration": 0.005415201187133789,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:169",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:146"
+          },
+          "name": "I click \"search-button\"",
+          "result": {
+            "duration": 0.026612043380737305,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:170",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"page-indicator-catalogue-a\"",
+                "value": "page-indicator-catalogue-a"
+              },
+              {
+                "name": "text",
+                "original": "\"Page 1 of 1\"",
+                "value": "Page 1 of 1"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:259"
+          },
+          "name": "\"page-indicator-catalogue-a\" shows the text \"Page 1 of 1\"",
+          "result": {
+            "duration": 0.02836298942565918,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:171",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"results-tab-catalogue-b\"",
+                "value": "results-tab-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:146"
+          },
+          "name": "I click \"results-tab-catalogue-b\"",
+          "result": {
+            "duration": 0.037854909896850586,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:172",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"page-indicator-catalogue-b\"",
+                "value": "page-indicator-catalogue-b"
+              },
+              {
+                "name": "text",
+                "original": "\"Page 1 of 1\"",
+                "value": "Page 1 of 1"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:259"
+          },
+          "name": "\"page-indicator-catalogue-b\" shows the text \"Page 1 of 1\"",
+          "result": {
+            "duration": 0.0017468929290771484,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31142",
+        "D73",
+        "D38"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:177",
+      "name": "With only the own catalogue the user picks a RESOURCE schema",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.981590270996094e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:178",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 1.2912483215332031,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:179",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"schema-select\"",
+                "value": "schema-select"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"schema-select\" is visible",
+          "result": {
+            "duration": 0.001291036605834961,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:180",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"schema-select\"",
+                "value": "schema-select"
+              },
+              {
+                "name": "options",
+                "value": "\"DataOfferingShape, ApplicationOfferingShape, InfrastructureOfferingShape\""
+              }
+            ],
+            "location": "features/steps/ui_steps.py:293"
+          },
+          "name": "\"schema-select\" offers the choices \"DataOfferingShape, ApplicationOfferingShape, InfrastructureOfferingShape\"",
+          "result": {
+            "duration": 0.01254892349243164,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:181",
+          "match": {
+            "arguments": [
+              {
+                "name": "value",
+                "original": "\"DataOfferingShape\"",
+                "value": "DataOfferingShape"
+              },
+              {
+                "name": "testid",
+                "original": "\"schema-select\"",
+                "value": "schema-select"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:171"
+          },
+          "name": "I select \"DataOfferingShape\" in \"schema-select\"",
+          "result": {
+            "duration": 0.006918907165527344,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:182",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"adv-field-GeneralServiceProperties-name\"",
+                "value": "adv-field-GeneralServiceProperties-name"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"adv-field-GeneralServiceProperties-name\" is visible",
+          "result": {
+            "duration": 0.026073932647705078,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:183",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"adv-field-ProviderInformation-providedBy\"",
+                "value": "adv-field-ProviderInformation-providedBy"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"adv-field-ProviderInformation-providedBy\" is visible",
+          "result": {
+            "duration": 0.0008499622344970703,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:184",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"adv-field-OfferingPrice-price-op1\"",
+                "value": "adv-field-OfferingPrice-price-op1"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"adv-field-OfferingPrice-price-op1\" is visible",
+          "result": {
+            "duration": 0.0007219314575195312,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:185",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"adv-field-OfferingPrice-price-value1\"",
+                "value": "adv-field-OfferingPrice-price-value1"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"adv-field-OfferingPrice-price-value1\" is visible",
+          "result": {
+            "duration": 0.0006430149078369141,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:186",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"adv-field-OfferingPrice-price-op2\"",
+                "value": "adv-field-OfferingPrice-price-op2"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"adv-field-OfferingPrice-price-op2\" is visible",
+          "result": {
+            "duration": 0.0005729198455810547,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:187",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"adv-field-OfferingPrice-price-value2\"",
+                "value": "adv-field-OfferingPrice-price-value2"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"adv-field-OfferingPrice-price-value2\" is visible",
+          "result": {
+            "duration": 0.00074005126953125,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-35874",
+        "D74"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:190",
+      "name": "With a federated catalogue the form uses the SEARCH schema without a choice",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 2.7894973754882812e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:191",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 1.2753379344940186,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:192",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-b\"",
+                "value": "catalogue-option-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:155"
+          },
+          "name": "I check \"catalogue-option-catalogue-b\"",
+          "result": {
+            "duration": 0.064697265625,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:193",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v2/schemas?schemaType=SEARCH\"",
+                "value": "/api/v2/schemas?schemaType=SEARCH"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "the browser requested \"/api/v2/schemas?schemaType=SEARCH\"",
+          "result": {
+            "duration": 0.0004169940948486328,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:194",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"schema-select\"",
+                "value": "schema-select"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:219"
+          },
+          "name": "\"schema-select\" is not visible",
+          "result": {
+            "duration": 0.0011982917785644531,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:195",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"adv-field-GeneralServiceProperties-name\"",
+                "value": "adv-field-GeneralServiceProperties-name"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"adv-field-GeneralServiceProperties-name\" is visible",
+          "result": {
+            "duration": 0.024966955184936523,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:196",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"adv-field-OfferingPrice-price-op1\"",
+                "value": "adv-field-OfferingPrice-price-op1"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"adv-field-OfferingPrice-price-op1\" is visible",
+          "result": {
+            "duration": 0.0010721683502197266,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:197",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"adv-field-ProviderInformation-providedBy\"",
+                "value": "adv-field-ProviderInformation-providedBy"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:219"
+          },
+          "name": "\"adv-field-ProviderInformation-providedBy\" is not visible",
+          "result": {
+            "duration": 0.0011801719665527344,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-35874",
+        "D74"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:200",
+      "name": "Unchecking the federated catalogue rebuilds the form",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.981590270996094e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:201",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 1.2818498611450195,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:202",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-b\"",
+                "value": "catalogue-option-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:155"
+          },
+          "name": "I check \"catalogue-option-catalogue-b\"",
+          "result": {
+            "duration": 0.0490870475769043,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:203",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-b\"",
+                "value": "catalogue-option-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I uncheck \"catalogue-option-catalogue-b\"",
+          "result": {
+            "duration": 0.03390789031982422,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:204",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"schema-select\"",
+                "value": "schema-select"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"schema-select\" is visible",
+          "result": {
+            "duration": 0.0008339881896972656,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-35874",
+        "D74"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:207",
+      "name": "The advanced form sends only filled fields in the D29 body",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 4.100799560546875e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:208",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 1.2859179973602295,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:209",
+          "match": {
+            "arguments": [
+              {
+                "name": "value",
+                "original": "\"DataOfferingShape\"",
+                "value": "DataOfferingShape"
+              },
+              {
+                "name": "testid",
+                "original": "\"schema-select\"",
+                "value": "schema-select"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:171"
+          },
+          "name": "I select \"DataOfferingShape\" in \"schema-select\"",
+          "result": {
+            "duration": 0.017924070358276367,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:210",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"adv-field-GeneralServiceProperties-name\"",
+                "value": "adv-field-GeneralServiceProperties-name"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"adv-field-GeneralServiceProperties-name\"",
+          "result": {
+            "duration": 0.030796051025390625,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:211",
+          "match": {
+            "arguments": [
+              {
+                "name": "value",
+                "original": "\">=\"",
+                "value": ">="
+              },
+              {
+                "name": "testid",
+                "original": "\"adv-field-OfferingPrice-price-op1\"",
+                "value": "adv-field-OfferingPrice-price-op1"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:171"
+          },
+          "name": "I select \">=\" in \"adv-field-OfferingPrice-price-op1\"",
+          "result": {
+            "duration": 0.005518198013305664,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:212",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"50\"",
+                "value": "50"
+              },
+              {
+                "name": "testid",
+                "original": "\"adv-field-OfferingPrice-price-value1\"",
+                "value": "adv-field-OfferingPrice-price-value1"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"50\" into \"adv-field-OfferingPrice-price-value1\"",
+          "result": {
+            "duration": 0.003693103790283203,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:213",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"search-button\"",
+                "value": "search-button"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:146"
+          },
+          "name": "I click \"search-button\"",
+          "result": {
+            "duration": 0.03767895698547363,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:214",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:486"
+          },
+          "name": "the last advanced search request body is the JSON",
+          "result": {
+            "duration": 0.0002498626708984375,
+            "status": "passed"
+          },
+          "step_type": "then",
+          "text": "{\"catalogueIds\": [\"local\"], \"simpl:GeneralServiceProperties\": {\"name\": \"{token}\"}, \"simpl:OfferingPrice\": {\"price\": {\"op1\": \">=\", \"value1\": 50}}}"
+        }
+      ],
+      "tags": [
+        "SIMPL-35874",
+        "D74",
+        "D29"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/search_ui.feature:2",
+  "name": "Search UI on ui-a",
+  "status": "failed",
+  "tags": [
+    "ui",
+    "bp06",
+    "D70"
+  ]
+}
+]

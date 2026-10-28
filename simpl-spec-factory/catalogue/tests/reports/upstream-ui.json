@@ -1,0 +1,3536 @@
+[
+{
+  "description": [
+    "One detail page for own and federated RDs (D75): every credentialSubject property as a path",
+    "and value row, quality for own RDs only, an error and no rows on any error. No schema (D42)."
+  ],
+  "elements": [
+    {
+      "keyword": "Background",
+      "location": "features/ui/detail_ui.feature:6",
+      "name": "",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "step_type": "given"
+        }
+      ],
+      "type": "background"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/detail_ui.feature:10",
+      "name": "The detail of an own resource description shows all properties and the quality",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.1948089599609375e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:11",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"own\"",
+                "value": "own"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"own\"",
+          "result": {
+            "duration": 0.038255929946899414,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/detail_ui.feature:12",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 0.6966381072998047,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:13",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"search-input\"",
+          "result": {
+            "duration": 5.002794027328491,
+            "error_message": [
+              "Assertion Failed: search-input: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"search-input\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"search-input\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\" [selected]",
+              "    - tab \"Advanced search\"",
+              "  - tabpanel:",
+              "    - textbox \"Quick search\"",
+              "    - button \"Search\" [disabled]:",
+              "      - img",
+              "      - text: Search"
+            ],
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:14",
+          "name": "I click \"search-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:15",
+          "name": "I open the result row of \"own\" in \"results-panel-catalogue-a\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/detail_ui.feature:16",
+          "name": "the detail page shows a property row for every property of \"own\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:17",
+          "name": "the detail page shows the property \"simpl:generalServiceProperties/simpl:name\" with the value \"{token} own data\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:18",
+          "name": "\"detail-quality-overall-score\" shows the text \"100\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:19",
+          "name": "\"detail-quality-overall-classification\" shows the text \"Green\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:20",
+          "name": "\"detail-quality-dimension-Completeness\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:21",
+          "name": "\"detail-quality-dimension-Accuracy\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:22",
+          "name": "\"detail-quality-dimension-Validity\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:23",
+          "name": "\"detail-error\" is not visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31143",
+        "D75",
+        "D57"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/detail_ui.feature:26",
+      "name": "The detail of a federated resource description looks the same without quality",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.078315734863281e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:27",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-b\"",
+                "value": "provider-b"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"partner\"",
+                "value": "partner"
+              },
+              {
+                "name": "attrs",
+                "value": "\"PARTNER_CONSUMER\""
+              }
+            ],
+            "location": "features/steps/rd_steps.py:150"
+          },
+          "name": "\"provider-b\" has published a \"DataOffering\" resource description \"partner\" discoverable by \"PARTNER_CONSUMER\"",
+          "result": {
+            "duration": 0.00197601318359375,
+            "error_message": "Assertion Failed: POST http://127.0.0.1:9/self-descriptions failed: HTTPConnectionPool(host='127.0.0.1', port=9): Max retries exceeded with url: /self-descriptions (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=9): Failed to establish a new connection: [Errno 61] Connection refused\"))",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/detail_ui.feature:28",
+          "name": "I open the detail page of \"partner\" in the catalogue \"catalogue-b\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/detail_ui.feature:29",
+          "name": "the detail page shows a property row for every property of \"partner\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:30",
+          "name": "the detail page shows the property \"simpl:providerInformation/simpl:providedBy\" with the value \"provider-b\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:31",
+          "name": "\"detail-quality-overall-score\" is not visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:32",
+          "name": "\"detail-error\" is not visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31148",
+        "D75",
+        "D42"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/detail_ui.feature:35",
+      "name": "A downstream failure shows an error and no details",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.910064697265625e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/detail_ui.feature:36",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"missing\"",
+                "value": "missing"
+              },
+              {
+                "name": "cid",
+                "original": "\"catalogue-c\"",
+                "value": "catalogue-c"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:203"
+          },
+          "name": "I open the detail page of \"missing\" in the catalogue \"catalogue-c\"",
+          "result": {
+            "duration": 1.1837761402130127,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/detail_ui.feature:37",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-error\"",
+                "value": "detail-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"detail-error\" is visible",
+          "result": {
+            "duration": 5.002657175064087,
+            "error_message": [
+              "Assertion Failed: detail-error: expected visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"detail-error\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"detail-error\")",
+              "",
+              "Aria snapshot:",
+              "- main:",
+              "  - img",
+              "  - 'heading \"404: Not found\" [level=1]'",
+              "  - text: \"Path: /details\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:38",
+          "name": "the detail page shows no property rows",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31148",
+        "D75"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/detail_ui.feature:41",
+      "name": "An invalid detail request shows an error and no details",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.5789947509765625e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/detail_ui.feature:42",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"missing\"",
+                "value": "missing"
+              },
+              {
+                "name": "cid",
+                "original": "\"catalogue-zz\"",
+                "value": "catalogue-zz"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:203"
+          },
+          "name": "I open the detail page of \"missing\" in the catalogue \"catalogue-zz\"",
+          "result": {
+            "duration": 1.189573049545288,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/detail_ui.feature:43",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-error\"",
+                "value": "detail-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"detail-error\" is visible",
+          "result": {
+            "duration": 5.002589225769043,
+            "error_message": [
+              "Assertion Failed: detail-error: expected visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"detail-error\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"detail-error\")",
+              "",
+              "Aria snapshot:",
+              "- main:",
+              "  - img",
+              "  - 'heading \"404: Not found\" [level=1]'",
+              "  - text: \"Path: /details\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:44",
+          "name": "the detail page shows no property rows",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31148",
+        "D75"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/detail_ui.feature:47",
+      "name": "A resource description the Consumer may not discover shows an error",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 0.00012993812561035156,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/detail_ui.feature:48",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"other\"",
+                "value": "other"
+              },
+              {
+                "name": "attrs",
+                "value": "\"OTHER\""
+              }
+            ],
+            "location": "features/steps/rd_steps.py:150"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"other\" discoverable by \"OTHER\"",
+          "result": {
+            "duration": 0.026803970336914062,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/detail_ui.feature:49",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"other\"",
+                "value": "other"
+              },
+              {
+                "name": "cid",
+                "original": "\"catalogue-a\"",
+                "value": "catalogue-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:203"
+          },
+          "name": "I open the detail page of \"other\" in the catalogue \"catalogue-a\"",
+          "result": {
+            "duration": 1.176598072052002,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/detail_ui.feature:50",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-error\"",
+                "value": "detail-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"detail-error\" is visible",
+          "result": {
+            "duration": 5.0015318393707275,
+            "error_message": [
+              "Assertion Failed: detail-error: expected visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"detail-error\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"detail-error\")",
+              "",
+              "Aria snapshot:",
+              "- main:",
+              "  - img",
+              "  - 'heading \"404: Not found\" [level=1]'",
+              "  - text: \"Path: /details\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/detail_ui.feature:51",
+          "name": "the detail page shows no property rows",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "D75",
+        "D30"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/detail_ui.feature:2",
+  "name": "Detail page on ui-a",
+  "status": "failed",
+  "tags": [
+    "ui",
+    "bp06",
+    "D70",
+    "detail"
+  ]
+},
+
+{
+  "description": [
+    "Quick and advanced search, catalogue selection, quality filters and result tabs. Selectors",
+    "of digest section 7. Behaviour of D71 to D74."
+  ],
+  "elements": [
+    {
+      "keyword": "Background",
+      "location": "features/ui/search_ui.feature:6",
+      "name": "",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "step_type": "given"
+        }
+      ],
+      "type": "background"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:12",
+      "name": "The quick search tab offers the own and the federated catalogues",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 4.982948303222656e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:13",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 0.7194051742553711,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:14",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v1/catalogues\"",
+                "value": "/api/v1/catalogues"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "the browser requested \"/api/v1/catalogues\"",
+          "result": {
+            "duration": 0.00041413307189941406,
+            "error_message": "Assertion Failed: no browser request to /api/v1/catalogues; API requests seen: ['GET /api/schemas', 'GET /api/userinfo']",
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:15",
+          "name": "\"catalogue-option-local\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:16",
+          "name": "\"catalogue-option-local\" is checked",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:17",
+          "name": "\"catalogue-option-catalogue-b\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:18",
+          "name": "\"catalogue-option-catalogue-c\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:19",
+          "name": "\"catalogue-option-catalogue-slow\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:20",
+          "name": "\"catalogue-option-catalogue-d\" is disabled",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:21",
+          "name": "\"catalogue-error\" is not visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31102",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:24",
+      "name": "The advanced search tab offers the own and the federated catalogues",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 4.00543212890625e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:25",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 0.7062771320343018,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:26",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v1/catalogues\"",
+                "value": "/api/v1/catalogues"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:453"
+          },
+          "name": "the browser requested \"/api/v1/catalogues\"",
+          "result": {
+            "duration": 0.0003437995910644531,
+            "error_message": "Assertion Failed: no browser request to /api/v1/catalogues; API requests seen: ['GET /api/schemas', 'GET /api/userinfo']",
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:27",
+          "name": "\"catalogue-option-local\" is checked",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:28",
+          "name": "\"catalogue-option-catalogue-b\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:29",
+          "name": "\"catalogue-option-catalogue-d\" is disabled",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31103",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:32",
+      "name": "A failing catalogue list leaves only the own catalogue and shows an error",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 4.315376281738281e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:33",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v1/catalogues\"",
+                "value": "/api/v1/catalogues"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:105"
+          },
+          "name": "the browser request to \"/api/v1/catalogues\" fails",
+          "result": {
+            "duration": 0.0005910396575927734,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:34",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 0.6982541084289551,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:35",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-error\"",
+                "value": "catalogue-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"catalogue-error\" is visible",
+          "result": {
+            "duration": 5.001705884933472,
+            "error_message": [
+              "Assertion Failed: catalogue-error: expected visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"catalogue-error\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"catalogue-error\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\" [selected]",
+              "    - tab \"Advanced search\"",
+              "  - tabpanel:",
+              "    - textbox \"Quick search\"",
+              "    - button \"Search\" [disabled]:",
+              "      - img",
+              "      - text: Search"
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:36",
+          "name": "\"catalogue-option-local\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:37",
+          "name": "\"catalogue-option-catalogue-b\" is not visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31102",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:40",
+      "name": "A failing catalogue list on the advanced tab shows an error",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 3.0040740966796875e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:41",
+          "match": {
+            "arguments": [
+              {
+                "name": "path",
+                "original": "\"/api/v1/catalogues\"",
+                "value": "/api/v1/catalogues"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:105"
+          },
+          "name": "the browser request to \"/api/v1/catalogues\" fails",
+          "result": {
+            "duration": 0.00031876564025878906,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:42",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 0.7122578620910645,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:43",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-error\"",
+                "value": "catalogue-error"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"catalogue-error\" is visible",
+          "result": {
+            "duration": 5.001176118850708,
+            "error_message": [
+              "Assertion Failed: catalogue-error: expected visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"catalogue-error\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"catalogue-error\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\"",
+              "    - tab \"Advanced search\" [selected]",
+              "  - tabpanel:",
+              "    - img",
+              "    - text: \"SD Tooling API: An error occurred (SCHEMA_FETCH_ERROR) Error details are not available\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:44",
+          "name": "\"catalogue-option-catalogue-b\" is not visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31103",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:47",
+      "name": "At least one catalogue must be selected to search",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 6.413459777832031e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:48",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 0.722905158996582,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:49",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"anything\"",
+                "value": "anything"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"anything\" into \"search-input\"",
+          "result": {
+            "duration": 5.001405239105225,
+            "error_message": [
+              "Assertion Failed: search-input: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"search-input\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"search-input\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\" [selected]",
+              "    - tab \"Advanced search\"",
+              "  - tabpanel:",
+              "    - textbox \"Quick search\"",
+              "    - button \"Search\" [disabled]:",
+              "      - img",
+              "      - text: Search"
+            ],
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:50",
+          "name": "I uncheck \"catalogue-option-local\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:51",
+          "name": "\"search-button\" is disabled",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:56",
+      "name": "The quick search tab has the quality filters",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.1021575927734375e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:57",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 0.7241389751434326,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:58",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"min-score-input\"",
+                "value": "min-score-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"min-score-input\" is visible",
+          "result": {
+            "duration": 5.0013439655303955,
+            "error_message": [
+              "Assertion Failed: min-score-input: expected visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_label(re.compile(r\"minimum\\s*score\", re.IGNORECASE)).first with timeout 5000ms",
+              "  - waiting for get_by_label(re.compile(r\"minimum\\s*score\", re.IGNORECASE)).first",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\" [selected]",
+              "    - tab \"Advanced search\"",
+              "  - tabpanel:",
+              "    - textbox \"Quick search\"",
+              "    - button \"Search\" [disabled]:",
+              "      - img",
+              "      - text: Search"
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:59",
+          "name": "\"min-classification-select\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:60",
+          "name": "\"min-classification-select\" has the options \", Red, Yellow, Green\" in this order",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:63",
+      "name": "The advanced search tab has the quality filters",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.3882598876953125e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:64",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 0.7057862281799316,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:65",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"min-score-input\"",
+                "value": "min-score-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"min-score-input\" is visible",
+          "result": {
+            "duration": 5.00237774848938,
+            "error_message": [
+              "Assertion Failed: min-score-input: expected visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_label(re.compile(r\"minimum\\s*score\", re.IGNORECASE)).first with timeout 5000ms",
+              "  - waiting for get_by_label(re.compile(r\"minimum\\s*score\", re.IGNORECASE)).first",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\"",
+              "    - tab \"Advanced search\" [selected]",
+              "  - tabpanel:",
+              "    - img",
+              "    - text: \"SD Tooling API: An error occurred (SCHEMA_FETCH_ERROR) Error details are not available\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:66",
+          "name": "\"min-classification-select\" has the options \", Red, Yellow, Green\" in this order",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29293",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/search_ui.feature:78",
+      "name": "An invalid minimum score shows an error and blocks the search (101) -- @1.1 ",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.507469177246094e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:70",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 0.7231252193450928,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:71",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"anything\"",
+                "value": "anything"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"anything\" into \"search-input\"",
+          "result": {
+            "duration": 5.000712156295776,
+            "error_message": [
+              "Assertion Failed: search-input: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"search-input\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"search-input\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\" [selected]",
+              "    - tab \"Advanced search\"",
+              "  - tabpanel:",
+              "    - textbox \"Quick search\"",
+              "    - button \"Search\" [disabled]:",
+              "      - img",
+              "      - text: Search"
+            ],
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:72",
+          "name": "I type \"101\" into \"min-score-input\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:73",
+          "name": "\"min-score-error\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:74",
+          "name": "\"search-button\" is disabled",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/search_ui.feature:79",
+      "name": "An invalid minimum score shows an error and blocks the search (-1) -- @1.2 ",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 0.0001761913299560547,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:70",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 0.7222583293914795,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:71",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"anything\"",
+                "value": "anything"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"anything\" into \"search-input\"",
+          "result": {
+            "duration": 5.000411033630371,
+            "error_message": [
+              "Assertion Failed: search-input: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"search-input\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"search-input\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\" [selected]",
+              "    - tab \"Advanced search\"",
+              "  - tabpanel:",
+              "    - textbox \"Quick search\"",
+              "    - button \"Search\" [disabled]:",
+              "      - img",
+              "      - text: Search"
+            ],
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:72",
+          "name": "I type \"-1\" into \"min-score-input\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:73",
+          "name": "\"min-score-error\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:74",
+          "name": "\"search-button\" is disabled",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/search_ui.feature:80",
+      "name": "An invalid minimum score shows an error and blocks the search (high) -- @1.3 ",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 4.982948303222656e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:70",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 0.7233362197875977,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:71",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"anything\"",
+                "value": "anything"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"anything\" into \"search-input\"",
+          "result": {
+            "duration": 5.001646995544434,
+            "error_message": [
+              "Assertion Failed: search-input: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"search-input\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"search-input\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\" [selected]",
+              "    - tab \"Advanced search\"",
+              "  - tabpanel:",
+              "    - textbox \"Quick search\"",
+              "    - button \"Search\" [disabled]:",
+              "      - img",
+              "      - text: Search"
+            ],
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:72",
+          "name": "I type \"high\" into \"min-score-input\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:73",
+          "name": "\"min-score-error\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:74",
+          "name": "\"search-button\" is disabled",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:83",
+      "name": "Quick search with a minimum score shows only matching own results",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.412101745605469e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:84",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"green\"",
+                "value": "green"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"green\"",
+          "result": {
+            "duration": 0.02354264259338379,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:85",
+          "match": {
+            "arguments": [
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"yellow\"",
+                "value": "yellow"
+              },
+              {
+                "name": "provider",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:31"
+          },
+          "name": "a \"DataOffering\" resource description \"yellow\" by \"provider-a\"",
+          "result": {
+            "duration": 0.00028896331787109375,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:86",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"yellow\"",
+                "value": "yellow"
+              },
+              {
+                "name": "scores",
+                "original": "\"overall=75\"",
+                "value": "overall=75"
+              }
+            ],
+            "location": "features/steps/quality_schema_steps.py:26"
+          },
+          "name": "the quality stub scores \"yellow\" with \"overall=75\"",
+          "result": {
+            "duration": 0.001422882080078125,
+            "error_message": "Assertion Failed: PUT http://127.0.0.1:9/stub/scores/did%3Aweb%3Atest.simpl.local%3ADataOffering%3A26675bf3-1899-4bba-aece-d0e49d7896b8 failed: HTTPConnectionPool(host='127.0.0.1', port=9): Max retries exceeded with url: /stub/scores/did%3Aweb%3Atest.simpl.local%3ADataOffering%3A26675bf3-1899-4bba-aece-d0e49d7896b8 (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=9): Failed to establish a new connection: [Errno 61] Connection refused\"))",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:87",
+          "name": "\"provider-a\" has published \"yellow\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:88",
+          "name": "I open the \"quick-search-tab\" tab",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:89",
+          "name": "I type \"{token}\" into \"search-input\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:90",
+          "name": "I type \"80\" into \"min-score-input\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:91",
+          "name": "I click \"search-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:92",
+          "name": "\"results-panel-catalogue-a\" shows the result row of \"green\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:93",
+          "name": "\"results-panel-catalogue-a\" does not show the result row of \"yellow\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72",
+        "D54"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:96",
+      "name": "Empty quality filters are not sent",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 4.8160552978515625e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:97",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"green\"",
+                "value": "green"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"green\"",
+          "result": {
+            "duration": 0.01386404037475586,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:98",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 0.6936838626861572,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:99",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"search-input\"",
+          "result": {
+            "duration": 5.001413822174072,
+            "error_message": [
+              "Assertion Failed: search-input: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"search-input\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"search-input\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\" [selected]",
+              "    - tab \"Advanced search\"",
+              "  - tabpanel:",
+              "    - textbox \"Quick search\"",
+              "    - button \"Search\" [disabled]:",
+              "      - img",
+              "      - text: Search"
+            ],
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:100",
+          "name": "I click \"search-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:101",
+          "name": "the browser requested \"/api/v1/selfDescriptions?q={token}\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:102",
+          "name": "no browser request to \"/api/v1/selfDescriptions\" had the parameter \"minimumScore\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:103",
+          "name": "no browser request to \"/api/v1/selfDescriptions\" had the parameter \"minimumClassification\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:104",
+          "name": "\"results-panel-catalogue-a\" shows the result row of \"green\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29292",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:107",
+      "name": "Advanced search with a minimum classification shows only matching own results",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.3882598876953125e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:108",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"green\"",
+                "value": "green"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"green\"",
+          "result": {
+            "duration": 0.0178680419921875,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:109",
+          "match": {
+            "arguments": [
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"yellow\"",
+                "value": "yellow"
+              },
+              {
+                "name": "provider",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:31"
+          },
+          "name": "a \"DataOffering\" resource description \"yellow\" by \"provider-a\"",
+          "result": {
+            "duration": 0.00021505355834960938,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:110",
+          "match": {
+            "arguments": [
+              {
+                "name": "alias",
+                "original": "\"yellow\"",
+                "value": "yellow"
+              },
+              {
+                "name": "scores",
+                "original": "\"overall=75\"",
+                "value": "overall=75"
+              }
+            ],
+            "location": "features/steps/quality_schema_steps.py:26"
+          },
+          "name": "the quality stub scores \"yellow\" with \"overall=75\"",
+          "result": {
+            "duration": 0.0010559558868408203,
+            "error_message": "Assertion Failed: PUT http://127.0.0.1:9/stub/scores/did%3Aweb%3Atest.simpl.local%3ADataOffering%3Ae5883d0f-d545-435e-9b47-6a1e62b66c01 failed: HTTPConnectionPool(host='127.0.0.1', port=9): Max retries exceeded with url: /stub/scores/did%3Aweb%3Atest.simpl.local%3ADataOffering%3Ae5883d0f-d545-435e-9b47-6a1e62b66c01 (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=9): Failed to establish a new connection: [Errno 61] Connection refused\"))",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:111",
+          "name": "\"provider-a\" has published \"yellow\"",
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:112",
+          "name": "I open the \"advanced-search-tab\" tab",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:113",
+          "name": "I select \"DataOfferingShape\" in \"schema-select\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:114",
+          "name": "I type \"{token}\" into \"adv-field-GeneralServiceProperties-name\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:115",
+          "name": "I select \"Green\" in \"min-classification-select\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:116",
+          "name": "I click \"search-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:117",
+          "name": "\"results-panel-catalogue-a\" shows the result row of \"green\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:118",
+          "name": "\"results-panel-catalogue-a\" does not show the result row of \"yellow\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-29293",
+        "D72",
+        "D54"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:123",
+      "name": "Results come in one tab per catalogue with main properties",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 4.7206878662109375e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:124",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"own\"",
+                "value": "own"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"own\"",
+          "result": {
+            "duration": 0.01599407196044922,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:125",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-b\"",
+                "value": "provider-b"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"partner\"",
+                "value": "partner"
+              },
+              {
+                "name": "attrs",
+                "value": "\"PARTNER_CONSUMER\""
+              }
+            ],
+            "location": "features/steps/rd_steps.py:150"
+          },
+          "name": "\"provider-b\" has published a \"DataOffering\" resource description \"partner\" discoverable by \"PARTNER_CONSUMER\"",
+          "result": {
+            "duration": 0.0017230510711669922,
+            "error_message": "Assertion Failed: POST http://127.0.0.1:9/self-descriptions failed: HTTPConnectionPool(host='127.0.0.1', port=9): Max retries exceeded with url: /self-descriptions (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=9): Failed to establish a new connection: [Errno 61] Connection refused\"))",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:126",
+          "name": "I open the \"quick-search-tab\" tab",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:127",
+          "name": "I check \"catalogue-option-catalogue-b\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:128",
+          "name": "I type \"{token}\" into \"search-input\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:129",
+          "name": "I click \"search-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:130",
+          "name": "the result tabs are \"catalogue-a, catalogue-b\" in this order",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:131",
+          "name": "\"results-tab-catalogue-a\" contains the text \"Data space A catalogue\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:132",
+          "name": "\"results-tab-catalogue-b\" contains the text \"Data space B catalogue\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:133",
+          "name": "\"results-panel-catalogue-a\" shows the result row of \"own\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:134",
+          "name": "\"results-panel-catalogue-a\" does not show the result row of \"partner\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:135",
+          "name": "the result row of \"own\" in \"results-panel-catalogue-a\" shows \"result-score\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:136",
+          "name": "the result row of \"own\" in \"results-panel-catalogue-a\" shows \"result-classification\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:137",
+          "name": "I click \"results-tab-catalogue-b\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:138",
+          "name": "\"results-panel-catalogue-b\" shows the result row of \"partner\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:139",
+          "name": "the result row of \"partner\" in \"results-panel-catalogue-b\" does not show \"result-score\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31141",
+        "SIMPL-31142",
+        "D73"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:142",
+      "name": "A failing federated catalogue shows a message in its tab",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 4.1961669921875e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:143",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"own\"",
+                "value": "own"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"own\"",
+          "result": {
+            "duration": 0.018280029296875,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:144",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 0.6919412612915039,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:145",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-c\"",
+                "value": "catalogue-option-catalogue-c"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:155"
+          },
+          "name": "I check \"catalogue-option-catalogue-c\"",
+          "result": {
+            "duration": 5.000945091247559,
+            "error_message": [
+              "Assertion Failed: catalogue-option-catalogue-c: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"catalogue-option-catalogue-c\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"catalogue-option-catalogue-c\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\" [selected]",
+              "    - tab \"Advanced search\"",
+              "  - tabpanel:",
+              "    - textbox \"Quick search\"",
+              "    - button \"Search\" [disabled]:",
+              "      - img",
+              "      - text: Search"
+            ],
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:146",
+          "name": "I type \"{token}\" into \"search-input\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:147",
+          "name": "I click \"search-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:148",
+          "name": "\"results-panel-catalogue-a\" shows the result row of \"own\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:149",
+          "name": "I click \"results-tab-catalogue-c\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:150",
+          "name": "\"group-status-catalogue-c\" contains the text \"Data space C catalogue\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:151",
+          "name": "\"results-panel-catalogue-c\" shows 0 result rows",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31140",
+        "D73",
+        "D39"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:154",
+      "name": "An empty catalogue shows No results",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.1975250244140625e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:155",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"quick-search-tab\"",
+                "value": "quick-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"quick-search-tab\" tab",
+          "result": {
+            "duration": 0.7186849117279053,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:156",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"{token}\"",
+                "value": "{token}"
+              },
+              {
+                "name": "testid",
+                "original": "\"search-input\"",
+                "value": "search-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:131"
+          },
+          "name": "I type \"{token}\" into \"search-input\"",
+          "result": {
+            "duration": 5.00127100944519,
+            "error_message": [
+              "Assertion Failed: search-input: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"search-input\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"search-input\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\" [selected]",
+              "    - tab \"Advanced search\"",
+              "  - tabpanel:",
+              "    - textbox \"Quick search\"",
+              "    - button \"Search\" [disabled]:",
+              "      - img",
+              "      - text: Search"
+            ],
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:157",
+          "name": "I click \"search-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:158",
+          "name": "\"group-status-catalogue-a\" shows the text \"No results\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31140",
+        "D73"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:161",
+      "name": "Paging one tab leaves the other tabs alone",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.125999450683594e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:162",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"first\"",
+                "value": "first"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"first\"",
+          "result": {
+            "duration": 0.03859305381774902,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:163",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"second\"",
+                "value": "second"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"second\"",
+          "result": {
+            "duration": 0.015063047409057617,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:164",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-a\"",
+                "value": "provider-a"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"third\"",
+                "value": "third"
+              }
+            ],
+            "location": "features/steps/rd_steps.py:144"
+          },
+          "name": "\"provider-a\" has published a \"DataOffering\" resource description \"third\"",
+          "result": {
+            "duration": 0.01254582405090332,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:165",
+          "match": {
+            "arguments": [
+              {
+                "name": "who",
+                "original": "\"provider-b\"",
+                "value": "provider-b"
+              },
+              {
+                "name": "rtype",
+                "original": "\"DataOffering\"",
+                "value": "DataOffering"
+              },
+              {
+                "name": "alias",
+                "original": "\"partner\"",
+                "value": "partner"
+              },
+              {
+                "name": "attrs",
+                "value": "\"PARTNER_CONSUMER\""
+              }
+            ],
+            "location": "features/steps/rd_steps.py:150"
+          },
+          "name": "\"provider-b\" has published a \"DataOffering\" resource description \"partner\" discoverable by \"PARTNER_CONSUMER\"",
+          "result": {
+            "duration": 0.002260923385620117,
+            "error_message": "Assertion Failed: POST http://127.0.0.1:9/self-descriptions failed: HTTPConnectionPool(host='127.0.0.1', port=9): Max retries exceeded with url: /self-descriptions (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=9): Failed to establish a new connection: [Errno 61] Connection refused\"))",
+            "status": "failed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:166",
+          "name": "I open the \"quick-search-tab\" tab",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:167",
+          "name": "I check \"catalogue-option-catalogue-b\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:168",
+          "name": "I type \"{token}\" into \"search-input\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:169",
+          "name": "I click \"search-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:170",
+          "name": "\"page-indicator-catalogue-a\" shows the text \"Page 1 of 1\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:171",
+          "name": "I click \"results-tab-catalogue-b\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:172",
+          "name": "\"page-indicator-catalogue-b\" shows the text \"Page 1 of 1\"",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31142",
+        "D73",
+        "D38"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:177",
+      "name": "With only the own catalogue the user picks a RESOURCE schema",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.7220458984375e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:178",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 0.6989240646362305,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:179",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"schema-select\"",
+                "value": "schema-select"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:214"
+          },
+          "name": "\"schema-select\" is visible",
+          "result": {
+            "duration": 5.000934839248657,
+            "error_message": [
+              "Assertion Failed: schema-select: expected visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"schema-select\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"schema-select\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\"",
+              "    - tab \"Advanced search\" [selected]",
+              "  - tabpanel:",
+              "    - img",
+              "    - text: \"SD Tooling API: An error occurred (SCHEMA_FETCH_ERROR) Error details are not available\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:180",
+          "name": "\"schema-select\" offers the choices \"DataOfferingShape, ApplicationOfferingShape, InfrastructureOfferingShape\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:181",
+          "name": "I select \"DataOfferingShape\" in \"schema-select\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:182",
+          "name": "\"adv-field-GeneralServiceProperties-name\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:183",
+          "name": "\"adv-field-ProviderInformation-providedBy\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:184",
+          "name": "\"adv-field-OfferingPrice-price-op1\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:185",
+          "name": "\"adv-field-OfferingPrice-price-value1\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:186",
+          "name": "\"adv-field-OfferingPrice-price-op2\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:187",
+          "name": "\"adv-field-OfferingPrice-price-value2\" is visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-35874",
+        "D74"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:190",
+      "name": "With a federated catalogue the form uses the SEARCH schema without a choice",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.1021575927734375e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:191",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 0.7241909503936768,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:192",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-b\"",
+                "value": "catalogue-option-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:155"
+          },
+          "name": "I check \"catalogue-option-catalogue-b\"",
+          "result": {
+            "duration": 5.001338958740234,
+            "error_message": [
+              "Assertion Failed: catalogue-option-catalogue-b: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"catalogue-option-catalogue-b\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"catalogue-option-catalogue-b\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\"",
+              "    - tab \"Advanced search\" [selected]",
+              "  - tabpanel:",
+              "    - img",
+              "    - text: \"SD Tooling API: An error occurred (SCHEMA_FETCH_ERROR) Error details are not available\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:193",
+          "name": "the browser requested \"/api/v2/schemas?schemaType=SEARCH\"",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:194",
+          "name": "\"schema-select\" is not visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:195",
+          "name": "\"adv-field-GeneralServiceProperties-name\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:196",
+          "name": "\"adv-field-OfferingPrice-price-op1\" is visible",
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:197",
+          "name": "\"adv-field-ProviderInformation-providedBy\" is not visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-35874",
+        "D74"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:200",
+      "name": "Unchecking the federated catalogue rebuilds the form",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.316734313964844e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:201",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 0.7258460521697998,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:202",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"catalogue-option-catalogue-b\"",
+                "value": "catalogue-option-catalogue-b"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:155"
+          },
+          "name": "I check \"catalogue-option-catalogue-b\"",
+          "result": {
+            "duration": 5.001379728317261,
+            "error_message": [
+              "Assertion Failed: catalogue-option-catalogue-b: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"catalogue-option-catalogue-b\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"catalogue-option-catalogue-b\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\"",
+              "    - tab \"Advanced search\" [selected]",
+              "  - tabpanel:",
+              "    - img",
+              "    - text: \"SD Tooling API: An error occurred (SCHEMA_FETCH_ERROR) Error details are not available\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:203",
+          "name": "I uncheck \"catalogue-option-catalogue-b\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:204",
+          "name": "\"schema-select\" is visible",
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-35874",
+        "D74"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/search_ui.feature:207",
+      "name": "The advanced form sends only filled fields in the D29 body",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/search_ui.feature:7",
+          "match": {
+            "arguments": [
+              {
+                "name": "user",
+                "original": "\"consumer-a\"",
+                "value": "consumer-a"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:98"
+          },
+          "name": "I am logged in to the UI as \"consumer-a\"",
+          "result": {
+            "duration": 5.078315734863281e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/search_ui.feature:208",
+          "match": {
+            "arguments": [
+              {
+                "name": "tab",
+                "original": "\"advanced-search-tab\"",
+                "value": "advanced-search-tab"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:112"
+          },
+          "name": "I open the \"advanced-search-tab\" tab",
+          "result": {
+            "duration": 0.7254269123077393,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:209",
+          "match": {
+            "arguments": [
+              {
+                "name": "value",
+                "original": "\"DataOfferingShape\"",
+                "value": "DataOfferingShape"
+              },
+              {
+                "name": "testid",
+                "original": "\"schema-select\"",
+                "value": "schema-select"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:171"
+          },
+          "name": "I select \"DataOfferingShape\" in \"schema-select\"",
+          "result": {
+            "duration": 5.001493215560913,
+            "error_message": [
+              "Assertion Failed: schema-select: not visible",
+              "Actual value: None",
+              "Error: element(s) not found ",
+              "Call log:",
+              "  - Expect \"to_be_visible\" get_by_test_id(\"schema-select\") with timeout 5000ms",
+              "  - waiting for get_by_test_id(\"schema-select\")",
+              "",
+              "Aria snapshot:",
+              "- toolbar:",
+              "  - link \"SIMPL Open logo\":",
+              "    - /url: /",
+              "    - img \"SIMPL Open logo\"",
+              "  - textbox \"Search\"",
+              "  - text: Welcome User NAME UN",
+              "  - img",
+              "- main:",
+              "  - heading \"Search federated catalogue\" [level=1]",
+              "  - tablist:",
+              "    - tab \"Quick search\"",
+              "    - tab \"Advanced search\" [selected]",
+              "  - tabpanel:",
+              "    - img",
+              "    - text: \"SD Tooling API: An error occurred (SCHEMA_FETCH_ERROR) Error details are not available\""
+            ],
+            "status": "failed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:210",
+          "name": "I type \"{token}\" into \"adv-field-GeneralServiceProperties-name\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:211",
+          "name": "I select \">=\" in \"adv-field-OfferingPrice-price-op1\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:212",
+          "name": "I type \"50\" into \"adv-field-OfferingPrice-price-value1\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/search_ui.feature:213",
+          "name": "I click \"search-button\"",
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/search_ui.feature:214",
+          "name": "the last advanced search request body is the JSON",
+          "step_type": "then",
+          "text": "{\"catalogueIds\": [\"local\"], \"simpl:GeneralServiceProperties\": {\"name\": \"{token}\"}, \"simpl:OfferingPrice\": {\"price\": {\"op1\": \">=\", \"value1\": 50}}}"
+        }
+      ],
+      "tags": [
+        "SIMPL-35874",
+        "D74",
+        "D29"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/search_ui.feature:2",
+  "name": "Search UI on ui-a",
+  "status": "failed",
+  "tags": [
+    "ui",
+    "bp06",
+    "D70"
+  ]
+}
+]

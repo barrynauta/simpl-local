@@ -31,6 +31,24 @@ SKIP_TAGS                  Comma-separated tags to skip with the reason "missing
                            for example federation,cbe,quality,stub for the upstream stack.
 KEEP_TEST_DATA             true: do not clean up after a scenario (debugging). Default false
 TEST_VERBOSE               true: print every request and response line. Default false
+RUN_WIP                    true: also run scenarios tagged @wip. Default false
+
+UI scenarios (features/ui, tagged @ui; browser lifecycle only for these)
+UI_A_URL                   Base URL of the UI under test. Default http://localhost:18104 (digest 5.1)
+UI_AUTH                    oidc (default): the UI redirects to the identity provider; the suite signs
+                           in on its login page with the user of the Background and USER_PASSWORD
+                           (digest 5.3), with generic locators (label "Username or email" or
+                           "Username", label "Password", button "Sign in" or "Log in").
+                           none: the UI has no sign-in; the user of the Background is only recorded.
+UI_DETAIL_URL              Template of a direct link to the detail page, used by "I open the detail
+                           page of ... in the catalogue ...". Placeholders {ui}, {catalogueId}, {id},
+                           {id_enc}. The digest fixes no detail route (spec gap), so this is
+                           configuration, not an assertion. The default is the address a user
+                           sees after opening a result row in the factory build:
+                           {ui}/details?id={id_enc}&catalogueId={catalogueId}
+UI_TIMEOUT                 Seconds a browser step waits for an element or a state. Default 10
+UI_HEADLESS                true (default): headless Chromium
+UI_SCREENSHOT_DIR          If set, a full-page screenshot of every failed UI scenario goes there
 """
 import os
 import sys
@@ -40,7 +58,7 @@ from behave import register_type
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from support import auth, client, config  # noqa: E402
+from support import auth, browser, client, config  # noqa: E402
 
 
 @parse.with_pattern(r'"[^"]*"')
@@ -80,7 +98,7 @@ def before_scenario(context, scenario):
     context.response = None
     context.saved = {}
     if "wip" in tags and os.environ.get("RUN_WIP", "") != "true":
-        scenario.skip("work in progress (browser steps come in a later step)")
+        scenario.skip("work in progress (@wip; set RUN_WIP=true to run)")
         return
     if cfg.auth_mode == "none" and "rbac" in tags:
         scenario.skip("needs authentication (AUTH_MODE=none)")
@@ -89,9 +107,17 @@ def before_scenario(context, scenario):
         if tag in tags:
             scenario.skip(f"missing in this environment (@{tag})")
             return
+    if "ui" in tags:
+        browser.start(context)
+
+
+def after_all(context):
+    browser.shutdown()
 
 
 def after_scenario(context, scenario):
+    if getattr(context, "ui", None):
+        browser.stop(context, scenario)
     if getattr(context, "cfg", None) is None or context.cfg.keep_data:
         return
     problems = []

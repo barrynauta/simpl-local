@@ -59,6 +59,14 @@ class Config:
         self.skip_tags = [t.strip().lstrip("@") for t in _env("SKIP_TAGS", "").split(",") if t.strip()]
         self.keep_data = _bool("KEEP_TEST_DATA", False)
         self.verbose = _bool("TEST_VERBOSE", False)
+        # UI (features/ui, @ui only)
+        self.ui_auth = _env("UI_AUTH", "oidc").lower()
+        if self.ui_auth not in ("oidc", "none"):
+            raise ValueError("UI_AUTH must be oidc or none")
+        self.ui_timeout_ms = int(float(_env("UI_TIMEOUT", "10")) * 1000)
+        self.ui_headless = _bool("UI_HEADLESS", True)
+        self.ui_screenshot_dir = _env("UI_SCREENSHOT_DIR", "")
+        self.ui_detail_url = _env("UI_DETAIL_URL", "{ui}/details?id={id_enc}&catalogueId={catalogueId}")
 
 
 def _strip_version(url):

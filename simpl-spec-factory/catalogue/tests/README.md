@@ -21,11 +21,12 @@ implementation.
 | `features/api/federation_detail.feature` | Detail through the GA, own and federated, and the Trustor detail operation (D43) |
 | `features/api/cbe_search.feature` | Grouped cbe search, partial failure, per-group paging, quality filters (D38 to D41) |
 | `features/api/cbe_catalogues_detail_schemas.feature` | Catalogue list, QAR, v1 and v2 detail, schemas and quality profile, roles |
-| `features/ui/*.feature` | UI stories and the UI parts of BP06, tagged `@ui @wip`, selectors of digest section 7 |
+| `features/ui/*.feature` | UI stories and the UI parts of BP06, tagged `@ui`, story wording and the selectors of digest section 7 (`@D70`) |
 | `features/steps/common_steps.py` | HTTP, status, problem, field, result and group steps |
 | `features/steps/rd_steps.py` | Build, sign, publish, version, revoke, delete resource descriptions |
 | `features/steps/quality_schema_steps.py` | Quality stub control, QAR upsert, test shapes, schema events |
-| `features/steps/ui_steps.py` | Browser step definitions, pending until the UI test-writer step |
+| `features/steps/ui_steps.py` | Browser steps (Playwright sync API, headless Chromium); locator order in its docstring |
+| `features/support/browser.py` | Browser lifecycle for `@ui` only, request log, fault injection with `page.route`, generic sign-in |
 | `features/support/` | Config, Keycloak tokens, HTTP client, JCS (RFC 8785), D22 signing, RD builder, QAR builder |
 | `fixtures/rd/<Type>.json` | Valid RD templates per resource type (digest 6.7) |
 | `fixtures/rd/broken/*.json` | Changes that break an RD in one way each, with the pipeline step they target |
@@ -61,7 +62,8 @@ log lines, Keycloak users and clients, seed shapes and seed schemas.
 | `@stub` | Calls a stub directly |
 | `@rbac` | Needs real tokens: roles, participants, realms, federation tokens. Skipped with `AUTH_MODE=none` |
 | `@slow` | Waits on a timeout (3 s federation, 10 s quality scoring) |
-| `@wip` | Not run unless `RUN_WIP=true` (all UI scenarios) |
+| `@wip` | Not run unless `RUN_WIP=true` (no scenario carries it at the moment) |
+| `@D70` | UI scenario that uses the `data-testid` values of digest section 7: a failure on a missing test id reads as "different decision" |
 | `@SIMPL-nnnnn` | Story key |
 | `@bp05b`, `@bp06` | Business process |
 | `@openapi-only` | Operation without a story |
@@ -87,6 +89,9 @@ All are documented in the docstring of `features/environment.py`. The main ones:
 | `QMA_A_FEDERATION_SECRET`, `QMA_C_FEDERATION_SECRET` | the secrets of digest 5.2 |
 | `SKIP_TAGS` | empty; comma-separated tags to skip as "missing in this environment" |
 | `HTTP_TIMEOUT` | `30` seconds |
+| `UI_AUTH` | `oidc` (sign in on the identity provider's login page as the Background user) or `none` |
+| `UI_DETAIL_URL` | `{ui}/details?id={id_enc}&catalogueId={catalogueId}` (direct link to a detail page; not fixed by the digest) |
+| `UI_TIMEOUT`, `UI_HEADLESS`, `UI_SCREENSHOT_DIR` | `10` seconds, `true`, empty (no screenshots of failed UI scenarios) |
 | `KEEP_TEST_DATA`, `TEST_VERBOSE`, `RUN_WIP` | `false` |
 
 ## Setup
@@ -95,6 +100,7 @@ All are documented in the docstring of `features/environment.py`. The main ones:
 cd catalogue/tests
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
+.venv/bin/playwright install chromium         # for the @ui scenarios
 .venv/bin/behave --dry-run -f null          # every step defined, no errors
 ```
 
@@ -107,8 +113,33 @@ then:
 .venv/bin/behave -f progress -o reports/factory-progress.txt -f json.pretty -o reports/factory.json -f progress
 ```
 
-Leave out the slow scenarios with `-t ~@slow`. The UI scenarios stay skipped until the browser
-steps exist.
+Leave out the slow scenarios with `-t ~@slow`, the UI scenarios with `-t ~@ui`.
+
+## UI scenarios
+
+`features/ui` runs in headless Chromium through Playwright. Each `@ui` scenario gets a fresh
+browser context; the page opens on the first step that needs it, so "the browser request to ...
+fails" is in place before the UI loads. Setup uses the API Given steps. Locators: story wording
+(roles and labels) first, then the `data-testid` values of digest section 7, then tolerant
+patterns (see the docstring of `ui_steps.py`). "The API fails" is fault injection with
+`page.route`, answering a `500` Problem Details body. Downloads use `page.expect_download`.
+
+```bash
+.venv/bin/behave features/ui -f progress -o reports/build1-ui-progress.txt -f json.pretty -o reports/build1-ui.json -f progress
+```
+
+Against the upstream stack (no sign-in, no client backend, one data space); point the services
+of data spaces B and C and the stubs at a closed port so nothing reaches another stack:
+
+```bash
+UI_A_URL=http://localhost:4321 UI_AUTH=none AUTH_MODE=none CAT_A_URL=http://localhost:8081 \
+QMA_A_URL=http://localhost:8084/v1 CAT_B_URL=http://127.0.0.1:9 QMA_B_URL=http://127.0.0.1:9/v1 \
+QMA_C_URL=http://127.0.0.1:9/v1 CBE_A_URL=http://127.0.0.1:9 SCHEMA_STUB_URL=http://127.0.0.1:9 \
+QUALITY_STUB_URL=http://127.0.0.1:9 HTTP_TIMEOUT=5 UI_TIMEOUT=5 \
+.venv/bin/behave features/ui -f progress -o reports/upstream-ui-progress.txt -f json.pretty -o reports/upstream-ui.json -f progress
+```
+
+Set `UI_SCREENSHOT_DIR` to keep a screenshot of every failed UI scenario.
 
 ## Run against the local upstream stack
 

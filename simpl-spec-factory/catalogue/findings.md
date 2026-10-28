@@ -38,8 +38,32 @@ A separate agent built everything from `specs/` and `spec-digest.md` only, in it
 - **26 further spec gaps** in its build log. Notable: the quality profile has no field for the threshold value; no problem type for a revoke or delete by a non-owner; 400 or 422 for a missing `dct:conformsTo`; whether `@id` values are searchable; the group order; paging fields for a search over several catalogues.
 - **Black-box suite: 458 of 459 API scenarios pass.** The one failure is a real deviation: for a signature whose verification method is not the issuer's, the build checks the key registry first and answers 403 `providerMismatch`, where D14 puts the signature check first (422 `invalidSignature`).
 - **Test-writer bugs found by the first run:** the result lookup did not look inside the `meta` object of list items, and the header check treated `Location` as a comma list. Fixed; no check was weakened. The upstream baseline was run before these fixes.
-- **Not done yet:** the contamination check against upstream, the UI browser steps (step 4), swap tests.
+- **Isolation:** no file access outside its workspace, no web search for Simpl or XFSC code.
+- **Contamination:** 6 of 64 class names are shared with upstream's 299 (the May clones plus the current canonical repositories), all generic or from the OpenAPI (`HealthController`, `SchemaController`, `SearchController`, `SearchService`, `SignatureVerifier`, `VerificationController`); different package (`eu.simpl.catalogue` against `eu.xfsc.fc`); `SignatureVerifier` is 79 lines against 15. Of the build's 257 longer string literals, 42 also occur in upstream code, and every one of them is in the specs or the digest (role names, problem titles, JSON-LD terms). No sign that the build reproduces upstream code.
 
 ### How to read 458 of 459
 
 As with the earlier candidates, both writers used the same decision list, here 83 decisions. The result shows that a component with three backends and federation across data spaces is buildable from the published specs **plus a long written decision list**. It does not show that the published specs are: the core of the catalogue has no stories at all, the contract between Governance Authorities is not published, and the digest had to define three operations itself.
+
+## 2026-10-28: step 4, UI browser steps
+
+The 26 UI scenarios made runnable with Playwright by a fresh agent, which saw the rendered pages only, not the code. Locators: story wording first, then the selectors of digest section 7, then tolerant patterns.
+
+- **Factory build: 26 of 26.** API rerun after the change: 458 passed, 1 failed (the known D14 order deviation).
+- **Local upstream: 0 of 26.** This says little about the upstream UI:
+  - about 18 fail on the selectors of digest section 7 (a different decision, now tagged `@D70`); upstream quick search exists but calls `/api/selfDescriptions`, not `/api/v1`;
+  - newer stories: no catalogue selector (SIMPL-31102, SIMPL-31103), no "minimum score" or "minimum classification" control (SIMPL-29292, SIMPL-29293), no detail route the digest's error cases can use (D75);
+  - environment: no data space B, no client backend, no quality stub (6 scenarios); the advanced tab needs an SD Tooling service that the local stack does not have.
+- **Setup by publishing the digest's signed descriptions to upstream worked**: upstream accepts them (it checks no signatures).
+- **Test-writer changes:** a tab must be opened before its page indicator is checked; the schema choice compares as a set, since neither SIMPL-35874 nor D74 fixes order or label form; the "empty quality filters" scenario now checks that no filter parameter is sent; waits for option lists.
+- **Story wording too vague for a strict locator:** the stories quote almost no labels (only "Quick Search Tab", "Advanced Search", "the Search button", "minimum score", "minimum classification"); the digest gives no route for the detail page; "every property" (D75) does not say how JSON-LD paths are shown.
+
+## 2026-10-28: step 5, swap experiments
+
+Each joint crossed on its own, configuration only. Details and commands: [`experiments/swap/`](./experiments/swap/README.md).
+
+- **Quick search, advanced search and the resource description itself cross every joint**: the build's adapter on upstream's catalogue backend, upstream's adapter on the build's catalogue backend, the build's client backend on upstream's adapter, the build UI on upstream's backends and the upstream UI on the build's.
+- **Suite over the crossed combinations:** build adapter on upstream catalogue 39 of 63; upstream adapter on build catalogue 20 of 63 (on its own catalogue 11 of 46); build client backend on upstream 55 of 68; build UI on upstream 21 of 26. The upstream UI on the build does the same calls as on its own stack, with the same results.
+- **One contract point:** the OpenAPI enum for the status is `active` and `revoked`; the build follows it, upstream's catalogue only accepts upper case and answers 400. This alone is 17 of the 24 failures of the first combination.
+- **The rest is newer stories and error handling:** quality scores and filters and the detail lookup through the Governance Authority are not in the May code; upstream answers with `iana:` problem types or plain JSON errors, and its adapter does not pass the token on every call.
+- **Lesson:** as for the Schema Manager, the API contract holds better than the suite numbers suggest. Where the build and upstream differ, the build follows the current OpenAPI and upstream follows its own earlier version.

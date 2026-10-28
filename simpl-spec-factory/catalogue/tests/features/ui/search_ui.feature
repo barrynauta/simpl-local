@@ -1,7 +1,7 @@
-@ui @wip @bp06
+@ui @bp06 @D70
 Feature: Search UI on ui-a
   Quick and advanced search, catalogue selection, quality filters and result tabs. Selectors
-  of digest section 7. Behaviour of D71 to D74. The browser steps come in a later step.
+  of digest section 7. Behaviour of D71 to D74.
 
   Background:
     Given I am logged in to the UI as "consumer-a"
@@ -99,6 +99,8 @@ Feature: Search UI on ui-a
     And I type "{token}" into "search-input"
     And I click "search-button"
     Then the browser requested "/api/v1/selfDescriptions?q={token}"
+    And no browser request to "/api/v1/selfDescriptions" had the parameter "minimumScore"
+    And no browser request to "/api/v1/selfDescriptions" had the parameter "minimumClassification"
     And "results-panel-catalogue-a" shows the result row of "green"
 
   @SIMPL-29293 @D72 @D54
@@ -166,7 +168,8 @@ Feature: Search UI on ui-a
     And I type "{token}" into "search-input"
     And I click "search-button"
     Then "page-indicator-catalogue-a" shows the text "Page 1 of 1"
-    And "page-indicator-catalogue-b" shows the text "Page 1 of 1"
+    When I click "results-tab-catalogue-b"
+    Then "page-indicator-catalogue-b" shows the text "Page 1 of 1"
 
   # ------------------------------------------------------------------ advanced form (D74)
 
@@ -174,7 +177,7 @@ Feature: Search UI on ui-a
   Scenario: With only the own catalogue the user picks a RESOURCE schema
     When I open the "advanced-search-tab" tab
     Then "schema-select" is visible
-    And "schema-select" has the options "DataOfferingShape, ApplicationOfferingShape, InfrastructureOfferingShape" in this order
+    And "schema-select" offers the choices "DataOfferingShape, ApplicationOfferingShape, InfrastructureOfferingShape"
     When I select "DataOfferingShape" in "schema-select"
     Then "adv-field-GeneralServiceProperties-name" is visible
     And "adv-field-ProviderInformation-providedBy" is visible
