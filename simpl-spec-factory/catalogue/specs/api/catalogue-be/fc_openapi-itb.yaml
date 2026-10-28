@@ -1,0 +1,2508 @@
+openapi: 3.0.2
+security:
+  - jwt: []
+info:
+  title: Eclipse XFSC Federated Catalogue
+  description: >
+    This REST API allows to manage Self-Descriptions, Queries, Schemas and Sessions related the           
+    Catalogue.       
+    It also provides an endpoint for receiving webhooks about schema lifecycle events from the Schema Manager. 
+
+    ## Authentication & Authorization      
+    
+    This component is designed to work behind the Tier 2 gateway which can ensure      
+    that only authenticated and authorized requests reach the Catalogue.       
+    Therefore, the API itself does not implement authentication and authorization enforcement but relies on the Tier 2 gateway for this.
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  contact:
+    name: Simpl Programme
+    email: cnect-simpl@ec.europa.eu
+    url: https://simpl-programme.ec.europa.eu/
+  version: 1.0.0
+servers:
+  - url: "https://authority.be.authority01.sandbox-cat-dat.simpl-europe.eu/fc/v1"
+    description: Configurable server
+
+components:
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:resourceNotFound
+            href: https://www.belgif.be/specification/rest/api-guide/problems/resourceNotFound.html
+            title: Not Found
+            status: 404
+            detail: The requested resource was not found.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174003
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:unauthorized
+            href: https://www.belgif.be/specification/rest/api-guide/problems/unauthorized.html
+            title: Unauthorized
+            status: 401
+            detail: The request lacks valid authentication credentials.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174001
+    Forbidden:
+      description: >-
+        Forbidden. The user does not have the permission to execute this
+        request.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:forbidden
+            href: https://www.belgif.be/specification/rest/api-guide/problems/forbidden.html
+            title: Forbidden
+            status: 403
+            detail: The authenticated user does not have permission to perform this operation.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174002
+    ServerError:
+      description: >-
+        May contain hints how to solve the error or indicate what went wrong at
+        the server. Must not outline any information about the internal
+        structure of the server.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:internalServerError
+            href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+            title: Internal Server Error
+            status: 500
+            detail: An unexpected error occurred on the server.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174004
+    QualityAssessmentRecordNotFound:
+      $ref: ./common/common-components-itb.yaml#/components/responses/QualityAssessmentRecordNotFound
+    QualityAssessmentRecordUnauthorized:
+      $ref: ./common/common-components-itb.yaml#/components/responses/QualityAssessmentRecordUnauthorized
+    QualityAssessmentRecordForbidden:
+      $ref: ./common/common-components-itb.yaml#/components/responses/QualityAssessmentRecordForbidden
+    QualityAssessmentRecordServerError:
+      $ref: ./common/common-components-itb.yaml#/components/responses/QualityAssessmentRecordServerError
+    ClientError:
+      description: >-
+        May contain hints how to solve the error or indicate what was wrong in
+        the request.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:badRequest
+            href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+            title: Bad Request
+            status: 400
+            detail: The input message is incorrect. See error details for hints.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    Conflict:
+      description: HTTP Conflict 409
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:conflict
+            href: https://www.belgif.be/specification/rest/api-guide/problems/conflict.html
+            title: Conflict
+            status: 409
+            detail: The resource already exists or conflicts with an existing resource.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174005
+    Unprocessible:
+      description: HTTP Unprocessible Entity 422
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:unprocessableEntity
+            href: https://www.belgif.be/specification/rest/api-guide/problems/unprocessableEntity.html
+            title: Unprocessable Entity
+            status: 422
+            detail: The request content is semantically incorrect or violates business rules.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174006
+    NotAcceptable:
+      description: Not Acceptable
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:notAcceptable
+            href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+            title: Not Acceptable
+            status: 406
+            detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    UnsupportedMediaType:
+      description: Unsupported Media Type
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:unsupportedMediaType
+            href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+            title: Unsupported Media Type
+            status: 415
+            detail: Server refused to accept the request because the message content format is not supported.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  schemas:
+    Problem:
+      description: |
+        A Problem Details object (RFC 9457).
+        Additional properties specific to the problem type may be present.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the problem type
+        href:
+          type: string
+          format: uri
+          description: An absolute URI that, when dereferenced, provides human-readable documentation for the problem type.
+        title:
+          type: string
+          description: A short summary of the problem type.
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          exclusiveMaximum: true
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem
+        instance:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the specific occurrence of the problem.
+    Statement:
+      type: object
+      properties:
+        statement:
+          type: string
+          example: Match (m:Movie) where m.released > 2000 RETURN m
+        parameters:
+          $ref: '#/components/schemas/Parameters'
+      required:
+        - statement
+    #      discriminator:
+    #        propertyName: type
+    #        mapping:
+    #          as: "#/components/schemas/AnnotatedStatement"
+    Parameters:
+      type: object
+      additionalProperties:
+        type: object
+      example:
+        name: "John"
+        limit: 10
+        offset: 5
+    Result:
+      type: object
+      additionalProperties:
+        type: object
+    QueryLanguage:
+      type: string
+      enum:
+        - OPENCYPHER
+        - SPARQL
+        - GRAPHQL
+      default: OPENCYPHER
+    AnnotatedStatement:
+      allOf:
+        - $ref: '#/components/schemas/Statement'
+        - type: object
+          properties:
+            servers:
+              type: array
+              uniqueItems: true
+              items:
+                type: string
+                description: known catalog servers already queried in distributed search scenario
+            annotations:
+              type: object
+              additionalProperties:
+                type: object
+                description: additional properties to tune query execution
+              example:
+                queryLanguage: SPARQL
+                timeout: 30
+                withTotalCount: false
+    VerificationResult:
+      type: object
+      properties:
+        verificationTimestamp:
+          type: string
+          format : date-time
+        lifecycleStatus: #!! is not known when verifying external SDs -> Julius: You are supposed to compute the status (active, invalid, etc.) from the available information. That is the result of the validation. Maybe rename to just status
+          type: string # does the self-description have a lifecycle status in this catalogue?
+          description: Lifecycle-state an SD would get, if it would be added to the catalogue.
+        issuer: #!! Is this the participant? -> Julius: Yes, the participant that created the SD
+          type: string # contains the id of the issuers self-description if available  #!! NOT FURTHER SPECIFIED
+          description: ID of the issues Self-Description, if available.
+        issuedDateTime:
+          type: string
+          format: date-time
+        validatorDids:
+          type: array
+          items:
+            type: string
+            description: The dids of validators, having signed parts of the Self-Description
+      required:
+        - verificationTimestamp
+        - lifecycleStatus #!! is not known when verifying external SDs. Remove from required -> Julius: You are supposed to compute the status (active, invalid, etc.) from the available information. That is the result of the validation. Maybe rename to just status
+        - issuer #!! Comment on issuer: if available, but still required?? Remove from required -> Julius: required
+        - issuedDateTime
+        - validatorDids
+    Role: #!! Changed Role from an object with a single String property to simply a String
+      type: string
+      example: Ro-MU-CA
+    Session:
+      type: object
+      properties:
+        userId:
+          type: string
+        creationDatetime:
+          type: string
+          format: date-time
+        status: #!! What is a status?
+          type: string
+        #        seed: #!! We must have a seed to do pagination, user must be able to set it? -> Julius: ok
+        #          type: string
+        roleIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+    SelfDescription:
+      type: object
+      properties:
+        sdHash:
+          type: string
+        id: #!! Added id / credentialSubject
+          type: string
+        status:
+          $ref: '#/components/schemas/SelfDescriptionStatus'
+        issuer:
+          type: string
+        validatorDids:
+          description: >-
+            The credentialSubjects of the parties that validated (parts of) the
+            Self-Description
+          type: array
+          items:
+            type: string
+        uploadDatetime:
+          type: string
+          format: date-time
+          example: '2022-03-01T13:00:00Z'
+          description: The time stamp (ISO8601) when the SD was uploaded.
+        statusDatetime:
+          type: string
+          format: date-time
+          example: '2022-05-11T15:30:00Z'
+          description: >-
+            The last time stamp (ISO8601) the status changed (for this
+            Catalogue)
+        resourceKey:
+          type: string
+          description: Stable identifier for the resource across versions.
+        currentVersion:
+          type: integer
+          description: Version number of this resource description.
+    SelfDescriptionPublicationResponse:
+      $ref: ./common/common-components-itb.yaml#/components/schemas/SelfDescriptionPublicationResponse
+    SelfDescriptionQualityAssessment:
+      $ref: ./common/common-components-itb.yaml#/components/schemas/SelfDescriptionQualityAssessment
+    SelfDescriptionQualityRuleResult:
+      $ref: ./common/common-components-itb.yaml#/components/schemas/SelfDescriptionQualityRuleResult
+    SelfDescriptionQualityDimensionResult:
+      $ref: ./common/common-components-itb.yaml#/components/schemas/SelfDescriptionQualityDimensionResult
+    SelfDescriptionQualityOverallResult:
+      $ref: ./common/common-components-itb.yaml#/components/schemas/SelfDescriptionQualityOverallResult
+    SelfDescriptionQualityStatus:
+      $ref: ./common/common-components-itb.yaml#/components/schemas/SelfDescriptionQualityStatus
+    QualityAssessmentRecord:
+      $ref: ./common/common-components-itb.yaml#/components/schemas/QualityAssessmentRecord
+    SelfDescriptionStatus:
+      type: string
+      enum:
+        - active
+        - revoked
+    SelfDescriptionResult:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/SelfDescription'
+        content:
+          type: string
+    OntologySchema:
+      type: object
+      properties:
+        ontologies:
+          description: 'SchemaIds of ontologies, defining the terms of a schema'
+          type: array
+          items:
+            type: string
+            example: schemaId
+        shapes:
+          description: 'SchemaIds of shapes (SHACL Shapes Constraint Language) used to validate instances against the schema.'
+          type: array
+          items:
+            type: string
+            example: schemaId
+        vocabularies:
+          description: 'SchemaIds of controlled vocabularies used in the schema'
+          type: array
+          items:
+            type: string
+            example: schemaId
+    ResultPage:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+    SelfDescriptions:
+      allOf:
+        - $ref: '#/components/schemas/ResultPage'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/SelfDescriptionResult'
+    Results:
+      allOf:
+        - $ref: '#/components/schemas/ResultPage'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Result'
+    SearchResponsePayload:
+      allOf:
+        - $ref: '#/components/schemas/ResultPage'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  n:
+                    type: object
+                    properties:
+                      claimsGraphUri:
+                        type: array
+                        items:
+                          type: string
+                      offeringType:
+                        type: string
+                        nullable: true
+                      name:
+                        type: string
+                        nullable: true
+                      inLanguage:
+                        type: string
+                        nullable: true
+                      description:
+                        type: string
+                        nullable: true
+                      serviceAccessPoint:
+                        type: string
+                        nullable: true
+                      overallScore:
+                        type: number
+                        format: double
+                        nullable: true
+                      overallClassification:
+                        type: string
+                        nullable: true
+              example:
+                - n:
+                    claimsGraphUri:
+                      - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                    offeringType: infrastructure
+                    name: text title for infrastructure resource.
+                    inLanguage: da
+                    description: text description
+                    serviceAccessPoint: http://serviceaccesspoint.com
+                    overallScore: 0.92
+                    overallClassification: Green
+                - n:
+                    claimsGraphUri:
+                      - did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_235
+                    offeringType: data
+                    name: asset 004
+                    description: asset description
+                    inLanguage: en
+                    serviceAccessPoint: https://sd-ui.dev.simpl-europe.eu
+                    overallScore: null
+                    overallClassification: null
+    WebhookEventType:
+      type: string
+      enum:
+        - SchemaPublished
+        - SchemaRevoked
+      description: Type of schema lifecycle event
+    SchemaCategoryStatus:
+      type: string
+      enum:
+        - PUBLISHED
+        - REVOKED
+      description: Status of the schema in the catalogue
+    EventDataSchema:
+      type: object
+      properties:
+        name: 
+          type: string
+          description: Schema name
+        uri:
+          type: string
+          description: Schema base URI
+        title:
+          type: string
+        description:
+          type: string
+        resourceType:
+          type: string
+        status:
+          $ref: '#/components/schemas/SchemaCategoryStatus'
+      required:
+        - uri
+        - title
+        - status
+    EventDataVersion:
+      type: object
+      properties:
+        uri:
+          type: string
+          description: Version-specific schema URI
+        version:
+          type: string
+        changelog:
+          type: string
+        created:
+          type: string
+          format: date-time
+    EventData:
+      type: object
+      properties:
+        schema:
+          $ref: '#/components/schemas/EventDataSchema'
+        version:
+          $ref: '#/components/schemas/EventDataVersion'
+          description: Present for SchemaPublished; omitted for SchemaRevoked
+      required:
+        - schema
+    SchemaChangeEvent:
+      type: object
+      description: Event payload sent by the Schema Manager when a schema is published or revoked
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          description: Unique identifier of the event
+        eventType:
+          $ref: '#/components/schemas/WebhookEventType'
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          $ref: '#/components/schemas/EventData'
+      required:
+        - eventId
+        - eventType
+        - timestamp
+        - data
+  parameters:
+    OffsetParam:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      required: false
+      description: The number of items to skip before starting to collect the result set.
+    LimitParam:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 100
+      required: false
+      description: The number of items to return.
+    OrderByParam:
+      in: query
+      name: orderBy
+      schema:
+        type: string
+      required: false
+      description: Results will be sorted by this field.
+    AscendingParam:
+      in: query
+      name: ascending
+      schema:
+        type: boolean
+        default: true
+      required: false
+      description: Ascending/Descending ordering.
+    StatusParam:
+      in: query
+      name: status
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/SelfDescriptionStatus'
+      explode: false
+      required: false
+      description: SelfDescription statuses
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+  - name: SelfDescriptions
+    description: >-
+      Retrieving Self-Descriptions from the Catalogue. All Self-Descriptions are
+      JSON-LD files. They are referenced by their sha256 hash. Catalogues
+      synchronize by downloading changesets (lists of hashes) from known other
+      Catalogues and reading the full Self-Descriptions of entries that are
+      unknown to them.
+    externalDocs:
+      description: Find out more
+      url: http://gaiax.io
+  - name: Query
+    description: Send graph queries to this Catalogue.
+  - name: Schemas
+    description: >-
+      The format of the self-descriptions are defined by schemas in the
+      catalogue. Here you get information about the latest schema.
+  - name: Verification
+    description: The Catalogue provides a verification service for e.g. checking the syntax
+  - name: Session
+    description: Management for auth sessions in the catalogue
+  - name: Webhooks
+    description: Inbound webhooks for schema lifecycle events from the Schema Manager
+paths:
+  /selfDescriptions/quickSearch:
+    get:
+      tags:
+        - SelfDescriptions
+      description: |-
+        **Required ABAC roles (any one of):** `CATALOGUE_SEARCHER`, `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      operationId: selfDescriptionsQuickSearchGet
+      summary: Quick search active Resource Descriptions.
+      parameters:
+        - name: searchTerm
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: minimumScore
+          in: query
+          required: false
+          schema:
+            type: number
+            format: double
+          description: Optional. Minimum overall quality score. Must be >= 0.
+        - name: minimumClassification
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional. Minimum overall quality classification from the active MQP.
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - name: User-Attributes
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search response with active Resource Description quality summary fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponsePayload'
+              example:
+                totalCount: 2
+                items:
+                  - n:
+                      claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                      offeringType: infrastructure
+                      name: text title for infrastructure resource.
+                      inLanguage: da
+                      description: text description
+                      serviceAccessPoint: http://serviceaccesspoint.com
+                      overallScore: 0.92
+                      overallClassification: Green
+                  - n:
+                      claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_235
+                      offeringType: data
+                      name: asset 004
+                      description: asset description
+                      inLanguage: en
+                      serviceAccessPoint: https://sd-ui.dev.simpl-europe.eu
+                      overallScore: null
+                      overallClassification: null
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnBadRequestInvalidMinimumScore:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumScore must be greater than or equal to 0.
+                returnBadRequestInvalidMinimumClassification:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumClassification is not a supported quality classification value.
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /selfDescriptions/advancedSearch:
+    post:
+      tags:
+        - SelfDescriptions
+      operationId: selfDescriptionsAdvancedSearchPost
+      summary: Advanced search active Resource Descriptions.
+      description: |-
+        Optional root fields minimumScore (>= 0) and minimumClassification may be included to filter by quality assessment results.
+
+        **Required ABAC roles (any one of):** `CATALOGUE_SEARCHER`, `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      parameters:
+        - name: User-Attributes
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+            examples:
+              returnValidResponse:
+                value:
+                  simpl:GeneralServiceProperties:
+                    name: asset002
+              returnValidResponseWithQualityFilters:
+                value:
+                  minimumScore: 75
+                  minimumClassification: good
+                  simpl:GeneralServiceProperties:
+                    name: asset002
+      responses:
+        '200':
+          description: Search response with active Resource Description quality summary fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponsePayload'
+              example:
+                totalCount: 2
+                items:
+                  - n:
+                      claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                      offeringType: infrastructure
+                      name: text title for infrastructure resource.
+                      inLanguage: da
+                      description: text description
+                      serviceAccessPoint: http://serviceaccesspoint.com
+                      overallScore: 0.92
+                      overallClassification: Green
+                  - n:
+                      claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_235
+                      offeringType: data
+                      name: asset 004
+                      description: asset description
+                      inLanguage: en
+                      serviceAccessPoint: https://sd-ui.dev.simpl-europe.eu
+                      overallScore: null
+                      overallClassification: null
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnBadRequestInvalidMinimumScore:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumScore must be greater than or equal to 0.
+                returnBadRequestInvalidMinimumClassification:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumClassification is not a supported quality classification value.
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /selfDescriptions:
+    get:
+      tags:
+        - SelfDescriptions
+      summary: Get the list of metadata of Self-Descriptions in the Catalogue
+      description: |-
+        **Required ABAC roles (any one of):** `CATALOGUE_SEARCHER`, `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      operationId: readSelfDescriptions
+      parameters: #!! Added filter parameters for all(?) metadata fields
+        - name: uploadTimerange
+          in: query
+          description: >-
+            Filter for the time range when the Self-Description was uploaded to
+            the catalogue. The time range has to be specified as start time and
+            end time as ISO8601 timestamp separated by a `/`.
+          required: false
+          example: 2022-03-01T13:00:00Z/2022-05-11T15:30:00Z
+          schema:
+            type: string
+        - name: statusTimerange
+          in: query
+          description: >-
+            Filter for the time range when the status of the Self-Description
+            was last changed in the catalogue. The time range has to be
+            specified as start time and end time as ISO8601 timestamp separated
+            by a `/`.
+          required: false
+          example: 2022-03-01T13:00:00Z/2022-05-11T15:30:00Z
+          schema:
+            type: string
+        - name: issuer
+          in: query
+          description: >-
+            Filter for the issuer of the Self-Description. This is the unique ID
+            of the Participant that has prepared the Self-Description.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          explode: false
+        - name: validatorDids
+          in: query
+          description: >-
+            Filter for a validator of the Self-Description. This is the unique
+            ID of the Participant that validated (part of) the Self-Description.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          explode: false
+        - name: status
+          in: query
+          description: Filter for the status of the Self-Description.
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/SelfDescriptionStatus'
+          explode: false
+        - name: id
+          in: query
+          description: Filter for a id/credentialSubject of the Self-Description.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          explode: false
+        - name: sdHash
+          in: query
+          description: Filter for a hash of the Self-Description.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          explode: false
+        - name: providedBy
+          in: query
+          description: Filter for Self-Descriptions by provider identifier from the providedBy field.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          explode: false
+        - name: withMeta
+          in: query
+          description: To add Self-Description Metadata to response or not.
+          required: false
+          schema:
+            type: boolean
+            default: true
+        - name: withContent
+          in: query
+          description: To add Self-Description Content to response or not.
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: offset
+          in: query
+          required: false
+          description: The number of items to skip before starting to collect the result set.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          description: The number of items to return.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        '200':
+          description: List of meta data of available Self-Descriptions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SelfDescriptions'
+              example:
+                totalCount: 1
+                items:
+                  - meta:
+                      sdHash: "a3f8b2c1d4e5f67890abcdef1234567890abcdef1234567890abcdef12345678"
+                      id: "did:web:registry.simpl-europe.eu:Participant:ExampleCompany"
+                      status: active
+                      issuer: "did:web:registry.simpl-europe.eu:Participant:ExampleCompany"
+                      validatorDids:
+                        - "did:web:registry.simpl-europe.eu:Participant:ValidatorOrg"
+                      uploadDatetime: "2024-01-15T10:30:00Z"
+                      statusDatetime: "2024-01-15T10:30:00Z"
+                    content: '{"@context": "https://www.w3.org/2018/credentials/v1", "@type": "VerifiableCredential"}'
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    post:
+      tags:
+        - SelfDescriptions
+      summary: Add a new Service-Offering SelfDescription to the catalogue
+      description: |-
+        **Required ABAC roles (any one of):** `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      operationId: addSelfDescription
+      requestBody:
+        description: The new SelfDescription
+        content:
+          application/json:
+            schema:
+              type: string
+            example: '{"@context": ["https://www.w3.org/2018/credentials/v1", "https://w3id.org/security/suites/jws-2020/v1"], "@type": "VerifiableCredential", "issuer": "did:web:registry.simpl-europe.eu:Participant:ExampleCompany", "credentialSubject": {"@id": "did:web:registry.simpl-europe.eu:DataOffering:example-offering-001", "@type": "simpl:DataOffering", "simpl:name": "Example Data Offering"}}'
+        required: true
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the added Self-Description.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SelfDescriptionPublicationResponse'
+              example:
+                sdHash: "a3f8b2c1d4e5f67890abcdef1234567890abcdef1234567890abcdef12345678"
+                id: "did:web:registry.simpl-europe.eu:Participant:ExampleCompany"
+                status: active
+                issuer: "did:web:registry.simpl-europe.eu:Participant:ExampleCompany"
+                validatorDids:
+                  - "did:web:registry.simpl-europe.eu:Participant:ValidatorOrg"
+                uploadDatetime: "2024-01-15T10:30:00Z"
+                statusDatetime: "2024-01-15T10:30:00Z"
+                qualityAssessment:
+                  rules:
+                    - id: "urn:rule:completeness"
+                      name: "Completeness required fields"
+                      status: PASSED
+                    - id: "urn:rule:accuracy"
+                      name: "Accuracy mandatory checks"
+                      status: FAILED
+                  dimensions:
+                    - name: "Completeness"
+                      score: 0.91
+                      classification: "Green"
+                      thresholdStatus: PASSED
+                    - name: "Accuracy"
+                      score: 0.64
+                      classification: "Red"
+                  overall:
+                    score: 0.78
+                    classification: "Yellow"
+                    thresholdStatus: PASSED
+        '202':
+          description: The request was accepted but the validation is not finished yet.
+          headers:
+            Location:
+              description: The URL of the status page.
+              schema:
+                type: string
+            Retry-After:
+              description: >-
+                The delay the client have to wait before requesting the status
+                page.
+              schema:
+                type: integer
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /selfDescriptions/resource:
+    post:
+      tags:
+        - SelfDescriptions
+      summary: Add a new Resource SelfDescription to the catalogue
+      description: |-
+        **Required ABAC roles (any one of):** `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      operationId: addResource
+      requestBody:
+        description: The new Resource SelfDescription
+        content:
+          application/json:
+            schema:
+              type: string
+            example: '{"@context": ["https://www.w3.org/2018/credentials/v1", "https://w3id.org/security/suites/jws-2020/v1"], "@type": "VerifiableCredential", "issuer": "did:web:registry.simpl-europe.eu:Participant:ExampleCompany", "credentialSubject": {"@id": "did:web:registry.simpl-europe.eu:DataOffering:example-offering-001", "@type": "simpl:DataOffering", "simpl:name": "Example Data Offering"}}'
+        required: true
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the added Self-Description.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SelfDescription'
+              example:
+                sdHash: "a3f8b2c1d4e5f67890abcdef1234567890abcdef1234567890abcdef12345678"
+                id: "did:web:registry.simpl-europe.eu:Participant:ExampleCompany"
+                status: active
+                issuer: "did:web:registry.simpl-europe.eu:Participant:ExampleCompany"
+                validatorDids:
+                  - "did:web:registry.simpl-europe.eu:Participant:ValidatorOrg"
+                uploadDatetime: "2024-01-15T10:30:00Z"
+                statusDatetime: "2024-01-15T10:30:00Z"
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /selfDescriptions/{selfDescriptionId}:
+    get:
+      tags:
+        - SelfDescriptions
+      summary: >-
+        Read a Self-Description by its id. This returns the content of the
+        self-description.
+      description: |-
+        Returns a single Self-Description
+
+        **Required ABAC roles (any one of):** `CATALOGUE_SEARCHER`, `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      operationId: readSelfDescriptionById
+      parameters:
+        - name: selfDescriptionId
+          in: path
+          description: id of the SelfDescription
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The requested SelfDescription
+          content:
+            application/json:
+              schema:
+                type: string
+              example: '{"@context": ["https://www.w3.org/2018/credentials/v1", "https://w3id.org/security/suites/jws-2020/v1"], "@type": "VerifiableCredential", "issuer": "did:web:registry.simpl-europe.eu:Participant:ExampleCompany", "credentialSubject": {"@id": "did:web:registry.simpl-europe.eu:DataOffering:example-offering-001", "@type": "simpl:DataOffering", "simpl:name": "Example Data Offering"}}'
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /selfDescriptions/{selfDescriptionId}/qualityAssessmentRecord:
+    get:
+      tags:
+        - SelfDescriptions
+      summary: Retrieve the Quality Assessment Record for a Self-Description.
+      description: >-
+        Returns the full JSON-LD Quality Assessment Record associated with the
+        specified Self-Description. A 204 response indicates that the
+        Self-Description exists but no Quality Assessment Record is available.
+
+        **Required ABAC roles (any one of):** `CATALOGUE_SEARCHER`, `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      operationId: readSelfDescriptionQualityAssessmentRecord
+      parameters:
+        - name: selfDescriptionId
+          in: path
+          description: Identifier of the Self-Description whose Quality Assessment Record is requested.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The Quality Assessment Record associated with the Self-Description.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualityAssessmentRecord'
+              example:
+                  '@context':
+                    '@vocab': https://w3id.org/simpl/quality#
+                    simpl: https://w3id.org/simpl#
+                    dct: http://purl.org/dc/terms/
+                  '@graph':
+                  - '@id': did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+                    '@type': simpl:DataOffering
+                    simpl:name: Example Data Offering
+                    dct:description: Example resource description assessed by the Quality Scoring Service.
+                  - '@id': urn:simpl:quality:profile:metadata-quality-profile
+                    '@type': MetadataQualityProfile
+                    simpl:profileVersion: 1.0.0
+                    name: SIMPL Metadata Quality Profile
+                  - '@id': urn:simpl:quality:dimension:completeness
+                    '@type': QualityDimension
+                    name: Completeness
+                    weight: 0.4
+                  - '@id': urn:simpl:quality:dimension-score:completeness
+                    '@type': DimensionScore
+                    dimension: urn:simpl:quality:dimension:completeness
+                    score: 1.0
+                    maxScore: 1.0
+                  - '@id': urn:simpl:quality:self-description-score:example-offering-001
+                    '@type': SelfDescriptionScore
+                    computedOn: did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+                    dimensionScores:
+                    - urn:simpl:quality:dimension-score:completeness
+                    score: 1.0
+                    maxScore: 1.0
+                  - '@id': urn:simpl:quality:rule-evaluation:required-name
+                    '@type': RuleEvaluation
+                    evaluatedAgainst: urn:simpl:quality:profile:metadata-quality-profile
+                    computedOn: did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+                    dimension: urn:simpl:quality:dimension:completeness
+                    result: passed
+                    score: 1.0
+                  - '@id': urn:uuid:2b9d4a84-13a8-46ac-94f0-4a5e7e4b6e70
+                    '@type': QualityAssessmentRecord
+                    computedOn: did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+                    evaluatedAgainst: urn:simpl:quality:profile:metadata-quality-profile
+                    profileVersion: 1.0.0
+                    evaluationId: 7a67c5b1-2575-49c5-a0e8-9dfb6e7f0d28
+                    correlationId: a931c6fb-7840-485e-a864-7c86b5fb6783
+                    assessmentDate: '2024-01-15T10:30:00Z'
+                    selfDescriptionScore: urn:simpl:quality:self-description-score:example-offering-001
+                    ruleEvaluations:
+                    - urn:simpl:quality:rule-evaluation:required-name
+        '204':
+          description: The Self-Description exists but no Quality Assessment Record is available.
+        '401':
+          $ref: '#/components/responses/QualityAssessmentRecordUnauthorized'
+        '403':
+          $ref: '#/components/responses/QualityAssessmentRecordForbidden'
+        '404':
+          $ref: '#/components/responses/QualityAssessmentRecordNotFound'
+        '500':
+          $ref: '#/components/responses/QualityAssessmentRecordServerError'
+    post:
+      tags:
+        - SelfDescriptions
+      summary: Create or replace the Quality Assessment Record for a Self-Description.
+      description: |-
+        Creates or replaces the Quality Assessment Record for the specified Self-Description.
+
+        **Required ABAC roles:** N/A
+      operationId: upsertSelfDescriptionQualityAssessmentRecord
+      parameters:
+        - name: selfDescriptionId
+          in: path
+          description: Identifier of the Self-Description whose Quality Assessment Record is stored.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: JSON-LD Quality Assessment Record produced by the Quality Scoring component.
+        required: true
+        content:
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/QualityAssessmentRecord'
+            example:
+              '@context':
+                '@vocab': https://w3id.org/simpl/quality#
+                simpl: https://w3id.org/simpl#
+              '@graph':
+                - '@id': urn:uuid:2b9d4a84-13a8-46ac-94f0-4a5e7e4b6e70
+                  '@type': QualityAssessmentRecord
+                  computedOn: did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+                  evaluatedAgainst: urn:simpl:quality:profile:metadata-quality-profile
+                  profileVersion: 1.2.0
+                  evaluationId: 7a67c5b1-2575-49c5-a0e8-9dfb6e7f0d28
+                  correlationId: a931c6fb-7840-485e-a864-7c86b5fb6783
+                  assessmentDate: '2026-08-18T12:30:00Z'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QualityAssessmentRecord'
+            example:
+              '@context':
+                '@vocab': https://w3id.org/simpl/quality#
+                simpl: https://w3id.org/simpl#
+              '@graph':
+                - '@id': urn:uuid:2b9d4a84-13a8-46ac-94f0-4a5e7e4b6e70
+                  '@type': QualityAssessmentRecord
+                  computedOn: did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+                  evaluatedAgainst: urn:simpl:quality:profile:metadata-quality-profile
+                  profileVersion: 1.2.0
+                  evaluationId: 7a67c5b1-2575-49c5-a0e8-9dfb6e7f0d28
+                  correlationId: a931c6fb-7840-485e-a864-7c86b5fb6783
+                  assessmentDate: '2026-08-18T12:30:00Z'
+      responses:
+        '200':
+          description: Quality Assessment Record stored successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+              example:
+                status: ACCEPTED
+        '400':
+          description: Invalid Quality Assessment Record.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:catalogue:invalidInput
+                title: Invalid input
+                status: 400
+                detail: The Quality Assessment Record must contain a non-empty graph with an id and type for every item.
+        '401':
+          $ref: '#/components/responses/QualityAssessmentRecordUnauthorized'
+        '403':
+          $ref: '#/components/responses/QualityAssessmentRecordForbidden'
+        '404':
+          $ref: '#/components/responses/QualityAssessmentRecordNotFound'
+        '500':
+          $ref: '#/components/responses/QualityAssessmentRecordServerError'
+  /selfDescriptions/{selfDescriptionId}/versions:
+    get:
+      tags:
+        - SelfDescriptions
+      summary: Read other Self-Description versions by id.
+      description: |-
+        Returns all versions except the requested Self-Description.
+
+        **Required ABAC roles (any one of):** `CATALOGUE_SEARCHER`, `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      operationId: readSelfDescriptionVersionsById
+      parameters:
+        - name: selfDescriptionId
+          in: path
+          description: id of the parent SelfDescription
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number (1-based). Must be greater than 0.
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          description: Number of items per page. Must be greater than 0.
+      responses:
+        '200':
+          description: The requested SelfDescription
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 2
+                    items:
+                      - n:
+                          claimsGraphUri:
+                            - "did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126"
+                          offeringType: "infrastructure"
+                          name: "text title for infrastructure resource."
+                          inLanguage: "en"
+                          description: "text description"
+                          serviceAccessPoint: "http://serviceaccesspoint.com"
+                      - n:
+                          claimsGraphUri:
+                            - "did:web:registry.gaia-x.eu:InfrastructureOffering:9988f06c-a12d-5555-aaee-gggcd8a66789"
+                          offeringType: "infrastructure"
+                          name: "SD for infrastructure resource."
+                          description: "asset description"
+                          inLanguage: "en"
+                          serviceAccessPoint: "https://sd-ui.dev.simpl-europe.eu"
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426616573000
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /selfDescriptions/{selfDescriptionHash}:
+    delete:
+      tags:
+        - SelfDescriptions
+      summary: Completely delete a self-description
+      description: |-
+        **Required ABAC roles (any one of):** `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      operationId: deleteSelfDescription
+      parameters:
+        - name: selfDescriptionHash
+          in: path
+          description: Hash of the SelfDescription
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /selfDescriptions/{selfDescriptionId}/revoke:
+    post:
+      tags:
+        - SelfDescriptions
+      summary: Change the lifecycle state of a SelfDescription to revoked.
+      description: |-
+        **Required ABAC roles (any one of):** `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      operationId: updateSelfDescription
+      parameters:
+        - name: selfDescriptionId
+          in: path
+          description: Id of the SelfDescription
+          required: true
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: User-Attributes
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Revoked
+          headers:
+            Location:
+              description: URL of the added SelfDescription
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SelfDescription'
+              example:
+                sdHash: "a3f8b2c1d4e5f67890abcdef1234567890abcdef1234567890abcdef12345678"
+                id: "did:web:registry.simpl-europe.eu:Participant:ExampleCompany"
+                status: revoked
+                issuer: "did:web:registry.simpl-europe.eu:Participant:ExampleCompany"
+                validatorDids:
+                  - "did:web:registry.simpl-europe.eu:Participant:ValidatorOrg"
+                uploadDatetime: "2024-01-15T10:30:00Z"
+                statusDatetime: "2024-01-15T11:00:00Z"
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /query: #!! Suggestion: rename to query, and allow only a single query. If multiple queries are ever added in the future, add an endpoint queries. -> Julius: ok
+    get:
+      tags:
+        - Query
+      summary: Retrieve an HTML website to send openCypher queries to the Catalogue
+      description: |-
+        **Required ABAC roles (any one of):** `CATALOGUE_SEARCHER`, `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      operationId: queryWebsite
+      responses:
+        '200':
+          description: HTML document that contains a query field for openCypher queries.
+          headers:
+            Vary:
+              description: Indicates the response varies based on Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            text/html:
+              schema:
+                type: string
+              example: "<html><body><h1>Query Interface</h1><form method=\"post\" action=\"/v1/query\"><textarea name=\"query\" placeholder=\"MATCH (n) RETURN n LIMIT 10\"></textarea><button type=\"submit\">Run Query</button></form></body></html>"
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    post:
+      tags:
+        - Query
+      summary: Send a query to the Catalogue
+      description: |-
+        **Required ABAC roles (any one of):** `CATALOGUE_SEARCHER`, `DATA_PROVIDER_PUBLISHER`, `APP_PROVIDER_PUBLISHER`, `INFRA_PROVIDER_PUBLISHER`
+      operationId: query
+      parameters:
+        - in: query
+          name: queryLanguage
+          schema:
+            $ref: '#/components/schemas/QueryLanguage'
+          required: false
+        - in: query
+          name: timeout
+          schema:
+            type: integer
+            default: 5
+          required: false
+        - in: query
+          name: withTotalCount
+          schema:
+            type: boolean
+            default: true
+          required: false
+      requestBody:
+        description: >-
+          JSON object to send queries. Use "application/json" for openCypher
+          queries. A Catalogue may also support the other content types
+          depending on its supported query languages but only "application/json"
+          is mandatory.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Statement'
+            example:
+              statement: "MATCH (n) RETURN n LIMIT 10"
+              parameters: {}
+      responses:
+        '200':
+          description: successful query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Results'
+              example:
+                totalCount: 1
+                items:
+                  - n:
+                      id: "did:web:registry.simpl-europe.eu:Participant:ExampleCompany"
+                      labels:
+                        - Participant
+                      properties:
+                        name: "Example Company"
+        '400': ## Malformed Message: The receveived request cannot be processed, either because its syntax is ## incorrect or forbidden query clauses are used. For instance, it is not allowed to manipulate data ## through the query endpoint
+          $ref: '#/components/responses/ClientError'
+        '408': ## Query Timeout: the query took longer than the configured timeout
+          ## interval. The client needs to rewrite the query so it can be
+          ## processed faster.
+          $ref: '#/components/responses/ServerError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /schemas:
+    get:
+      tags:
+        - Schemas
+      summary: 'Get the full list of ontologies, shapes and vocabularies.'
+      description: |-
+        The schema identifiers, returned by this endpoint can be used to download the schema files.
+
+        **Required RBAC roles (any one of):** `GA_SCHEMA_VIEWER`, `GA_SCHEMA_ADMIN`
+      operationId: getSchemas
+      x-simpl-roles:
+        - GA_SCHEMA_VIEWER
+        - GA_SCHEMA_ADMIN
+      responses:
+        '200':
+          description: 'References to ontologies, shapes and vocabularies.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OntologySchema'
+              example:
+                ontologies:
+                  - "https://example.org/schemas/my-ontology"
+                shapes:
+                  - "https://example.org/schemas/my-shape"
+                vocabularies:
+                  - "https://example.org/schemas/my-vocabulary"
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    post:
+      tags:
+        - Schemas
+      summary: 'Add a new Schema to the catalogue.'
+      description: |-
+        This endpoint accepts either an ontology (OWL file), shape (SHACL file) or controlled vocabulary (SKOS file), which is added to the schemas of the catalogue.
+
+        **Required RBAC roles:** N/A
+      operationId: addSchema
+      x-simpl-roles: []
+      requestBody:
+        description: 'The file of the new schema. either an ontology (OWL file), shape (SHACL file) or controlled vocabulary (SKOS file).'
+        content:
+          application/rdf+xml:
+            schema:
+              type: string
+              description: 'OWL file describing the ontology of the schema or SKOS file describing the controlled vocabulary.'
+            example: |
+              <?xml version="1.0"?>
+              <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:owl="http://www.w3.org/2002/07/owl#">
+                <owl:Ontology rdf:about="https://example.org/schemas/my-ontology"/>
+              </rdf:RDF>
+          application/ld+json:
+            schema:
+              type: string
+              description: 'OWL or SHACL file describing the ontology.'
+            example:
+              "@context": "https://www.w3.org/ns/owl.jsonld"
+              "@type": "owl:Ontology"
+              "@id": "https://example.org/schemas/my-ontology"
+          application/json:
+            schema:
+              type: string
+              description: 'OWL or SHACL file describing the ontology.'
+            example:
+              "@context": "https://www.w3.org/ns/owl.jsonld"
+              "@type": "owl:Ontology"
+              "@id": "https://example.org/schemas/my-ontology"
+          text/turtle:
+            schema:
+              type: string
+              description: 'SHACL file describing the ontology of the schema.'
+            example: |
+              @prefix owl: <http://www.w3.org/2002/07/owl#> .
+              @prefix sh: <http://www.w3.org/ns/shacl#> .
+              @prefix ex: <https://example.org/> .
+              ex:MyShape a sh:NodeShape ; sh:targetClass ex:MyClass .
+        required: true
+      responses:
+        '201':
+          description: 'Created'
+          headers:
+            Location:
+              description: 'URL of the added Schema.'
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /schemas/latest:
+    get:
+      tags:
+        - Schemas
+      summary: 'Get the latest schema for a given type. If no term is specified, then the composite schema is returned.'
+      description: |-
+        **Required RBAC roles (any one of):** `GA_SCHEMA_VIEWER`, `GA_SCHEMA_ADMIN`
+      operationId: getLatestSchema
+      x-simpl-roles:
+        - GA_SCHEMA_VIEWER
+        - GA_SCHEMA_ADMIN
+      parameters:
+        - name: type
+          in: query
+          description: 'Type of the schema.'
+          required: true
+          schema:
+            type: string
+            enum:
+              - ontology
+              - shape
+              - vocabulary
+        - name: term
+          in: query
+          description: 'The URI of the term of the requested Self-Description schema e.g. `http://w3id.org/gaia-x/service#ServiceOffering`'
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'The latest schemas for the given type or term.'
+          headers:
+            Vary:
+              description: Indicates the response varies based on Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/rdf+xml:
+              schema:
+                type: string
+                description: 'OWL file describing the ontology of the schema or SKOS file describing the controlled vocabulary.'
+              example: |
+                <?xml version="1.0"?>
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:owl="http://www.w3.org/2002/07/owl#">
+                  <owl:Ontology rdf:about="https://example.org/schemas/my-ontology"/>
+                </rdf:RDF>
+            text/turtle:
+              schema:
+                type: string
+                description: 'SHACL file describing the ontology of the schema.'
+              example: |
+                @prefix sh: <http://www.w3.org/ns/shacl#> .
+                @prefix ex: <https://example.org/> .
+                ex:MyShape a sh:NodeShape ; sh:targetClass ex:MyClass .
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /schemas/{schemaId}:
+    get:
+      tags:
+        - Schemas
+      summary: Get a specific schema.
+      description: |-
+        **Required RBAC roles (any one of):** `GA_SCHEMA_VIEWER`, `GA_SCHEMA_ADMIN`
+      operationId: getSchema
+      x-simpl-roles:
+        - GA_SCHEMA_VIEWER
+        - GA_SCHEMA_ADMIN
+      parameters:
+        - name: schemaId
+          in: path
+          description: 'Identifier of the Schema.'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'The schema for the given identifier. Depending on the type of the schema, either an ontology, shape graph or controlled vocabulary is returned.'
+          headers:
+            Vary:
+              description: Indicates the response varies based on Accept header.
+              schema:
+                type: string
+                example: Accept
+          content:
+            application/rdf+xml:
+              schema:
+                type: string
+                description: 'OWL file describing the ontology of the schema or SKOS file describing the controlled vocabulary.'
+              example: |
+                <?xml version="1.0"?>
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:owl="http://www.w3.org/2002/07/owl#">
+                  <owl:Ontology rdf:about="https://example.org/schemas/my-ontology"/>
+                </rdf:RDF>
+            text/turtle:
+              schema:
+                type: string
+                description: 'SHACL file describing the ontology of the schema.'
+              example: |
+                @prefix sh: <http://www.w3.org/ns/shacl#> .
+                @prefix ex: <https://example.org/> .
+                ex:MyShape a sh:NodeShape ; sh:targetClass ex:MyClass .
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags:
+        - Schemas
+      summary: 'Replace a schema. This is only allowed for ontologies with the same IRI.'
+      description: |-
+        **Required RBAC roles:** N/A
+      operationId: updateSchema
+      x-simpl-roles: []
+      parameters:
+        - name: schemaId
+          in: path
+          description: 'Identifier of the Schema.'
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: 'The new ontology (OWL file).'
+        content:
+          application/rdf+xml:
+            schema:
+              type: string
+              description: 'OWL file describing the ontology.'
+            example: |
+              <?xml version="1.0"?>
+              <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:owl="http://www.w3.org/2002/07/owl#">
+                <owl:Ontology rdf:about="https://example.org/schemas/my-ontology"/>
+              </rdf:RDF>
+          application/ld+json:
+            schema:
+              type: string
+              description: 'OWL or SHACL file describing the ontology.'
+            example:
+              "@context": "https://www.w3.org/ns/owl.jsonld"
+              "@type": "owl:Ontology"
+              "@id": "https://example.org/schemas/my-ontology"
+          application/json:
+            schema:
+              type: string
+              description: 'OWL or SHACL file describing the ontology.'
+            example:
+              "@context": "https://www.w3.org/ns/owl.jsonld"
+              "@type": "owl:Ontology"
+              "@id": "https://example.org/schemas/my-ontology"
+          text/turtle:
+            schema:
+              type: string
+              description: 'SHACL file describing the ontology of the schema.'
+            example: |
+              @prefix owl: <http://www.w3.org/2002/07/owl#> .
+              @prefix sh: <http://www.w3.org/ns/shacl#> .
+              @prefix ex: <https://example.org/> .
+              ex:MyShape a sh:NodeShape ; sh:targetClass ex:MyClass .
+        required: true
+      responses:
+        '200':
+          description: 'Updated.'
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    delete:
+      tags:
+        - Schemas
+      summary: 'Delete a Schema'
+      description: |-
+        **Required RBAC roles:** N/A
+      operationId: deleteSchema
+      x-simpl-roles: []
+      parameters:
+        - name: schemaId
+          in: path
+          description: 'Identifier of the Schema'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Deleted Schema'
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /schemas/{schemaName}/recalcQualityScore:
+    post:
+      tags:
+        - Schemas
+      summary: Trigger quality score recalculation for a schema.
+      description: |-
+        Acknowledges a request to recalculate quality scores for all Resource Descriptions linked to the schema.
+
+        **Required RBAC roles:** N/A
+      operationId: triggerQualityScoreRecalculation
+      x-simpl-roles: []
+      parameters:
+        - name: schemaName
+          in: path
+          description: Name of the schema whose linked Resource Descriptions must be rescored.
+          required: true
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 64
+            pattern: '^[A-Z][A-Za-z0-9]{2,63}$'
+      requestBody:
+        description: Metadata Quality Profile version that triggered the recalculation.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - profileVersion
+              properties:
+                profileVersion:
+                  type: string
+                profileId:
+                  type: string
+            example:
+              profileVersion: 1.2.0
+              profileId: urn:simpl:mqp:DataOfferingShape:1.2.0
+      responses:
+        '202':
+          description: Recalculation request accepted for asynchronous processing.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - schemaName
+                  - profileVersion
+                  - estimatedResourceCount
+                properties:
+                  status:
+                    type: string
+                  schemaName:
+                    type: string
+                  profileVersion:
+                    type: string
+                  estimatedResourceCount:
+                    type: integer
+              example:
+                status: ACCEPTED
+                schemaName: DataOfferingShape
+                profileVersion: 1.2.0
+                estimatedResourceCount: 1250
+        '400':
+          description: Invalid schema name or request body.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:catalogue:invalidInput
+                title: Invalid input
+                status: 400
+                detail: schemaName 'data offering shape' is invalid. Must be PascalCase alphanumeric, 3-64 characters.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: The schema or its active Metadata Quality Profile was not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                schemaNotFound:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:schemaNotFound
+                    title: Schema not found
+                    status: 404
+                    detail: Schema 'UnknownShape' could not be resolved.
+                activeQualityProfileNotFound:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:activeQualityProfileNotFound
+                    title: Active quality profile not found
+                    status: 404
+                    detail: No active Metadata Quality Profile is linked to schema 'DataOfferingShape'.
+        '500':
+          description: Recalculation request processing failed.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                detail: An unexpected error occurred on the server.
+  /verification:
+    get:
+      tags:
+        - Verification
+      summary: Show a HTML page to verify (portions of) a signed Self-Description
+      description: |-
+        **Required RBAC roles:** N/A
+      operationId: verifyPage
+      x-simpl-roles: []
+      responses:
+        '200':
+          description: >-
+            HTML document that contains a query field to verify (portions of)
+            Self-Descriptions.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: "<html><body><h1>Verification Interface</h1><form method=\"post\" action=\"/v1/verification\"><textarea name=\"sd\" placeholder=\"Paste your JSON-LD Self-Description here\"></textarea><button type=\"submit\">Verify</button></form></body></html>"
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    post:
+      tags:
+        - Verification
+      summary: >-
+        Send a JSON-LD document to verify with the information from the
+        Catalogue
+      description: |-
+        **Required RBAC roles:** N/A
+      operationId: verify
+      x-simpl-roles: []
+      parameters:
+        - name: verifySemantics
+          in: query
+          description: 'To verify SD semantics or not'
+          required: false
+          schema:
+            type: boolean
+            default: true
+        - name: verifySchema
+          in: query
+          description: 'To verify SD agains schema or not'
+          required: false
+          schema:
+            type: boolean
+            default: true
+        - name: verifyVPSignature
+          in: query
+          description: 'To verify VP signature or not'
+          required: false
+          schema:
+            type: boolean
+            default: true
+        - name: verifyVCSignature
+          in: query
+          description: 'To verify VC signature or not'
+          required: false
+          schema:
+            type: boolean
+            default: true
+      requestBody:
+        description: >-
+          JSON-LD document to be verified object to send queries. Use
+          "application/json" for openCypher queries. A Catalogue may also
+          support the other content   types  depending   on   its   supported  
+          query  languages   but   only "application/json" is mandatory.
+        content:
+          application/json:
+            schema:
+              type: string
+              example: {
+                "@context": [
+                  "https://www.w3.org/2018/credentials/v1",
+                  "https://w3id.org/security/suites/jws-2020/v1"
+                ],
+                "credentialSubject": {
+                  "@context": {
+                    "gax-validation": "http://w3id.org/gaia-x/validation#",
+                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                    "sh": "http://www.w3.org/ns/shacl#",
+                    "simpl": "http://w3id.org/gaia-x/simpl#",
+                    "skos": "http://www.w3.org/2004/02/skos/core#",
+                    "xsd": "http://www.w3.org/2001/XMLSchema#"
+                  },
+                  "@id": "did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe_PRG_01345",
+                  "rdf:type": {
+                    "@id": "simpl:DataOffering"
+                  },
+                  "simpl:billingSchema": {
+                    "rdf:type": {
+                      "@id": "simpl:BillingSchema"
+                    },
+                    "simpl:billingSchemaDocument": "Billing Schema 1",
+                    "simpl:billingSchemaHashAlg": "SHA-256",
+                    "simpl:billingSchemaHashValue": "7cf87b4138c3d4ca015ba54ccc21c2e879a1eaa60e0979859484550aaa76bded",
+                    "simpl:billingSchemaURL": "https://files.dev.simpl-europe.eu/static/pdf/BillingSchema1.pdf"
+                  },
+                  "simpl:contractTemplate": {
+                    "rdf:type": {
+                      "@id": "simpl:ContractTemplate"
+                    },
+                    "simpl:contractTemplateDocument": "Contract Template 1",
+                    "simpl:contractTemplateHashAlg": "SHA-256",
+                    "simpl:contractTemplateHashValue": "27883d9aec35ab16a3934e6581ed1b7f1b16feb75ead991c07ceff2e4a96fe58",
+                    "simpl:contractTemplateURL": "https://files.dev.simpl-europe.eu/static/pdf/ContractTemplate1.pdf"
+                  },
+                  "simpl:dataProperties": {
+                    "rdf:type": {
+                      "@id": "simpl:DataProperties"
+                    },
+                    "simpl:format": "test"
+                  },
+                  "simpl:edcRegistration": {
+                    "simpl:accessPolicyId": "12b5f80d-ec90-43bc-9d7c-ad1a2f5e0d7e",
+                    "simpl:assetId": "2764f7d9-8044-407e-9eb4-d166c5d1eb85",
+                    "simpl:contractDefinitionId": "ff23a62e-26f7-4a0d-b709-09c8ebe22cb2",
+                    "simpl:servicePolicyId": "82c09c5c-eed9-4865-9a9f-6534cc84dd4a"
+                  },
+                  "simpl:generalServiceProperties": {
+                    "rdf:type": {
+                      "@id": "simpl:GeneralServiceProperties"
+                    },
+                    "simpl:description": "asset description",
+                    "simpl:inLanguage": "en",
+                    "simpl:name": "specialOne",
+                    "simpl:offeringType": "data",
+                    "simpl:serviceAccessPoint": {
+                      "@type": "xsd:anyURI",
+                      "@value": "https://sd-ui.dev.simpl-europe.eu"
+                    }
+                  },
+                  "simpl:offeringPrice": {
+                    "rdf:type": {
+                      "@id": "simpl:OfferingPrice"
+                    },
+                    "simpl:currency": "EUR",
+                    "simpl:license": {
+                      "@type": "xsd:anyURI",
+                      "@value": "https://sd-ui.dev.simpl-europe.eu"
+                    },
+                    "simpl:price": {
+                      "@type": "xsd:decimal",
+                      "@value": 10000
+                    },
+                    "simpl:priceType": "free"
+                  },
+                  "simpl:providerInformation": {
+                    "rdf:type": {
+                      "@id": "simpl:ProviderInformation"
+                    },
+                    "simpl:contact": "test@test.com",
+                    "simpl:providedBy": "test",
+                    "simpl:signature": "test"
+                  },
+                  "simpl:servicePolicy": {
+                    "rdf:type": {
+                      "@id": "simpl:ServicePolicy"
+                    },
+                    "simpl:access-policy": "{\"profile\":\"http://www.w3.org/ns/odrl/2/odrl.jsonld\",\"target\":\"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe\",\"assigner\":{\"uid\":\"participant_id_0001\",\"role\":\"http://www.w3.org/ns/odrl/2/assigner\"},\"uid\":\"a5bedff0-e3e3-4806-8c83-9a97002fae4e\",\"@context\":\"http://www.w3.org/ns/odrl.jsonld\",\"@type\":\"Set\",\"permission\":[{\"target\":\"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe\",\"assignee\":{\"uid\":\"CONSUMER\",\"role\":\"http://www.w3.org/ns/odrl/2/assignee\"},\"action\":[\"http://simpl.eu/odrl/actions/search\"],\"constraint\":[]}]}",
+                    "simpl:usage-policy": "{\"profile\":\"http://www.w3.org/ns/odrl/2/odrl.jsonld\",\"target\":\"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe\",\"assigner\":{\"uid\":\"participant_id_0001\",\"role\":\"http://www.w3.org/ns/odrl/2/assigner\"},\"uid\":\"47b65a0c-d19d-4350-9225-13208ef649ff\",\"@context\":\"http://www.w3.org/ns/odrl.jsonld\",\"@type\":\"Set\",\"permission\":[{\"target\":\"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe\",\"assignee\":{\"uid\":\"CONSUMER\",\"role\":\"http://www.w3.org/ns/odrl/2/assignee\"},\"action\":[\"http://www.w3.org/ns/odrl/2/use\"],\"constraint\":[{\"leftOperand\":\"http://www.w3.org/ns/odrl/2/deletion\",\"operator\":\"http://www.w3.org/ns/odrl/2/eq\",\"rightOperand\":\"after_use\"}]}]}"
+                  },
+                  "simpl:slaAgreements": {
+                    "rdf:type": {
+                      "@id": "simpl:SlaAgreements"
+                    },
+                    "simpl:slaAgreementsDocument": "Sla Agreements 1",
+                    "simpl:slaAgreementsHashAlg": "SHA-256",
+                    "simpl:slaAgreementsHashValue": "a75b83855522208dfb134f559447c8ca5864c6dc1d705c26f9b735ba175e26fe",
+                    "simpl:slaAgreementsURL": "https://files.dev.simpl-europe.eu/static/pdf/SLAAgreement1.pdf"
+                  },
+                  "simpl:edcConnector": {
+                    "simpl:providerEndpointURL": "https://edc-provider.dev.simpl-europe.eu"
+                  }
+                },
+                "issuanceDate": "2024-11-21T12:24:20.208904119Z",
+                "issuer": "did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia2lkIjoiZ2FpYS14LWtleTEiLCJrdHkiOiJPS1AiLCJ4IjoiNmNiMXJwb3RkTDNzbk8wbjZ3bXpRWUJXeFhiUVFRTWFlQUFlNHJMMFRGNCJ9",
+                "proof": {
+                  "created": "2024-11-21T12:24:20.217892237Z",
+                  "jws": "eyJhbGciOiJVbmRlZmluZWQiLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdfQ..ASIhxdYXcRXqX2NfWuuxgPtOmGCQ19gzpTlRK1h-mNyEiq3pXKkE__8esoQj-bi_gphLNlxhIebUlTo5eIgCCA",
+                  "proofPurpose": "assertionMethod",
+                  "type": "JsonWebSignature2020",
+                  "verificationMethod": "did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia2lkIjoiZ2FpYS14LWtleTEiLCJrdHkiOiJPS1AiLCJ4IjoiNmNiMXJwb3RkTDNzbk8wbjZ3bXpRWUJXeFhiUVFRTWFlQUFlNHJMMFRGNCJ9#0"
+                },
+                "type": "VerifiableCredential"
+              }
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResult'
+              example:
+                verificationTimestamp: "2024-01-15T10:30:00Z"
+                lifecycleStatus: active
+                issuer: "did:web:registry.simpl-europe.eu:Participant:ExampleCompany"
+                issuedDateTime: "2024-01-10T08:00:00Z"
+                validatorDids:
+                  - "did:web:registry.simpl-europe.eu:Participant:ValidatorOrg"
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '422':
+          $ref: '#/components/responses/Unprocessible'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /session: #!! Changed to singular, since a user has only 1 session, and the get response is only one session.
+    get:
+      tags:
+        - Session
+      description: |-
+        **Required RBAC roles:** N/A
+      operationId: getCurrentSession
+      x-simpl-roles: []
+      responses:
+        '200':
+          description: Get information on the current session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+              example:
+                userId: "ExampleCompany-John-Doe"
+                creationDatetime: "2024-01-15T09:00:00Z"
+                status: active
+                roleIds:
+                  - "Ro-MU-CA"
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's proactive negotiation headers.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    delete: #!! This should be an implementation detail, logout is SSO-system dependent
+      tags:
+        - Session
+      description: |-
+        **Required RBAC roles:** N/A
+      operationId: logoutCurrentSession
+      x-simpl-roles: []
+      responses:
+        '200':
+          description: The current session was closed
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /webhooks/schemaEvents:
+    post:
+      tags:
+        - Webhooks
+      summary: Receive schema lifecycle events from the Schema Manager
+      description: >-
+        Called by the Schema Manager when a schema is published or revoked.
+        Request body is a SchemaChangeEvent.
+
+        **Required RBAC roles:** N/A
+      operationId: receiveSchemaChangeEvent
+      x-simpl-roles: []
+      security: []
+      requestBody:
+        description: Schema publish or revoke event
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemaChangeEvent'
+            example:
+              eventId: "123e4567-e89b-12d3-a456-426614174000"
+              eventType: SchemaPublished
+              timestamp: "2026-02-26T14:00:00Z"
+              data:
+                schema:
+                  uri: "https://example.org/schemas/my-schema"
+                  title: "My Schema"
+                  description: "Example schema for the catalogue"
+                  resourceType: "Shape"
+                  status: PUBLISHED
+                version:
+                  uri: "https://example.org/schemas/my-schema/v1"
+                  version: "1"
+                  changelog: "Initial release"
+                  created: "2026-02-26T14:00:00Z"
+      responses:
+        '200':
+          description: Event received successfully
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                title: Bad Request
+                status: 400
+                detail: The request body is invalid or does not conform to the SchemaChangeEvent schema.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+                title: Internal Server Error
+                status: 500
+                detail: Internal Server Error
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000

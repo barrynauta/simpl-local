@@ -1,0 +1,166 @@
+openapi: 3.0.2
+info:
+  title: Eclipse XFSC Federated Catalogue
+  description: "This REST API allows to manage Self-Descriptions, Queries, Schemas and Sessions\
+    \ related the            Catalogue.        It also provides an endpoint for receiving webhooks about schema lifecycle\
+    \ events from the Schema Manager. \n## Authentication & Authorization      \nThis component is designed to work behind\
+    \ the Tier 2 gateway which can ensure       that only authenticated and authorized requests reach the Catalogue.     \
+    \   Therefore, the API itself does not implement authentication and authorization enforcement but relies on the Tier 2\
+    \ gateway for this.\n"
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: '{baseUrl}'
+  description: Configurable server
+  variables:
+    baseUrl:
+      default: https://authority.be.authority01.sandbox-cat-dat.simpl-europe.eu/fc
+security:
+- OAuth2Auth: []
+tags:
+- name: SelfDescriptions
+  description: Retrieving Self-Descriptions from the Catalogue. All Self-Descriptions are JSON-LD files. They are referenced
+    by their sha256 hash. Catalogues synchronize by downloading changesets (lists of hashes) from known other Catalogues and
+    reading the full Self-Descriptions of entries that are unknown to them.
+  externalDocs:
+    description: Find out more
+    url: http://gaiax.io
+- name: Query
+  description: Send graph queries to this Catalogue.
+- name: Schemas
+  description: The format of the self-descriptions are defined by schemas in the catalogue. Here you get information about
+    the latest schema.
+- name: Verification
+  description: The Catalogue provides a verification service for e.g. checking the syntax
+- name: Session
+  description: Management for auth sessions in the catalogue
+- name: Webhooks
+  description: Inbound webhooks for schema lifecycle events from the Schema Manager
+paths:
+  /query:
+    $ref: ./tier2-gateway/t2-fc-openapi.yaml#/paths/~1query
+  /schemas:
+    $ref: ./tier1-gateway/t1-fc-openapi.yaml#/paths/~1schemas
+  /schemas/latest:
+    $ref: ./tier1-gateway/t1-fc-openapi.yaml#/paths/~1schemas~1latest
+  /schemas/{schemaId}:
+    $ref: ./tier1-gateway/t1-fc-openapi.yaml#/paths/~1schemas~1{schemaId}
+  /schemas/{schemaName}/recalcQualityScore:
+    $ref: ./tier1-gateway/t1-fc-openapi.yaml#/paths/~1schemas~1{schemaName}~1recalcQualityScore
+  /self-descriptions:
+    $ref: ./tier2-gateway/t2-fc-openapi.yaml#/paths/~1self-descriptions
+  /self-descriptions/resource:
+    $ref: ./tier2-gateway/t2-fc-openapi.yaml#/paths/~1self-descriptions~1resource
+  /self-descriptions/{selfDescriptionId}:
+    $ref: ./tier2-gateway/t2-fc-openapi.yaml#/paths/~1self-descriptions~1{selfDescriptionId}
+  /self-descriptions/{selfDescriptionId}/qualityAssessmentRecord:
+    $ref: ./tier2-gateway/t2-fc-openapi.yaml#/paths/~1self-descriptions~1{selfDescriptionId}~1qualityAssessmentRecord
+  /self-descriptions/{selfDescriptionId}/revoke:
+    $ref: ./tier2-gateway/t2-fc-openapi.yaml#/paths/~1self-descriptions~1{selfDescriptionId}~1revoke
+  /self-descriptions/{selfDescriptionId}/versions:
+    $ref: ./tier2-gateway/t2-fc-openapi.yaml#/paths/~1self-descriptions~1{selfDescriptionId}~1versions
+  /selfDescriptions/quickSearch:
+    $ref: ./tier2-gateway/t2-fc-openapi.yaml#/paths/~1selfDescriptions~1quickSearch
+  /selfDescriptions/advancedSearch:
+    $ref: ./tier2-gateway/t2-fc-openapi.yaml#/paths/~1selfDescriptions~1advancedSearch
+  /self-descriptions/{self_description_hash}:
+    $ref: ./tier2-gateway/t2-fc-openapi.yaml#/paths/~1self-descriptions~1{self_description_hash}
+  /session:
+    $ref: ./tier1-gateway/t1-fc-openapi.yaml#/paths/~1session
+  /verification:
+    $ref: ./tier1-gateway/t1-fc-openapi.yaml#/paths/~1verification
+  /webhooks/schema-events:
+    $ref: ./tier1-gateway/t1-fc-openapi.yaml#/paths/~1webhooks~1schema-events
+components:
+  schemas:
+    Error:
+      $ref: ./common/common-components.yaml#/components/schemas/Error
+    Problem:
+      $ref: ./common/common-components.yaml#/components/schemas/Problem
+    Statement:
+      $ref: ./common/common-components.yaml#/components/schemas/Statement
+    Parameters:
+      $ref: ./common/common-components.yaml#/components/schemas/Parameters
+    Result:
+      $ref: ./common/common-components.yaml#/components/schemas/Result
+    QueryLanguage:
+      $ref: ./common/common-components.yaml#/components/schemas/QueryLanguage
+    AnnotatedStatement:
+      $ref: ./common/common-components.yaml#/components/schemas/AnnotatedStatement
+    VerificationResult:
+      $ref: ./common/common-components.yaml#/components/schemas/VerificationResult
+    Session:
+      $ref: ./common/common-components.yaml#/components/schemas/Session
+    SelfDescription:
+      $ref: ./common/common-components.yaml#/components/schemas/SelfDescription
+    SelfDescriptionPublicationResponse:
+      $ref: ./common/common-components.yaml#/components/schemas/SelfDescriptionPublicationResponse
+    SelfDescriptionQualityAssessment:
+      $ref: ./common/common-components.yaml#/components/schemas/SelfDescriptionQualityAssessment
+    SelfDescriptionQualityRuleResult:
+      $ref: ./common/common-components.yaml#/components/schemas/SelfDescriptionQualityRuleResult
+    SelfDescriptionQualityDimensionResult:
+      $ref: ./common/common-components.yaml#/components/schemas/SelfDescriptionQualityDimensionResult
+    SelfDescriptionQualityOverallResult:
+      $ref: ./common/common-components.yaml#/components/schemas/SelfDescriptionQualityOverallResult
+    SelfDescriptionQualityStatus:
+      $ref: ./common/common-components.yaml#/components/schemas/SelfDescriptionQualityStatus
+    QualityAssessmentRecord:
+      $ref: ./common/common-components.yaml#/components/schemas/QualityAssessmentRecord
+    SelfDescriptionStatus:
+      $ref: ./common/common-components.yaml#/components/schemas/SelfDescriptionStatus
+    SelfDescriptionResult:
+      $ref: ./common/common-components.yaml#/components/schemas/SelfDescriptionResult
+    OntologySchema:
+      $ref: ./common/common-components.yaml#/components/schemas/OntologySchema
+    ResultPage:
+      $ref: ./common/common-components.yaml#/components/schemas/ResultPage
+    SelfDescriptions:
+      $ref: ./common/common-components.yaml#/components/schemas/SelfDescriptions
+    Results:
+      $ref: ./common/common-components.yaml#/components/schemas/Results
+    SearchResponsePayload:
+      $ref: ./common/common-components.yaml#/components/schemas/SearchResponsePayload
+    WebhookEventType:
+      $ref: ./common/common-components.yaml#/components/schemas/WebhookEventType
+    SchemaCategoryStatus:
+      $ref: ./common/common-components.yaml#/components/schemas/SchemaCategoryStatus
+    EventDataSchema:
+      $ref: ./common/common-components.yaml#/components/schemas/EventDataSchema
+    EventDataVersion:
+      $ref: ./common/common-components.yaml#/components/schemas/EventDataVersion
+    EventData:
+      $ref: ./common/common-components.yaml#/components/schemas/EventData
+    SchemaChangeEvent:
+      $ref: ./common/common-components.yaml#/components/schemas/SchemaChangeEvent
+  responses:
+    NotFound:
+      $ref: ./common/common-components.yaml#/components/responses/NotFound
+    Unauthorized:
+      $ref: ./common/common-components.yaml#/components/responses/Unauthorized
+    Forbidden:
+      $ref: ./common/common-components.yaml#/components/responses/Forbidden
+    ServerError:
+      $ref: ./common/common-components.yaml#/components/responses/ServerError
+    ClientError:
+      $ref: ./common/common-components.yaml#/components/responses/ClientError
+    Conflict:
+      $ref: ./common/common-components.yaml#/components/responses/Conflict
+    Unprocessible:
+      $ref: ./common/common-components.yaml#/components/responses/Unprocessible
+  parameters:
+    OffsetParam:
+      $ref: ./common/common-components.yaml#/components/parameters/OffsetParam
+    LimitParam:
+      $ref: ./common/common-components.yaml#/components/parameters/LimitParam
+    OrderByParam:
+      $ref: ./common/common-components.yaml#/components/parameters/OrderByParam
+    AscendingParam:
+      $ref: ./common/common-components.yaml#/components/parameters/AscendingParam
+    StatusParam:
+      $ref: ./common/common-components.yaml#/components/parameters/StatusParam
+  securitySchemes:
+    jwt:
+      $ref: ./common/common-components.yaml#/components/securitySchemes/jwt

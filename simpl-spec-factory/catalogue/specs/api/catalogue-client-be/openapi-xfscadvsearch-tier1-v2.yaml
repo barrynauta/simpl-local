@@ -1,0 +1,1045 @@
+info:
+  title: Catalog Search API
+  description: |-
+    These APIs enable the discovery of self-descriptions within a federated catalog, supporting two search modes: simple keyword-based search and advanced metadata-based search. They are designed to facilitate standardized, secure, and efficient access to data offering metadata in federated data ecosystems.
+
+    ## Business Context
+
+    The Catalog Search API enables consumers to discover and retrieve metadata about data offerings published by providers in a federated catalog. It supports both simple keyword-based and advanced structured search mechanisms, allowing for flexible and precise discovery of self-descriptions. It enables:
+
+    1. Keyword-based and advanced metadata-based search of offerings.
+
+    2. Retrieval of detailed self-descriptions in the form of Verifiable Credentials.
+
+    3. Access to schema definitions for self-description creation and validation.
+
+    ### Key Actors
+
+    - **Consumer**: Searches the catalog, filters results, and retrieves detailed descriptions of data offerings.
+
+    ### Typical Flow
+
+    1. Perform a simple keyword search across the catalog.
+
+    2. Execute an advanced search using structured metadata filters based on schema offer
+
+    3. Retrieve a detailed self-description using its unique identifier.
+  contact:
+    name: Simpl Programme
+    url: https://simpl-programme.ec.europa.eu/
+    email: cnect-simpl@ec.europa.eu
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  version: "1.0"
+servers:
+- url: https://xfsc-advsearch-be.dev.simpl-europe.eu/v2
+security:
+- bearerAuth: []
+openapi: 3.0.1
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: IAA cloud gateway JWT token
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    UnauthorizedProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    InternalServerErrorProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    NotAcceptableProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    NotFoundProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    InputObject:
+      type: object
+      properties:
+        in:
+          type: string
+          enum:
+          - body
+          - path
+          - query
+          - header
+        name:
+          type: string
+        value:
+          type: object
+    BadRequestProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/InputValidationIssue'
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    InputValidationIssue:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        detail:
+          type: string
+        in:
+          type: string
+          enum:
+          - body
+          - path
+          - query
+          - header
+        name:
+          type: string
+        value:
+          type: object
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/InputObject'
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+paths:
+  /schemas/{schemaId}/content:
+    get:
+      tags:
+      - Schema
+      summary: Returns schema content based on schemaId
+      description: Returns schema content for the specified schema identifier
+      operationId: getSchemaContent
+      parameters:
+      - name: schemaId
+        in: path
+        description: Identifier of the TTL schema
+        required: true
+        schema:
+          type: string
+          description: Identifier of the schema
+          example: data-offeringShape
+        example: data-offeringShape
+      responses:
+        "200":
+          description: TTL schema file content
+          content:
+            text/turtle:
+              schema:
+                type: string
+              examples:
+                ttlExample:
+                  summary: Example TTL content
+                  description: ttlExample
+                  value: '@prefix ex: <http://example.org/> .'
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/BadRequestProblem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                title: Invalid payload
+                status: 400
+                detail: Invalid request
+                instance: /schemas/dataOfferingShape/content
+                issues: []
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedProblem'
+              example:
+                type: urn:problem-type:simpl:unauthorized
+                title: Unauthorized
+                status: 401
+                instance: /schemas/dataOfferingShape/content
+                detail: Missing or invalid Authorization header
+        "404":
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotFoundProblem'
+              examples:
+                Not Found:
+                  summary: Schema not found
+                  description: Not Found
+                  value:
+                    type: urn:problem-type:simpl:notFound
+                    title: Resource not found
+                    status: 404
+                    detail: Schema with identifier 'dataOfferingShape' was not found
+                    instance: /schemas/dataOfferingShape/content
+        "406":
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotAcceptableProblem'
+              examples:
+                Not Acceptable Example:
+                  description: Requested media type is not supported
+                  value:
+                    type: urn:problem-type:simpl:notAcceptable
+                    title: Not Acceptable
+                    status: 406
+                    detail: The requested media type could not be provided.
+                    instance: /schemas/dataOfferingShape/content
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                instance: /schemas/dataOfferingShape/content
+                detail: Unexpected internal error
+  /schemas/{schemaId}/{version}:
+    get:
+      tags:
+      - Schema
+      summary: Retrieve a specific version of a schema
+      description: Retrieves the content of a specific version of a schema identified by its schema name and version. The endpoint returns the representation of the schema as published by the Governance Authority
+      operationId: getSchemaByVersion
+      parameters:
+      - name: schemaId
+        in: path
+        description: Unique identifier of the TTL schema
+        required: true
+        schema:
+          type: string
+          description: Unique identifier of the TTL schema
+          example: dataOfferingShape
+        example: dataOfferingShape
+      - name: version
+        in: path
+        description: Version of the TTL schema
+        required: true
+        schema:
+          type: string
+          description: Version of the TTL schema
+          example: 1.0.0
+        example: 1.0.0
+      responses:
+        "200":
+          description: Returns the content of the specified TTL file
+          content:
+            text/turtle:
+              schema:
+                type: string
+              example: |
+                @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+                @prefix sh: <http://www.w3.org/ns/shacl#> .
+                @prefix simpl: <http://w3id.org/gaia-x/simpl#> .
+                @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+                simpl:DataOfferingShape
+                  rdf:type sh:NodeShape ;
+                  sh:targetClass simpl:DataOffering ;
+                  sh:property [
+                    sh:path simpl:name ;
+                    sh:datatype xsd:string ;
+                    sh:minCount 1 ;
+                    sh:maxCount 1 ;
+                    sh:description "The name of the data offering." ;
+                  ] ;
+                  sh:property [
+                    sh:path simpl:description ;
+                    sh:datatype xsd:string ;
+                    sh:minCount 0 ;
+                    sh:maxCount 1 ;
+                    sh:description "A description of the data offering." ;
+                  ] ;
+                  sh:property [
+                    sh:path simpl:format ;
+                    sh:datatype xsd:string ;
+                    sh:minCount 1 ;
+                    sh:maxCount 1 ;
+                    sh:description "The format of the data offering, e.g. XML, JSON, CSV." ;
+                  ] .
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/BadRequestProblem'
+              example:
+                type: urn:problem-type:simpl:validationError
+                title: Invalid payload
+                status: 400
+                detail: missing required arguments
+                instance: /schemas/{schemaName}/{version}
+                issues:
+                - detail: Field 'schemaName' must not be empty
+        "404":
+          description: Schema not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotFoundProblem'
+              examples:
+                Schema Not Found Example:
+                  description: Schema not found
+                  value:
+                    type: urn:problem-type:simpl:notFound
+                    title: Resource not found
+                    status: 404
+                    detail: Schema with identifier 'dataOfferingShape' was not found
+                    instance: /schemas/dataOfferingShape/content
+        "406":
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotAcceptableProblem'
+              examples:
+                Not Acceptable Example:
+                  description: Requested media type is not supported
+                  value:
+                    type: urn:problem-type:simpl:notAcceptable
+                    title: Not Acceptable
+                    status: 406
+                    detail: Requested media type 'application/json' is not supported. Use 'text/turtle'.
+                    instance: /schemas/dataOfferingShape/content
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                instance: /schemas/{schemaName}/{version}
+                detail: Unexpected internal error
+  /schemas/{schemaName}/qualityProfiles/active:
+    get:
+      tags:
+      - Schema
+      summary: Get the active Metadata Quality Profile for a schema.
+      description: Returns the active Metadata Quality Profile resolved for the latest published schema version for the provided schema name.
+      operationId: getSchemaQualityProfile
+      parameters:
+      - name: schemaName
+        in: path
+        description: Schema name for which the active Metadata Quality Profile is resolved. Must be in PascalCase, alphanumeric.
+        required: true
+        schema:
+          maxLength: 64
+          minLength: 3
+          pattern: ^[A-Z][a-zA-Z0-9]*$
+          type: string
+          description: Schema name for which the active Metadata Quality Profile is resolved. Must be in PascalCase, alphanumeric.
+          example: DataOfferingShape
+        example: DataOfferingShape
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                Active Metadata Quality Profile:
+                  summary: Example active Metadata Quality Profile
+                  description: Active Metadata Quality Profile
+                  value:
+                    '@context':
+                      '@version': 1.1
+                      ex: http://example.org/
+                      simpl: https://simpl-programme.ec.europa.eu/simpl/mqp/
+                      dqv: http://www.w3.org/ns/dqv#
+                      dcat: http://www.w3.org/ns/dcat#
+                      dcterms: http://purl.org/dc/terms/
+                      rdfs: http://www.w3.org/2000/01/rdf-schema#
+                      xsd: http://www.w3.org/2001/XMLSchema#
+                      title:
+                        '@id': dcterms:title
+                        '@language': en
+                      description:
+                        '@id': dcterms:description
+                        '@language': en
+                      comment:
+                        '@id': rdfs:comment
+                        '@language': en
+                      created: dcterms:created
+                      modified: dcterms:modified
+                      creator:
+                        '@id': dcterms:creator
+                        '@type': '@id'
+                      conformsTo:
+                        '@id': dcterms:conformsTo
+                        '@type': '@id'
+                      dimensionWeight:
+                        '@id': simpl:dimensionWeight
+                        '@type': xsd:decimal
+                      ruleType: simpl:ruleType
+                      ruleWeight:
+                        '@id': simpl:ruleWeight
+                        '@type': xsd:decimal
+                      targetProperty:
+                        '@id': simpl:targetProperty
+                        '@type': '@id'
+                      allowedValues: simpl:allowedValues
+                      shacl_snippet: simpl:shacl_snippet
+                      classificationLabel:
+                        '@id': simpl:classificationLabel
+                        '@language': en
+                      minScore:
+                        '@id': simpl:minScore
+                        '@type': xsd:decimal
+                      maxScore:
+                        '@id': simpl:maxScore
+                        '@type': xsd:decimal
+                      rangeClassification:
+                        '@id': simpl:rangeClassification
+                        '@type': '@id'
+                      thresholdValue:
+                        '@id': simpl:thresholdValue
+                        '@type': xsd:decimal
+                      classificationScope: simpl:classificationScope
+                      profileVersion: simpl:profileVersion
+                      profileScope: simpl:profileScope
+                      includesDimension:
+                        '@id': simpl:includesDimension
+                        '@type': '@id'
+                      includesMetric:
+                        '@id': simpl:includesMetric
+                        '@type': '@id'
+                      includesClassification:
+                        '@id': simpl:includesClassification
+                        '@type': '@id'
+                      includesScoreRange:
+                        '@id': simpl:includesScoreRange
+                        '@type': '@id'
+                      includesThreshold:
+                        '@id': simpl:includesThreshold
+                        '@type': '@id'
+                      inDimension:
+                        '@id': dqv:inDimension
+                        '@type': '@id'
+                    '@graph':
+                    - '@id': ex:dimension/Completeness
+                      '@type': dqv:Dimension
+                      title: Completeness
+                      description: The degree to which data has values for all required and expected attributes.
+                      dimensionWeight:
+                        '@value': "0.4"
+                        '@type': xsd:decimal
+                      comment: Completeness is weighted at 40% in the overall quality score. Can be used across multiple profiles.
+                    - '@id': ex:dimension/Accuracy
+                      '@type': dqv:Dimension
+                      title: Accuracy
+                      description: The degree to which data correctly represents the real-world entities or phenomena it describes.
+                      dimensionWeight:
+                        '@value': "0.35"
+                        '@type': xsd:decimal
+                      comment: Accuracy is weighted at 35% in the overall quality score.
+                    - '@id': ex:dimension/Validity
+                      '@type': dqv:Dimension
+                      title: Validity
+                      description: The degree to which data conforms to required formats, types, and allowed value ranges.
+                      dimensionWeight:
+                        '@value': "0.25"
+                        '@type': xsd:decimal
+                      comment: Validity is weighted at 25% in the overall quality score. Total weights sum to 1.0.
+                    - '@id': ex:rule/datasetHasCreator
+                      '@type': simpl:QualityRule
+                      title: Dataset Has Creator
+                      description: Verifies that a dataset has at least one creator (dcat:contactPoint or dcterms:creator).
+                      ruleType: EXISTENCE
+                      ruleWeight:
+                        '@value': "1.0"
+                        '@type': xsd:decimal
+                      targetProperty: dcterms:creator
+                      inDimension: ex:dimension/Completeness
+                    - '@id': ex:rule/datasetHasTitle
+                      '@type': simpl:QualityRule
+                      title: Dataset Has Title
+                      description: Verifies that a dataset has a descriptive title.
+                      ruleType: EXISTENCE
+                      ruleWeight:
+                        '@value': "0.5"
+                        '@type': xsd:decimal
+                      targetProperty: dcterms:title
+                      inDimension: ex:dimension/Completeness
+                    - '@id': ex:rule/datasetHasDescription
+                      '@type': simpl:QualityRule
+                      title: Dataset Has Description
+                      description: Verifies that a dataset has a meaningful description.
+                      ruleType: EXISTENCE
+                      ruleWeight:
+                        '@value': "0.5"
+                        '@type': xsd:decimal
+                      targetProperty: dcterms:description
+                      inDimension: ex:dimension/Completeness
+                    - '@id': ex:rule/datasetFormatIsApproved
+                      '@type': simpl:QualityRule
+                      title: Dataset Format Is Approved
+                      description: Verifies that dataset distributions are in approved, open formats.
+                      ruleType: IS_IN
+                      ruleWeight:
+                        '@value': "1.0"
+                        '@type': xsd:decimal
+                      targetProperty: dcat:distribution
+                      allowedValues:
+                      - CSV
+                      - JSON
+                      - JSON-LD
+                      - RDF/XML
+                      - Turtle
+                      - N-Triples
+                      - GeoJSON
+                      - XML
+                      inDimension: ex:dimension/Validity
+                    - '@id': ex:rule/datasetLicenseIsOpen
+                      '@type': simpl:QualityRule
+                      title: Dataset License Is Open
+                      description: Verifies that dataset uses an open license aligned with EU Open Data and PSI reuse requirements.
+                      ruleType: IS_IN
+                      ruleWeight:
+                        '@value': "0.8"
+                        '@type': xsd:decimal
+                      targetProperty: dcterms:license
+                      allowedValues:
+                      - '@id': http://creativecommons.org/licenses/by/4.0/
+                      - '@id': http://creativecommons.org/licenses/by-sa/4.0/
+                      - '@id': http://creativecommons.org/licenses/by-nd/4.0/
+                      - '@id': http://creativecommons.org/publicdomain/zero/1.0/
+                      - '@id': http://opendatacommons.org/licenses/pddl/1.0/
+                      inDimension: ex:dimension/Validity
+                    - '@id': ex:rule/datasetHasRecentCoverage
+                      '@type': simpl:QualityRule
+                      title: Dataset Has Recent Temporal Coverage
+                      description: Verifies that the dataset's temporal coverage (dcat:temporalResolution or dcterms:issued) is recent (within last 2 years).
+                      ruleType: CUSTOM_SHACL
+                      ruleWeight:
+                        '@value': "1.0"
+                        '@type': xsd:decimal
+                      shacl_snippet: |
+                        PREFIX dcat: <http://www.w3.org/ns/dcat#>
+                        PREFIX dcterms: <http://purl.org/dc/terms/>
+                        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+                        SELECT ?dataset
+                        WHERE {
+                          ?dataset dcterms:issued ?issued .
+                          BIND(NOW() - ?issued AS ?age)
+                          BIND("P2Y"^^xsd:duration AS ?twoYears)
+                          FILTER (?age <= ?twoYears)
+                        }
+                      inDimension: ex:dimension/Validity
+                    - '@id': ex:rule/datasetHasValidSchema
+                      '@type': simpl:QualityRule
+                      title: Dataset Conforms to Valid Schema
+                      description: Verifies that dataset conforms to a declared schema (via dcat:conformsTo).
+                      ruleType: CUSTOM_SHACL
+                      ruleWeight:
+                        '@value': "0.6"
+                        '@type': xsd:decimal
+                      shacl_snippet: |
+                        PREFIX dcat: <http://www.w3.org/ns/dcat#>
+                        PREFIX shacl: <http://www.w3.org/ns/shacl#>
+                        SELECT ?dataset WHERE {
+                          ?dataset dcat:conformsTo ?schema .
+                        }
+                      inDimension: ex:dimension/Validity
+                    - '@id': ex:classification/Green
+                      '@type': simpl:Classification
+                      classificationLabel: Green
+                    - '@id': ex:classification/Yellow
+                      '@type': simpl:Classification
+                      classificationLabel: Yellow
+                    - '@id': ex:classification/Red
+                      '@type': simpl:Classification
+                      classificationLabel: Red
+                    - '@id': ex:scorerange/Green
+                      '@type': simpl:ScoreRange
+                      minScore:
+                        '@value': "80.0"
+                        '@type': xsd:decimal
+                      maxScore:
+                        '@value': "100.0"
+                        '@type': xsd:decimal
+                      rangeClassification: ex:classification/Green
+                    - '@id': ex:scorerange/Yellow
+                      '@type': simpl:ScoreRange
+                      minScore:
+                        '@value': "60.0"
+                        '@type': xsd:decimal
+                      maxScore:
+                        '@value': "80.0"
+                        '@type': xsd:decimal
+                      rangeClassification: ex:classification/Yellow
+                    - '@id': ex:scorerange/Red
+                      '@type': simpl:ScoreRange
+                      minScore:
+                        '@value': "0.0"
+                        '@type': xsd:decimal
+                      maxScore:
+                        '@value': "60.0"
+                        '@type': xsd:decimal
+                      rangeClassification: ex:classification/Red
+                    - '@id': ex:threshold/PublicationMinimum
+                      '@type': simpl:Threshold
+                      thresholdValue:
+                        '@value': "70.0"
+                        '@type': xsd:decimal
+                      classificationScope: overall
+                      description: Metadata with overall quality score 70 or above is accepted for publication; below 70 is a failure.
+                    - '@id': ex:threshold/InternalMinimum
+                      '@type': simpl:Threshold
+                      thresholdValue:
+                        '@value': "50.0"
+                        '@type': xsd:decimal
+                      classificationScope:
+                        '@id': ex:dimension/Validity
+                      description: Internal datasets with Validity score 50 or above are accepted; below 50 is a failure.
+                    - '@id': ex:threshold/CompletnessDimensionPublic
+                      '@type': simpl:Threshold
+                      thresholdValue:
+                        '@value': "90.0"
+                        '@type': xsd:decimal
+                      classificationScope:
+                        '@id': ex:dimension/Completeness
+                      description: For public datasets, Completeness scores 90 or above are accepted; lower scores fail the gate.
+                    - '@id': ex:threshold/AccuracyDimensionCritical
+                      '@type': simpl:Threshold
+                      thresholdValue:
+                        '@value': "85.0"
+                        '@type': xsd:decimal
+                      classificationScope:
+                        '@id': ex:dimension/Accuracy
+                      description: For critical datasets, Accuracy scores 85 or above are accepted; lower scores fail the gate.
+                    - '@id': ex:profile/EUOpenDataProfile
+                      '@type': simpl:QualityProfile
+                      title: EU Open Data Quality Profile
+                      description: A comprehensive quality profile aligned with the EU Open Data Directive and DCAT-AP standards. Combines completeness, accuracy, and validity dimensions for public datasets.
+                      creator: https://data.europa.eu/
+                      created: 2026-05-19
+                      modified: 2026-05-19
+                      profileVersion: 1.0.0
+                      profileScope: Open Data
+                      conformsTo: SCHEMA_VERSION_ID
+                      includesDimension:
+                      - ex:dimension/Completeness
+                      - ex:dimension/Accuracy
+                      - ex:dimension/Validity
+                      includesMetric:
+                      - ex:rule/datasetHasCreator
+                      - ex:rule/datasetHasTitle
+                      - ex:rule/datasetHasDescription
+                      - ex:rule/datasetFormatIsApproved
+                      - ex:rule/datasetLicenseIsOpen
+                      - ex:rule/datasetHasRecentCoverage
+                      - ex:rule/datasetHasValidSchema
+                      includesClassification:
+                      - ex:classification/Green
+                      - ex:classification/Yellow
+                      - ex:classification/Red
+                      includesScoreRange:
+                      - ex:scorerange/Green
+                      - ex:scorerange/Yellow
+                      - ex:scorerange/Red
+                      includesThreshold:
+                      - ex:threshold/PublicationMinimum
+                      - ex:threshold/CompletnessDimensionPublic
+                      comment: This profile is suitable for governance of public datasets, ensuring compliance on data management and transparency.
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/BadRequestProblem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                title: Bad Request
+                status: 400
+                detail: Path parameter schemaName must contain only alphanumeric characters and follow PascalCase.
+                instance: /schemas/{schemaName}/qualityProfiles/active
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedProblem'
+              example:
+                type: urn:problem-type:simpl:unauthorized
+                title: Unauthorized
+                status: 401
+                instance: /schemas/{schemaName}/qualityProfiles/active
+                detail: Missing or invalid Authorization header
+        "404":
+          description: Resource Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotFoundProblem'
+              example:
+                type: urn:problem-type:simpl:notFound
+                title: Resource Not Found
+                status: 404
+                detail: No active Metadata Quality Profile is linked to schema 'ApplicationShape'.
+                instance: /schemas/{schemaName}/qualityProfiles/active
+        "406":
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotAcceptableProblem'
+              examples:
+                Not Acceptable Example:
+                  description: Requested media type is not supported
+                  value:
+                    type: urn:problem-type:simpl:notAcceptable
+                    title: Not Acceptable
+                    status: 406
+                    detail: The requested media type could not be provided.
+                    instance: /schemas/{schemaName}/qualityProfiles/active
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                instance: /schemas/{schemaName}/qualityProfiles/active
+                detail: Unexpected internal error
+  /schemas:
+    get:
+      tags:
+      - Schema
+      summary: List all available schema
+      description: Returns all schema info in order to allow them to be selected and initiate the self-description creation process.
+      operationId: getSchemas
+      parameters:
+      - name: resourceType
+        in: query
+        description: resourceType
+        required: false
+        schema:
+          type: string
+        example: data
+      responses:
+        "200":
+          description: A map of available TTL schema files
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                Available schemas:
+                  description: Available schemas
+                  value:
+                    schemas:
+                    - title: Application Asset
+                      name: health
+                      description: Schema for describing a software application.
+                      resourceType: APPLICATION
+                      version: 1.0.0
+                      schemaId: applicationHealth
+                    - title: Data Offering
+                      name: Data offering
+                      description: SHACL shape for data offering self-descriptions.
+                      resourceType: DATA
+                      version: 1.0.0
+                      schemaId: dataOfferingShape
+                No schemas available:
+                  description: No schemas available for the current environment/tenant
+                  value:
+                    schemas: []
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/BadRequestProblem'
+              example:
+                type: urn:problem-type:simpl:badRequest
+                title: Invalid payload
+                status: 400
+                detail: Invalid request
+                instance: /schemas
+                issues: []
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedProblem'
+              example:
+                type: urn:problem-type:simpl:unauthorized
+                title: Unauthorized
+                status: 401
+                instance: /schemas
+                detail: Missing or invalid Authorization header
+        "406":
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotAcceptableProblem'
+              examples:
+                Not Acceptable Example:
+                  description: Requested media type is not supported
+                  value:
+                    type: urn:problem-type:simpl:notAcceptable
+                    title: Not Acceptable
+                    status: 406
+                    detail: The requested media type could not be provided.
+                    instance: /schemas
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                instance: /schemas
+                detail: Unexpected internal error
+  /selfDescriptions/{selfDescriptionId}:
+    get:
+      tags:
+      - Self Description
+      summary: Returns self description based on selfDescriptionID and catalogueId
+      description: Fetches a detailed self-description document identified by the provided selfDescriptionId and belonging to the catalogue identified by catalogueId. This endpoint returns a Verifiable Credential that describes a data/infra/app offering in compliance with SIMPL standards. The response includes metadata such as service properties, contract templates, data formats, and access endpoints.
+      operationId: getSelfDescription
+      parameters:
+      - name: selfDescriptionId
+        in: path
+        description: The unique identifier of the self-description to retrieve.
+        required: true
+        schema:
+          type: string
+          description: The unique identifier of the self-description to retrieve.
+          example: did:web:registry.gaia-x.eu:DataOffering:4727baa4-8c7b-4e7f-90ba-eebe460c0408
+        example: did:web:registry.gaia-x.eu:DataOffering:4727baa4-8c7b-4e7f-90ba-eebe460c0408
+      - name: catalogueId
+        in: query
+        description: Identifier of the catalogue where the requested self-description is located
+        required: true
+        schema:
+          type: string
+          description: Identifier of the catalogue where the requested self-description is located
+          example: catalogueId1
+      responses:
+        "200":
+          description: Returns self description
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                '@context':
+                - https://www.w3.org/2018/credentials/v1
+                - https://w3id.org/security/suites/jws-2020/v1
+                credentialSubject:
+                  '@context':
+                    gax-validation: http://w3id.org/gaia-x/validation#
+                    rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+                    sh: http://www.w3.org/ns/shacl#
+                    simpl: http://w3id.org/gaia-x/simpl#
+                    skos: http://www.w3.org/2004/02/skos/core#
+                    xsd: http://www.w3.org/2001/XMLSchema#
+                  '@id': did:web:registry.gaia-x.eu:DataOffering:4727baa4-8c7b-4e7f-90ba-eebe460c0408
+                  rdf:type:
+                    '@id': simpl:DataOffering
+                  simpl:contractTemplate:
+                    rdf:type:
+                      '@id': simpl:ContractTemplate
+                    simpl:contractTemplateDocument: Contract Template 1
+                    simpl:contractTemplateHashAlg: SHA256
+                    simpl:contractTemplateHashValue: 22275fe551e7a16f5f2c1cc10d39a534f547323d877109d98b8e8730047bc5ed
+                    simpl:contractTemplateURL: https://files.dev.simpl-europe.eu/static/contract/ContractTemplate1.json
+                  simpl:dataProperties:
+                    rdf:type:
+                      '@id': simpl:DataProperties
+                    simpl:format: xml
+                  simpl:edcConnector:
+                    simpl:providerEndpointURL: https://edc-provider.dev.simpl-europe.eu
+                  simpl:generalServiceProperties:
+                    rdf:type:
+                      '@id': simpl:GeneralServiceProperties
+                    simpl:name: Test Data Offering
+                    simpl:description: A comprehensive data offering for testing purposes
+                    simpl:inLanguage: en
+                issuanceDate: 2024-12-03T13:52:45.111955862Z
+                issuer: did:web:did.dev.simpl-europa.eu
+                proof:
+                  created: 2024-12-03T13:52:45.122614972Z
+                  jws: eyJhbGciOiJVbmRlZmluZWQiLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdfQ..pfkY4hJ3kDMSmUUHaUq6c-Y_wHCKbp7J09MpByLJ9C433Th8EfgM69snZEMYzJISwjtowdq0BXiuDoPIPFcRBw
+                  proofPurpose: assertionMethod
+                  type: JsonWebSignature2020
+                  verificationMethod: did:web:did.dev.simpl-europa.eu#gaia-x-key1
+                type: VerifiableCredential
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/BadRequestProblem'
+              example:
+                type: urn:problem-type:simpl:validationError
+                title: Invalid payload
+                status: 400
+                detail: missing required arguments
+                instance: /selfDescriptions/{selfDescriptionId}
+                issues:
+                - detail: Field 'selfDescriptionId' must not be empty
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedProblem'
+              example:
+                type: urn:problem-type:simpl:unauthorized
+                title: Unauthorized
+                status: 401
+                instance: /selfDescriptions/{selfDescriptionId}
+                detail: Missing or invalid Authorization header
+        "404":
+          description: Schema not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotFoundProblem'
+              example:
+                type: urn:problem-type:simpl:notFound
+                title: SelfDescription not found
+                status: 404
+                detail: SelfDescription with identifier 'did:web:registry.gaia-x.eu:DataOffering:123' was not found
+                instance: /selfDescriptions/{selfDescriptionId}
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                instance: /selfDescriptions/{selfDescriptionId}
+                detail: Unexpected internal error

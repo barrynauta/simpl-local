@@ -1,0 +1,652 @@
+openapi: 3.0.1
+security:
+- OAuth2Auth: []
+info:
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  contact:
+    name: Simpl Programme
+    email: cnect-simpl@ec.europa.eu
+    url: https://simpl-programme.ec.europa.eu/
+  title: Query Mapper Adapter API
+  description: This the API  for the adapter to the Simpl Federated Catalogue located in the Governance authority node.
+  version: 1.1.0
+servers:
+- url: https://adapter.dev.simpl-europe.eu/v1
+  description: Generated server url
+paths:
+  /selfDescriptions:
+    get:
+      tags:
+      - Resource description search
+      operationId: searchSelfDescriptions
+      summary: Search the Federated Catalogue for Resource descriptions that contain the provided keyword. Resource descriptions
+        with access policy values other than the one defined in the Client access token will not be listed
+      parameters:
+      - name: searchString
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: '^(?=.*\S)[\p{L}\p{N}\s.,''\-_&@()+/]{1,255}$'
+        description: String value against which the search will be conducted. Must not be blank, must not exceed 255
+          characters, and may only contain letters, numbers, whitespace, dots, commas, apostrophes, hyphens, underscores,
+          ampersands, at signs, parentheses, plus signs, and slashes.
+        examples:
+          returnValidResponse:
+            value: asset03
+      - name: minimumScore
+        in: query
+        required: false
+        schema:
+          type: number
+          format: double
+        description: Optional. Minimum overall quality score. Must be >= 0.
+      - name: minimumClassification
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Optional. Minimum overall quality classification from the active MQP.
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: Page number (1-based). Must be greater than 0.
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+        description: Number of items per page. Must be greater than 0. Values above 100 are silently capped at 100.
+      - name: User-Attributes
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Optional user attributes header
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/searchResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 2
+                    items:
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                        offeringType: infrastructure
+                        name: text title for infrastructure resource.
+                        inLanguage: da
+                        description: text description
+                        serviceAccessPoint: http://serviceaccesspoint.com
+                        overallScore: 0.92
+                        overallClassification: Green
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_235
+                        offeringType: data
+                        name: asset03
+                        description: asset description
+                        inLanguage: en
+                        serviceAccessPoint: https://sd-ui.dev.simpl-europe.eu
+                        overallScore: null
+                        overallClassification: null
+                    page: 1
+                    pageSize: 20
+                    total: 2
+                    totalPages: 1
+                    next: null
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnBadRequestInvalidSearchString:
+                  value:
+                    type: urn:problem-type:belgif:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: Query parameter 'searchString' contains invalid characters.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestInvalidMinimumScore:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumScore must be greater than or equal to 0.
+                returnBadRequestInvalidMinimumClassification:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumClassification is not a supported quality classification value.
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/internalServerErrorResponse'
+  /selfDescriptions/advancedSearch:
+    post:
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: "def jsonSlurper = new groovy.json.JsonSlurper()\ndef requestBody = jsonSlurper.parseText(mockRequest.getRequestContent())\n\
+          def contractTemplateNode = requestBody?.\"simpl:ContractTemplate\"\ndef priceObject = requestBody?.\"simpl:OfferingPrice\"\
+          ?.price\nif (contractTemplateNode != null && contractTemplateNode.findAll().size() == 0) {\n  return \"returnBadRequestEmptyNodeDefinition\"\
+          \n}\nif (priceObject != null && priceObject.customOperator != null) {\n  return \"returnBadRequestWrongPropertyNamesForPriceField\"\
+          \n}\nreturn \"returnValidResponse\"\n"
+      tags:
+      - Resource description search
+      operationId: advancedSearchSelfDescriptions
+      summary: Search the Federated Catalogue for Resource descriptions that match the provided search criteria in the request
+        payload. Resource descriptions with access policy values other than the one defined in the Client access token will
+        not be listed
+      parameters:
+      - name: User-Attributes
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Optional user attributes header
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: Page number (1-based). Must be greater than 0.
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+        description: Number of items per page. Must be greater than 0. Values above 100 are silently capped at 100.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/advancedSearchRequestPayload'
+            examples:
+              returnValidResponse:
+                value:
+                  catalogueIds:
+                  - catalogueId1
+                  - catalogueId2
+                  simpl:OfferingPrice:
+                    price:
+                      op1: '>='
+                      value1: '15'
+                      op2: <
+                      value2: '150'
+                  simpl:GeneralServiceProperties:
+                    name: asset002
+                  simpl:ContractTemplate:
+                    contractTemplateDocument: Contract Template 1234
+              returnValidResponseWithQualityFilters:
+                value:
+                  minimumScore: 75
+                  minimumClassification: good
+                  simpl:GeneralServiceProperties:
+                    name: asset002
+              returnBadRequestEmptyNodeDefinition:
+                value:
+                  simpl:ContractTemplate: {}
+              returnBadRequestWrongPropertyNamesForPriceField:
+                value:
+                  simpl:OfferingPrice:
+                    price:
+                      customOperator: '>='
+                      value1: '15'
+                      op2: <
+                      value2: '150'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/searchResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 21
+                    items:
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                        offeringType: infrastructure
+                        name: asset002
+                        inLanguage: da
+                        description: text description
+                        serviceAccessPoint: http://serviceaccesspoint.com
+                        overallScore: 0.92
+                        overallClassification: Green
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_235
+                        offeringType: data
+                        name: asset002
+                        description: asset description
+                        inLanguage: en
+                        serviceAccessPoint: https://sd-ui.dev.simpl-europe.eu
+                        overallScore: null
+                        overallClassification: null
+                    page: 1
+                    pageSize: 20
+                    total: 21
+                    totalPages: 2
+                    next: /selfDescriptions/advancedSearch?page=2&pageSize=20
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnBadRequestEmptyNodeDefinition:
+                  value:
+                    type: urn:problem-type:simpl:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: No Properties defined in simpl:ContractTemplate node. Please provide at least one property with
+                      searched value.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestWrongPropertyNamesForPriceField:
+                  value:
+                    type: urn:problem-type:simpl:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: 'Wrong property names in node simpl:OfferingPrice. Allowed property names: op1, op2, value1, value2'
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestInvalidPagination:
+                  value:
+                    type: urn:problem-type:belgif:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: Query parameter 'pageSize' must be an integer.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestInvalidMinimumScore:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumScore must be greater than or equal to 0.
+                returnBadRequestInvalidMinimumClassification:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumClassification is not a supported quality classification value.
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/internalServerErrorResponse'
+  /participants/resourceDescriptions:
+    get:
+      tags:
+      - Participant resource description
+      summary: Return all resource descriptions with the participant id as defined in the Client access token.
+      parameters:
+      - name: orderBy
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - publicationDate
+          - resourceType
+          default: publicationDate
+        description: Field to order the results by
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: Page number (1-based). Must be greater than 0.
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+        description: Number of items per page. Must be greater than 0.
+      - name: User-Attributes
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Optional user attributes header
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/searchResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 1
+                    items:
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                        offeringType: infrastructure
+                        name: text title for infrastructure resource.
+                        inLanguage: da
+                        description: text description
+                        serviceAccessPoint: http://serviceaccesspoint.com
+        '403':
+          $ref: '#/components/responses/forbiddenErrorResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/internalServerErrorResponse'
+  /participants/resourceDescriptions/{resourceDescriptionId}:
+    get:
+      parameters:
+      - name: resourceDescriptionId
+        in: path
+        description: value defined in credentialSubject.@id for given resource description
+        required: true
+        schema:
+          type: string
+        examples:
+          returnValidResponse:
+            value: 3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_252
+      tags:
+      - Participant resource description
+      summary: Return details of given resource description stored in federated catalogue
+      responses:
+        '200':
+          $ref: '#/components/responses/getResourceDescriptionResponse'
+        '403':
+          $ref: '#/components/responses/forbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/notFoundErrorResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/internalServerErrorResponse'
+    patch:
+      tags:
+      - Participant resource description
+      summary: Revoke existing resource description. Endpoint will behave idempotently if resource description is already
+        revoked.
+      parameters:
+      - name: resourceDescriptionId
+        in: path
+        required: true
+        schema:
+          type: string
+          example: did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_eng_custom5
+        description: value defined in credentialSubject.@id for given resource description
+      responses:
+        '204':
+          description: No Content
+        '404':
+          $ref: '#/components/responses/notFoundErrorResponse'
+        '403':
+          $ref: '#/components/responses/forbiddenErrorResponse'
+        '500':
+          $ref: '#/components/responses/internalServerErrorResponse'
+  /federated/resourceDescriptions/{resourceDescriptionId}:
+    get:
+      tags:
+      - Federated resource description
+      operationId: getFederatedResourceDescription
+      summary: Retrieve a federated resource description
+      description: >-
+        The Trustor Governance Authority receives this request from a Trusted
+        Governance Authority. The gateway authenticates the Trusted Governance
+        Authority using mutual TLS, maps the Consumer's identity attributes,
+        and evaluates discovery ABAC before forwarding this request. The gateway
+        supplies User-Attributes and Correlation-Id to the adapter. The adapter
+        does not repeat gateway authorization or require OAuth2 for this
+        operation. Gateway-generated authentication and ABAC errors are outside
+        this adapter response contract. The response contains the complete
+        resource description, but does not return a separate schema.
+      security: []
+      parameters:
+      - name: resourceDescriptionId
+        in: path
+        required: true
+        description: Identifier of the resource description in the Federated Catalogue.
+        schema:
+          type: string
+          minLength: 1
+        example: did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v0
+      - name: User-Attributes
+        in: header
+        required: true
+        description: Consumer identity attributes forwarded by the gateway after discovery ABAC.
+        schema:
+          type: string
+          minLength: 1
+        example: CONSUMER
+      - name: Correlation-Id
+        in: header
+        required: true
+        description: Request correlation identifier forwarded by the gateway; echoed in the response header only.
+        schema:
+          type: string
+          minLength: 1
+        example: 123e4567-e89b-12d3-a456-426614174000
+      responses:
+        '200':
+          $ref: '#/components/responses/federatedResourceDescriptionResponse'
+        '400':
+          $ref: '#/components/responses/federatedBadRequestResponse'
+        '404':
+          $ref: '#/components/responses/federatedNotFoundResponse'
+        '406':
+          $ref: '#/components/responses/federatedNotAcceptableResponse'
+        '500':
+          $ref: '#/components/responses/federatedInternalServerErrorResponse'
+  /participants/resourceDescriptions/{resourceDescriptionId}/version:
+    get:
+      tags:
+      - Participant resource description
+      summary: Return list of resource descriptions with the same parent resource description id.
+      parameters:
+      - name: resourceDescriptionId
+        in: path
+        description: Parent resource description id.
+        required: true
+        schema:
+          type: string
+        examples:
+          validResourceDescriptionId:
+            value: 3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_252
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: Page number (1-based). Must be greater than 0.
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+        description: Number of items per page. Must be greater than 0.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/versionHistoryResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 2
+                    items:
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                        offeringType: infrastructure
+                        name: text title for infrastructure resource.
+                        inLanguage: da
+                        description: text description
+                        serviceAccessPoint: http://serviceaccesspoint.com
+                        version: 2
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_235
+                        offeringType: infrastructure
+                        name: asset03
+                        description: asset description
+                        inLanguage: en
+                        serviceAccessPoint: https://sd-ui.dev.simpl-europe.eu
+                        version: 1
+        '401':
+          $ref: '#/components/responses/unauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/forbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/notFoundErrorResponse'
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/internalServerErrorResponse'
+components:
+  schemas:
+    Problem:
+      $ref: ../common/common-components.yaml#/components/schemas/Problem
+    searchResponsePayload:
+      $ref: ../common/common-components.yaml#/components/schemas/searchResponsePayload
+    versionHistoryResponsePayload:
+      $ref: ../common/common-components.yaml#/components/schemas/versionHistoryResponsePayload
+    advancedSearchRequestPayload:
+      $ref: '../common/common-components.yaml#/components/schemas/advancedSearchRequestPayload'
+    federatedResourceDescriptionPayload:
+      $ref: ../common/common-components.yaml#/components/schemas/federatedResourceDescriptionPayload
+  responses:
+    internalServerErrorResponse:
+      $ref: ../common/common-components.yaml#/components/responses/internalServerErrorResponse
+    notFoundErrorResponse:
+      $ref: ../common/common-components.yaml#/components/responses/notFoundErrorResponse
+    forbiddenErrorResponse:
+      $ref: ../common/common-components.yaml#/components/responses/forbiddenErrorResponse
+    unauthorizedErrorResponse:
+      $ref: ../common/common-components.yaml#/components/responses/unauthorizedErrorResponse
+    getResourceDescriptionResponse:
+      $ref: ../common/common-components.yaml#/components/responses/getResourceDescriptionResponse
+    federatedResourceDescriptionResponse:
+      $ref: ../common/common-components.yaml#/components/responses/federatedResourceDescriptionResponse
+    federatedBadRequestResponse:
+      $ref: ../common/common-components.yaml#/components/responses/federatedBadRequestResponse
+    federatedNotFoundResponse:
+      $ref: ../common/common-components.yaml#/components/responses/federatedNotFoundResponse
+    federatedNotAcceptableResponse:
+      $ref: ../common/common-components.yaml#/components/responses/federatedNotAcceptableResponse
+    federatedInternalServerErrorResponse:
+      $ref: ../common/common-components.yaml#/components/responses/federatedInternalServerErrorResponse
+  securitySchemes:
+      OAuth2Auth:
+        type: oauth2
+        flows:
+          authorizationCode:
+            authorizationUrl: https://auth.example.com/oauth/authorize
+            tokenUrl: https://auth.example.com/oauth/token
+            scopes:
+              read: Read access
+              write: Write access

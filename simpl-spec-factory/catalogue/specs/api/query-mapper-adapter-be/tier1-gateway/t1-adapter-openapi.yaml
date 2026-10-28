@@ -1,0 +1,423 @@
+openapi: 3.0.1
+security:
+  - OAuth2Auth: []
+info:
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  contact:
+    name: Simpl Programme
+    email: cnect-simpl@ec.europa.eu
+    url: https://simpl-programme.ec.europa.eu/
+  title: Query Mapper Adapter API (Tier 1 Gateway)
+  description: >-
+    API contract for a Consumer to search selected catalogues through its Trusted
+    Governance Authority. Quick-search delegation to Trustor Governance Authorities
+    is defined separately in SIMPL-31880; this specification does not implement
+    runtime federation.
+  version: 1.1.0
+servers:
+  - url: https://adapter.dev.simpl-europe.eu/v1
+    description: Generated server url
+paths:
+  /governanceAuthority/selfDescriptions:
+    get:
+      tags:
+        - Governance Authority resource description search
+      operationId: searchGovernanceAuthoritySelfDescriptions
+      summary: Quick search across selected catalogues through the Trusted Governance Authority.
+      description: >-
+        A Consumer supplies catalogue identifiers and quick-search criteria to its
+        Trusted Governance Authority. Unlike local GET /selfDescriptions, this
+        contract requires an explicit non-empty catalogue selection. The Trusted
+        Governance Authority delegates searches at selected Trustor catalogues
+        through the separate SIMPL-31880 API. This specification-only contract
+        does not define orchestration, result aggregation, or partial-failure rules.
+      parameters:
+        - name: catalogueIds
+          in: query
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: array
+            minItems: 1
+            items:
+              type: string
+              minLength: 1
+          description: >-
+            Identifiers of the Consumer-selected catalogues, not caller-supplied
+            endpoint URLs. Repeat the query parameter for multiple selections,
+            for example catalogueIds=climateResearchCatalogue&catalogueIds=transportDataCatalogue.
+            Missing selection, an empty selection, or an empty identifier is invalid.
+          examples:
+            singleCatalogue:
+              summary: Select the climate research catalogue.
+              value:
+                - climateResearchCatalogue
+            multipleCatalogues:
+              summary: Select the climate research and transport data catalogues.
+              value:
+                - climateResearchCatalogue
+                - transportDataCatalogue
+        - name: searchString
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 255
+            pattern: '^(?=.*\S)[\p{L}\p{N}\s.,''\-_&@()+/]{1,255}$'
+          description: String value against which the search will be conducted. Must not be blank, must not exceed 255
+            characters, and may only contain letters, numbers, whitespace, dots, commas, apostrophes, hyphens, underscores,
+            ampersands, at signs, parentheses, plus signs, and slashes.
+          examples:
+            returnValidResponse:
+              value: climate
+        - name: minimumScore
+          in: query
+          required: false
+          schema:
+            type: number
+            format: double
+            minimum: 0
+          description: Optional. Minimum overall quality score. Must be >= 0.
+          examples:
+            qualityThreshold:
+              value: 0.8
+        - name: minimumClassification
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional. Minimum overall quality classification from the active MQP.
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number (1-based). Must be greater than 0.
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          description: Number of items per page. Must be greater than 0. Values above 100 are silently capped at 100.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/searchResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 2
+                    items:
+                      - n:
+                          claimsGraphUri:
+                            - did:web:climate.example.org:DataOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                          offeringType: data
+                          name: European climate observations
+                          inLanguage: en
+                          description: Daily temperature and precipitation observations from European stations.
+                          serviceAccessPoint: https://climate.example.org/datasets/observations
+                          overallScore: 0.92
+                          overallClassification: Green
+                      - n:
+                          claimsGraphUri:
+                            - did:web:transport.example.org:DataOffering:72c5190c-265d-4c90-985e-f23877314a88
+                          offeringType: data
+                          name: Climate impact on regional transport
+                          description: Regional transport disruptions associated with extreme weather.
+                          inLanguage: en
+                          serviceAccessPoint: https://transport.example.org/datasets/climate-impact
+                          overallScore: null
+                          overallClassification: null
+                    page: 1
+                    pageSize: 20
+                    total: 2
+                    totalPages: 1
+                    next: null
+                returnEmptyResponse:
+                  summary: No resource descriptions match the criteria in the selected catalogues.
+                  value:
+                    totalCount: 0
+                    items: []
+                    page: 1
+                    pageSize: 20
+                    total: 0
+                    totalPages: 0
+                    next: null
+        '400':
+          description: Invalid or missing catalogue selection, search criteria, or pagination.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnBadRequestMissingCatalogueIds:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: Required query parameter 'catalogueIds' is missing; select at least one catalogue.
+                returnBadRequestEmptyCatalogueIds:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: catalogueIds must contain at least one catalogue identifier.
+                returnBadRequestEmptyCatalogueId:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: Each catalogueIds value must be a non-empty string.
+                returnBadRequestInvalidSearchString:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: searchString is required, must not be blank, must be at most 255 characters, and must contain only permitted characters.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestInvalidMinimumScore:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumScore must be greater than or equal to 0.
+                returnBadRequestInvalidMinimumClassification:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumClassification is not a supported quality classification value.
+                returnBadRequestInvalidPagination:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: page and pageSize must be integers greater than 0.
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnNotAcceptable:
+                  value:
+                    type: urn:problem-type:simpl:notAcceptable
+                    title: Not Acceptable
+                    status: 406
+                    detail: The requested response media type is not supported; use application/json.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/internalServerErrorResponse'
+  /governanceAuthority/selfDescriptions/advancedSearch:
+    post:
+      tags:
+        - Governance Authority resource description search
+      operationId: advancedSearchSelfDescriptions
+      summary: Search the Federated Catalogue for Resource descriptions that match the provided search criteria in the request
+        payload.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number (1-based). Must be greater than 0.
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          description: Number of items per page. Must be greater than 0. Values above 100 are silently capped at 100.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/advancedSearchRequestPayload'
+            examples:
+              returnValidResponse:
+                value:
+                  catalogueIds:
+                    - catalogueId1
+                    - catalogueId2
+                  simpl:OfferingPrice:
+                    price:
+                      op1: '>='
+                      value1: '15'
+                      op2: <
+                      value2: '150'
+                  simpl:GeneralServiceProperties:
+                    name: asset002
+                  simpl:ContractTemplate:
+                    contractTemplateDocument: Contract Template 1234
+              returnValidResponseWithQualityFilters:
+                value:
+                  minimumScore: 75
+                  minimumClassification: good
+                  simpl:GeneralServiceProperties:
+                    name: asset002
+              returnBadRequestEmptyNodeDefinition:
+                value:
+                  simpl:ContractTemplate: {}
+              returnBadRequestWrongPropertyNamesForPriceField:
+                value:
+                  simpl:OfferingPrice:
+                    price:
+                      customOperator: '>='
+                      value1: '15'
+                      op2: <
+                      value2: '150'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/searchResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 21
+                    items:
+                      - n:
+                          claimsGraphUri:
+                            - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                          offeringType: infrastructure
+                          name: asset002
+                          inLanguage: da
+                          description: text description
+                          serviceAccessPoint: http://serviceaccesspoint.com
+                          overallScore: 0.92
+                          overallClassification: Green
+                      - n:
+                          claimsGraphUri:
+                            - did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_235
+                          offeringType: data
+                          name: asset002
+                          description: asset description
+                          inLanguage: en
+                          serviceAccessPoint: https://sd-ui.dev.simpl-europe.eu
+                          overallScore: null
+                          overallClassification: null
+                    page: 1
+                    pageSize: 20
+                    total: 21
+                    totalPages: 2
+                    next: /selfDescriptions/advancedSearch?page=2&pageSize=20
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnBadRequestEmptyNodeDefinition:
+                  value:
+                    type: urn:problem-type:simpl:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: No Properties defined in simpl:ContractTemplate node. Please provide at least one property with
+                      searched value.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestWrongPropertyNamesForPriceField:
+                  value:
+                    type: urn:problem-type:simpl:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: 'Wrong property names in node simpl:OfferingPrice. Allowed property names: op1, op2, value1, value2'
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestInvalidPagination:
+                  value:
+                    type: urn:problem-type:belgif:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: Query parameter 'pageSize' must be an integer.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestInvalidMinimumScore:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumScore must be greater than or equal to 0.
+                returnBadRequestInvalidMinimumClassification:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumClassification is not a supported quality classification value.
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          $ref: '#/components/responses/internalServerErrorResponse'
+components:
+  schemas:
+    Problem:
+      $ref: '../common/common-components.yaml#/components/schemas/Problem'
+    searchResponsePayload:
+      $ref: '../common/common-components.yaml#/components/schemas/searchResponsePayload'
+    advancedSearchRequestPayload:
+      $ref: '../common/common-components.yaml#/components/schemas/advancedSearchRequestPayload'
+  responses:
+    internalServerErrorResponse:
+      $ref: '../common/common-components.yaml#/components/responses/internalServerErrorResponse'
+    notFoundErrorResponse:
+      $ref: '../common/common-components.yaml#/components/responses/notFoundErrorResponse'
+    forbiddenErrorResponse:
+      $ref: '../common/common-components.yaml#/components/responses/forbiddenErrorResponse'
+    unauthorizedErrorResponse:
+      $ref: '../common/common-components.yaml#/components/responses/unauthorizedErrorResponse'
+    getResourceDescriptionResponse:
+      $ref: '../common/common-components.yaml#/components/responses/getResourceDescriptionResponse'
+  securitySchemes:
+    OAuth2Auth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.com/oauth/authorize
+          tokenUrl: https://auth.example.com/oauth/token
+          scopes:
+            read: Read access
+            write: Write access

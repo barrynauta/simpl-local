@@ -1,0 +1,1804 @@
+# Generated from adapter_openapi.yaml; see README.md for regeneration.
+openapi: 3.0.1
+security:
+- OAuth2Auth: []
+info:
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  contact:
+    name: Simpl Programme
+    email: cnect-simpl@ec.europa.eu
+    url: https://simpl-programme.ec.europa.eu/
+  title: Query Mapper Adapter API
+  description: This the API  for the adapter to the Simpl Federated Catalogue located
+    in the Governance authority node.
+  version: 1.2.0
+servers:
+- url: https://adapter.dev.simpl-europe.eu/v1
+  description: Generated server url
+paths:
+  /governanceAuthority/selfDescriptions:
+    get:
+      tags:
+      - Governance Authority resource description search
+      operationId: searchGovernanceAuthoritySelfDescriptions
+      summary: Quick search across selected catalogues through the Trusted Governance
+        Authority.
+      description: A Consumer supplies catalogue identifiers and quick-search criteria
+        to its Trusted Governance Authority. Unlike local GET /selfDescriptions, this
+        contract requires an explicit non-empty catalogue selection. The Trusted Governance
+        Authority delegates searches at selected Trustor catalogues through the separate
+        SIMPL-31880 API. This specification-only contract does not define orchestration,
+        result aggregation, or partial-failure rules.
+      parameters:
+      - name: catalogueIds
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            minLength: 1
+        description: Identifiers of the Consumer-selected catalogues, not caller-supplied
+          endpoint URLs. Repeat the query parameter for multiple selections, for example
+          catalogueIds=climateResearchCatalogue&catalogueIds=transportDataCatalogue.
+          Missing selection, an empty selection, or an empty identifier is invalid.
+        examples:
+          singleCatalogue:
+            summary: Select the climate research catalogue.
+            value:
+            - climateResearchCatalogue
+          multipleCatalogues:
+            summary: Select the climate research and transport data catalogues.
+            value:
+            - climateResearchCatalogue
+            - transportDataCatalogue
+      - name: searchString
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: ^(?=.*\S)[\p{L}\p{N}\s.,'\-_&@()+/]{1,255}$
+        description: String value against which the search will be conducted. Must
+          not be blank, must not exceed 255 characters, and may only contain letters,
+          numbers, whitespace, dots, commas, apostrophes, hyphens, underscores, ampersands,
+          at signs, parentheses, plus signs, and slashes.
+        examples:
+          returnValidResponse:
+            value: climate
+      - name: minimumScore
+        in: query
+        required: false
+        schema:
+          type: number
+          format: double
+          minimum: 0
+        description: Optional. Minimum overall quality score. Must be >= 0.
+        examples:
+          qualityThreshold:
+            value: 0.8
+      - name: minimumClassification
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Optional. Minimum overall quality classification from the active
+          MQP.
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: Page number (1-based). Must be greater than 0.
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+        description: Number of items per page. Must be greater than 0. Values above
+          100 are silently capped at 100.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/searchResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 2
+                    items:
+                    - n:
+                        claimsGraphUri:
+                        - did:web:climate.example.org:DataOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                        offeringType: data
+                        name: European climate observations
+                        inLanguage: en
+                        description: Daily temperature and precipitation observations
+                          from European stations.
+                        serviceAccessPoint: https://climate.example.org/datasets/observations
+                        overallScore: 0.92
+                        overallClassification: Green
+                    - n:
+                        claimsGraphUri:
+                        - did:web:transport.example.org:DataOffering:72c5190c-265d-4c90-985e-f23877314a88
+                        offeringType: data
+                        name: Climate impact on regional transport
+                        description: Regional transport disruptions associated with
+                          extreme weather.
+                        inLanguage: en
+                        serviceAccessPoint: https://transport.example.org/datasets/climate-impact
+                        overallScore: null
+                        overallClassification: null
+                    page: 1
+                    pageSize: 20
+                    total: 2
+                    totalPages: 1
+                    next: null
+                returnEmptyResponse:
+                  summary: No resource descriptions match the criteria in the selected
+                    catalogues.
+                  value:
+                    totalCount: 0
+                    items: []
+                    page: 1
+                    pageSize: 20
+                    total: 0
+                    totalPages: 0
+                    next: null
+        '400':
+          description: Invalid or missing catalogue selection, search criteria, or
+            pagination.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnBadRequestMissingCatalogueIds:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: Required query parameter 'catalogueIds' is missing; select
+                      at least one catalogue.
+                returnBadRequestEmptyCatalogueIds:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: catalogueIds must contain at least one catalogue identifier.
+                returnBadRequestEmptyCatalogueId:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: Each catalogueIds value must be a non-empty string.
+                returnBadRequestInvalidSearchString:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: searchString is required, must not be blank, must be at
+                      most 255 characters, and must contain only permitted characters.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestInvalidMinimumScore:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumScore must be greater than or equal to 0.
+                returnBadRequestInvalidMinimumClassification:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumClassification is not a supported quality classification
+                      value.
+                returnBadRequestInvalidPagination:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: page and pageSize must be integers greater than 0.
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnNotAcceptable:
+                  value:
+                    type: urn:problem-type:simpl:notAcceptable
+                    title: Not Acceptable
+                    status: 406
+                    detail: The requested response media type is not supported; use
+                      application/json.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnInternalServerError:
+                  value:
+                    type: urn:problem-type:simpl:internalServerError
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+                    title: Internal Server Error
+                    status: 500
+                    detail: Internal Server Error
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /participants/resourceDescriptions:
+    get:
+      tags:
+      - Participant resource description
+      summary: Return all resource descriptions with the participant id as defined
+        in the Client access token.
+      parameters:
+      - name: orderBy
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - publicationDate
+          - resourceType
+          default: publicationDate
+        description: Field to order the results by
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: Page number (1-based). Must be greater than 0.
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+        description: Number of items per page. Must be greater than 0.
+      - name: User-Attributes
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Optional user attributes header
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/searchResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 1
+                    items:
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                        offeringType: infrastructure
+                        name: text title for infrastructure resource.
+                        inLanguage: da
+                        description: text description
+                        serviceAccessPoint: http://serviceaccesspoint.com
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:forbidden
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403
+                title: Forbidden
+                status: 403
+                detail: Client is not authorized to access the requested resource.
+                instance: urn:uuid:24a550c4-d7a8-4c06-91aa-35a80244776e
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable
+                  values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnInternalServerError:
+                  value:
+                    type: urn:problem-type:simpl:internalServerError
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+                    title: Internal Server Error
+                    status: 500
+                    detail: Internal Server Error
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /participants/resourceDescriptions/{resourceDescriptionId}:
+    get:
+      parameters:
+      - name: resourceDescriptionId
+        in: path
+        description: value defined in credentialSubject.@id for given resource description
+        required: true
+        schema:
+          type: string
+        examples:
+          returnValidResponse:
+            value: 3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_252
+      tags:
+      - Participant resource description
+      summary: Return details of given resource description stored in federated catalogue
+      responses:
+        '200':
+          description: Resource description details. Due to ever changing nature of
+            resource description shape it is impossible to provide detailed description
+            of each property.
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                returnValidResponse:
+                  value:
+                    '@context':
+                    - https://www.w3.org/2018/credentials/v1
+                    - https://w3id.org/security/suites/jws-2020/v1
+                    credentialSubject:
+                      '@context':
+                        gax-validation: http://w3id.org/gaia-x/validation#
+                        rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+                        sh: http://www.w3.org/ns/shacl#
+                        simpl: http://w3id.org/gaia-x/simpl#
+                        skos: http://www.w3.org/2004/02/skos/core#
+                        xsd: http://www.w3.org/2001/XMLSchema#
+                      '@id': 3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_252
+                      rdf:type:
+                        '@id': simpl:DataOffering
+                      simpl:billingSchema:
+                        rdf:type:
+                          '@id': simpl:BillingSchema
+                        simpl:billingSchemaDocument: Billing Schema 1
+                        simpl:billingSchemaHashAlg: SHA-256
+                        simpl:billingSchemaHashValue: 7cf87b4138c3d4ca015ba54ccc21c2e879a1eaa60e0979859484550aaa76bded
+                        simpl:billingSchemaURL: https://files.dev.simpl-europe.eu/static/pdf/BillingSchema1.pdf
+                      simpl:contractTemplate:
+                        rdf:type:
+                          '@id': simpl:ContractTemplate
+                        simpl:contractTemplateDocument: Contract Template 1
+                        simpl:contractTemplateHashAlg: SHA-256
+                        simpl:contractTemplateHashValue: 27883d9aec35ab16a3934e6581ed1b7f1b16feb75ead991c07ceff2e4a96fe58
+                        simpl:contractTemplateURL: https://files.dev.simpl-europe.eu/static/pdf/ContractTemplate1.pdf
+                      simpl:dataProperties:
+                        rdf:type:
+                          '@id': simpl:DataProperties
+                        simpl:format: test
+                      simpl:edcRegistration:
+                        simpl:accessPolicyId: 12b5f80d-ec90-43bc-9d7c-ad1a2f5e0d7e
+                        simpl:assetId: 2764f7d9-8044-407e-9eb4-d166c5d1eb85
+                        simpl:contractDefinitionId: ff23a62e-26f7-4a0d-b709-09c8ebe22cb2
+                        simpl:servicePolicyId: 82c09c5c-eed9-4865-9a9f-6534cc84dd4a
+                      simpl:generalServiceProperties:
+                        rdf:type:
+                          '@id': simpl:GeneralServiceProperties
+                        simpl:description: asset description
+                        simpl:inLanguage: en
+                        simpl:name: asset 004
+                        simpl:offeringType: data
+                        simpl:serviceAccessPoint:
+                          '@type': xsd:anyURI
+                          '@value': https://sd-ui.dev.simpl-europe.eu
+                      simpl:offeringPrice:
+                        rdf:type:
+                          '@id': simpl:OfferingPrice
+                        simpl:currency: EUR
+                        simpl:license:
+                          '@type': xsd:anyURI
+                          '@value': https://sd-ui.dev.simpl-europe.eu
+                        simpl:price:
+                          '@type': xsd:decimal
+                          '@value': 10000
+                        simpl:priceType: free
+                      simpl:providerInformation:
+                        rdf:type:
+                          '@id': simpl:ProviderInformation
+                        simpl:contact: test@test.com
+                        simpl:providedBy: test
+                        simpl:signature: test
+                      simpl:servicePolicy:
+                        rdf:type:
+                          '@id': simpl:ServicePolicy
+                        simpl:access-policy: '{"profile":"http://www.w3.org/ns/odrl/2/odrl.jsonld","target":"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe","assigner":{"uid":"provider","role":"http://www.w3.org/ns/odrl/2/assigner"},"uid":"a5bedff0-e3e3-4806-8c83-9a97002fae4e","@context":"http://www.w3.org/ns/odrl.jsonld","@type":"Set","permission":[{"target":"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe","assignee":{"uid":"CONSUMER","role":"http://www.w3.org/ns/odrl/2/assignee"},"action":["http://simpl.eu/odrl/actions/search"],"constraint":[]}]}'
+                        simpl:usage-policy: '{"profile":"http://www.w3.org/ns/odrl/2/odrl.jsonld","target":"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe","assigner":{"uid":"provider","role":"http://www.w3.org/ns/odrl/2/assigner"},"uid":"47b65a0c-d19d-4350-9225-13208ef649ff","@context":"http://www.w3.org/ns/odrl.jsonld","@type":"Set","permission":[{"target":"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe","assignee":{"uid":"CONSUMER","role":"http://www.w3.org/ns/odrl/2/assignee"},"action":["http://www.w3.org/ns/odrl/2/use"],"constraint":[{"leftOperand":"http://www.w3.org/ns/odrl/2/deletion","operator":"http://www.w3.org/ns/odrl/2/eq","rightOperand":"after_use"}]}]}'
+                      simpl:slaAgreements:
+                        rdf:type:
+                          '@id': simpl:SlaAgreements
+                        simpl:slaAgreementsDocument: Sla Agreements 1
+                        simpl:slaAgreementsHashAlg: SHA-256
+                        simpl:slaAgreementsHashValue: a75b83855522208dfb134f559447c8ca5864c6dc1d705c26f9b735ba175e26fe
+                        simpl:slaAgreementsURL: https://files.dev.simpl-europe.eu/static/pdf/SLAAgreement1.pdf
+                      simpl:edcConnector:
+                        simpl:providerEndpointURL: https://edc-provider.dev.simpl-europe.eu
+                    issuanceDate: '2024-11-13T14:56:45.099919693Z'
+                    issuer: did:web:did.dev.simpl-europa.eu
+                    proof:
+                      created: '2024-11-13T14:56:45.109434764Z'
+                      jws: eyJhbGciOiJVbmRlZmluZWQiLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdfQ..z-LkBu3VrEcCHO_TjdNkPsS5jQYHTwCYtKG8hUHa775zScBkIv-UgTtOjcNKzUCzRQhAN1nxXVVvah1khF1GBg
+                      proofPurpose: assertionMethod
+                      type: JsonWebSignature2020
+                      verificationMethod: did:web:did.dev.simpl-europa.eu#gaia-x-key1
+                    type: VerifiableCredential
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:forbidden
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403
+                title: Forbidden
+                status: 403
+                detail: Client is not authorized to access the requested resource.
+                instance: urn:uuid:24a550c4-d7a8-4c06-91aa-35a80244776e
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notFound
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
+                title: Not Found
+                status: 404
+                detail: Resource with given id was not found.
+                instance: urn:uuid:8795ff62-63f3-4474-912f-567f88ce2304
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable
+                  values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnInternalServerError:
+                  value:
+                    type: urn:problem-type:simpl:internalServerError
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+                    title: Internal Server Error
+                    status: 500
+                    detail: Internal Server Error
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    patch:
+      tags:
+      - Participant resource description
+      summary: Revoke existing resource description. Endpoint will behave idempotently
+        if resource description is already revoked.
+      parameters:
+      - name: resourceDescriptionId
+        in: path
+        required: true
+        schema:
+          type: string
+          example: did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_eng_custom5
+        description: value defined in credentialSubject.@id for given resource description
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notFound
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
+                title: Not Found
+                status: 404
+                detail: Resource with given id was not found.
+                instance: urn:uuid:8795ff62-63f3-4474-912f-567f88ce2304
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:forbidden
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403
+                title: Forbidden
+                status: 403
+                detail: Client is not authorized to access the requested resource.
+                instance: urn:uuid:24a550c4-d7a8-4c06-91aa-35a80244776e
+        '500':
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnInternalServerError:
+                  value:
+                    type: urn:problem-type:simpl:internalServerError
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+                    title: Internal Server Error
+                    status: 500
+                    detail: Internal Server Error
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /participants/resourceDescriptions/{resourceDescriptionId}/version:
+    get:
+      tags:
+      - Participant resource description
+      summary: Return list of resource descriptions with the same parent resource
+        description id.
+      parameters:
+      - name: resourceDescriptionId
+        in: path
+        description: Parent resource description id.
+        required: true
+        schema:
+          type: string
+        examples:
+          validResourceDescriptionId:
+            value: 3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_252
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: Page number (1-based). Must be greater than 0.
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+        description: Number of items per page. Must be greater than 0.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/versionHistoryResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 2
+                    items:
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                        offeringType: infrastructure
+                        name: text title for infrastructure resource.
+                        inLanguage: da
+                        description: text description
+                        serviceAccessPoint: http://serviceaccesspoint.com
+                        version: 2
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_235
+                        offeringType: infrastructure
+                        name: asset03
+                        description: asset description
+                        inLanguage: en
+                        serviceAccessPoint: https://sd-ui.dev.simpl-europe.eu
+                        version: 1
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unauthorized
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401
+                title: Invalid or expired token
+                status: 401
+                detail: Invalid or expired token
+                instance: urn:uuid:24a550c4-d7a8-4c06-91aa-35a80244776e
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:forbidden
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403
+                title: Forbidden
+                status: 403
+                detail: Client is not authorized to access the requested resource.
+                instance: urn:uuid:24a550c4-d7a8-4c06-91aa-35a80244776e
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notFound
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
+                title: Not Found
+                status: 404
+                detail: Resource with given id was not found.
+                instance: urn:uuid:8795ff62-63f3-4474-912f-567f88ce2304
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable
+                  values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnInternalServerError:
+                  value:
+                    type: urn:problem-type:simpl:internalServerError
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+                    title: Internal Server Error
+                    status: 500
+                    detail: Internal Server Error
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /federated/resourceDescriptions/{resourceDescriptionId}:
+    get:
+      tags:
+      - Federated resource description
+      operationId: getFederatedResourceDescription
+      summary: Retrieve a federated resource description
+      description: The Trustor Governance Authority receives this request from a Trusted
+        Governance Authority. The gateway authenticates the Trusted Governance Authority
+        using mutual TLS, maps the Consumer's identity attributes, and evaluates discovery
+        ABAC before forwarding this request. The gateway supplies User-Attributes
+        and Correlation-Id to the adapter. The adapter does not repeat gateway authorization
+        or require OAuth2 for this operation. Gateway-generated authentication and
+        ABAC errors are outside this adapter response contract. The response contains
+        the complete resource description, but does not return a separate schema.
+      security: []
+      parameters:
+      - name: resourceDescriptionId
+        in: path
+        required: true
+        description: Identifier of the resource description in the Federated Catalogue.
+        schema:
+          type: string
+          minLength: 1
+        example: did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v0
+      - name: User-Attributes
+        in: header
+        required: true
+        description: Consumer identity attributes forwarded by the gateway after discovery
+          ABAC.
+        schema:
+          type: string
+          minLength: 1
+        example: CONSUMER
+      - name: Correlation-Id
+        in: header
+        required: true
+        description: Request correlation identifier forwarded by the gateway; echoed
+          in the response header only.
+        schema:
+          type: string
+          minLength: 1
+        example: 123e4567-e89b-12d3-a456-426614174000
+      responses:
+        '200':
+          description: Complete resource description; no separate schema is returned.
+          headers:
+            Correlation-Id:
+              description: The Correlation-Id from the forwarded request, echoed only
+                in the response header.
+              required: true
+              schema:
+                type: string
+              example: 123e4567-e89b-12d3-a456-426614174000
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/federatedResourceDescriptionPayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    resourceDescription:
+                      '@context':
+                      - https://www.w3.org/2018/credentials/v1
+                      - https://w3id.org/security/suites/jws-2020/v1
+                      credentialSubject:
+                        '@context':
+                          dct: http://purl.org/dc/terms/
+                          rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+                          simpl: http://w3id.org/gaia-x/simpl#
+                        '@id': did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v0
+                        rdf:type:
+                          '@id': simpl:DataOffering
+                        dct:conformsTo:
+                          '@id': https://simpl.example.org/schema/DataSchema
+                          '@type': dct:Standard
+                          dct:hasVersion: '21'
+                          dct:schemaName: DataSchema
+                        simpl:generalServiceProperties:
+                          rdf:type:
+                            '@id': simpl:GeneralServiceProperties
+                          simpl:name: Example dataset
+                          simpl:description: Sample dataset for federated discovery
+                          simpl:inLanguage: en
+                          simpl:offeringType: data
+                          simpl:serviceAccessPoint:
+                            '@type': http://www.w3.org/2001/XMLSchema#anyURI
+                            '@value': https://provider.example.org/data
+                        simpl:dataProperties:
+                          rdf:type:
+                            '@id': simpl:DataProperties
+                          simpl:format: text/csv
+                        simpl:providerInformation:
+                          rdf:type:
+                            '@id': simpl:ProviderInformation
+                          simpl:providedBy: did:web:provider.example.org
+                      issuanceDate: '2026-01-15T10:00:00Z'
+                      issuer: did:web:authority.example.org
+                      type: VerifiableCredential
+                      proof:
+                        type: JsonWebSignature2020
+                        created: '2026-01-15T10:00:00Z'
+                        proofPurpose: assertionMethod
+                        verificationMethod: did:web:authority.example.org#key-1
+                        jws: illustrative-signature
+        '400':
+          description: Malformed or missing required path/forwarded header parameters
+            reaching the adapter.
+          headers:
+            Correlation-Id:
+              description: Echoed when the malformed request included a Correlation-Id;
+                absent if that required header was missing.
+              required: false
+              schema:
+                type: string
+              example: 123e4567-e89b-12d3-a456-426614174000
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:belgif:badRequest
+                title: Bad Request
+                status: 400
+                detail: Required forwarded header User-Attributes is missing.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '404':
+          description: The requested resource description does not exist in the Federated
+            Catalogue.
+          headers:
+            Correlation-Id:
+              description: The Correlation-Id from the forwarded request, echoed only
+                in the response header.
+              required: true
+              schema:
+                type: string
+              example: 123e4567-e89b-12d3-a456-426614174000
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notFound
+                title: Not Found
+                status: 404
+                detail: Resource description with the requested identifier was not
+                  found.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '406':
+          description: The requested Accept media types cannot be produced by the
+            adapter.
+          headers:
+            Correlation-Id:
+              description: The Correlation-Id from the forwarded request, echoed only
+                in the response header.
+              required: true
+              schema:
+                type: string
+              example: 123e4567-e89b-12d3-a456-426614174000
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                title: Not Acceptable
+                status: 406
+                detail: The requested response media type is not supported; use application/json.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          description: A downstream catalogue request failed or another internal failure
+            occurred.
+          headers:
+            Correlation-Id:
+              description: The Correlation-Id from the forwarded request, echoed only
+                in the response header.
+              required: true
+              schema:
+                type: string
+              example: 123e4567-e89b-12d3-a456-426614174000
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnInternalServerError:
+                  value:
+                    type: urn:problem-type:simpl:internalServerError
+                    title: Internal Server Error
+                    status: 500
+                    detail: The resource description could not be retrieved due to
+                      a downstream failure.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /selfDescriptions:
+    get:
+      tags:
+      - Resource description search
+      operationId: searchSelfDescriptions
+      summary: Search the Federated Catalogue for Resource descriptions that contain
+        the provided keyword. Resource descriptions with access policy values other
+        than the one defined in the Client access token will not be listed
+      parameters:
+      - name: searchString
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: ^(?=.*\S)[\p{L}\p{N}\s.,'\-_&@()+/]{1,255}$
+        description: String value against which the search will be conducted. Must
+          not be blank, must not exceed 255 characters, and may only contain letters,
+          numbers, whitespace, dots, commas, apostrophes, hyphens, underscores, ampersands,
+          at signs, parentheses, plus signs, and slashes.
+        examples:
+          returnValidResponse:
+            value: asset03
+      - name: minimumScore
+        in: query
+        required: false
+        schema:
+          type: number
+          format: double
+        description: Optional. Minimum overall quality score. Must be >= 0.
+      - name: minimumClassification
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Optional. Minimum overall quality classification from the active
+          MQP.
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: Page number (1-based). Must be greater than 0.
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+        description: Number of items per page. Must be greater than 0. Values above
+          100 are silently capped at 100.
+      - name: User-Attributes
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Optional user attributes header
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/searchResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 2
+                    items:
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                        offeringType: infrastructure
+                        name: text title for infrastructure resource.
+                        inLanguage: da
+                        description: text description
+                        serviceAccessPoint: http://serviceaccesspoint.com
+                        overallScore: 0.92
+                        overallClassification: Green
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_235
+                        offeringType: data
+                        name: asset03
+                        description: asset description
+                        inLanguage: en
+                        serviceAccessPoint: https://sd-ui.dev.simpl-europe.eu
+                        overallScore: null
+                        overallClassification: null
+                    page: 1
+                    pageSize: 20
+                    total: 2
+                    totalPages: 1
+                    next: null
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnBadRequestInvalidSearchString:
+                  value:
+                    type: urn:problem-type:belgif:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: Query parameter 'searchString' contains invalid characters.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestInvalidMinimumScore:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumScore must be greater than or equal to 0.
+                returnBadRequestInvalidMinimumClassification:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumClassification is not a supported quality classification
+                      value.
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable
+                  values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnInternalServerError:
+                  value:
+                    type: urn:problem-type:simpl:internalServerError
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+                    title: Internal Server Error
+                    status: 500
+                    detail: Internal Server Error
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  /selfDescriptions/advancedSearch:
+    post:
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: "def jsonSlurper = new groovy.json.JsonSlurper()\ndef requestBody\
+          \ = jsonSlurper.parseText(mockRequest.getRequestContent())\ndef contractTemplateNode\
+          \ = requestBody?.\"simpl:ContractTemplate\"\ndef priceObject = requestBody?.\"\
+          simpl:OfferingPrice\"?.price\nif (contractTemplateNode != null && contractTemplateNode.findAll().size()\
+          \ == 0) {\n  return \"returnBadRequestEmptyNodeDefinition\"\n}\nif (priceObject\
+          \ != null && priceObject.customOperator != null) {\n  return \"returnBadRequestWrongPropertyNamesForPriceField\"\
+          \n}\nreturn \"returnValidResponse\"\n"
+      tags:
+      - Resource description search
+      operationId: advancedSearchSelfDescriptions
+      summary: Search the Federated Catalogue for Resource descriptions that match
+        the provided search criteria in the request payload. Resource descriptions
+        with access policy values other than the one defined in the Client access
+        token will not be listed
+      parameters:
+      - name: User-Attributes
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Optional user attributes header
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: Page number (1-based). Must be greater than 0.
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+        description: Number of items per page. Must be greater than 0. Values above
+          100 are silently capped at 100.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/advancedSearchRequestPayload'
+            examples:
+              returnValidResponse:
+                value:
+                  catalogueIds:
+                  - catalogueId1
+                  - catalogueId2
+                  simpl:OfferingPrice:
+                    price:
+                      op1: '>='
+                      value1: '15'
+                      op2: <
+                      value2: '150'
+                  simpl:GeneralServiceProperties:
+                    name: asset002
+                  simpl:ContractTemplate:
+                    contractTemplateDocument: Contract Template 1234
+              returnValidResponseWithQualityFilters:
+                value:
+                  minimumScore: 75
+                  minimumClassification: good
+                  simpl:GeneralServiceProperties:
+                    name: asset002
+              returnBadRequestEmptyNodeDefinition:
+                value:
+                  simpl:ContractTemplate: {}
+              returnBadRequestWrongPropertyNamesForPriceField:
+                value:
+                  simpl:OfferingPrice:
+                    price:
+                      customOperator: '>='
+                      value1: '15'
+                      op2: <
+                      value2: '150'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/searchResponsePayload'
+              examples:
+                returnValidResponse:
+                  value:
+                    totalCount: 21
+                    items:
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+                        offeringType: infrastructure
+                        name: asset002
+                        inLanguage: da
+                        description: text description
+                        serviceAccessPoint: http://serviceaccesspoint.com
+                        overallScore: 0.92
+                        overallClassification: Green
+                    - n:
+                        claimsGraphUri:
+                        - did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_235
+                        offeringType: data
+                        name: asset002
+                        description: asset description
+                        inLanguage: en
+                        serviceAccessPoint: https://sd-ui.dev.simpl-europe.eu
+                        overallScore: null
+                        overallClassification: null
+                    page: 1
+                    pageSize: 20
+                    total: 21
+                    totalPages: 2
+                    next: /selfDescriptions/advancedSearch?page=2&pageSize=20
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnBadRequestEmptyNodeDefinition:
+                  value:
+                    type: urn:problem-type:simpl:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: No Properties defined in simpl:ContractTemplate node.
+                      Please provide at least one property with searched value.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestWrongPropertyNamesForPriceField:
+                  value:
+                    type: urn:problem-type:simpl:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: 'Wrong property names in node simpl:OfferingPrice. Allowed
+                      property names: op1, op2, value1, value2'
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestInvalidPagination:
+                  value:
+                    type: urn:problem-type:belgif:badRequest
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                    title: Bad Request
+                    status: 400
+                    detail: Query parameter 'pageSize' must be an integer.
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+                returnBadRequestInvalidMinimumScore:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumScore must be greater than or equal to 0.
+                returnBadRequestInvalidMinimumClassification:
+                  value:
+                    type: urn:problem-type:simpl:catalogue:invalidInput
+                    title: Invalid input
+                    status: 400
+                    detail: minimumClassification is not a supported quality classification
+                      value.
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:notAcceptable
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/406
+                title: Not Acceptable
+                status: 406
+                detail: Server cannot produce a response matching the list of acceptable
+                  values defined in the request's
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: urn:problem-type:simpl:unsupportedMediaType
+                href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/415
+                title: Unsupported Media Type
+                status: 415
+                detail: Server refused to accept the request because the message content
+                  format is not supported.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+        '500':
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                returnInternalServerError:
+                  value:
+                    type: urn:problem-type:simpl:internalServerError
+                    href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+                    title: Internal Server Error
+                    status: 500
+                    detail: Internal Server Error
+                    instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+components:
+  schemas:
+    Problem:
+      description: 'A Problem Details object (RFC 9457).
+
+
+        Additional properties specific to the problem type may be present.
+
+        '
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          pattern: ^[A-Za-z][A-Za-z0-9+.-]*:[^\s]+$
+          description: An absolute URI that identifies the problem type
+          default: about:blank
+        href:
+          type: string
+          format: uri
+          description: An absolute URI that, when dereferenced, provides human-readable
+            documentation for the problem type (e.g. using HTML).
+        title:
+          type: string
+          description: A short summary of the problem type. Written in English and
+            readable for engineers (usually not suited for non technical stakeholders
+            and not localized).
+          example: Service Unavailable
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code generated by the origin server for this
+            occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          exclusiveMaximum: true
+          example: 503
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of
+            the problem
+        instance:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the specific occurrence of
+            the problem. It may or may not yield further information if dereferenced.
+      example:
+        type: urn:problem-type:exampleOrganization:exampleProblem
+        href: https://www.belgif.be/specification/rest/api-guide/#standardized-problem-types
+        title: Description of the type of problem that occurred
+        status: 400
+        detail: Description of specific occurrence of the problem
+        instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    searchResponsePayload:
+      type: object
+      required:
+      - totalCount
+      - items
+      - page
+      - pageSize
+      - total
+      - totalPages
+      - next
+      properties:
+        totalCount:
+          type: integer
+          example: 2
+          description: Number of found Resource description.
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              n:
+                type: object
+                properties:
+                  claimsGraphUri:
+                    type: array
+                    items:
+                      type: string
+                  offeringType:
+                    type: string
+                    nullable: true
+                  name:
+                    type: string
+                    nullable: true
+                  inLanguage:
+                    type: string
+                    nullable: true
+                  description:
+                    type: string
+                    nullable: true
+                  serviceAccessPoint:
+                    type: string
+                    nullable: true
+                  overallScore:
+                    type: number
+                    format: double
+                    nullable: true
+                    description: Overall quality score from the active resource description
+                      quality assessment result.
+                  overallClassification:
+                    type: string
+                    nullable: true
+                    description: Overall quality classification from the active resource
+                      description quality assessment result.
+          example:
+          - n:
+              claimsGraphUri:
+              - did:web:registry.gaia-x.eu:InfrastructureOffering:a94ef06c-a12d-4308-89aa-fffcd8a61126
+              offeringType: infrastructure
+              name: text title for infrastructure resource.
+              inLanguage: da
+              description: text description
+              serviceAccessPoint: http://serviceaccesspoint.com
+              overallScore: 0.92
+              overallClassification: Green
+          - n:
+              claimsGraphUri:
+              - did:web:registry.gaia-x.eu:DataOffering:3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_235
+              offeringType: data
+              name: asset 004
+              description: asset description
+              inLanguage: en
+              serviceAccessPoint: https://sd-ui.dev.simpl-europe.eu
+              overallScore: null
+              overallClassification: null
+          description: An array of general service properties nodes of a filtered
+            out resource descriptions
+        page:
+          type: integer
+          example: 1
+          description: Current 1-based page number.
+        pageSize:
+          type: integer
+          example: 20
+          description: Effective number of items per page, capped at 100.
+        total:
+          type: integer
+          example: 150
+          description: Total number of items across all pages.
+        totalPages:
+          type: integer
+          example: 8
+          description: Total number of pages.
+        next:
+          type: string
+          nullable: true
+          example: /selfDescriptions?searchString=test&page=2&pageSize=20
+          description: Relative URL to the next page, or null when no next page is
+            available. Advanced-search clients must resend the same POST body to the
+            URL returned for that operation.
+    versionHistoryResponsePayload:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          example: 2
+          description: Number of found version entries.
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              n:
+                type: object
+                properties:
+                  claimsGraphUri:
+                    type: array
+                    items:
+                      type: string
+                  offeringType:
+                    type: string
+                    nullable: true
+                  name:
+                    type: string
+                    nullable: true
+                  inLanguage:
+                    type: string
+                    nullable: true
+                  description:
+                    type: string
+                    nullable: true
+                  serviceAccessPoint:
+                    type: string
+                    nullable: true
+                  version:
+                    type: integer
+                    nullable: true
+          description: An array of version history items with mapped resource description
+            properties
+    advancedSearchRequestPayload:
+      type: object
+      description: Since resource descriptions as of now are schemaless the request
+        body can be any JSON with proper structure. Each JSON root key needs to correspond
+        to a resource description node name. As a value for that key an JSON object
+        need to be provided with the searched property names and values. In case of
+        numerical values we can provide a range of searched values by providing op1
+        and op2 properties as described in the example. Optional root fields minimumScore
+        (>= 0) and minimumClassification may be included to filter by quality assessment
+        results.
+      properties:
+        catalogueIds:
+          type: array
+          items:
+            type: string
+          description: An array of catalogue ids to search. If no Ids provided no
+            catalogue will be searched.
+      required:
+      - catalogueIds
+      example:
+        minimumScore: 75
+        minimumClassification: good
+        catalogueIds:
+        - catalogue_id1
+        - catalogue_id2
+        - catalogue_id3
+        simpl:OfferingPrice:
+          price:
+            op1: '>='
+            value1: '15'
+            op2: <
+            value2: '150'
+        simpl:GeneralServiceProperties:
+          name: asset002
+        simpl:ContractTemplate:
+          contractTemplateDocument: Contract Template 1234
+    federatedResourceDescriptionPayload:
+      type: object
+      description: Full resource description returned without a separate schema.
+      additionalProperties: false
+      required:
+      - resourceDescription
+      properties:
+        resourceDescription:
+          type: object
+          description: Complete Federated Catalogue resource description (including
+            its credentialSubject and dct:conformsTo); the JSON-LD properties vary
+            by offering type and are not truncated or projected.
+          additionalProperties: true
+  responses:
+    internalServerErrorResponse:
+      description: Internal Server error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            returnInternalServerError:
+              value:
+                type: urn:problem-type:simpl:internalServerError
+                href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+                title: Internal Server Error
+                status: 500
+                detail: Internal Server Error
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    notFoundErrorResponse:
+      description: Not Found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:notFound
+            href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
+            title: Not Found
+            status: 404
+            detail: Resource with given id was not found.
+            instance: urn:uuid:8795ff62-63f3-4474-912f-567f88ce2304
+    forbiddenErrorResponse:
+      description: Forbidden
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:forbidden
+            href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403
+            title: Forbidden
+            status: 403
+            detail: Client is not authorized to access the requested resource.
+            instance: urn:uuid:24a550c4-d7a8-4c06-91aa-35a80244776e
+    unauthorizedErrorResponse:
+      description: Unauthorized
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:unauthorized
+            href: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401
+            title: Invalid or expired token
+            status: 401
+            detail: Invalid or expired token
+            instance: urn:uuid:24a550c4-d7a8-4c06-91aa-35a80244776e
+    getResourceDescriptionResponse:
+      description: Resource description details. Due to ever changing nature of resource
+        description shape it is impossible to provide detailed description of each
+        property.
+      content:
+        application/json:
+          schema:
+            type: string
+          examples:
+            returnValidResponse:
+              value:
+                '@context':
+                - https://www.w3.org/2018/credentials/v1
+                - https://w3id.org/security/suites/jws-2020/v1
+                credentialSubject:
+                  '@context':
+                    gax-validation: http://w3id.org/gaia-x/validation#
+                    rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+                    sh: http://www.w3.org/ns/shacl#
+                    simpl: http://w3id.org/gaia-x/simpl#
+                    skos: http://www.w3.org/2004/02/skos/core#
+                    xsd: http://www.w3.org/2001/XMLSchema#
+                  '@id': 3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHF_TEST_252
+                  rdf:type:
+                    '@id': simpl:DataOffering
+                  simpl:billingSchema:
+                    rdf:type:
+                      '@id': simpl:BillingSchema
+                    simpl:billingSchemaDocument: Billing Schema 1
+                    simpl:billingSchemaHashAlg: SHA-256
+                    simpl:billingSchemaHashValue: 7cf87b4138c3d4ca015ba54ccc21c2e879a1eaa60e0979859484550aaa76bded
+                    simpl:billingSchemaURL: https://files.dev.simpl-europe.eu/static/pdf/BillingSchema1.pdf
+                  simpl:contractTemplate:
+                    rdf:type:
+                      '@id': simpl:ContractTemplate
+                    simpl:contractTemplateDocument: Contract Template 1
+                    simpl:contractTemplateHashAlg: SHA-256
+                    simpl:contractTemplateHashValue: 27883d9aec35ab16a3934e6581ed1b7f1b16feb75ead991c07ceff2e4a96fe58
+                    simpl:contractTemplateURL: https://files.dev.simpl-europe.eu/static/pdf/ContractTemplate1.pdf
+                  simpl:dataProperties:
+                    rdf:type:
+                      '@id': simpl:DataProperties
+                    simpl:format: test
+                  simpl:edcRegistration:
+                    simpl:accessPolicyId: 12b5f80d-ec90-43bc-9d7c-ad1a2f5e0d7e
+                    simpl:assetId: 2764f7d9-8044-407e-9eb4-d166c5d1eb85
+                    simpl:contractDefinitionId: ff23a62e-26f7-4a0d-b709-09c8ebe22cb2
+                    simpl:servicePolicyId: 82c09c5c-eed9-4865-9a9f-6534cc84dd4a
+                  simpl:generalServiceProperties:
+                    rdf:type:
+                      '@id': simpl:GeneralServiceProperties
+                    simpl:description: asset description
+                    simpl:inLanguage: en
+                    simpl:name: asset 004
+                    simpl:offeringType: data
+                    simpl:serviceAccessPoint:
+                      '@type': xsd:anyURI
+                      '@value': https://sd-ui.dev.simpl-europe.eu
+                  simpl:offeringPrice:
+                    rdf:type:
+                      '@id': simpl:OfferingPrice
+                    simpl:currency: EUR
+                    simpl:license:
+                      '@type': xsd:anyURI
+                      '@value': https://sd-ui.dev.simpl-europe.eu
+                    simpl:price:
+                      '@type': xsd:decimal
+                      '@value': 10000
+                    simpl:priceType: free
+                  simpl:providerInformation:
+                    rdf:type:
+                      '@id': simpl:ProviderInformation
+                    simpl:contact: test@test.com
+                    simpl:providedBy: test
+                    simpl:signature: test
+                  simpl:servicePolicy:
+                    rdf:type:
+                      '@id': simpl:ServicePolicy
+                    simpl:access-policy: '{"profile":"http://www.w3.org/ns/odrl/2/odrl.jsonld","target":"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe","assigner":{"uid":"provider","role":"http://www.w3.org/ns/odrl/2/assigner"},"uid":"a5bedff0-e3e3-4806-8c83-9a97002fae4e","@context":"http://www.w3.org/ns/odrl.jsonld","@type":"Set","permission":[{"target":"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe","assignee":{"uid":"CONSUMER","role":"http://www.w3.org/ns/odrl/2/assignee"},"action":["http://simpl.eu/odrl/actions/search"],"constraint":[]}]}'
+                    simpl:usage-policy: '{"profile":"http://www.w3.org/ns/odrl/2/odrl.jsonld","target":"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe","assigner":{"uid":"provider","role":"http://www.w3.org/ns/odrl/2/assigner"},"uid":"47b65a0c-d19d-4350-9225-13208ef649ff","@context":"http://www.w3.org/ns/odrl.jsonld","@type":"Set","permission":[{"target":"3mwO1pOqDQ_fID9jc9Az1TS5JKIS_oinfKHe","assignee":{"uid":"CONSUMER","role":"http://www.w3.org/ns/odrl/2/assignee"},"action":["http://www.w3.org/ns/odrl/2/use"],"constraint":[{"leftOperand":"http://www.w3.org/ns/odrl/2/deletion","operator":"http://www.w3.org/ns/odrl/2/eq","rightOperand":"after_use"}]}]}'
+                  simpl:slaAgreements:
+                    rdf:type:
+                      '@id': simpl:SlaAgreements
+                    simpl:slaAgreementsDocument: Sla Agreements 1
+                    simpl:slaAgreementsHashAlg: SHA-256
+                    simpl:slaAgreementsHashValue: a75b83855522208dfb134f559447c8ca5864c6dc1d705c26f9b735ba175e26fe
+                    simpl:slaAgreementsURL: https://files.dev.simpl-europe.eu/static/pdf/SLAAgreement1.pdf
+                  simpl:edcConnector:
+                    simpl:providerEndpointURL: https://edc-provider.dev.simpl-europe.eu
+                issuanceDate: '2024-11-13T14:56:45.099919693Z'
+                issuer: did:web:did.dev.simpl-europa.eu
+                proof:
+                  created: '2024-11-13T14:56:45.109434764Z'
+                  jws: eyJhbGciOiJVbmRlZmluZWQiLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdfQ..z-LkBu3VrEcCHO_TjdNkPsS5jQYHTwCYtKG8hUHa775zScBkIv-UgTtOjcNKzUCzRQhAN1nxXVVvah1khF1GBg
+                  proofPurpose: assertionMethod
+                  type: JsonWebSignature2020
+                  verificationMethod: did:web:did.dev.simpl-europa.eu#gaia-x-key1
+                type: VerifiableCredential
+    federatedResourceDescriptionResponse:
+      description: Complete resource description; no separate schema is returned.
+      headers:
+        Correlation-Id:
+          description: The Correlation-Id from the forwarded request, echoed only
+            in the response header.
+          required: true
+          schema:
+            type: string
+          example: 123e4567-e89b-12d3-a456-426614174000
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/federatedResourceDescriptionPayload'
+          examples:
+            returnValidResponse:
+              value:
+                resourceDescription:
+                  '@context':
+                  - https://www.w3.org/2018/credentials/v1
+                  - https://w3id.org/security/suites/jws-2020/v1
+                  credentialSubject:
+                    '@context':
+                      dct: http://purl.org/dc/terms/
+                      rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+                      simpl: http://w3id.org/gaia-x/simpl#
+                    '@id': did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v0
+                    rdf:type:
+                      '@id': simpl:DataOffering
+                    dct:conformsTo:
+                      '@id': https://simpl.example.org/schema/DataSchema
+                      '@type': dct:Standard
+                      dct:hasVersion: '21'
+                      dct:schemaName: DataSchema
+                    simpl:generalServiceProperties:
+                      rdf:type:
+                        '@id': simpl:GeneralServiceProperties
+                      simpl:name: Example dataset
+                      simpl:description: Sample dataset for federated discovery
+                      simpl:inLanguage: en
+                      simpl:offeringType: data
+                      simpl:serviceAccessPoint:
+                        '@type': http://www.w3.org/2001/XMLSchema#anyURI
+                        '@value': https://provider.example.org/data
+                    simpl:dataProperties:
+                      rdf:type:
+                        '@id': simpl:DataProperties
+                      simpl:format: text/csv
+                    simpl:providerInformation:
+                      rdf:type:
+                        '@id': simpl:ProviderInformation
+                      simpl:providedBy: did:web:provider.example.org
+                  issuanceDate: '2026-01-15T10:00:00Z'
+                  issuer: did:web:authority.example.org
+                  type: VerifiableCredential
+                  proof:
+                    type: JsonWebSignature2020
+                    created: '2026-01-15T10:00:00Z'
+                    proofPurpose: assertionMethod
+                    verificationMethod: did:web:authority.example.org#key-1
+                    jws: illustrative-signature
+    federatedBadRequestResponse:
+      description: Malformed or missing required path/forwarded header parameters
+        reaching the adapter.
+      headers:
+        Correlation-Id:
+          description: Echoed when the malformed request included a Correlation-Id;
+            absent if that required header was missing.
+          required: false
+          schema:
+            type: string
+          example: 123e4567-e89b-12d3-a456-426614174000
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:belgif:badRequest
+            title: Bad Request
+            status: 400
+            detail: Required forwarded header User-Attributes is missing.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    federatedNotFoundResponse:
+      description: The requested resource description does not exist in the Federated
+        Catalogue.
+      headers:
+        Correlation-Id:
+          description: The Correlation-Id from the forwarded request, echoed only
+            in the response header.
+          required: true
+          schema:
+            type: string
+          example: 123e4567-e89b-12d3-a456-426614174000
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:notFound
+            title: Not Found
+            status: 404
+            detail: Resource description with the requested identifier was not found.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    federatedNotAcceptableResponse:
+      description: The requested Accept media types cannot be produced by the adapter.
+      headers:
+        Correlation-Id:
+          description: The Correlation-Id from the forwarded request, echoed only
+            in the response header.
+          required: true
+          schema:
+            type: string
+          example: 123e4567-e89b-12d3-a456-426614174000
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:problem-type:simpl:notAcceptable
+            title: Not Acceptable
+            status: 406
+            detail: The requested response media type is not supported; use application/json.
+            instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    federatedInternalServerErrorResponse:
+      description: A downstream catalogue request failed or another internal failure
+        occurred.
+      headers:
+        Correlation-Id:
+          description: The Correlation-Id from the forwarded request, echoed only
+            in the response header.
+          required: true
+          schema:
+            type: string
+          example: 123e4567-e89b-12d3-a456-426614174000
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            returnInternalServerError:
+              value:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                detail: The resource description could not be retrieved due to a downstream
+                  failure.
+                instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+  securitySchemes:
+    OAuth2Auth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.com/oauth/authorize
+          tokenUrl: https://auth.example.com/oauth/token
+          scopes:
+            read: Read access
+            write: Write access

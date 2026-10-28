@@ -1,0 +1,68 @@
+openapi: 3.0.1
+security:
+- OAuth2Auth: []
+info:
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  contact:
+    name: Simpl Programme
+    email: cnect-simpl@ec.europa.eu
+    url: https://simpl-programme.ec.europa.eu/
+  title: Query Mapper Adapter API
+  description: This the API  for the adapter to the Simpl Federated Catalogue located in the Governance authority node.
+  version: 1.2.0
+servers:
+- url: https://adapter.dev.simpl-europe.eu/v1
+  description: Generated server url
+paths:
+  /governanceAuthority/selfDescriptions:
+    $ref: ./tier1-gateway/t1-adapter-openapi.yaml#/paths/~1governanceAuthority~1selfDescriptions
+  /participants/resourceDescriptions:
+    $ref: ./tier2-gateway/t2-adapter-openapi.yaml#/paths/~1participants~1resourceDescriptions
+  /participants/resourceDescriptions/{resourceDescriptionId}:
+    $ref: ./tier2-gateway/t2-adapter-openapi.yaml#/paths/~1participants~1resourceDescriptions~1{resourceDescriptionId}
+  /participants/resourceDescriptions/{resourceDescriptionId}/version:
+    $ref: ./tier2-gateway/t2-adapter-openapi.yaml#/paths/~1participants~1resourceDescriptions~1{resourceDescriptionId}~1version
+  /federated/resourceDescriptions/{resourceDescriptionId}:
+    $ref: ./tier2-gateway/t2-adapter-openapi.yaml#/paths/~1federated~1resourceDescriptions~1{resourceDescriptionId}
+  /selfDescriptions:
+    $ref: ./tier2-gateway/t2-adapter-openapi.yaml#/paths/~1selfDescriptions
+  /selfDescriptions/advancedSearch:
+    $ref: ./tier2-gateway/t2-adapter-openapi.yaml#/paths/~1selfDescriptions~1advancedSearch
+components:
+  schemas:
+    Problem:
+      $ref: ./common/common-components.yaml#/components/schemas/Problem
+    searchResponsePayload:
+      $ref: ./common/common-components.yaml#/components/schemas/searchResponsePayload
+    versionHistoryResponsePayload:
+      $ref: ./common/common-components.yaml#/components/schemas/versionHistoryResponsePayload
+    advancedSearchRequestPayload:
+      $ref: ./common/common-components.yaml#/components/schemas/advancedSearchRequestPayload
+    federatedResourceDescriptionPayload:
+      $ref: ./common/common-components.yaml#/components/schemas/federatedResourceDescriptionPayload
+  responses:
+    internalServerErrorResponse:
+      $ref: ./common/common-components.yaml#/components/responses/internalServerErrorResponse
+    notFoundErrorResponse:
+      $ref: ./common/common-components.yaml#/components/responses/notFoundErrorResponse
+    forbiddenErrorResponse:
+      $ref: ./common/common-components.yaml#/components/responses/forbiddenErrorResponse
+    unauthorizedErrorResponse:
+      $ref: ./common/common-components.yaml#/components/responses/unauthorizedErrorResponse
+    getResourceDescriptionResponse:
+      $ref: ./common/common-components.yaml#/components/responses/getResourceDescriptionResponse
+    federatedResourceDescriptionResponse:
+      $ref: ./common/common-components.yaml#/components/responses/federatedResourceDescriptionResponse
+    federatedBadRequestResponse:
+      $ref: ./common/common-components.yaml#/components/responses/federatedBadRequestResponse
+    federatedNotFoundResponse:
+      $ref: ./common/common-components.yaml#/components/responses/federatedNotFoundResponse
+    federatedNotAcceptableResponse:
+      $ref: ./common/common-components.yaml#/components/responses/federatedNotAcceptableResponse
+    federatedInternalServerErrorResponse:
+      $ref: ./common/common-components.yaml#/components/responses/federatedInternalServerErrorResponse
+  securitySchemes:
+    OAuth2Auth:
+      $ref: ./common/common-components.yaml#/components/securitySchemes/OAuth2Auth

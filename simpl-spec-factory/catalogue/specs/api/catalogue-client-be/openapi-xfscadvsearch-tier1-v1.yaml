@@ -1,0 +1,955 @@
+info:
+  title: Catalog Search API
+  description: |-
+    These APIs enable the discovery of self-descriptions within a federated catalog, supporting two search modes: simple keyword-based search and advanced metadata-based search. They are designed to facilitate standardized, secure, and efficient access to data offering metadata in federated data ecosystems.
+
+    ## Business Context
+
+    The Catalog Search API enables consumers to discover and retrieve metadata about data offerings published by providers in a federated catalog. It supports both simple keyword-based and advanced structured search mechanisms, allowing for flexible and precise discovery of self-descriptions. It enables:
+
+    1. Keyword-based and advanced metadata-based search of offerings.
+
+    2. Retrieval of detailed self-descriptions in the form of Verifiable Credentials.
+
+    3. Access to schema definitions for self-description creation and validation.
+
+    ### Key Actors
+
+    - **Consumer**: Searches the catalog, filters results, and retrieves detailed descriptions of data offerings.
+
+    ### Typical Flow
+
+    1. Perform a simple keyword search across the catalog.
+
+    2. Execute an advanced search using structured metadata filters based on schema offer
+
+    3. Retrieve a detailed self-description using its unique identifier.
+  contact:
+    name: Simpl Programme
+    url: https://simpl-programme.ec.europa.eu/
+    email: cnect-simpl@ec.europa.eu
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  version: "1.0"
+servers:
+- url: https://xfsc-advsearch-be.dev.simpl-europe.eu/v1
+security:
+- bearerAuth: []
+openapi: 3.0.1
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: IAA cloud gateway JWT token
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CatalogueSearchResult:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CatalogueInfo'
+    UnauthorizedProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    InternalServerErrorProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    CatalogueInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        authorityURL:
+          type: string
+        active:
+          type: boolean
+    NotFoundProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    InputObject:
+      type: object
+      properties:
+        in:
+          type: string
+          enum:
+          - body
+          - path
+          - query
+          - header
+        name:
+          type: string
+        value:
+          type: object
+    BadRequestProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/InputValidationIssue'
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    InputValidationIssue:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        detail:
+          type: string
+        in:
+          type: string
+          enum:
+          - body
+          - path
+          - query
+          - header
+        name:
+          type: string
+        value:
+          type: object
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/InputObject'
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+paths:
+  /selfDescriptions:
+    get:
+      tags:
+      - Self Description
+      summary: Returns the result of a simple search on the catalog
+      description: |
+        Performs a keyword-based search across the catalog of self-descriptions. This endpoint allows clients to retrieve a filtered list of self-descriptions by providing a search term via the `q` query parameter.
+
+        This search additionally supports two optional quality filters that the Participant can apply independently or together, on top of all other search criteria, to narrow the final result set:
+
+        - `minimumScore`: only Resource Descriptions with an overall quality score greater than or equal to this value are returned.
+        - `minimumClassification`: only Resource Descriptions with an overall quality classification equal to or better than the provided value are returned, according to the ranking defined by the active Minimum Quality Profile (MQP).
+      operationId: getSimpleSearch
+      parameters:
+      - name: q
+        in: query
+        description: A keyword used to filter self-descriptions in the federated catalog
+        required: true
+        schema:
+          type: string
+          description: A keyword used to filter self-descriptions in the federated catalog
+          example: Health Data
+        example: Health Data
+      - name: minimumScore
+        in: query
+        description: Optional minimum overall quality score filter. When provided, only Resource Descriptions with an overall quality score greater than or equal to this value are returned.
+        required: false
+        schema:
+          maximum: 100
+          minimum: 0
+          type: number
+          description: Optional minimum overall quality score filter. When provided, only Resource Descriptions with an overall quality score greater than or equal to this value are returned.
+          format: double
+          example: 70
+        example: 70
+      - name: minimumClassification
+        in: query
+        description: Optional minimum overall quality classification filter, expressed according to the ranking defined by the active Minimum Quality Profile (MQP). When provided, only Resource Descriptions with an overall quality classification equal to or better than this value are returned.
+        required: false
+        schema:
+          type: string
+          description: Optional minimum overall quality classification filter, expressed according to the ranking defined by the active Minimum Quality Profile (MQP). When provided, only Resource Descriptions with an overall quality classification equal to or better than this value are returned.
+          example: Good
+        example: Good
+      - name: catalogueIds
+        in: query
+        description: Optional list of catalogue identifiers used to filter self-descriptions belonging to the specified catalogues.
+        required: false
+        schema:
+          type: array
+          description: Optional list of catalogue identifiers used to filter self-descriptions belonging to the specified catalogues.
+          example:
+          - catalogueId1
+          - catalogueId2
+          items:
+            type: string
+            description: Optional list of catalogue identifiers used to filter self-descriptions belonging to the specified catalogues.
+            example: '["catalogueId1","catalogueId2"]'
+        example:
+        - catalogueId1
+        - catalogueId2
+      - name: page
+        in: query
+        description: Page number (1-based). Must be greater than 0
+        required: false
+        schema:
+          type: integer
+          description: Page number (1-based). Must be greater than 0
+          format: int32
+          example: 1
+          default: 1
+        example: 1
+      - name: pageSize
+        in: query
+        description: Number of items per page. Must be greater than 0
+        required: false
+        schema:
+          type: integer
+          description: Number of items per page. Must be greater than 0
+          format: int32
+          example: 20
+          default: 20
+        example: 20
+      responses:
+        "200":
+          description: Returns search results
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                totalCount: 4
+                items:
+                - i:
+                    claimsGraphUri:
+                    - did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v7====
+                    name: aefaf
+                    description: afafa
+                    inLanguage: en
+                    serviceAccessPoint: https://creation.com
+                    qualityScore: 87.5
+                    qualityClassification: Good
+                    catalogueId: catalogueId3
+                - i:
+                    claimsGraphUri:
+                    - did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v1
+                    name: aefaf
+                    description: afafa
+                    inLanguage: en
+                    serviceAccessPoint: https://creation.com
+                    qualityScore: 72
+                    qualityClassification: Good
+                    catalogueId: catalogueId1
+                - i:
+                    claimsGraphUri:
+                    - did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v0
+                    name: aefaf
+                    description: afafa
+                    inLanguage: en
+                    serviceAccessPoint: https://creation.com
+                    qualityScore: 55
+                    qualityClassification: Medium
+                    catalogueId: catalogueId2
+                - i:
+                    claimsGraphUri:
+                    - did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v8====
+                    name: aefaf
+                    description: afafa
+                    inLanguage: en
+                    serviceAccessPoint: https://creation.com
+                    qualityScore: 50
+                    qualityClassification: Medium
+                    catalogueId: catalogueId1
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/BadRequestProblem'
+              examples:
+                Missing required parameter:
+                  description: Missing required parameter
+                  value:
+                    type: urn:problem-type:simpl:validationError
+                    title: Invalid payload
+                    status: 400
+                    detail: missing required arguments
+                    instance: /selfDescriptions
+                    issues:
+                    - detail: Field 'q' must not be empty
+                Invalid quality classification:
+                  description: Invalid quality classification
+                  value:
+                    type: urn:problem-type:simpl:validationError
+                    title: Invalid payload
+                    status: 400
+                    detail: One or more parameters are invalid
+                    instance: /selfDescriptions
+                    issues:
+                    - detail: The minimumClassification parameter must match one of the classifications defined by the active Minimum Quality Profile (MQP)
+                      in: query
+                      name: minimumClassification
+                      value: invalidValue
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedProblem'
+              example:
+                type: urn:problem-type:simpl:unauthorized
+                title: Unauthorized
+                status: 401
+                instance: /selfDescriptions
+                detail: Missing or invalid Authorization header
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                instance: /selfDescriptions
+                detail: Unexpected internal error
+  /selfDescriptions/{selfDescriptionId}/qualityAssessmentRecord:
+    get:
+      tags:
+      - Self Description
+      summary: Retrieve the Quality Assessment Record for a Self-Description.
+      description: Returns the full JSON-LD Quality Assessment Record associated with the specified Self-Description. A 204 response indicates that the Self-Description exists but no Quality Assessment Record is available.
+      operationId: getSelfDescriptionQualityAssessmentRecord
+      parameters:
+      - name: selfDescriptionId
+        in: path
+        description: Identifier of the Self-Description whose Quality Assessment Record is requested.
+        required: true
+        schema:
+          type: string
+          description: Identifier of the Self-Description whose Quality Assessment Record is requested.
+          example: did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+        example: did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+      responses:
+        "200":
+          description: The Quality Assessment Record associated with the Self-Description.
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                '@context':
+                  '@vocab': https://w3id.org/simpl/quality#
+                  simpl: https://w3id.org/simpl#
+                  dct: http://purl.org/dc/terms/
+                '@graph':
+                - '@id': did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+                  '@type': simpl:DataOffering
+                  simpl:name: Example Data Offering
+                  dct:description: Example resource description assessed by the Quality Scoring Service.
+                - '@id': urn:simpl:quality:profile:metadata-quality-profile
+                  '@type': MetadataQualityProfile
+                  simpl:profileVersion: 1.0.0
+                  name: SIMPL Metadata Quality Profile
+                - '@id': urn:simpl:quality:dimension:completeness
+                  '@type': QualityDimension
+                  name: Completeness
+                  weight: 0.4
+                - '@id': urn:simpl:quality:dimension-score:completeness
+                  '@type': DimensionScore
+                  dimension: urn:simpl:quality:dimension:completeness
+                  score: 1.0
+                  maxScore: 1.0
+                - '@id': urn:simpl:quality:self-description-score:example-offering-001
+                  '@type': SelfDescriptionScore
+                  computedOn: did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+                  dimensionScores:
+                  - urn:simpl:quality:dimension-score:completeness
+                  score: 1.0
+                  maxScore: 1.0
+                - '@id': urn:simpl:quality:rule-evaluation:required-name
+                  '@type': RuleEvaluation
+                  evaluatedAgainst: urn:simpl:quality:profile:metadata-quality-profile
+                  computedOn: did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+                  dimension: urn:simpl:quality:dimension:completeness
+                  result: passed
+                  score: 1.0
+                - '@id': urn:uuid:2b9d4a84-13a8-46ac-94f0-4a5e7e4b6e70
+                  '@type': QualityAssessmentRecord
+                  computedOn: did:web:registry.simpl-europe.eu:DataOffering:example-offering-001
+                  evaluatedAgainst: urn:simpl:quality:profile:metadata-quality-profile
+                  profileVersion: 1.0.0
+                  evaluationId: 7a67c5b1-2575-49c5-a0e8-9dfb6e7f0d28
+                  correlationId: a931c6fb-7840-485e-a864-7c86b5fb6783
+                  assessmentDate: 2024-01-15T10:30:00Z
+                  selfDescriptionScore: urn:simpl:quality:self-description-score:example-offering-001
+                  ruleEvaluations:
+                  - urn:simpl:quality:rule-evaluation:required-name
+        "204":
+          description: The Self-Description exists but no Quality Assessment Record is available.
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                No Quality Assessment Record:
+                  description: No Quality Assessment Record
+                  value: ""
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedProblem'
+              example:
+                type: urn:problem-type:simpl:unauthorized
+                title: Unauthorized
+                status: 401
+                instance: /selfDescriptions/{selfDescriptionId}/qualityAssessmentRecord
+                detail: Missing or invalid Authorization header
+        "404":
+          description: SelfDescription not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotFoundProblem'
+              example:
+                type: urn:problem-type:simpl:notFound
+                title: SelfDescription not found
+                status: 404
+                detail: SelfDescription with identifier 'did:web:registry.gaia-x.eu:DataOffering:123' was not found
+                instance: /selfDescriptions/{selfDescriptionId}/qualityAssessmentRecord
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                instance: /selfDescriptions/{selfDescriptionId}/qualityAssessmentRecord
+                detail: Unexpected internal error
+  /selfDescriptions/advanced:
+    post:
+      tags:
+      - Self Description
+      summary: Returns the result of an advanced search on the catalog
+      description: |-
+        Executes an advanced search query on the federated catalog using structured criteria. This endpoint allows consumers to filter and retrieve self-descriptions based on specific metadata attributes. Each JSON root key needs to correspond to a resource description node name. As a value for that key an JSON object need to be provided with the searched property names and values. In case of numerical values we can provide a range of searched values by providing op1 and op2 properties as described in the example. Optional root fields
+                minimumScore (>= 0) and minimumClassification may be included to filter by quality assessment results.
+      operationId: postAdvancedSearch
+      parameters:
+      - name: page
+        in: query
+        description: Page number (1-based, must be greater than 0)
+        required: false
+        schema:
+          type: integer
+          description: Page number (1-based, must be greater than 0)
+          format: int32
+          example: 1
+          default: 1
+      - name: pageSize
+        in: query
+        description: Number of results per page (must be greater than 0)
+        required: false
+        schema:
+          type: integer
+          description: Number of results per page (must be greater than 0)
+          format: int32
+          example: 10
+          default: 20
+      requestBody:
+        description: Object containing advanced search criteria
+        content:
+          application/json:
+            schema:
+              type: string
+            examples:
+              Advanced Search:
+                description: Advanced Search
+                value:
+                  simpl:GeneralServiceProperties:
+                    '@type': simpl:GeneralServiceProperties
+                    name: Health
+                  simpl:OfferingPrice:
+                    price:
+                      op1: '>='
+                      value1: 15
+                      op2: <
+                      value2: 150
+                  catalogueIds:
+                  - catalogueId1
+                  - catalogueId2
+                  minimumScore: 75
+                  minimumClassification: Good
+        required: true
+      responses:
+        "200":
+          description: Returns search results
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                totalCount: 4
+                items:
+                - i:
+                    claimsGraphUri:
+                    - did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v7====
+                    name: aefaf
+                    description: afafa
+                    inLanguage: en
+                    serviceAccessPoint: https://creation.com
+                    qualityScore: 87.5
+                    qualityClassification: Good
+                    catalogueId: catalogueId2
+                - i:
+                    claimsGraphUri:
+                    - did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v1
+                    name: aefaf
+                    description: afafa
+                    inLanguage: en
+                    serviceAccessPoint: https://creation.com
+                    qualityScore: 72
+                    qualityClassification: Good
+                    catalogueId: catalogueId1
+                - i:
+                    claimsGraphUri:
+                    - did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v0
+                    name: aefaf
+                    description: afafa
+                    inLanguage: en
+                    serviceAccessPoint: https://creation.com
+                    qualityScore: 55
+                    qualityClassification: Medium
+                    catalogueId: catalogueId2
+                - i:
+                    claimsGraphUri:
+                    - did:web:registry.gaia-x.eu:DataOffering:fMw2UtNCDW-ydI83YKscqCKa-n75jJ0qY7v8====
+                    name: aefaf
+                    description: afafa
+                    inLanguage: en
+                    serviceAccessPoint: https://creation.com
+                    qualityScore: 50
+                    qualityClassification: Medium
+                    catalogueId: catalogueId1
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/BadRequestProblem'
+              example:
+                type: urn:problem-type:simpl:validationError
+                title: Invalid payload
+                status: 400
+                detail: missing required arguments
+                instance: /selfDescriptions/advanced
+                issues:
+                - detail: Request body must not be empty
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedProblem'
+              example:
+                type: urn:problem-type:simpl:unauthorized
+                title: Unauthorized
+                status: 401
+                instance: /selfDescriptions/advanced
+                detail: Missing or invalid Authorization header
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                instance: /selfDescriptions/advanced
+                detail: Unexpected internal error
+  /catalogues:
+    get:
+      tags:
+      - Trustor Catalogues
+      summary: Returns the list of all catalogues from any Trustor Governance Authority
+      description: |
+        Returns a paginated list of all catalogues from any Trustor Governance Authority. Each item contains the information required to be displayed in the UI application: the catalogue name, the catalogue unique identifier, the Trustor Governance Authority URL, and whether the catalogue's federation status is ACTIVE.
+      operationId: getCatalogues
+      parameters:
+      - name: page
+        in: query
+        description: Page number (1-based). Must be greater than 0
+        required: false
+        schema:
+          type: integer
+          description: Page number (1-based). Must be greater than 0
+          format: int32
+          example: 1
+          default: 1
+        example: 1
+      - name: pageSize
+        in: query
+        description: Number of items per page. Must be greater than 0
+        required: false
+        schema:
+          type: integer
+          description: Number of items per page. Must be greater than 0
+          format: int32
+          example: 20
+          default: 20
+        example: 20
+      responses:
+        "200":
+          description: Returns the list of catalogues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogueSearchResult'
+              examples:
+                No results found:
+                  summary: No catalogues found
+                  description: No results found
+                  value:
+                    items: []
+                    page: 1
+                    pageSize: 20
+                    total: 0
+                Catalogues found:
+                  summary: Catalogues found
+                  description: Catalogues found
+                  value:
+                    items:
+                    - id: 3b94da11-1714-4556-8884-bfc1538a9934
+                      name: Energy Community Catalogue
+                      authorityURL: https://t1.energydataspace.com
+                      active: true
+                    - id: 652db0ab-3918-4fe1-8f29-86751caa983c
+                      name: University Example Catalogue
+                      authorityURL: https://t1.university-example.com
+                      active: false
+                    page: 1
+                    pageSize: 20
+                    total: 2
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/BadRequestProblem'
+              example:
+                type: urn:problem-type:simpl:validationError
+                title: Invalid payload
+                status: 400
+                detail: One or more parameters are invalid
+                instance: /catalogues
+                issues:
+                - detail: Field 'page' must be greater than 0
+                  in: query
+                  name: page
+                  value: 0
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedProblem'
+              example:
+                type: urn:problem-type:simpl:unauthorized
+                title: Unauthorized
+                status: 401
+                instance: /catalogues
+                detail: Missing or invalid Authorization header
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                instance: /catalogues
+                detail: Unexpected internal error
+  /selfDescriptions/{selfDescriptionId}:
+    get:
+      tags:
+      - Self Description
+      summary: Returns self description based on selfDescriptionID
+      description: Fetches a detailed self-description document identified by the provided selfDescriptionId. This endpoint returns a Verifiable Credential that describes a data/infra/app offering in compliance with SIMPL standards. The response includes metadata such as service properties, contract templates, data formats, and access endpoints.
+      operationId: getSelfDescription
+      parameters:
+      - name: selfDescriptionId
+        in: path
+        description: The unique identifier of the self-description to retrieve.
+        required: true
+        schema:
+          type: string
+          description: The unique identifier of the self-description to retrieve.
+          example: did:web:registry.gaia-x.eu:DataOffering:4727baa4-8c7b-4e7f-90ba-eebe460c0408
+        example: did:web:registry.gaia-x.eu:DataOffering:4727baa4-8c7b-4e7f-90ba-eebe460c0408
+      responses:
+        "200":
+          description: Returns self description
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                '@context':
+                - https://www.w3.org/2018/credentials/v1
+                - https://w3id.org/security/suites/jws-2020/v1
+                credentialSubject:
+                  '@context':
+                    gax-validation: http://w3id.org/gaia-x/validation#
+                    rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+                    sh: http://www.w3.org/ns/shacl#
+                    simpl: http://w3id.org/gaia-x/simpl#
+                    skos: http://www.w3.org/2004/02/skos/core#
+                    xsd: http://www.w3.org/2001/XMLSchema#
+                  '@id': did:web:registry.gaia-x.eu:DataOffering:4727baa4-8c7b-4e7f-90ba-eebe460c0408
+                  rdf:type:
+                    '@id': simpl:DataOffering
+                  simpl:contractTemplate:
+                    rdf:type:
+                      '@id': simpl:ContractTemplate
+                    simpl:contractTemplateDocument: Contract Template 1
+                    simpl:contractTemplateHashAlg: SHA256
+                    simpl:contractTemplateHashValue: 22275fe551e7a16f5f2c1cc10d39a534f547323d877109d98b8e8730047bc5ed
+                    simpl:contractTemplateURL: https://files.dev.simpl-europe.eu/static/contract/ContractTemplate1.json
+                  simpl:dataProperties:
+                    rdf:type:
+                      '@id': simpl:DataProperties
+                    simpl:format: xml
+                  simpl:edcConnector:
+                    simpl:providerEndpointURL: https://edc-provider.dev.simpl-europe.eu
+                  simpl:generalServiceProperties:
+                    rdf:type:
+                      '@id': simpl:GeneralServiceProperties
+                    simpl:name: Test Data Offering
+                    simpl:description: A comprehensive data offering for testing purposes
+                    simpl:inLanguage: en
+                issuanceDate: 2024-12-03T13:52:45.111955862Z
+                issuer: did:web:did.dev.simpl-europa.eu
+                proof:
+                  created: 2024-12-03T13:52:45.122614972Z
+                  jws: eyJhbGciOiJVbmRlZmluZWQiLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdfQ..pfkY4hJ3kDMSmUUHaUq6c-Y_wHCKbp7J09MpByLJ9C433Th8EfgM69snZEMYzJISwjtowdq0BXiuDoPIPFcRBw
+                  proofPurpose: assertionMethod
+                  type: JsonWebSignature2020
+                  verificationMethod: did:web:did.dev.simpl-europa.eu#gaia-x-key1
+                type: VerifiableCredential
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/BadRequestProblem'
+              example:
+                type: urn:problem-type:simpl:validationError
+                title: Invalid payload
+                status: 400
+                detail: missing required arguments
+                instance: /selfDescriptions/{selfDescriptionId}
+                issues:
+                - detail: Field 'selfDescriptionId' must not be empty
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedProblem'
+              example:
+                type: urn:problem-type:simpl:unauthorized
+                title: Unauthorized
+                status: 401
+                instance: /selfDescriptions/{selfDescriptionId}
+                detail: Missing or invalid Authorization header
+        "404":
+          description: Schema not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotFoundProblem'
+              example:
+                type: urn:problem-type:simpl:notFound
+                title: SelfDescription not found
+                status: 404
+                detail: SelfDescription with identifier 'did:web:registry.gaia-x.eu:DataOffering:123' was not found
+                instance: /selfDescriptions/{selfDescriptionId}
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                instance: /selfDescriptions/{selfDescriptionId}
+                detail: Unexpected internal error
+  /contractClauses/documents/{documentId}:
+    get:
+      tags:
+      - Contract Clauses
+      summary: Returns a contract clause document based on its identifier
+      description: Returns the binary content of the contract clause document identified by the provided documentId as a stream, together with the appropriate content type header.
+      operationId: getDocument
+      parameters:
+      - name: documentId
+        in: path
+        description: The unique identifier of the document to download.
+        required: true
+        schema:
+          type: string
+          description: The unique identifier of the document to download.
+          example: 4727baa4-8c7b-4e7f-90ba-eebe460c0408
+        example: 4727baa4-8c7b-4e7f-90ba-eebe460c0408
+      responses:
+        "200":
+          description: Document successfully retrieved
+          headers:
+            Content-Length:
+              description: Size of the document, in bytes
+              style: simple
+              schema:
+                type: integer
+                format: int64
+                example: 204800
+            Content-Type:
+              description: Indicates the MIME type of the returned document
+              style: simple
+              schema:
+                type: string
+                example: application/pdf
+          content:
+            application/pdf:
+              schema:
+                type: string
+                description: The binary content of the PDF document
+                format: binary
+              examples:
+                Sample contract clause document:
+                  summary: Example PDF document
+                  description: A sample contract clause document, provided as an external binary reference since binary content cannot be represented inline
+                  externalValue: https://files.dev.simpl-europe.eu/static/contract/ContractTemplate1.pdf
+        "404":
+          description: Document not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotFoundProblem'
+              example:
+                type: urn:problem-type:simpl:notFound
+                title: Document not found
+                status: 404
+                detail: Document with identifier '4727baa4-8c7b-4e7f-90ba-eebe460c0408' was not found
+                instance: /contractClauses/documents/{documentId}
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              example:
+                type: urn:problem-type:simpl:internalServerError
+                title: Internal Server Error
+                status: 500
+                instance: /contractClauses/documents/{documentId}
+                detail: Unexpected internal error
