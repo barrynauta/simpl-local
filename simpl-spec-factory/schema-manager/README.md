@@ -24,6 +24,7 @@ The Vocabulary Manager was well specified: paired API and UI stories, 30 decisio
 | [`tests/`](./tests/README.md) | Steps 2 and 4: 291 API and 36 UI scenarios (behave, requests, Playwright), webhook receiver, fixtures, reports |
 | [`generated/run1/`](./generated/run1/) | Step 3: the build, with `TRACEABILITY.md` and `BUILD-LOG.md` |
 | [`pipeline/`](./pipeline/) | The briefs for steps 2 to 4 as used |
+| [`experiments/swap/`](./experiments/swap/README.md) | Step 5: swap experiments with upstream |
 | [`findings.md`](./findings.md) | Findings per step |
 
-Not done yet: swap tests with upstream. They would test the API contract only, since upstream uses Fuseki and Kafka where the build uses PostgreSQL and HTTP webhooks.
+Swap tests (28 Oct): the same API walk on both backends gives the same status for 33 of 41 calls; each UI works for every user action on the other backend, with a few empty columns and one blank page. The schema files are not interchangeable: the rules for a valid file differ and neither is published. See [`experiments/swap/`](./experiments/swap/README.md).

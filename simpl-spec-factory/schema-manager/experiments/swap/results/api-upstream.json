@@ -1,0 +1,1016 @@
+[
+ {
+  "label": "list, no filter",
+  "call": "GET /schemas",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "metadata": [
+    "[]",
+    "created",
+    "description",
+    "latestVersion",
+    "modified",
+    "name",
+    "resourceType",
+    "status",
+    "title"
+   ],
+   "next": "NoneType",
+   "page": "int",
+   "pageSize": "int",
+   "total": "int",
+   "totalPages": "int"
+  },
+  "location": false,
+  "values": {
+   "total": 12,
+   "items": []
+  }
+ },
+ {
+  "label": "create SwapA (data, Data)",
+  "call": "POST /schemas",
+  "status": 201,
+  "type": "application/json",
+  "shape": {
+   "schemaName": "str",
+   "schemaVersion": "str",
+   "validationWarnings": [
+    "[]",
+    "code",
+    "description",
+    "location"
+   ]
+  },
+  "location": true,
+  "values": {
+   "schemaVersion": "1"
+  }
+ },
+ {
+  "label": "create SwapA (data, Data)",
+  "call": "POST /schemas",
+  "status": 409,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 409,
+   "problemType": "urn:problem-type:iana:conflict"
+  }
+ },
+ {
+  "label": "create bad name (data, Data)",
+  "call": "POST /schemas",
+  "status": 400,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 400,
+   "problemType": "urn:problem-type:belgif:badRequest"
+  }
+ },
+ {
+  "label": "create SwapNoAuth (data, Data)",
+  "call": "POST /schemas",
+  "status": 201,
+  "type": "application/json",
+  "shape": {
+   "schemaName": "str",
+   "schemaVersion": "str",
+   "validationWarnings": [
+    "[]",
+    "code",
+    "description",
+    "location"
+   ]
+  },
+  "location": true,
+  "values": {
+   "schemaVersion": "1"
+  }
+ },
+ {
+  "label": "create SwapViewer (data, Data)",
+  "call": "POST /schemas",
+  "status": 201,
+  "type": "application/json",
+  "shape": {
+   "schemaName": "str",
+   "schemaVersion": "str",
+   "validationWarnings": [
+    "[]",
+    "code",
+    "description",
+    "location"
+   ]
+  },
+  "location": true,
+  "values": {
+   "schemaVersion": "1"
+  }
+ },
+ {
+  "label": "create SwapMismatch (data, Application)",
+  "call": "POST /schemas",
+  "status": 400,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 400,
+   "problemType": "urn:problem-type:belgif:badRequest"
+  }
+ },
+ {
+  "label": "create SwapNoType (data, None)",
+  "call": "POST /schemas",
+  "status": 400,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 400,
+   "problemType": "urn:problem-type:belgif:badRequest"
+  }
+ },
+ {
+  "label": "create SwapC (application, Application)",
+  "call": "POST /schemas",
+  "status": 201,
+  "type": "application/json",
+  "shape": {
+   "schemaName": "str",
+   "schemaVersion": "str",
+   "validationWarnings": [
+    "[]",
+    "code",
+    "description",
+    "location"
+   ]
+  },
+  "location": true,
+  "values": {
+   "schemaVersion": "1"
+  }
+ },
+ {
+  "label": "list as viewer",
+  "call": "GET /schemas",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "metadata": [
+    "[]",
+    "created",
+    "description",
+    "latestVersion",
+    "modified",
+    "name",
+    "resourceType",
+    "status",
+    "title"
+   ],
+   "next": "NoneType",
+   "page": "int",
+   "pageSize": "int",
+   "total": "int",
+   "totalPages": "int"
+  },
+  "location": false,
+  "values": {
+   "total": 16,
+   "items": [
+    {
+     "name": "SwapA095055",
+     "status": "PUBLISHED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapC095055",
+     "status": "PUBLISHED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapNoAuth095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapViewer095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    }
+   ]
+  }
+ },
+ {
+  "label": "list, filter Data + PUBLISHED",
+  "call": "GET /schemas?resourceType=Data&status=PUBLISHED",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "metadata": [
+    "[]",
+    "created",
+    "description",
+    "latestVersion",
+    "modified",
+    "name",
+    "resourceType",
+    "status",
+    "title"
+   ],
+   "next": "NoneType",
+   "page": "int",
+   "pageSize": "int",
+   "total": "int",
+   "totalPages": "int"
+  },
+  "location": false,
+  "values": {
+   "total": 1,
+   "items": [
+    {
+     "name": "SwapA095055",
+     "status": "PUBLISHED",
+     "latestVersion": "1"
+    }
+   ]
+  }
+ },
+ {
+  "label": "list, schemaType SEARCH",
+  "call": "GET /schemas?schemaType=SEARCH",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "metadata": [
+    "[]",
+    "created",
+    "description",
+    "latestVersion",
+    "modified",
+    "name",
+    "resourceType",
+    "status",
+    "title"
+   ],
+   "next": "NoneType",
+   "page": "int",
+   "pageSize": "int",
+   "total": "int",
+   "totalPages": "int"
+  },
+  "location": false,
+  "values": {
+   "total": 16,
+   "items": [
+    {
+     "name": "SwapA095055",
+     "status": "PUBLISHED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapC095055",
+     "status": "PUBLISHED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapNoAuth095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapViewer095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    }
+   ]
+  }
+ },
+ {
+  "label": "list, pageSize 1000",
+  "call": "GET /schemas?page=1&pageSize=1000",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "metadata": [
+    "[]",
+    "created",
+    "description",
+    "latestVersion",
+    "modified",
+    "name",
+    "resourceType",
+    "status",
+    "title"
+   ],
+   "next": "NoneType",
+   "page": "int",
+   "pageSize": "int",
+   "total": "int",
+   "totalPages": "int"
+  },
+  "location": false,
+  "values": {
+   "total": 16,
+   "items": [
+    {
+     "name": "SwapA095055",
+     "status": "PUBLISHED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapC095055",
+     "status": "PUBLISHED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapNoAuth095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapViewer095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    }
+   ]
+  }
+ },
+ {
+  "label": "list, Accept xml",
+  "call": "GET /schemas",
+  "status": 406,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 406,
+   "problemType": "urn:problem-type:iana:notAcceptable"
+  }
+ },
+ {
+  "label": "get one schema (not in OpenAPI)",
+  "call": "GET /schemas/SwapA<run>",
+  "status": 200,
+  "type": "text/turtle",
+  "shape": null,
+  "location": true,
+  "bytes": 73998
+ },
+ {
+  "label": "versions of A",
+  "call": "GET /schemas/SwapA<run>/versions",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "metadata": [
+    "[]",
+    "changelog",
+    "created",
+    "name",
+    "version"
+   ],
+   "next": "NoneType",
+   "page": "int",
+   "pageSize": "int",
+   "total": "int",
+   "totalPages": "int"
+  },
+  "location": false,
+  "values": {
+   "total": 1,
+   "items": [
+    {
+     "name": "SwapA095055",
+     "version": "1"
+    }
+   ]
+  }
+ },
+ {
+  "label": "versions of unknown",
+  "call": "GET /schemas/Unknown<run>/versions",
+  "status": 404,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 404,
+   "problemType": "urn:problem-type:iana:notFound"
+  }
+ },
+ {
+  "label": "content A v1, Accept turtle",
+  "call": "GET /schemas/SwapA<run>/1",
+  "status": 200,
+  "type": "text/turtle",
+  "shape": null,
+  "location": true,
+  "bytes": 73998
+ },
+ {
+  "label": "content A v1, Accept json",
+  "call": "GET /schemas/SwapA<run>/1",
+  "status": 406,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 406,
+   "problemType": "urn:problem-type:iana:notAcceptable"
+  }
+ },
+ {
+  "label": "content A v99",
+  "call": "GET /schemas/SwapA<run>/99",
+  "status": 404,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 404,
+   "problemType": "urn:problem-type:iana:notFound"
+  }
+ },
+ {
+  "label": "new version of A",
+  "call": "POST /schemas/SwapA<run>/versions",
+  "status": 201,
+  "type": "application/json",
+  "shape": {
+   "changelog": "str",
+   "description": "str",
+   "name": "str",
+   "resourceType": "str",
+   "status": "str",
+   "title": "str",
+   "validationWarnings": [
+    "[]",
+    "code",
+    "description",
+    "location"
+   ],
+   "version": "str"
+  },
+  "location": true,
+  "values": {
+   "status": "PUBLISHED",
+   "version": "2"
+  }
+ },
+ {
+  "label": "new version, no changelog",
+  "call": "POST /schemas/SwapA<run>/versions",
+  "status": 400,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 400,
+   "problemType": "urn:problem-type:belgif:badRequest"
+  }
+ },
+ {
+  "label": "versions of A after v2",
+  "call": "GET /schemas/SwapA<run>/versions",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "metadata": [
+    "[]",
+    "changelog",
+    "created",
+    "name",
+    "version"
+   ],
+   "next": "NoneType",
+   "page": "int",
+   "pageSize": "int",
+   "total": "int",
+   "totalPages": "int"
+  },
+  "location": false,
+  "values": {
+   "total": 2,
+   "items": [
+    {
+     "name": "SwapA095055",
+     "version": "1"
+    },
+    {
+     "name": "SwapA095055",
+     "version": "2"
+    }
+   ]
+  }
+ },
+ {
+  "label": "create SwapB (data, Data)",
+  "call": "POST /schemas",
+  "status": 201,
+  "type": "application/json",
+  "shape": {
+   "schemaName": "str",
+   "schemaVersion": "str",
+   "validationWarnings": [
+    "[]",
+    "code",
+    "description",
+    "location"
+   ]
+  },
+  "location": true,
+  "values": {
+   "schemaVersion": "1"
+  }
+ },
+ {
+  "label": "list, filter Data, after B",
+  "call": "GET /schemas?resourceType=Data",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "metadata": [
+    "[]",
+    "created",
+    "description",
+    "latestVersion",
+    "modified",
+    "name",
+    "resourceType",
+    "status",
+    "title"
+   ],
+   "next": "NoneType",
+   "page": "int",
+   "pageSize": "int",
+   "total": "int",
+   "totalPages": "int"
+  },
+  "location": false,
+  "values": {
+   "total": 14,
+   "items": [
+    {
+     "name": "SwapA095055",
+     "status": "PUBLISHED",
+     "latestVersion": "2"
+    },
+    {
+     "name": "SwapB095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapNoAuth095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapViewer095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    }
+   ]
+  }
+ },
+ {
+  "label": "revoke A",
+  "call": "PATCH /schemas/SwapA<run>",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "created": "str",
+   "description": "str",
+   "latestVersion": "str",
+   "modified": "str",
+   "name": "str",
+   "resourceType": "str",
+   "status": "str",
+   "title": "str"
+  },
+  "location": false,
+  "values": {
+   "status": "REVOKED",
+   "latestVersion": "2"
+  }
+ },
+ {
+  "label": "revoke A again",
+  "call": "PATCH /schemas/SwapA<run>",
+  "status": 409,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 409,
+   "problemType": "urn:problem-type:iana:conflict"
+  }
+ },
+ {
+  "label": "PATCH A to PUBLISHED",
+  "call": "PATCH /schemas/SwapA<run>",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "created": "str",
+   "description": "str",
+   "latestVersion": "str",
+   "modified": "str",
+   "name": "str",
+   "resourceType": "str",
+   "status": "str",
+   "title": "str"
+  },
+  "location": false,
+  "values": {
+   "status": "PUBLISHED",
+   "latestVersion": "2"
+  }
+ },
+ {
+  "label": "new version of B, slot held by A",
+  "call": "POST /schemas/SwapB<run>/versions",
+  "status": 201,
+  "type": "application/json",
+  "shape": {
+   "changelog": "str",
+   "description": "str",
+   "name": "str",
+   "resourceType": "str",
+   "status": "str",
+   "title": "str",
+   "validationWarnings": [
+    "[]",
+    "code",
+    "description",
+    "location"
+   ],
+   "version": "str"
+  },
+  "location": true,
+  "values": {
+   "status": "PUBLISHED",
+   "version": "2"
+  }
+ },
+ {
+  "label": "list, filter Data, after B v2",
+  "call": "GET /schemas?resourceType=Data",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "metadata": [
+    "[]",
+    "created",
+    "description",
+    "latestVersion",
+    "modified",
+    "name",
+    "resourceType",
+    "status",
+    "title"
+   ],
+   "next": "NoneType",
+   "page": "int",
+   "pageSize": "int",
+   "total": "int",
+   "totalPages": "int"
+  },
+  "location": false,
+  "values": {
+   "total": 14,
+   "items": [
+    {
+     "name": "SwapA095055",
+     "status": "PUBLISHED",
+     "latestVersion": "2"
+    },
+    {
+     "name": "SwapB095055",
+     "status": "REVOKED",
+     "latestVersion": "2"
+    },
+    {
+     "name": "SwapNoAuth095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapViewer095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    }
+   ]
+  }
+ },
+ {
+  "label": "revoke A to free the slot",
+  "call": "PATCH /schemas/SwapA<run>",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "created": "str",
+   "description": "str",
+   "latestVersion": "str",
+   "modified": "str",
+   "name": "str",
+   "resourceType": "str",
+   "status": "str",
+   "title": "str"
+  },
+  "location": false,
+  "values": {
+   "status": "REVOKED",
+   "latestVersion": "2"
+  }
+ },
+ {
+  "label": "new version of B, slot free",
+  "call": "POST /schemas/SwapB<run>/versions",
+  "status": 201,
+  "type": "application/json",
+  "shape": {
+   "changelog": "str",
+   "description": "str",
+   "name": "str",
+   "resourceType": "str",
+   "status": "str",
+   "title": "str",
+   "validationWarnings": [
+    "[]",
+    "code",
+    "description",
+    "location"
+   ],
+   "version": "str"
+  },
+  "location": true,
+  "values": {
+   "status": "PUBLISHED",
+   "version": "3"
+  }
+ },
+ {
+  "label": "list, filter Data, after B v3",
+  "call": "GET /schemas?resourceType=Data",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "metadata": [
+    "[]",
+    "created",
+    "description",
+    "latestVersion",
+    "modified",
+    "name",
+    "resourceType",
+    "status",
+    "title"
+   ],
+   "next": "NoneType",
+   "page": "int",
+   "pageSize": "int",
+   "total": "int",
+   "totalPages": "int"
+  },
+  "location": false,
+  "values": {
+   "total": 14,
+   "items": [
+    {
+     "name": "SwapA095055",
+     "status": "REVOKED",
+     "latestVersion": "2"
+    },
+    {
+     "name": "SwapB095055",
+     "status": "REVOKED",
+     "latestVersion": "3"
+    },
+    {
+     "name": "SwapNoAuth095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    },
+    {
+     "name": "SwapViewer095055",
+     "status": "REVOKED",
+     "latestVersion": "1"
+    }
+   ]
+  }
+ },
+ {
+  "label": "revoke as viewer",
+  "call": "PATCH /schemas/SwapC<run>",
+  "status": 200,
+  "type": "application/json",
+  "shape": {
+   "created": "str",
+   "description": "str",
+   "latestVersion": "str",
+   "modified": "str",
+   "name": "str",
+   "resourceType": "str",
+   "status": "str",
+   "title": "str"
+  },
+  "location": false,
+  "values": {
+   "status": "REVOKED",
+   "latestVersion": "1"
+  }
+ },
+ {
+  "label": "webhook create",
+  "call": "POST /webhooks",
+  "status": 201,
+  "type": "application/json",
+  "shape": {
+   "events": "list",
+   "targetUrl": "str",
+   "webhookId": "str"
+  },
+  "location": false
+ },
+ {
+  "label": "webhook duplicate",
+  "call": "POST /webhooks",
+  "status": 409,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 409,
+   "problemType": "urn:problem-type:iana:conflict"
+  }
+ },
+ {
+  "label": "webhook unknown event",
+  "call": "POST /webhooks",
+  "status": 400,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 400,
+   "problemType": "urn:problem-type:belgif:badRequest"
+  }
+ },
+ {
+  "label": "webhook list",
+  "call": "GET /webhooks",
+  "status": 200,
+  "type": "application/json",
+  "shape": [
+   "[]",
+   "events",
+   "targetUrl",
+   "webhookId"
+  ],
+  "location": false,
+  "values": {
+   "items": [
+    {
+     "webhookId": "36ef49cd-f0ae-385c-b02b-c7ee90971057"
+    }
+   ]
+  }
+ },
+ {
+  "label": "webhook delete",
+  "call": "DELETE /webhooks/36ef49cd-f0ae-385c-b02b-c7ee90971057",
+  "status": 204,
+  "type": "",
+  "shape": null,
+  "location": false
+ },
+ {
+  "label": "webhook delete again",
+  "call": "DELETE /webhooks/36ef49cd-f0ae-385c-b02b-c7ee90971057",
+  "status": 404,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 404,
+   "problemType": "urn:problem-type:iana:notFound"
+  }
+ },
+ {
+  "label": "webhook delete malformed id",
+  "call": "DELETE /webhooks/not-a-uuid",
+  "status": 400,
+  "type": "application/problem+json",
+  "shape": {
+   "detail": "str",
+   "href": "str",
+   "instance": "str",
+   "status": "int",
+   "title": "str",
+   "type": "str"
+  },
+  "location": false,
+  "values": {
+   "status": 400,
+   "problemType": "urn:problem-type:belgif:badRequest"
+  }
+ }
+]

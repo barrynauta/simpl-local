@@ -1,0 +1,143 @@
+41 calls: same status 33, same status and field names 15
+= same status and fields, ~ same status other fields, x other status
+~ list, no filter                          upstream 200 application/json     build 200 application/json
+    metadata: upstream ['[]', 'created', 'description', 'latestVersion', 'modified', 'name', 'resourceType', 'status', 'title'] / build ['[]', 'changelog', 'created', 'createdBy', 'description', 'modified', 'name', 'resourceType', 'schemaType', 'status', 'title', 'version']
+    next: upstream NoneType / build str
+    values: upstream {"total": 12, "items": []}
+            build    {"total": 495, "items": []}
+~ create SwapA (data, Data)                upstream 201 application/json     build 201 application/json
+    fields only build:    resourceType, schemaType, status
+    values: upstream {"schemaVersion": "1"}
+            build    {"status": "PUBLISHED", "schemaVersion": "1"}
+= create SwapA (data, Data)                upstream 409 application/problem+json build 409 application/problem+json
+    values: upstream {"status": 409, "problemType": "urn:problem-type:iana:conflict"}
+            build    {"status": 409, "problemType": "urn:problem-type:simpl:conflict"}
+= create bad name (data, Data)             upstream 400 application/problem+json build 400 application/problem+json
+    values: upstream {"status": 400, "problemType": "urn:problem-type:belgif:badRequest"}
+            build    {"status": 400, "problemType": "urn:problem-type:simpl:badRequest"}
+x create SwapNoAuth (data, Data)           upstream 201 application/json     build 401 application/problem+json
+    fields only upstream: schemaName, schemaVersion, validationWarnings
+    fields only build:    detail, href, instance, status, title, type
+    values: upstream {"schemaVersion": "1"}
+            build    {"status": 401, "problemType": "urn:problem-type:simpl:unauthorized"}
+x create SwapViewer (data, Data)           upstream 201 application/json     build 403 application/problem+json
+    fields only upstream: schemaName, schemaVersion, validationWarnings
+    fields only build:    detail, href, instance, status, title, type
+    values: upstream {"schemaVersion": "1"}
+            build    {"status": 403, "problemType": "urn:problem-type:simpl:forbidden"}
+x create SwapMismatch (data, Application)  upstream 400 application/problem+json build 201 application/json
+    fields only upstream: detail, href, instance, title, type
+    fields only build:    resourceType, schemaName, schemaType, schemaVersion, validationWarnings
+    status: upstream int / build str
+    values: upstream {"status": 400, "problemType": "urn:problem-type:belgif:badRequest"}
+            build    {"status": "PUBLISHED", "schemaVersion": "1"}
+= create SwapNoType (data, None)           upstream 400 application/problem+json build 400 application/problem+json
+    values: upstream {"status": 400, "problemType": "urn:problem-type:belgif:badRequest"}
+            build    {"status": 400, "problemType": "urn:problem-type:simpl:badRequest"}
+~ create SwapC (application, Application)  upstream 201 application/json     build 201 application/json
+    fields only build:    resourceType, schemaType, status
+    values: upstream {"schemaVersion": "1"}
+            build    {"status": "REVOKED", "schemaVersion": "1"}
+~ list as viewer                           upstream 200 application/json     build 200 application/json
+    metadata: upstream ['[]', 'created', 'description', 'latestVersion', 'modified', 'name', 'resourceType', 'status', 'title'] / build ['[]', 'changelog', 'created', 'createdBy', 'description', 'modified', 'name', 'resourceType', 'schemaType', 'status', 'title', 'version']
+    next: upstream NoneType / build str
+    values: upstream {"total": 16, "items": [{"name": "SwapA095055", "status": "PUBLISHED", "latestVersion": "1"}, {"name": "SwapC095055", "status": "PUBLISHED", "latestVersion": "1"}, {"name": "SwapNoAuth095055", "status": "REVOKED", "latestVersion": "1"}, {"name": "SwapViewer095055", "status": "REVOKED", "latestVersion": "1"}]}
+            build    {"total": 498, "items": [{"name": "SwapA095057", "status": "PUBLISHED", "version": "1"}, {"name": "SwapC095057", "status": "REVOKED", "version": "1"}, {"name": "SwapMismatch095057", "status": "PUBLISHED", "version": "1"}]}
+~ list, filter Data + PUBLISHED            upstream 200 application/json     build 200 application/json
+    metadata: upstream ['[]', 'created', 'description', 'latestVersion', 'modified', 'name', 'resourceType', 'status', 'title'] / build ['[]', 'changelog', 'created', 'createdBy', 'description', 'modified', 'name', 'resourceType', 'schemaType', 'status', 'title', 'version']
+    values: upstream {"total": 1, "items": [{"name": "SwapA095055", "status": "PUBLISHED", "latestVersion": "1"}]}
+            build    {"total": 1, "items": [{"name": "SwapA095057", "status": "PUBLISHED", "version": "1"}]}
+~ list, schemaType SEARCH                  upstream 200 application/json     build 200 application/json
+    metadata: upstream ['[]', 'created', 'description', 'latestVersion', 'modified', 'name', 'resourceType', 'status', 'title'] / build ['[]', 'changelog', 'created', 'createdBy', 'description', 'modified', 'name', 'resourceType', 'schemaType', 'status', 'title', 'version']
+    next: upstream NoneType / build str
+    values: upstream {"total": 16, "items": [{"name": "SwapA095055", "status": "PUBLISHED", "latestVersion": "1"}, {"name": "SwapC095055", "status": "PUBLISHED", "latestVersion": "1"}, {"name": "SwapNoAuth095055", "status": "REVOKED", "latestVersion": "1"}, {"name": "SwapViewer095055", "status": "REVOKED", "latestVersion": "1"}]}
+            build    {"total": 63, "items": []}
+x list, pageSize 1000                      upstream 200 application/json     build 400 application/problem+json
+    fields only upstream: metadata, next, page, pageSize, total, totalPages
+    fields only build:    detail, href, instance, status, title, type
+    values: upstream {"total": 16, "items": [{"name": "SwapA095055", "status": "PUBLISHED", "latestVersion": "1"}, {"name": "SwapC095055", "status": "PUBLISHED", "latestVersion": "1"}, {"name": "SwapNoAuth095055", "status": "REVOKED", "latestVersion": "1"}, {"name": "SwapViewer095055", "status": "REVOKED", "latestVersion": "1"}]}
+            build    {"status": 400, "problemType": "urn:problem-type:simpl:badRequest"}
+= list, Accept xml                         upstream 406 application/problem+json build 406 application/problem+json
+    values: upstream {"status": 406, "problemType": "urn:problem-type:iana:notAcceptable"}
+            build    {"status": 406, "problemType": "urn:problem-type:simpl:notAcceptable"}
+= get one schema (not in OpenAPI)          upstream 200 text/turtle          build 200 text/turtle
+~ versions of A                            upstream 200 application/json     build 200 application/json
+    metadata: upstream ['[]', 'changelog', 'created', 'name', 'version'] / build ['[]', 'changelog', 'created', 'createdBy', 'description', 'graphName', 'name', 'resourceType', 'schemaType', 'status', 'title', 'version']
+    values: upstream {"total": 1, "items": [{"name": "SwapA095055", "version": "1"}]}
+            build    {"total": 1, "items": [{"name": "SwapA095057", "status": "PUBLISHED", "version": "1"}]}
+= versions of unknown                      upstream 404 application/problem+json build 404 application/problem+json
+    values: upstream {"status": 404, "problemType": "urn:problem-type:iana:notFound"}
+            build    {"status": 404, "problemType": "urn:problem-type:simpl:notFound"}
+= content A v1, Accept turtle              upstream 200 text/turtle          build 200 text/turtle
+x content A v1, Accept json                upstream 406 application/problem+json build 200 application/json
+    fields only upstream: detail, href, instance, type
+    fields only build:    changelog, created, createdBy, description, graphName, name, resourceType, schemaType, version
+    status: upstream int / build str
+    values: upstream {"status": 406, "problemType": "urn:problem-type:iana:notAcceptable"}
+            build    {"status": "PUBLISHED", "version": "1"}
+= content A v99                            upstream 404 application/problem+json build 404 application/problem+json
+    values: upstream {"status": 404, "problemType": "urn:problem-type:iana:notFound"}
+            build    {"status": 404, "problemType": "urn:problem-type:simpl:notFound"}
+~ new version of A                         upstream 201 application/json     build 201 application/json
+    fields only build:    created, createdBy, graphName, schemaType
+= new version, no changelog                upstream 400 application/problem+json build 400 application/problem+json
+    values: upstream {"status": 400, "problemType": "urn:problem-type:belgif:badRequest"}
+            build    {"status": 400, "problemType": "urn:problem-type:simpl:badRequest"}
+~ versions of A after v2                   upstream 200 application/json     build 200 application/json
+    metadata: upstream ['[]', 'changelog', 'created', 'name', 'version'] / build ['[]', 'changelog', 'created', 'createdBy', 'description', 'graphName', 'name', 'resourceType', 'schemaType', 'status', 'title', 'version']
+    values: upstream {"total": 2, "items": [{"name": "SwapA095055", "version": "1"}, {"name": "SwapA095055", "version": "2"}]}
+            build    {"total": 2, "items": [{"name": "SwapA095057", "status": "REVOKED", "version": "1"}, {"name": "SwapA095057", "status": "PUBLISHED", "version": "2"}]}
+~ create SwapB (data, Data)                upstream 201 application/json     build 201 application/json
+    fields only build:    resourceType, schemaType, status
+    values: upstream {"schemaVersion": "1"}
+            build    {"status": "REVOKED", "schemaVersion": "1"}
+~ list, filter Data, after B               upstream 200 application/json     build 200 application/json
+    metadata: upstream ['[]', 'created', 'description', 'latestVersion', 'modified', 'name', 'resourceType', 'status', 'title'] / build ['[]', 'changelog', 'created', 'createdBy', 'description', 'modified', 'name', 'resourceType', 'schemaType', 'status', 'title', 'version']
+    values: upstream {"total": 14, "items": [{"name": "SwapA095055", "status": "PUBLISHED", "latestVersion": "2"}, {"name": "SwapB095055", "status": "REVOKED", "latestVersion": "1"}, {"name": "SwapNoAuth095055", "status": "REVOKED", "latestVersion": "1"}, {"name": "SwapViewer095055", "status": "REVOKED", "latestVersion": "1"}]}
+            build    {"total": 10, "items": [{"name": "SwapA095057", "status": "PUBLISHED", "version": "2"}, {"name": "SwapB095057", "status": "REVOKED", "version": "1"}]}
+~ revoke A                                 upstream 200 application/json     build 200 application/json
+    fields only build:    createdBy, schemaType
+= revoke A again                           upstream 409 application/problem+json build 409 application/problem+json
+    values: upstream {"status": 409, "problemType": "urn:problem-type:iana:conflict"}
+            build    {"status": 409, "problemType": "urn:problem-type:simpl:conflict"}
+~ PATCH A to PUBLISHED                     upstream 200 application/json     build 200 application/json
+    fields only build:    createdBy, schemaType
+~ new version of B, slot held by A         upstream 201 application/json     build 201 application/json
+    fields only build:    created, createdBy, graphName, schemaType
+    values: upstream {"status": "PUBLISHED", "version": "2"}
+            build    {"status": "REVOKED", "version": "2"}
+~ list, filter Data, after B v2            upstream 200 application/json     build 200 application/json
+    metadata: upstream ['[]', 'created', 'description', 'latestVersion', 'modified', 'name', 'resourceType', 'status', 'title'] / build ['[]', 'changelog', 'created', 'createdBy', 'description', 'modified', 'name', 'resourceType', 'schemaType', 'status', 'title', 'version']
+    values: upstream {"total": 14, "items": [{"name": "SwapA095055", "status": "PUBLISHED", "latestVersion": "2"}, {"name": "SwapB095055", "status": "REVOKED", "latestVersion": "2"}, {"name": "SwapNoAuth095055", "status": "REVOKED", "latestVersion": "1"}, {"name": "SwapViewer095055", "status": "REVOKED", "latestVersion": "1"}]}
+            build    {"total": 10, "items": [{"name": "SwapA095057", "status": "PUBLISHED", "version": "2"}, {"name": "SwapB095057", "status": "REVOKED", "version": "2"}]}
+~ revoke A to free the slot                upstream 200 application/json     build 200 application/json
+    fields only build:    createdBy, schemaType
+~ new version of B, slot free              upstream 201 application/json     build 201 application/json
+    fields only build:    created, createdBy, graphName, schemaType
+~ list, filter Data, after B v3            upstream 200 application/json     build 200 application/json
+    metadata: upstream ['[]', 'created', 'description', 'latestVersion', 'modified', 'name', 'resourceType', 'status', 'title'] / build ['[]', 'changelog', 'created', 'createdBy', 'description', 'modified', 'name', 'resourceType', 'schemaType', 'status', 'title', 'version']
+    values: upstream {"total": 14, "items": [{"name": "SwapA095055", "status": "REVOKED", "latestVersion": "2"}, {"name": "SwapB095055", "status": "REVOKED", "latestVersion": "3"}, {"name": "SwapNoAuth095055", "status": "REVOKED", "latestVersion": "1"}, {"name": "SwapViewer095055", "status": "REVOKED", "latestVersion": "1"}]}
+            build    {"total": 10, "items": [{"name": "SwapA095057", "status": "REVOKED", "version": "2"}, {"name": "SwapB095057", "status": "PUBLISHED", "version": "3"}]}
+x revoke as viewer                         upstream 200 application/json     build 403 application/problem+json
+    fields only upstream: created, description, latestVersion, modified, name, resourceType
+    fields only build:    detail, href, instance, type
+    status: upstream str / build int
+    values: upstream {"status": "REVOKED", "latestVersion": "1"}
+            build    {"status": 403, "problemType": "urn:problem-type:simpl:forbidden"}
+= webhook create                           upstream 201 application/json     build 201 application/json
+= webhook duplicate                        upstream 409 application/problem+json build 409 application/problem+json
+    values: upstream {"status": 409, "problemType": "urn:problem-type:iana:conflict"}
+            build    {"status": 409, "problemType": "urn:problem-type:simpl:conflict"}
+x webhook unknown event                    upstream 400 application/problem+json build 406 application/problem+json
+    values: upstream {"status": 400, "problemType": "urn:problem-type:belgif:badRequest"}
+            build    {"status": 406, "problemType": "urn:problem-type:simpl:notAcceptable"}
+= webhook list                             upstream 200 application/json     build 200 application/json
+    values: upstream {"items": [{"webhookId": "36ef49cd-f0ae-385c-b02b-c7ee90971057"}]}
+            build    {"items": [{"webhookId": "0f85878e-8940-4e7a-a339-12da31b06e2d"}]}
+= webhook delete                           upstream 204 -                    build 204 -
+= webhook delete again                     upstream 404 application/problem+json build 404 application/problem+json
+    values: upstream {"status": 404, "problemType": "urn:problem-type:iana:notFound"}
+            build    {"status": 404, "problemType": "urn:problem-type:simpl:notFound"}
+x webhook delete malformed id              upstream 400 application/problem+json build 404 application/problem+json
+    values: upstream {"status": 400, "problemType": "urn:problem-type:belgif:badRequest"}
+            build    {"status": 404, "problemType": "urn:problem-type:simpl:notFound"}

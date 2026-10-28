@@ -68,3 +68,15 @@ The 36 UI scenarios made runnable with Playwright by a fresh agent, which saw th
   - 1 environment: with no sign-in there is no state for a user without a role.
 - **Test-writer bugs fixed:** the request matcher of the fault-injection step was too literal (parameter order, default values); the build UI calls the API on its own address; the list is paged and the store keeps all earlier data, so the steps page through the list as a user would. One feature changed: "No match for the filters" assumed no revoked SEARCH schema exists; it now makes sure no SEARCH schema is published and runs serially.
 - **Story wording too vague for a strict check:** D54 lists 7 columns while D57 puts a Download action on each row; what a click on a column header does to the sort direction; pagination "disabled or hidden" (SIMPL-32790) against hidden (D53); the format of the creation date; how a "read-only" schema type is shown (D50); error texts given only as examples ("e.g.").
+
+## 2026-10-28: step 5, swap experiments
+
+Upstream and build crossed, configuration only. Details and commands: [`experiments/swap/`](./experiments/swap/README.md).
+
+- **Schema files are not interchangeable.** Upstream wants the Gaia-X prefixes, a shape named `<Type>OfferingShape` and its own SHACL checks. The build wants the D31 default properties. Neither rule is in the published specs. A bridge file (upstream sample plus the two default properties) is accepted by both.
+- **API walk, 41 calls:** 33 give the same status. The other 8 are the role checks (upstream checks none itself), the closed set of resource types upstream reads from the shape name (D13 made it free, as in the OpenAPI), and known decisions D8, D26, D41.
+- **Upstream does not follow its own OpenAPI on two payloads:** list items have `latestVersion` instead of `version` and `changelog`; version items lack title, description, resource type and status.
+- **Upstream answers PUBLISHED after a new version while the schema stays REVOKED**, also when the slot is free. This is the "per schema or per version" contradiction of the digest, seen in a real answer.
+- **Upstream UI on the build backend:** every user action works, with the same calls and statuses as on upstream. Only the "Latest version" column stays empty.
+- **Build UI on the upstream backend:** create, new version, download, publish and revoke work. The details page stays blank: the UI expects the `status` the OpenAPI promises on version items, upstream does not send it. Three list columns stay empty.
+- **Lesson:** at the API level the two are close, closer than the suite results suggest. The real interoperability gap is the schema file: what makes a file valid lives in code on both sides, not in the specs.
