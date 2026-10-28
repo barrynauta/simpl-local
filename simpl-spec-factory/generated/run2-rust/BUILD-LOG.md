@@ -155,3 +155,7 @@ Tests added: UT `validation::own_namespace_is_not_a_reference`, IT `own_namespac
 Remaining gap: a versioned own namespace with any number (for example `{base}/Foo/9#` while
 creating version 2) is also accepted as "own". The clarification does not say whether the number
 must match the version being created.
+
+## Note: test keys in the repository (28 Oct 2026)
+
+`tests/fixtures/*.pem` are throwaway keys for the integration tests only (fake tokens). The running stack never uses them. See `tests/fixtures/README.md`.
