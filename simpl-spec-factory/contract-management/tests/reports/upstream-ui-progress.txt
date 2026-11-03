@@ -1,0 +1,15 @@
+Upstream UI target: NOT RUN (29 Oct 2026)
+
+./start.sh was run as the README says. Its git pull was a no-op: repos/contract
+(main 63c6749) and repos/contract-ui (develop c39df82) already matched their
+remote branches, and the existing images were reused, so nothing was updated.
+
+The stack did not start: the contract backend (container simpl-contract,
+port 8086) exited with code 1 during boot. Its log ends with
+"Could not resolve placeholder 'CATALOG_TOKEN_URL'" (bean catalogConnector).
+The UI shell on port 4323 answered 200, but every UI scenario sets up its
+contract through the backend (and, for 35 of 38, through the stub the upstream
+stack does not have), so a run would only report the environment.
+
+Per the step 4 brief the upstream target is reported as not run. No
+upstream-ui.json was written. The stack was stopped with ./stop.sh.

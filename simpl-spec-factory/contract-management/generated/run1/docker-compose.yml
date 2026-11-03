@@ -1,0 +1,250 @@
+name: cm-factory
+
+x-java-health: &java-health
+  interval: 5s
+  timeout: 5s
+  retries: 60
+  start_period: 20s
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: simpl
+      POSTGRES_PASSWORD: simpl
+      POSTGRES_DB: simpl
+    volumes:
+      - ./env/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "19432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U simpl -d cm_provider && pg_isready -U simpl -d uibe_consumer"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  kafka:
+    image: apache/kafka:3.9.1
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:19092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_NUM_PARTITIONS: 1
+    ports:
+      - "19092:19092"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
+      interval: 5s
+      timeout: 10s
+      retries: 40
+      start_period: 10s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: http://localhost:19080
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./env/keycloak:/opt/keycloak/data/import:ro
+    ports:
+      - "19080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 15s
+
+  stubs:
+    build:
+      context: .
+      args:
+        MODULE: stubs
+    image: cm-factory/stubs:latest
+    environment:
+      CM_PROVIDER_URL: http://cm-provider:8080/contract/v1
+      CM_PROVIDER_KEY: test-cm-provider-key
+      CM_CONSUMER_URL: http://cm-consumer:8080/contract/v1
+      CM_CONSUMER_KEY: test-cm-consumer-key
+      EDC_API_KEY: test-edc-key
+    ports:
+      - "19090:8080"
+    healthcheck:
+      <<: *java-health
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+
+  cm-provider:
+    build:
+      context: .
+      args:
+        MODULE: contract-manager
+    image: cm-factory/contract-manager:latest
+    environment: &cm-provider-env
+      CM_PARTICIPANT_ID: provider-01
+      CM_API_KEY: test-cm-provider-key
+      STUB_BASE_URL: http://stubs:8080
+      STUB_EDC_API_KEY: test-edc-key
+      UIBE_BASE_URL: http://uibe-provider:8080/contract-ui/v1
+      UIBE_API_KEY: test-uibe-provider-key
+      KAFKA_BOOTSTRAP: kafka:9092
+      UI_PUBLIC_URL: http://localhost:19103
+      CONTRACT_VC_VALIDITY: P365D
+      CLAUSE_MAX_BYTES: "5242880"
+      DB_URL: jdbc:postgresql://postgres:5432/cm_provider
+      DB_USER: simpl
+      DB_PASSWORD: simpl
+    depends_on:
+      postgres: {condition: service_healthy}
+      kafka: {condition: service_healthy}
+    ports:
+      - "19101:8080"
+    healthcheck:
+      <<: *java-health
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/contract/v1/health"]
+
+  cm-consumer:
+    build:
+      context: .
+      args:
+        MODULE: contract-manager
+    image: cm-factory/contract-manager:latest
+    environment:
+      CM_PARTICIPANT_ID: consumer-01
+      CM_API_KEY: test-cm-consumer-key
+      STUB_BASE_URL: http://stubs:8080
+      STUB_EDC_API_KEY: test-edc-key
+      UIBE_BASE_URL: http://uibe-consumer:8080/contract-ui/v1
+      UIBE_API_KEY: test-uibe-consumer-key
+      KAFKA_BOOTSTRAP: kafka:9092
+      UI_PUBLIC_URL: http://localhost:19203
+      CONTRACT_VC_VALIDITY: P365D
+      CLAUSE_MAX_BYTES: "5242880"
+      DB_URL: jdbc:postgresql://postgres:5432/cm_consumer
+      DB_USER: simpl
+      DB_PASSWORD: simpl
+    depends_on:
+      postgres: {condition: service_healthy}
+      kafka: {condition: service_healthy}
+      cm-provider: {condition: service_started}
+    ports:
+      - "19201:8080"
+    healthcheck:
+      <<: *java-health
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/contract/v1/health"]
+
+  uibe-provider:
+    build:
+      context: .
+      args:
+        MODULE: contract-ui-backend
+    image: cm-factory/contract-ui-backend:latest
+    environment:
+      UIBE_PARTICIPANT_ID: provider-01
+      UIBE_API_KEY: test-uibe-provider-key
+      CM_BASE_URL: http://cm-provider:8080/contract/v1
+      CM_API_KEY: test-cm-provider-key
+      OIDC_ISSUER: http://localhost:19080/realms/provider
+      OIDC_JWKS_URI: http://keycloak:8080/realms/provider/protocol/openid-connect/certs
+      OFFER_EXPIRY_CRON: "0 0 1 * * *"
+      OFFER_EXPIRY_TIMEOUT: P7D
+      CONSENT_MANAGER_URL: http://localhost:19090/consent
+      UI_PUBLIC_URL: http://localhost:19103
+      DB_URL: jdbc:postgresql://postgres:5432/uibe_provider
+      DB_USER: simpl
+      DB_PASSWORD: simpl
+    depends_on:
+      postgres: {condition: service_healthy}
+      keycloak: {condition: service_healthy}
+    ports:
+      - "19102:8080"
+    healthcheck:
+      <<: *java-health
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/contract-ui/v1/health"]
+
+  uibe-consumer:
+    build:
+      context: .
+      args:
+        MODULE: contract-ui-backend
+    image: cm-factory/contract-ui-backend:latest
+    environment:
+      UIBE_PARTICIPANT_ID: consumer-01
+      UIBE_API_KEY: test-uibe-consumer-key
+      CM_BASE_URL: http://cm-consumer:8080/contract/v1
+      CM_API_KEY: test-cm-consumer-key
+      OIDC_ISSUER: http://localhost:19080/realms/consumer
+      OIDC_JWKS_URI: http://keycloak:8080/realms/consumer/protocol/openid-connect/certs
+      OFFER_EXPIRY_CRON: "0 0 1 * * *"
+      OFFER_EXPIRY_TIMEOUT: P7D
+      CONSENT_MANAGER_URL: http://localhost:19090/consent
+      UI_PUBLIC_URL: http://localhost:19203
+      DB_URL: jdbc:postgresql://postgres:5432/uibe_consumer
+      DB_USER: simpl
+      DB_PASSWORD: simpl
+    depends_on:
+      postgres: {condition: service_healthy}
+      keycloak: {condition: service_healthy}
+      uibe-provider: {condition: service_started}
+    ports:
+      - "19202:8080"
+    healthcheck:
+      <<: *java-health
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/contract-ui/v1/health"]
+
+  ui-provider:
+    build:
+      context: ./ui
+    image: cm-factory/ui:latest
+    environment:
+      UIBE_UPSTREAM: http://uibe-provider:8080
+      UI_REALM: provider
+      UI_PARTY: PROVIDER
+      KEYCLOAK_URL: http://localhost:19080
+    depends_on:
+      uibe-provider: {condition: service_healthy}
+    ports:
+      - "19103:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  ui-consumer:
+    build:
+      context: ./ui
+    image: cm-factory/ui:latest
+    environment:
+      UIBE_UPSTREAM: http://uibe-consumer:8080
+      UI_REALM: consumer
+      UI_PARTY: CONSUMER
+      KEYCLOAK_URL: http://localhost:19080
+    depends_on:
+      uibe-consumer: {condition: service_healthy}
+      ui-provider: {condition: service_started}
+    ports:
+      - "19203:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pgdata:

@@ -1,0 +1,4994 @@
+[
+{
+  "description": [
+    "SIMPL-31047, D43, D68, D72, D73."
+  ],
+  "elements": [
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/consent.feature:6",
+      "name": "SIMPL-31047 AC1 and AC2 - a consent manager user is redirected to the consent manager",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/consent.feature:7",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:137"
+          },
+          "name": "a contract requested at the provider for an asset with consent required",
+          "result": {
+            "duration": 0.02263188362121582,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/consent.feature:8",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.4590859413146973,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/consent.feature:9",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5432970523834229,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/consent.feature:10",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-consent-status\"",
+                "value": "detail-consent-status"
+              },
+              {
+                "name": "text",
+                "original": "\"PENDING\"",
+                "value": "PENDING"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-consent-status\" shows \"PENDING\"",
+          "result": {
+            "duration": 0.0008807182312011719,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/consent.feature:11",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-update-consent\"",
+                "value": "action-update-consent"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"action-update-consent\" is visible",
+          "result": {
+            "duration": 0.0007936954498291016,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/consent.feature:12",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-update-consent\"",
+                "value": "action-update-consent"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-update-consent\"",
+          "result": {
+            "duration": 0.5234198570251465,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/consent.feature:13",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:375"
+          },
+          "name": "the browser is redirected to the consent manager for the negotiation",
+          "result": {
+            "duration": 8.487701416015625e-05,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31047",
+        "D43",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/consent.feature:16",
+      "name": "SIMPL-31047 AC3 - a consent change is shown in the details",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/consent.feature:17",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:137"
+          },
+          "name": "a contract requested at the provider for an asset with consent required",
+          "result": {
+            "duration": 0.013607025146484375,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/consent.feature:18",
+          "match": {
+            "arguments": [
+              {
+                "name": "method",
+                "original": "\"PUT\"",
+                "value": "PUT"
+              },
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "path",
+                "original": "\"/contracts/${nid}/consentStatus\"",
+                "value": "/contracts/${nid}/consentStatus"
+              }
+            ],
+            "location": "features/steps/http_steps.py:25"
+          },
+          "name": "I send \"PUT\" to the provider CM at \"/contracts/${nid}/consentStatus\" with JSON",
+          "result": {
+            "duration": 0.009797096252441406,
+            "status": "passed"
+          },
+          "step_type": "given",
+          "text": "{\"consentStatus\": \"GRANTED\"}"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/consent.feature:22",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.2488348484039307,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/consent.feature:23",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.541588306427002,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/consent.feature:24",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-consent-status\"",
+                "value": "detail-consent-status"
+              },
+              {
+                "name": "text",
+                "original": "\"GRANTED\"",
+                "value": "GRANTED"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-consent-status\" shows \"GRANTED\"",
+          "result": {
+            "duration": 0.0007672309875488281,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31047",
+        "D43"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/consent.feature:27",
+      "name": "SIMPL-31047 AC4 - no consent action when consent is not defined",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/consent.feature:28",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:132"
+          },
+          "name": "a contract requested at the provider",
+          "result": {
+            "duration": 0.008138895034790039,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/consent.feature:29",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.2435588836669922,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/consent.feature:30",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5423910617828369,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/consent.feature:31",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-update-consent\"",
+                "value": "action-update-consent"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-update-consent\" is absent",
+          "result": {
+            "duration": 0.0039179325103759766,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31047",
+        "D73"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/consent.feature:34",
+      "name": "No consent action for a user without consent_manager",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/consent.feature:35",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:137"
+          },
+          "name": "a contract requested at the provider for an asset with consent required",
+          "result": {
+            "duration": 0.012291193008422852,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/consent.feature:36",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-operator\"",
+                "value": "provider-operator"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-operator\"",
+          "result": {
+            "duration": 1.2537031173706055,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/consent.feature:37",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5399320125579834,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/consent.feature:38",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-update-consent\"",
+                "value": "action-update-consent"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-update-consent\" is absent",
+          "result": {
+            "duration": 0.0037610530853271484,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31047",
+        "D68",
+        "D73",
+        "rbac"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/consent.feature:2",
+  "name": "Consent status in the UI",
+  "status": "passed",
+  "tags": [
+    "ui",
+    "stub"
+  ]
+},
+
+{
+  "description": [
+    "SIMPL-30960, SIMPL-32505, D71 to D75."
+  ],
+  "elements": [
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/details_and_offer.feature:6",
+      "name": "SIMPL-30960 AC1 - the details show the offer fields and the human-readable offer",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/details_and_offer.feature:7",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:150"
+          },
+          "name": "an offer created at the consumer",
+          "result": {
+            "duration": 0.019917011260986328,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:8",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.249772071838379,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/details_and_offer.feature:9",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5363161563873291,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/details_and_offer.feature:10",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"contract-details\"",
+                "value": "contract-details"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"contract-details\" is visible",
+          "result": {
+            "duration": 0.0006880760192871094,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:11",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-negotiation-id\"",
+                "value": "detail-negotiation-id"
+              },
+              {
+                "name": "text",
+                "original": "\"${nid}\"",
+                "value": "${nid}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-negotiation-id\" shows \"${nid}\"",
+          "result": {
+            "duration": 0.0007390975952148438,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:12",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-resource-description-id\"",
+                "value": "detail-resource-description-id"
+              },
+              {
+                "name": "text",
+                "original": "\"${rdId}\"",
+                "value": "${rdId}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-resource-description-id\" shows \"${rdId}\"",
+          "result": {
+            "duration": 0.001077890396118164,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:13",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-resource-name\"",
+                "value": "detail-resource-name"
+              },
+              {
+                "name": "text",
+                "original": "\"${resourceName}\"",
+                "value": "${resourceName}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-resource-name\" shows \"${resourceName}\"",
+          "result": {
+            "duration": 0.0008890628814697266,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:14",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-provider-name\"",
+                "value": "detail-provider-name"
+              },
+              {
+                "name": "text",
+                "original": "\"Provider One\"",
+                "value": "Provider One"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-provider-name\" shows \"Provider One\"",
+          "result": {
+            "duration": 0.0007219314575195312,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:15",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-consumer-name\"",
+                "value": "detail-consumer-name"
+              },
+              {
+                "name": "text",
+                "original": "\"Consumer One\"",
+                "value": "Consumer One"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-consumer-name\" shows \"Consumer One\"",
+          "result": {
+            "duration": 0.0006389617919921875,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:16",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Requested\"",
+                "value": "Requested"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Requested\"",
+          "result": {
+            "duration": 0.0005958080291748047,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:17",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"human-readable\"",
+                "value": "human-readable"
+              },
+              {
+                "name": "text",
+                "original": "\"${resourceName}\"",
+                "value": "${resourceName}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:266"
+          },
+          "name": "the element \"human-readable\" contains \"${resourceName}\"",
+          "result": {
+            "duration": 0.0014591217041015625,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30960",
+        "D71",
+        "D72",
+        "D75",
+        "consumer"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/details_and_offer.feature:20",
+      "name": "SIMPL-30960 AC1 - the details have a button back to the overview",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/details_and_offer.feature:21",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:132"
+          },
+          "name": "a contract requested at the provider",
+          "result": {
+            "duration": 0.011482954025268555,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:22",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.230172872543335,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/details_and_offer.feature:23",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5390889644622803,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:24",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"back-to-overview\"",
+                "value": "back-to-overview"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"back-to-overview\"",
+          "result": {
+            "duration": 0.027235984802246094,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/details_and_offer.feature:25",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"contracts-table\"",
+                "value": "contracts-table"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"contracts-table\" is visible",
+          "result": {
+            "duration": 0.0008671283721923828,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30960",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/details_and_offer.feature:28",
+      "name": "The offer URL of the notification opens the same details",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/details_and_offer.feature:29",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:150"
+          },
+          "name": "an offer created at the consumer",
+          "result": {
+            "duration": 0.01605701446533203,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:30",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2403969764709473,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/details_and_offer.feature:31",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:170"
+          },
+          "name": "I open the offer URL of the negotiation",
+          "result": {
+            "duration": 0.5367758274078369,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/details_and_offer.feature:32",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-negotiation-id\"",
+                "value": "detail-negotiation-id"
+              },
+              {
+                "name": "text",
+                "original": "\"${nid}\"",
+                "value": "${nid}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-negotiation-id\" shows \"${nid}\"",
+          "result": {
+            "duration": 0.0007770061492919922,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:33",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-accept\"",
+                "value": "action-accept"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"action-accept\" is visible",
+          "result": {
+            "duration": 0.0008656978607177734,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30960",
+        "D71",
+        "consumer"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/details_and_offer.feature:36",
+      "name": "The human-readable offer is shown sanitised",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/details_and_offer.feature:37",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:53"
+          },
+          "name": "a fresh asset with",
+          "result": {
+            "duration": 0.0014941692352294922,
+            "status": "passed"
+          },
+          "step_type": "given",
+          "table": {
+            "headings": [
+              "field",
+              "value"
+            ],
+            "rows": [
+              [
+                "resourceName",
+                "<img src=x onerror=alert(1)>"
+              ]
+            ]
+          }
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:40",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:150"
+          },
+          "name": "an offer created at the consumer",
+          "result": {
+            "duration": 0.0177609920501709,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:41",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2419581413269043,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/details_and_offer.feature:42",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5410411357879639,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/details_and_offer.feature:43",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:423"
+          },
+          "name": "the human-readable offer shows no script and no external resource",
+          "result": {
+            "duration": 0.003567218780517578,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30960",
+        "D75",
+        "consumer"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/details_and_offer.feature:46",
+      "name": "SIMPL-32505 AC1 and AC2 - the Consumer accepts the offer and sees Accepted",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/details_and_offer.feature:47",
+          "match": {
+            "arguments": [
+              {
+                "name": "state",
+                "original": "\"CONSUMER_SIGNED\"",
+                "value": "CONSUMER_SIGNED"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:313"
+          },
+          "name": "an offer waiting for the consumer decision that stops after \"CONSUMER_SIGNED\"",
+          "result": {
+            "duration": 0.2612590789794922,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:48",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2506392002105713,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/details_and_offer.feature:49",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5390322208404541,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/details_and_offer.feature:50",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-accept\"",
+                "value": "action-accept"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"action-accept\" is visible",
+          "result": {
+            "duration": 0.0011751651763916016,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/details_and_offer.feature:51",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-accept\"",
+                "value": "action-accept"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-accept\"",
+          "result": {
+            "duration": 0.022037982940673828,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/details_and_offer.feature:52",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Accepted\"",
+                "value": "Accepted"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Accepted\"",
+          "result": {
+            "duration": 20.003021001815796,
+            "error_message": "Assertion Failed: detail-status: expected 'Accepted', the browser shows 'Signed'",
+            "status": "failed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32505",
+        "D71",
+        "D73",
+        "two-party"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/details_and_offer.feature:64",
+      "name": "SIMPL-32505 AC3 - there is no accept button for a contract that is Active -- @1.1 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/details_and_offer.feature:56",
+          "match": {
+            "arguments": [
+              {
+                "name": "status",
+                "original": "\"ACTIVE\"",
+                "value": "ACTIVE"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:379"
+          },
+          "name": "an active contract between both parties that is now \"ACTIVE\"",
+          "result": {
+            "duration": 0.5842432975769043,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:57",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2548892498016357,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/details_and_offer.feature:58",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5391988754272461,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/details_and_offer.feature:59",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-accept\"",
+                "value": "action-accept"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-accept\" is absent",
+          "result": {
+            "duration": 0.004986286163330078,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:60",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Active\"",
+                "value": "Active"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Active\"",
+          "result": {
+            "duration": 0.0011789798736572266,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32505",
+        "D73",
+        "two-party",
+        "slow"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/details_and_offer.feature:65",
+      "name": "SIMPL-32505 AC3 - there is no accept button for a contract that is Suspended -- @1.2 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/details_and_offer.feature:56",
+          "match": {
+            "arguments": [
+              {
+                "name": "status",
+                "original": "\"SUSPENDED\"",
+                "value": "SUSPENDED"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:379"
+          },
+          "name": "an active contract between both parties that is now \"SUSPENDED\"",
+          "result": {
+            "duration": 0.8417410850524902,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:57",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.245016098022461,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/details_and_offer.feature:58",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5365524291992188,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/details_and_offer.feature:59",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-accept\"",
+                "value": "action-accept"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-accept\" is absent",
+          "result": {
+            "duration": 0.0037779808044433594,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:60",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Suspended\"",
+                "value": "Suspended"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Suspended\"",
+          "result": {
+            "duration": 0.0007259845733642578,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32505",
+        "D73",
+        "two-party",
+        "slow"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/details_and_offer.feature:66",
+      "name": "SIMPL-32505 AC3 - there is no accept button for a contract that is Terminated -- @1.3 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/details_and_offer.feature:56",
+          "match": {
+            "arguments": [
+              {
+                "name": "status",
+                "original": "\"TERMINATED\"",
+                "value": "TERMINATED"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:379"
+          },
+          "name": "an active contract between both parties that is now \"TERMINATED\"",
+          "result": {
+            "duration": 0.8054490089416504,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:57",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2414560317993164,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/details_and_offer.feature:58",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5414872169494629,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/details_and_offer.feature:59",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-accept\"",
+                "value": "action-accept"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-accept\" is absent",
+          "result": {
+            "duration": 0.0036818981170654297,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:60",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Terminated\"",
+                "value": "Terminated"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Terminated\"",
+          "result": {
+            "duration": 0.0010881423950195312,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32505",
+        "D73",
+        "two-party",
+        "slow"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/details_and_offer.feature:69",
+      "name": "SIMPL-32505 AC3 - there is no accept button for a rejected offer",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/details_and_offer.feature:70",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:307"
+          },
+          "name": "an offer waiting for the consumer decision",
+          "result": {
+            "duration": 0.2570199966430664,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:71",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:422"
+          },
+          "name": "the consumer rejects the offer",
+          "result": {
+            "duration": 0.01495504379272461,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:72",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2341229915618896,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/details_and_offer.feature:73",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.537729024887085,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/details_and_offer.feature:74",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-accept\"",
+                "value": "action-accept"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-accept\" is absent",
+          "result": {
+            "duration": 0.003616809844970703,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:75",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Rejected\"",
+                "value": "Rejected"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Rejected\"",
+          "result": {
+            "duration": 0.0008292198181152344,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-32505",
+        "D73",
+        "two-party"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/details_and_offer.feature:78",
+      "name": "The Consumer rejects the offer in the UI and sees Rejected",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/details_and_offer.feature:79",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:307"
+          },
+          "name": "an offer waiting for the consumer decision",
+          "result": {
+            "duration": 0.2561459541320801,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:80",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2677690982818604,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/details_and_offer.feature:81",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.539071798324585,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/details_and_offer.feature:82",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-reject\"",
+                "value": "action-reject"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-reject\"",
+          "result": {
+            "duration": 0.022993803024291992,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/details_and_offer.feature:83",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Rejected\"",
+                "value": "Rejected"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Rejected\"",
+          "result": {
+            "duration": 0.07532501220703125,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-35660",
+        "D71",
+        "two-party"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/details_and_offer.feature:2",
+  "name": "Contract details and the offer decision screen",
+  "status": "failed",
+  "tags": [
+    "ui",
+    "stub"
+  ]
+},
+
+{
+  "description": [
+    "SIMPL-31053, 31076, 31115 to 31118, D71 to D73."
+  ],
+  "elements": [
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/lifecycle_actions.feature:6",
+      "name": "SIMPL-31115 AC1 to AC3 - the Provider suspends with a reason and the Consumer sees Suspended",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:7",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:358"
+          },
+          "name": "an active contract between both parties",
+          "result": {
+            "duration": 0.7970302104949951,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:8",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.255141258239746,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:9",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5374839305877686,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:10",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-suspend\"",
+                "value": "action-suspend"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-suspend\"",
+          "result": {
+            "duration": 0.028894901275634766,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:11",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"Breach of usage policy\"",
+                "value": "Breach of usage policy"
+              },
+              {
+                "name": "testid",
+                "original": "\"reason-input\"",
+                "value": "reason-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:210"
+          },
+          "name": "I type \"Breach of usage policy\" into \"reason-input\"",
+          "result": {
+            "duration": 0.003383159637451172,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:12",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"reason-submit\"",
+                "value": "reason-submit"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"reason-submit\"",
+          "result": {
+            "duration": 0.028367042541503906,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:13",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Suspended\"",
+                "value": "Suspended"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Suspended\"",
+          "result": {
+            "duration": 0.022922992706298828,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:14",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:143"
+          },
+          "name": "I log in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.243910312652588,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:15",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:156"
+          },
+          "name": "I open the overview",
+          "result": {
+            "duration": 0.5540878772735596,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:16",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"cell-status\"",
+                "value": "cell-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Suspended\"",
+                "value": "Suspended"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:295"
+          },
+          "name": "the row of the negotiation shows \"cell-status\" as \"Suspended\"",
+          "result": {
+            "duration": 0.0035779476165771484,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31115",
+        "D71",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/lifecycle_actions.feature:19",
+      "name": "The reason dialog refuses a blank reason",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:20",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:358"
+          },
+          "name": "an active contract between both parties",
+          "result": {
+            "duration": 0.7966639995574951,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:21",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.2570490837097168,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:22",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5431461334228516,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:23",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-suspend\"",
+                "value": "action-suspend"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-suspend\"",
+          "result": {
+            "duration": 0.02430415153503418,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:24",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:348"
+          },
+          "name": "the reason submit is refused while the reason is blank",
+          "result": {
+            "duration": 0.006983757019042969,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31115",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/lifecycle_actions.feature:27",
+      "name": "SIMPL-31116 AC1 to AC3 - the Consumer requests reactivation with a justification",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:28",
+          "match": {
+            "arguments": [
+              {
+                "name": "status",
+                "original": "\"SUSPENDED\"",
+                "value": "SUSPENDED"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:379"
+          },
+          "name": "an active contract between both parties that is now \"SUSPENDED\"",
+          "result": {
+            "duration": 0.8054611682891846,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:29",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2358429431915283,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:30",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5374882221221924,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:31",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-request-reactivation\"",
+                "value": "action-request-reactivation"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-request-reactivation\"",
+          "result": {
+            "duration": 0.026063919067382812,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:32",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"Issue fixed\"",
+                "value": "Issue fixed"
+              },
+              {
+                "name": "testid",
+                "original": "\"reason-input\"",
+                "value": "reason-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:210"
+          },
+          "name": "I type \"Issue fixed\" into \"reason-input\"",
+          "result": {
+            "duration": 0.0029010772705078125,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:33",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"reason-submit\"",
+                "value": "reason-submit"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"reason-submit\"",
+          "result": {
+            "duration": 0.028937101364135742,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:34",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Reactivation requested\"",
+                "value": "Reactivation requested"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Reactivation requested\"",
+          "result": {
+            "duration": 0.022524118423461914,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31116",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/lifecycle_actions.feature:46",
+      "name": "SIMPL-31117 AC1 to AC3 - the Provider reactivates a contract that is Suspended -- @1.1 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:38",
+          "match": {
+            "arguments": [
+              {
+                "name": "status",
+                "original": "\"SUSPENDED\"",
+                "value": "SUSPENDED"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:379"
+          },
+          "name": "an active contract between both parties that is now \"SUSPENDED\"",
+          "result": {
+            "duration": 0.8153889179229736,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:39",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.2592709064483643,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:40",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5406918525695801,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:41",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-reactivate\"",
+                "value": "action-reactivate"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-reactivate\"",
+          "result": {
+            "duration": 0.02464604377746582,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:42",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Active\"",
+                "value": "Active"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Active\"",
+          "result": {
+            "duration": 0.07511186599731445,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31117",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/lifecycle_actions.feature:47",
+      "name": "SIMPL-31117 AC1 to AC3 - the Provider reactivates a contract that is Reactivation requested -- @1.2 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:38",
+          "match": {
+            "arguments": [
+              {
+                "name": "status",
+                "original": "\"REACTIVATION_REQUESTED\"",
+                "value": "REACTIVATION_REQUESTED"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:379"
+          },
+          "name": "an active contract between both parties that is now \"REACTIVATION_REQUESTED\"",
+          "result": {
+            "duration": 0.8270761966705322,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:39",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.2472271919250488,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:40",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5415890216827393,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:41",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-reactivate\"",
+                "value": "action-reactivate"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-reactivate\"",
+          "result": {
+            "duration": 0.022427082061767578,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:42",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Active\"",
+                "value": "Active"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Active\"",
+          "result": {
+            "duration": 0.07639384269714355,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31117",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/lifecycle_actions.feature:61",
+      "name": "SIMPL-31053 AC1 to AC3 - the provider requests revocation and both see Revocation requested -- @1.1 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:51",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:358"
+          },
+          "name": "an active contract between both parties",
+          "result": {
+            "duration": 0.8051059246063232,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:52",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.2842869758605957,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:53",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5382251739501953,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:54",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-request-revocation\"",
+                "value": "action-request-revocation"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-request-revocation\"",
+          "result": {
+            "duration": 0.025946855545043945,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:55",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"No longer needed\"",
+                "value": "No longer needed"
+              },
+              {
+                "name": "testid",
+                "original": "\"reason-input\"",
+                "value": "reason-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:210"
+          },
+          "name": "I type \"No longer needed\" into \"reason-input\"",
+          "result": {
+            "duration": 0.003343820571899414,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:56",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"reason-submit\"",
+                "value": "reason-submit"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"reason-submit\"",
+          "result": {
+            "duration": 0.02805924415588379,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:57",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Revocation requested\"",
+                "value": "Revocation requested"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Revocation requested\"",
+          "result": {
+            "duration": 0.022349119186401367,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31053",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/lifecycle_actions.feature:62",
+      "name": "SIMPL-31053 AC1 to AC3 - the consumer requests revocation and both see Revocation requested -- @1.2 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:51",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:358"
+          },
+          "name": "an active contract between both parties",
+          "result": {
+            "duration": 0.7936599254608154,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:52",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2359108924865723,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:53",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5370538234710693,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:54",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-request-revocation\"",
+                "value": "action-request-revocation"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-request-revocation\"",
+          "result": {
+            "duration": 0.01415395736694336,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:55",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"No longer needed\"",
+                "value": "No longer needed"
+              },
+              {
+                "name": "testid",
+                "original": "\"reason-input\"",
+                "value": "reason-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:210"
+          },
+          "name": "I type \"No longer needed\" into \"reason-input\"",
+          "result": {
+            "duration": 0.0030012130737304688,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:56",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"reason-submit\"",
+                "value": "reason-submit"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"reason-submit\"",
+          "result": {
+            "duration": 0.02799510955810547,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:57",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Revocation requested\"",
+                "value": "Revocation requested"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Revocation requested\"",
+          "result": {
+            "duration": 0.07413983345031738,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31053",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/lifecycle_actions.feature:65",
+      "name": "SIMPL-31076 AC1 and AC2 - the responding Consumer accepts the revocation",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:66",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:408"
+          },
+          "name": "an active contract between both parties with a revocation requested by the provider",
+          "result": {
+            "duration": 0.8093619346618652,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:67",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.259249210357666,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:68",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5380709171295166,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:69",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-deny-revocation\"",
+                "value": "action-deny-revocation"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"action-deny-revocation\" is visible",
+          "result": {
+            "duration": 0.001050710678100586,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:70",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-accept-revocation\"",
+                "value": "action-accept-revocation"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-accept-revocation\"",
+          "result": {
+            "duration": 0.022649049758911133,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:71",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Revoked\"",
+                "value": "Revoked"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Revoked\"",
+          "result": {
+            "duration": 0.022912025451660156,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31076",
+        "D71",
+        "D73"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/lifecycle_actions.feature:74",
+      "name": "SIMPL-31076 AC3 and AC4 - the responding Provider denies with a justification",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:75",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:408"
+          },
+          "name": "an active contract between both parties with a revocation requested by the consumer",
+          "result": {
+            "duration": 1.0664880275726318,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:76",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.2477290630340576,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:77",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5430841445922852,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:78",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-deny-revocation\"",
+                "value": "action-deny-revocation"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-deny-revocation\"",
+          "result": {
+            "duration": 0.02657318115234375,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:79",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"Contract terms still apply\"",
+                "value": "Contract terms still apply"
+              },
+              {
+                "name": "testid",
+                "original": "\"reason-input\"",
+                "value": "reason-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:210"
+          },
+          "name": "I type \"Contract terms still apply\" into \"reason-input\"",
+          "result": {
+            "duration": 0.0030689239501953125,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:80",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"reason-submit\"",
+                "value": "reason-submit"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"reason-submit\"",
+          "result": {
+            "duration": 0.028296947479248047,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:81",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Active\"",
+                "value": "Active"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Active\"",
+          "result": {
+            "duration": 0.02393198013305664,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31076",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/lifecycle_actions.feature:84",
+      "name": "The requesting party sees no answer buttons",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:85",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:408"
+          },
+          "name": "an active contract between both parties with a revocation requested by the provider",
+          "result": {
+            "duration": 0.8097782135009766,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:86",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.2544360160827637,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:87",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5425553321838379,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:88",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-accept-revocation\"",
+                "value": "action-accept-revocation"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-accept-revocation\" is absent",
+          "result": {
+            "duration": 0.003493785858154297,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:89",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-deny-revocation\"",
+                "value": "action-deny-revocation"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-deny-revocation\" is absent",
+          "result": {
+            "duration": 0.0035681724548339844,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31076",
+        "D73"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/lifecycle_actions.feature:92",
+      "name": "SIMPL-31118 AC1 to AC3 - the Provider terminates with a justification",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:93",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:358"
+          },
+          "name": "an active contract between both parties",
+          "result": {
+            "duration": 0.7889189720153809,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:94",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.2573199272155762,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:95",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5421218872070312,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:96",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-terminate\"",
+                "value": "action-terminate"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"action-terminate\"",
+          "result": {
+            "duration": 0.02550792694091797,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:97",
+          "match": {
+            "arguments": [
+              {
+                "name": "text",
+                "original": "\"Termination conditions met\"",
+                "value": "Termination conditions met"
+              },
+              {
+                "name": "testid",
+                "original": "\"reason-input\"",
+                "value": "reason-input"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:210"
+          },
+          "name": "I type \"Termination conditions met\" into \"reason-input\"",
+          "result": {
+            "duration": 0.0036928653717041016,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:98",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"reason-submit\"",
+                "value": "reason-submit"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"reason-submit\"",
+          "result": {
+            "duration": 0.02694988250732422,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:99",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"detail-status\"",
+                "value": "detail-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Terminated\"",
+                "value": "Terminated"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:254"
+          },
+          "name": "the element \"detail-status\" shows \"Terminated\"",
+          "result": {
+            "duration": 0.07456398010253906,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31118",
+        "D71"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/lifecycle_actions.feature:110",
+      "name": "SIMPL-31118 AC1 - no terminate button for a contract that is Revoked -- @1.1 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:103",
+          "match": {
+            "arguments": [
+              {
+                "name": "status",
+                "original": "\"REVOKED\"",
+                "value": "REVOKED"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:379"
+          },
+          "name": "an active contract between both parties that is now \"REVOKED\"",
+          "result": {
+            "duration": 1.0852580070495605,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:104",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.259760856628418,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:105",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5454058647155762,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:106",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-terminate\"",
+                "value": "action-terminate"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-terminate\" is absent",
+          "result": {
+            "duration": 0.005384206771850586,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31118",
+        "D73"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/lifecycle_actions.feature:111",
+      "name": "SIMPL-31118 AC1 - no terminate button for a contract that is Terminated -- @1.2 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:103",
+          "match": {
+            "arguments": [
+              {
+                "name": "status",
+                "original": "\"TERMINATED\"",
+                "value": "TERMINATED"
+              }
+            ],
+            "location": "features/steps/domain_steps.py:379"
+          },
+          "name": "an active contract between both parties that is now \"TERMINATED\"",
+          "result": {
+            "duration": 0.8154170513153076,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:104",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-admin\"",
+                "value": "provider-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the provider UI as \"provider-admin\"",
+          "result": {
+            "duration": 1.2651488780975342,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:105",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5386941432952881,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:106",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-terminate\"",
+                "value": "action-terminate"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-terminate\" is absent",
+          "result": {
+            "duration": 0.0033931732177734375,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31118",
+        "D73"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/lifecycle_actions.feature:114",
+      "name": "The Consumer sees no suspend or terminate button",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/lifecycle_actions.feature:115",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:358"
+          },
+          "name": "an active contract between both parties",
+          "result": {
+            "duration": 0.7939460277557373,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:116",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2532169818878174,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/lifecycle_actions.feature:117",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:163"
+          },
+          "name": "I open the details of the negotiation",
+          "result": {
+            "duration": 0.5382189750671387,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/lifecycle_actions.feature:118",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-suspend\"",
+                "value": "action-suspend"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-suspend\" is absent",
+          "result": {
+            "duration": 0.0034668445587158203,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:119",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-terminate\"",
+                "value": "action-terminate"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"action-terminate\" is absent",
+          "result": {
+            "duration": 0.003557920455932617,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/lifecycle_actions.feature:120",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-request-revocation\"",
+                "value": "action-request-revocation"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"action-request-revocation\" is visible",
+          "result": {
+            "duration": 0.0008349418640136719,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-31115",
+        "D73"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/lifecycle_actions.feature:2",
+  "name": "Lifecycle actions in the UI",
+  "status": "passed",
+  "tags": [
+    "ui",
+    "stub",
+    "two-party",
+    "slow"
+  ]
+},
+
+{
+  "description": [
+    "SIMPL-30959, D71 to D74."
+  ],
+  "elements": [
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/overview.feature:6",
+      "name": "SIMPL-30959 AC1 - the Consumer overview shows the overview columns of an offer",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/overview.feature:7",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:150"
+          },
+          "name": "an offer created at the consumer",
+          "result": {
+            "duration": 0.020884990692138672,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:8",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.257063865661621,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/overview.feature:9",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:156"
+          },
+          "name": "I open the overview",
+          "result": {
+            "duration": 0.5551707744598389,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/overview.feature:10",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"contracts-table\"",
+                "value": "contracts-table"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"contracts-table\" is visible",
+          "result": {
+            "duration": 0.0015759468078613281,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:11",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"cell-negotiation-id\"",
+                "value": "cell-negotiation-id"
+              },
+              {
+                "name": "text",
+                "original": "\"${nid}\"",
+                "value": "${nid}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:295"
+          },
+          "name": "the row of the negotiation shows \"cell-negotiation-id\" as \"${nid}\"",
+          "result": {
+            "duration": 0.003565073013305664,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:12",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"cell-resource-description-id\"",
+                "value": "cell-resource-description-id"
+              },
+              {
+                "name": "text",
+                "original": "\"${rdId}\"",
+                "value": "${rdId}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:295"
+          },
+          "name": "the row of the negotiation shows \"cell-resource-description-id\" as \"${rdId}\"",
+          "result": {
+            "duration": 0.0037229061126708984,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:13",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"cell-resource-name\"",
+                "value": "cell-resource-name"
+              },
+              {
+                "name": "text",
+                "original": "\"${resourceName}\"",
+                "value": "${resourceName}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:295"
+          },
+          "name": "the row of the negotiation shows \"cell-resource-name\" as \"${resourceName}\"",
+          "result": {
+            "duration": 0.003081798553466797,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:14",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"cell-counterparty-name\"",
+                "value": "cell-counterparty-name"
+              },
+              {
+                "name": "text",
+                "original": "\"Provider One\"",
+                "value": "Provider One"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:295"
+          },
+          "name": "the row of the negotiation shows \"cell-counterparty-name\" as \"Provider One\"",
+          "result": {
+            "duration": 0.0024220943450927734,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:15",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"cell-status\"",
+                "value": "cell-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Requested\"",
+                "value": "Requested"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:295"
+          },
+          "name": "the row of the negotiation shows \"cell-status\" as \"Requested\"",
+          "result": {
+            "duration": 0.0025238990783691406,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30959",
+        "D71",
+        "D72",
+        "stub",
+        "consumer"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/overview.feature:18",
+      "name": "SIMPL-30959 AC1 - an offer in Requested offers accept and reject, and a button to the details",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/overview.feature:19",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:150"
+          },
+          "name": "an offer created at the consumer",
+          "result": {
+            "duration": 0.015383005142211914,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:20",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2584750652313232,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/overview.feature:21",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:156"
+          },
+          "name": "I open the overview",
+          "result": {
+            "duration": 0.5420660972595215,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/overview.feature:22",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"open-details-${nid}\"",
+                "value": "open-details-${nid}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"open-details-${nid}\" is visible",
+          "result": {
+            "duration": 0.0017631053924560547,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/overview.feature:23",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"open-details-${nid}\"",
+                "value": "open-details-${nid}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:198"
+          },
+          "name": "I click the button \"open-details-${nid}\" of the negotiation",
+          "result": {
+            "duration": 0.05367326736450195,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/overview.feature:24",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-accept\"",
+                "value": "action-accept"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"action-accept\" is visible",
+          "result": {
+            "duration": 0.0011599063873291016,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:25",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"action-reject\"",
+                "value": "action-reject"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"action-reject\" is visible",
+          "result": {
+            "duration": 0.0008649826049804688,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30959",
+        "D71",
+        "D73",
+        "stub",
+        "consumer"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/overview.feature:38",
+      "name": "SIMPL-30959 AC1 - the overview filters by filter-negotiation-id -- @1.1 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/overview.feature:29",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:150"
+          },
+          "name": "an offer created at the consumer",
+          "result": {
+            "duration": 0.017241954803466797,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:30",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2427639961242676,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/overview.feature:31",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:156"
+          },
+          "name": "I open the overview",
+          "result": {
+            "duration": 0.5506112575531006,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:32",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"filter-negotiation-id\"",
+                "value": "filter-negotiation-id"
+              },
+              {
+                "name": "text",
+                "original": "\"${nid}\"",
+                "value": "${nid}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:226"
+          },
+          "name": "I filter the overview by \"filter-negotiation-id\" with \"${nid}\"",
+          "result": {
+            "duration": 0.01263284683227539,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:33",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"filter-apply\"",
+                "value": "filter-apply"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"filter-apply\"",
+          "result": {
+            "duration": 0.036720991134643555,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/overview.feature:34",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:284"
+          },
+          "name": "the row of the negotiation is visible",
+          "result": {
+            "duration": 0.0018169879913330078,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30959",
+        "D71",
+        "stub",
+        "consumer"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/overview.feature:39",
+      "name": "SIMPL-30959 AC1 - the overview filters by filter-resource-name -- @1.2 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/overview.feature:29",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:150"
+          },
+          "name": "an offer created at the consumer",
+          "result": {
+            "duration": 0.018563032150268555,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:30",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.247025966644287,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/overview.feature:31",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:156"
+          },
+          "name": "I open the overview",
+          "result": {
+            "duration": 0.5493059158325195,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:32",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"filter-resource-name\"",
+                "value": "filter-resource-name"
+              },
+              {
+                "name": "text",
+                "original": "\"${resourceName}\"",
+                "value": "${resourceName}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:226"
+          },
+          "name": "I filter the overview by \"filter-resource-name\" with \"${resourceName}\"",
+          "result": {
+            "duration": 0.012603044509887695,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:33",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"filter-apply\"",
+                "value": "filter-apply"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"filter-apply\"",
+          "result": {
+            "duration": 0.03253984451293945,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/overview.feature:34",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:284"
+          },
+          "name": "the row of the negotiation is visible",
+          "result": {
+            "duration": 0.0015971660614013672,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30959",
+        "D71",
+        "stub",
+        "consumer"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/overview.feature:40",
+      "name": "SIMPL-30959 AC1 - the overview filters by filter-counterparty-name -- @1.3 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/overview.feature:29",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:150"
+          },
+          "name": "an offer created at the consumer",
+          "result": {
+            "duration": 0.016143083572387695,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:30",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2512931823730469,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/overview.feature:31",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:156"
+          },
+          "name": "I open the overview",
+          "result": {
+            "duration": 0.5513801574707031,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:32",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"filter-counterparty-name\"",
+                "value": "filter-counterparty-name"
+              },
+              {
+                "name": "text",
+                "original": "\"provider one\"",
+                "value": "provider one"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:226"
+          },
+          "name": "I filter the overview by \"filter-counterparty-name\" with \"provider one\"",
+          "result": {
+            "duration": 0.010529756546020508,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:33",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"filter-apply\"",
+                "value": "filter-apply"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"filter-apply\"",
+          "result": {
+            "duration": 0.0327301025390625,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/overview.feature:34",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:284"
+          },
+          "name": "the row of the negotiation is visible",
+          "result": {
+            "duration": 0.0015120506286621094,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30959",
+        "D71",
+        "stub",
+        "consumer"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/overview.feature:41",
+      "name": "SIMPL-30959 AC1 - the overview filters by filter-status -- @1.4 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/overview.feature:29",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:150"
+          },
+          "name": "an offer created at the consumer",
+          "result": {
+            "duration": 0.011307954788208008,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:30",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.230484962463379,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/overview.feature:31",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:156"
+          },
+          "name": "I open the overview",
+          "result": {
+            "duration": 0.5540430545806885,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:32",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"filter-status\"",
+                "value": "filter-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Requested\"",
+                "value": "Requested"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:226"
+          },
+          "name": "I filter the overview by \"filter-status\" with \"Requested\"",
+          "result": {
+            "duration": 0.013197183609008789,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:33",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"filter-apply\"",
+                "value": "filter-apply"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"filter-apply\"",
+          "result": {
+            "duration": 0.031305789947509766,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/overview.feature:34",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:284"
+          },
+          "name": "the row of the negotiation is visible",
+          "result": {
+            "duration": 0.0016281604766845703,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30959",
+        "D71",
+        "stub",
+        "consumer"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/overview.feature:44",
+      "name": "SIMPL-30959 AC2 - an empty overview still shows the table header",
+      "status": "failed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/overview.feature:45",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:78"
+          },
+          "name": "fresh negotiation ids",
+          "result": {
+            "duration": 5.0067901611328125e-05,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:46",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2507457733154297,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/overview.feature:47",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:156"
+          },
+          "name": "I open the overview",
+          "result": {
+            "duration": 0.5503740310668945,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:48",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"filter-negotiation-id\"",
+                "value": "filter-negotiation-id"
+              },
+              {
+                "name": "text",
+                "original": "\"${nid}\"",
+                "value": "${nid}"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:226"
+          },
+          "name": "I filter the overview by \"filter-negotiation-id\" with \"${nid}\"",
+          "result": {
+            "duration": 0.012115240097045898,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:49",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"filter-apply\"",
+                "value": "filter-apply"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:189"
+          },
+          "name": "I click \"filter-apply\"",
+          "result": {
+            "duration": 0.03283095359802246,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/overview.feature:50",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"contracts-empty\"",
+                "value": "contracts-empty"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:237"
+          },
+          "name": "the element \"contracts-empty\" is visible",
+          "result": {
+            "duration": 0.04188394546508789,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:51",
+          "match": {
+            "arguments": [
+              {
+                "name": "columns",
+                "original": "\"Contract negotiation ID, Resource description ID, Resource name, Provider name, Status\"",
+                "value": "Contract negotiation ID, Resource description ID, Resource name, Provider name, Status"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:315"
+          },
+          "name": "the table header shows the columns \"Contract negotiation ID, Resource description ID, Resource name, Provider name, Status\"",
+          "result": {
+            "duration": 0.0030291080474853516,
+            "error_message": "Assertion Failed: header columns ['Contract negotiation ID', 'Provider name'] not found in order; the browser shows ['Negotiation id', 'Resource description id', 'Resource name', 'Counterparty', 'Status']",
+            "status": "failed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30959",
+        "D71",
+        "D72"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/overview.feature:61",
+      "name": "SIMPL-30959 AC3 - a provider user without the role cannot open the contract manager UI -- @1.1 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "When",
+          "location": "features/ui/overview.feature:55",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "provider"
+              },
+              {
+                "name": "user",
+                "original": "\"provider-norole\"",
+                "value": "provider-norole"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:143"
+          },
+          "name": "I log in to the provider UI as \"provider-norole\"",
+          "result": {
+            "duration": 1.246274709701538,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/overview.feature:56",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"access-denied\"",
+                "value": "access-denied"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:436"
+          },
+          "name": "the only visible element is \"access-denied\"",
+          "result": {
+            "duration": 0.024904966354370117,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:57",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"contracts-table\"",
+                "value": "contracts-table"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"contracts-table\" is absent",
+          "result": {
+            "duration": 0.00755620002746582,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30959",
+        "D74",
+        "rbac",
+        "oidc"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario Outline",
+      "location": "features/ui/overview.feature:62",
+      "name": "SIMPL-30959 AC3 - a consumer user without the role cannot open the contract manager UI -- @1.2 ",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "When",
+          "location": "features/ui/overview.feature:55",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-norole\"",
+                "value": "consumer-norole"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:143"
+          },
+          "name": "I log in to the consumer UI as \"consumer-norole\"",
+          "result": {
+            "duration": 1.2453639507293701,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/overview.feature:56",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"access-denied\"",
+                "value": "access-denied"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:436"
+          },
+          "name": "the only visible element is \"access-denied\"",
+          "result": {
+            "duration": 0.02991199493408203,
+            "status": "passed"
+          },
+          "step_type": "then"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:57",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"contracts-table\"",
+                "value": "contracts-table"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:244"
+          },
+          "name": "the element \"contracts-table\" is absent",
+          "result": {
+            "duration": 0.008217096328735352,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-30959",
+        "D74",
+        "rbac",
+        "oidc"
+      ],
+      "type": "scenario"
+    },
+    {
+      "keyword": "Scenario",
+      "location": "features/ui/overview.feature:65",
+      "name": "SIMPL-35692 AC4 - an expired offer is shown as Terminated",
+      "status": "passed",
+      "steps": [
+        {
+          "keyword": "Given",
+          "location": "features/ui/overview.feature:66",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/domain_steps.py:307"
+          },
+          "name": "an offer waiting for the consumer decision",
+          "result": {
+            "duration": 0.2598550319671631,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:67",
+          "match": {
+            "arguments": [
+              {
+                "name": "minutes",
+                "original": "1",
+                "value": 1
+              }
+            ],
+            "location": "features/steps/domain_steps.py:924"
+          },
+          "name": "the consumer UIBE runs the offer expiry as of the timeout plus 1 minute for the negotiation",
+          "result": {
+            "duration": 0.009686946868896484,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "And",
+          "location": "features/ui/overview.feature:68",
+          "match": {
+            "arguments": [
+              {
+                "name": "party",
+                "value": "consumer"
+              },
+              {
+                "name": "user",
+                "original": "\"consumer-admin\"",
+                "value": "consumer-admin"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:138"
+          },
+          "name": "I am logged in to the consumer UI as \"consumer-admin\"",
+          "result": {
+            "duration": 1.2408239841461182,
+            "status": "passed"
+          },
+          "step_type": "given"
+        },
+        {
+          "keyword": "When",
+          "location": "features/ui/overview.feature:69",
+          "match": {
+            "arguments": [],
+            "location": "features/steps/ui_steps.py:156"
+          },
+          "name": "I open the overview",
+          "result": {
+            "duration": 0.5523281097412109,
+            "status": "passed"
+          },
+          "step_type": "when"
+        },
+        {
+          "keyword": "Then",
+          "location": "features/ui/overview.feature:70",
+          "match": {
+            "arguments": [
+              {
+                "name": "testid",
+                "original": "\"cell-status\"",
+                "value": "cell-status"
+              },
+              {
+                "name": "text",
+                "original": "\"Terminated\"",
+                "value": "Terminated"
+              }
+            ],
+            "location": "features/steps/ui_steps.py:295"
+          },
+          "name": "the row of the negotiation shows \"cell-status\" as \"Terminated\"",
+          "result": {
+            "duration": 0.0042841434478759766,
+            "status": "passed"
+          },
+          "step_type": "then"
+        }
+      ],
+      "tags": [
+        "SIMPL-35692",
+        "D44",
+        "D72",
+        "stub",
+        "two-party"
+      ],
+      "type": "scenario"
+    }
+  ],
+  "keyword": "Feature",
+  "location": "features/ui/overview.feature:2",
+  "name": "Contract overview screen",
+  "status": "failed",
+  "tags": [
+    "ui"
+  ]
+}
+]

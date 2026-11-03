@@ -1,0 +1,22 @@
+same  health                       GET    upstream 200                                      build 200 
+same  read existing                GET    upstream 200                                      build 200 
+same  file existing                GET    upstream 200                                      build 200 
+same  read unknown                 GET    upstream 404 urn:error:single-custom-exception    build 404 urn:problem-type:simpl:notFound
+same  read malformed id            GET    upstream 400 urn:error:argument-type-mismatch     build 400 urn:problem-type:simpl:argumentTypeMismatch
+same  file unknown                 GET    upstream 404 urn:error:single-custom-exception    build 404 urn:problem-type:simpl:notFound
+same  read no key                  GET    upstream 401 urn:error:unauthorized               build 401 urn:problem-type:simpl:unauthorized
+same  read wrong key               GET    upstream 401 urn:error:unauthorized               build 401 urn:problem-type:simpl:unauthorized
+DIFF  read as xml                  GET    upstream 500 urn:error:internal-server-error      build 406 urn:problem-type:simpl:notAcceptable
+same  delete (no such method)      DELETE upstream 405 urn:error:method-not-supported       build 405 urn:problem-type:simpl:methodNotSupported
+DIFF  search all, empty body       POST   upstream 405 urn:error:method-not-supported       build 200 
+same  search by nid, empty body    POST   upstream 400 urn:error:single-custom-exception    build 400 urn:problem-type:simpl:validationFailure
+same  search by nid, with assetId  POST   upstream 200                                      build 200 
+DIFF  status unknown ids           PATCH  upstream 200                                      build 400 urn:problem-type:simpl:validationFailure
+same  issue, empty body            POST   upstream 400 urn:error:data-validation            build 400 urn:problem-type:simpl:validationFailure
+same  create, empty body           POST   upstream 400 urn:error:data-validation            build 400 urn:problem-type:simpl:validationFailure
+DIFF  verification, empty body     PUT    upstream 200                                      build 400 urn:problem-type:simpl:validationFailure
+DIFF  offer, unknown nid           POST   upstream 404                                      build 400 urn:problem-type:simpl:validationFailure
+DIFF  offer accept, unknown nid    PATCH  upstream 404                                      build 400 urn:problem-type:simpl:validationFailure
+DIFF  offer update, unknown nid    PUT    upstream 404                                      build 400 urn:problem-type:simpl:validationFailure
+agreement fields same | assetId,consumerId,consumerSignatureDate,contractAgreementId,contractDefinitionId,contractNegotiationId,contractOfferId,providerId,providerSignatureDate,status
+13 of 20 calls give the same status

@@ -1,0 +1,1598 @@
+---
+openapi: 3.0.3
+info:
+  title: Contract Manager
+  description: Contract Manager HTTP APIs for interaction with the Dataspace connector.
+  version: '1.1'
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  contact:
+    name: Simpl Programme
+    email: cnect-simpl@ec.europa.eu
+    url: https://simpl-programme.ec.europa.eu/
+servers:
+  - url: https://localhost:8085/contract/v1
+    description: Contract Manager
+paths:
+  "/health":
+    get:
+      tags:
+        - health
+      summary: health check endpoint
+      description: Health check endpoint
+      operationId: health#Liveness
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                "$ref": "#/components/schemas/HealthResponse"
+              example:
+                status: UP
+                groups:
+                  - liveness
+                  - readiness
+                components:
+                  db:
+                    status: UP
+                    details:
+                      database: PostgreSQL
+                      validationQuery: isValid()
+                  diskSpace:
+                    status: UP
+                    details:
+                      total: 135024029696
+                      free: 42437074944
+                      threshold: 10485760
+                      path: C:\workspace\CONTRACTS-BILLING\repos\contract\.
+                      exists: true
+                  livenessState:
+                    status: UP
+                  ping:
+                    status: UP
+                  readinessState:
+                    status: UP
+                  ssl:
+                    status: UP
+                    details:
+                      validChains: [ ]
+                      invalidChains: [ ]
+        '503':
+          description: Service Unavailable
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 503
+                title: Service Unavailable
+                detail: Service Unavailable
+  "/credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/issue":
+    post:
+      tags:
+        - verifiable-credentials
+      summary: Issue Verifiable credential
+      description: Issue Verifiable credential. Start the process of signing contract.
+      operationId: contract#CreateVerifiableCredential
+      requestBody:
+        description: Request body
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ContractAgreementCreate"
+            example:
+              contractNegotiationId: 0ec61c92-677b-4e97-aef1-ed542e37183b
+              assetId: MyResource1
+              providerId: FirstProvider
+              consumerId: Cons2000
+              contractOfferId: 32c61c92-677b-4e97-aef1-ed542e371234
+        required: false
+      parameters:
+        - name: contractAgreementId
+          in: path
+          description: Contract Agreement Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+        - name: contractDefinitionId
+          in: path
+          description: Contract Definition Id
+          required: true
+          schema:
+            type: string
+          example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+      responses:
+        '201':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ConfirmationResponse"
+              example:
+                contractAgreementId: 677186f6-1179-4cf1-b845-68d1c00c185f
+                contractDefinitionId: 777186f6-1179-4cf1-b845-68d1c00c185f
+                status: INITIATED
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 400
+                title: Bad Request
+                detail: Invalid body content
+                instance: "/contract/v1/credentials/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd17/definitions/def1/issue"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract/v1/credentials/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd17/definitions/def1/issue"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 500
+                title: Server Error
+                detail: Server Error
+  "/credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create":
+    post:
+      tags:
+        - verifiable-credentials
+      summary: Create contract agreement data
+      description: Initiate process of collecting all the data for contract presentation
+      operationId: contract#CreateContractData
+      requestBody:
+        description: Request body
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ContractAgreementCreate"
+            example:
+              contractNegotiationId: 0ec61c92-677b-4e97-aef1-ed542e37183b
+              assetId: MyResource1
+              providerId: FirstProvider
+              consumerId: Cons2000
+              contractOfferId: 32c61c92-677b-4e97-aef1-ed542e371234
+        required: true
+      parameters:
+        - name: contractAgreementId
+          in: path
+          description: Contract Agreement Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+        - name: contractDefinitionId
+          in: path
+          description: Contract Definition Id
+          required: true
+          schema:
+            type: string
+          example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+      responses:
+        '201':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ConfirmationResponse"
+              example:
+                contractAgreementId: 677186f6-1179-4cf1-b845-68d1c00c185f
+                contractDefinitionId: 777186f6-1179-4cf1-b845-68d1c00c185f
+                status: INITIATED
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 400
+                title: Bad Request
+                detail: Invalid body content
+                instance: "/contract/v1/credentials/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd17/definitions/def1/create"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract/v1/credentials/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd17/definitions/def1/create"
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 415
+                title: Unsupported Media Type
+                instance: "/contract/v1/credentials/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd17/definitions/def1/create"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 500
+                title: Server Error
+                detail: Server Error
+  "/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/status":
+    patch:
+      tags:
+        - contract-agreements
+      summary: Confirm signing of the Contract Agreement
+      description: Confirm signing of the Contract Agreement by the consumer to the
+        provider. Final step in the process.
+      operationId: contract#ContractAgreementSignatureConfirmation
+      requestBody:
+        description: Request body
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/StatusUpdate"
+            example:
+              status: FINALIZED
+        required: true
+      parameters:
+        - name: contractAgreementId
+          in: path
+          description: Contract Agreement Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+        - name: contractDefinitionId
+          in: path
+          description: Contract Definition Id
+          required: true
+          schema:
+            type: string
+          example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ConfirmationResponse"
+              example:
+                contractAgreementId: 677186f6-1179-4cf1-b845-68d1c00c185f
+                contractDefinitionId: 777186f6-1179-4cf1-b845-68d1c00c185f
+                status: FINALIZING
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 400
+                title: Bad Request
+                detail: Invalid body content
+                instance: "/contract/v1/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd17/definitions/def1/status"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract/v1/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd17/definitions/def1/status"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 500
+                title: Server Error
+                detail: Server Error
+  "/agreements/{contractAgreementId}":
+    get:
+      tags:
+        - contract-agreements
+      summary: Get Contract Agreement
+      description: Get stored Contract Agreement data from database.
+      operationId: contract#ContractAgreement
+      parameters:
+        - name: contractAgreementId
+          in: path
+          description: Contract Agreement Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ContractAgreementData"
+              example:
+                contractAgreementId: 677186f6-1179-4cf1-b845-68d1c00c185f
+                contractDefinitionId: 777186f6-1179-4cf1-b845-68d1c00c185f
+                consumerSignatureDate: '2024-05-05T10:20:30'
+                providerSignatureDate: '2024-05-05T10:20:30'
+                status: FINALIZING
+                contractNegotiationId: C1-12
+                assetId: As5
+                providerId: PR1
+                consumerId: CNS44
+                contractOfferId: C1-12-33
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 400
+                title: Bad Request
+                detail: Invalid request param
+                instance: "/contract/v1/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd16"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 404
+                title: Not Found
+                detail: ContractAgreement not found for contractAgreementId = 7e822f42-f17c-4849-a56f-fbdb5209cd16
+                instance: "/contract/v1/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd16"
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract/v1/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd16"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 500
+                title: Server Error
+                detail: Server Error
+  "/agreements/{contractAgreementId}/file":
+    get:
+      tags:
+        - contract-agreements
+      summary: Get Contract Agreement File
+      description: Get stored Contract Agreement data file from filesystem.
+      operationId: contract#ContractAgreementFile
+      parameters:
+        - name: contractAgreementId
+          in: path
+          description: Contract Agreement Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+      responses:
+        '200':
+          description: OK response.
+          content:
+            text/plain:
+              example: "CONTRACT AGREEMENT: 6414065b-9c9c-4d57-9e70-8c8f9a5133cd\nCONTRACT DEFINITION: 7f9d45e2-e9a3-43b7-8403-62ea46b990c6\nASSET: 2\nPROVIDER ID: 3\nPROVIDER SIGNATURE DATE: 2025-09-16 08:06:57\nCONSUMER: 4\nCONSUMER SIGNATURE DATE: 2025-09-16 08:06:57"
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 400
+                title: Bad Request
+                detail: Invalid request param
+                instance: "/contract/v1/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd16/file"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 404
+                title: Not Found
+                detail: ContractAgreement not found for contractAgreementId = 7e822f42-f17c-4849-a56f-fbdb5209cd16
+                instance: "/contract/v1/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd16/file"
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract/v1/agreements/7e822f42-f17c-4849-a56f-fbdb5209cd16/file"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 500
+                title: Server Error
+                detail: Server Error
+  "/agreements/{contractNegotiationId}/search":
+    post:
+      tags:
+        - contract-agreements
+      summary: Search for existing active Contract Agreement with multiple parameters
+      description: Get confirmation if Contract Agreement is stored in database.
+      operationId: contract#ContractAgreementSearchParams
+      parameters:
+        - name: contractNegotiationId
+          in: path
+          description: Contract Negotiation Id
+          required: true
+          schema:
+            type: string
+            pattern: "^[A-Za-z0-9:-]+$"
+          example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contractAgreementId:
+                  type: string
+                  format: uuid
+                  description: Contract Agreement Id
+                  example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+                contractDefinitionId:
+                  type: string
+                  pattern: "^[A-Za-z0-9:-]+$"
+                  description: Contract Definition Id
+                  example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+                assetId:
+                  type: string
+                  pattern: "^[A-Za-z0-9:-]+$"
+                  description: Contract asset Id
+                  example: 123Ab
+                providerId:
+                  type: string
+                  pattern: "^[A-Za-z0-9:-]+$"
+                  description: Contract provider Id
+                  example: abc12
+                consumerId:
+                  type: string
+                  pattern: "^[A-Za-z0-9:-]+$"
+                  description: Contract consumer Id
+                  example: XC-12
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ContractSearchConfirmation"
+              example:
+                contractAgreementId: 677186f6-1179-4cf1-b845-68d1c00c185f
+                contractSearchTO:
+                  contractAgreementId: 677186f6-1179-4cf1-b845-68d1c00c185f
+                  contractDefinitionId: 77777777-1179-4cf1-b845-777777777777
+                  assetId: A1
+                  providerId: P1
+                  consumerId: C1
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: urn:error:single-custom-exception
+                status: 400
+                title: Bad Request
+                detail: 400 BAD_REQUEST "Validation failure"
+                instance: "/contract/v1/agreements/{contractNegotiationId}/search"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract/v1/agreements/{contractNegotiationId}/search"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 500
+                title: Server Error
+                detail: Server Error
+  "/agreements/search":
+    post:
+      tags:
+        - contract-agreements
+      summary: Get list of existing active Contract Agreement for multiple parameters
+      description: Get list of Contract Agreement stored in database matching search criteria.
+      operationId: contract#ContractAgreementList
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contractDefinitionId:
+                  type: string
+                  pattern: "^[A-Za-z0-9:-]+$"
+                  description: Contract Definition Id
+                  example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+                assetId:
+                  type: string
+                  pattern: "^[A-Za-z0-9:-]+$"
+                  description: Contract asset Id
+                  example: 123Ab
+                providerId:
+                  type: string
+                  pattern: "^[A-Za-z0-9:-]+$"
+                  description: Contract provider Id
+                  example: abc12
+                consumerId:
+                  type: string
+                  pattern: "^[A-Za-z0-9:-]+$"
+                  description: Contract consumer Id
+                  example: XC-12
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ContractSearchResponse"
+              example:
+                items:
+                  - contractAgreementId: 677186f6-1179-4cf1-b845-68d1c00c185f
+                    consumerId: 123456
+                  - contractAgreementId: 777186f6-1179-4cf1-b845-68d1c00c185f
+                    consumerId: 789012
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:badRequest"
+                status: 400
+                title: Bad Request
+                detail: 400 BAD_REQUEST "Validation failure"
+                instance: "/contract/v1/agreements/search"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unauthorized"
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:methodNotAllowed"
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract/v1/agreements/search"
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unsupportedMediaType"
+                status: 415
+                title: Unsupported Media Type
+                instance: "/contract/v1/agreements/search"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                status: 500
+                title: Server Error
+                detail: Server Error
+  "/verifications/{contractNegotiationId}":
+    put:
+      tags:
+        - verifiable-credentials
+      summary: Verify a Verifiable Credential
+      description: Verify a Verifiable Credential request and provide response in async way
+      operationId: contract#verifyCredential
+      requestBody:
+        description: Request body
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/VerifyCredentialRequest"
+            example:
+              "@context": [ "https://www.w3.org/2018/credentials/v1" ]
+              type: [ "VerifiableCredential", "ContractCreated" ]
+              issuer: "did:jwk:..."
+              issuanceDate: "2024-10-01T10:09:52Z"
+              credentialSubject:
+                userId: "user-789"
+                collectionId: "X"
+              proof:
+                type: "Ed25519Signature2020"
+                created: "2024-10-01T10:09:53Z"
+                proofPurpose: "assertionMethod"
+                verificationMethod: "did:jwk:...#0"
+                proofValue: "z4byXHND..."
+        required: true
+      parameters:
+        - name: contractNegotiationId
+          in: path
+          description: Contract Negotiation Id
+          required: true
+          schema:
+            type: string
+          example: 0ec61c92-677b-4e97-aef1-ed542e37183b
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/VerificationConfirmationResponse"
+              example:
+                contractNegotiationId: 677186f6-1179-4cf1-b845-68d1c00c185f
+                status: INITIATED
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:argumentTypeMismatch"
+                status: 400
+                title: Bad Request
+                detail: Invalid body content
+                instance: "/verifications/7e822f42-f17c-4849-a56f-fbdb5209cd17"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unauthorized"
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:methodNotSupported"
+                status: 405
+                title: Method Not Allowed
+                instance: "/verifications/7e822f42-f17c-4849-a56f-fbdb5209cd17"
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unsupportedMediaType"
+                status: 415
+                title: Unsupported Media Type
+                instance: "/verifications/7e822f42-f17c-4849-a56f-fbdb5209cd17"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:internalServerError"
+                status: 500
+                title: Server Error
+                detail: Server Error
+  /contractOffers/{contractNegotiationId}:
+    post:
+      tags:
+        - contract-ui
+      summary: Transfer contract offer presentation
+      description: Transfers a contract offer presentation to contract-ui-backend
+      operationId: transferContractOfferPresentation
+      parameters:
+        - name: contractNegotiationId
+          in: path
+          required: true
+          description: Contract Negotiation Id
+          schema:
+            type: string
+          example: 12345
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractOffer'
+            example:
+              humanReadable: "<table><tr><td>Resource</td><td>XYZ1</td></tr></table>"
+              hash: "8743b52063cd84097a65d1633f5c74f5"
+      responses:
+        '200':
+          description: Transfer initiated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/TransferConfirmationResponse"
+              example:
+                contractNegotiationId: 677186f6-1179-4cf1-b845-68d1c00c185f
+                status: INITIATED
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unauthorized"
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:forbidden"
+                status: 403
+                title: Forbidden
+                detail: Access denied
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:methodNotSupported"
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract/v1/contractOffers/1234"
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:notAcceptable"
+                status: 406
+                title: Not Acceptable
+                instance: "/contract/v1/contractOffers/1234"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:internalServerError"
+                status: 500
+                title: Server Error
+                detail: Server Error
+  /contractOffers/{contractNegotiationId}/{operation}:
+    patch:
+      tags:
+        - contract-ui
+      summary: Set contract offer status
+      description: Capture user decision about accepting or rejecting contract offer
+      operationId: setContractOfferState
+      parameters:
+        - name: contractNegotiationId
+          in: path
+          required: true
+          description: Contract Negotiation Id
+          schema:
+            type: string
+          example: 12345
+        - name: operation
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [accept, reject]
+          example: accept
+      responses:
+        '200':
+          description: Transfer initiated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/TransferConfirmationResponse"
+              example:
+                contractNegotiationId: 677186f6-1179-4cf1-b845-68d1c00c185f
+                status: INITIATED
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:argumentTypeMismatch"
+                status: 400
+                title: Bad Request
+                detail: Invalid request param
+                instance: "/contract/v1/contractOffers/1234/accept"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unauthorized"
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:forbidden"
+                status: 403
+                title: Forbidden
+                detail: Access denied
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:methodNotSupported"
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract/v1/contractOffers/1234/accept"
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:notAcceptable"
+                status: 406
+                title: Not Acceptable
+                instance: "/contract/v1/contractOffers/1234/accept"
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unsupportedMediaType"
+                status: 415
+                title: Unsupported Media Type
+                instance: "/contract/v1/contractOffers/1234/accept"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:internalServerError"
+                status: 500
+                title: Server Error
+                detail: Server Error
+  /contractOffers/{contractNegotiationId}/update:
+    put:
+      tags:
+        - contract-ui
+      summary: Set contract offer status on UI side
+      description: Get status update from provider side and transfer it to UI side
+      operationId: updateContractOfferState
+      parameters:
+        - name: contractNegotiationId
+          in: path
+          required: true
+          description: Contract Negotiation Id
+          schema:
+            type: string
+          example: 12345
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractOfferStatusUpdate'
+            example:
+              status: "SIGNED"
+              additionalInfo: "Contract signed by both sides."
+      responses:
+        '200':
+          description: Status change initiated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/TransferConfirmationResponse"
+              example:
+                contractNegotiationId: 677186f6-1179-4cf1-b845-68d1c00c185f
+                status: INITIATED
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:argumentTypeMismatch"
+                status: 400
+                title: Bad Request
+                detail: Invalid request param
+                instance: "/contract/v1/contractOffers/1234/update"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unauthorized"
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:forbidden"
+                status: 403
+                title: Forbidden
+                detail: Access denied
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:methodNotSupported"
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract/v1/contractOffers/1234/update"
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:notAcceptable"
+                status: 406
+                title: Not Acceptable
+                instance: "/contract/v1/contractOffers/1234/update"
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unsupportedMediaType"
+                status: 415
+                title: Unsupported Media Type
+                instance: "/contract/v1/contractOffers/1234/update"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:internalServerError"
+                status: 500
+                title: Server Error
+                detail: Server Error
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+  schemas:
+    ConfirmationResponse:
+      type: object
+      required:
+        - contractAgreementId
+        - contractDefinitionId
+        - status
+      properties:
+        contractAgreementId:
+          type: string
+          format: uuid
+          description: ID of contract agreement
+        contractDefinitionId:
+          type: string
+          description: ID of contract definition
+        status:
+          type: string
+          description: Status of the process, in initiated state.
+          example: TERMINATED
+          format: string
+          enum:
+            - INITIATED
+            - CREATED
+            - FINALIZING
+            - FINALIZED
+            - TERMINATED
+      example:
+        contractAgreementId: 677186f6-1179-4cf1-b845-68d1c00c185f
+        contractDefinitionId: 777186f6-1179-4cf1-b845-68d1c00c185f
+        status: FINALIZING
+    ContractSearchConfirmation:
+      type: object
+      required:
+        - contractAgreementId
+        - contractDefinitionId
+      properties:
+        contractAgreementId:
+          type: string
+          description: ID of contract agreement
+        contractDefinitionId:
+          type: string
+          description: ID of contract definition
+      example:
+        contractAgreementId: 677186f6-1179-4cf1-b845-68d1c00c185f
+        contractDefinitionId: 777186f6-1179-4cf1-b845-68d1c00c185f
+    ContractOffer:
+      type: object
+      required:
+        - humanReadable
+        - hash
+      properties:
+        humanReadable:
+          description: Human readable format of contract offer in html format
+          type: string
+        hash:
+          description: Hash calculated for human readable field
+          type: string
+        status:
+          description: Offer status
+          enum: [ CREATED, APPROVED, REJECTED ]
+          type: string
+    ContractSearchResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContractSearchItem"
+    ContractSearchItem:
+      type: object
+      required:
+        - contractAgreementId
+        - consumerId
+      properties:
+        contractAgreementId:
+          type: string
+          description: ID of contract agreement
+        consumerId:
+          type: string
+          description: ID of consumer
+      example:
+        - contractAgreementId: 677186f6-1179-4cf1-b845-68d1c00c185f
+          consumerId: 123456
+        - contractAgreementId: 777186f6-1179-4cf1-b845-68d1c00c185f
+          consumerId: 789012
+    VerificationConfirmationResponse:
+      type: object
+      required:
+        - contractNegotiationId
+      properties:
+        contractNegotiationId:
+          type: string
+          description: ID of contract negotiation
+        status:
+          type: string
+          description: Status of the process, in initiated state.
+          example: INITIATED
+          format: string
+          enum:
+            - INITIATED
+      example:
+        contractNegotiationId: 677186f6-1179-4cf1-b845-68d1c00c185f
+        status: INITIATED
+    TransferConfirmationResponse:
+      type: object
+      required:
+        - contractNegotiationId
+      properties:
+        contractNegotiationId:
+          type: string
+          description: ID of contract negotiation
+        status:
+          type: string
+          description: Status of the process, in initiated state.
+          example: INITIATED
+          format: string
+          enum:
+            - INITIATED
+      example:
+        contractNegotiationId: 677186f6-1179-4cf1-b845-68d1c00c185f
+        status: INITIATED
+    ContractOfferStatusUpdate:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          description: New offer status
+          enum: [ CREATED, APPROVED, REJECTED ]
+          type: string
+        additionalInfo:
+          description: Additional info about status change
+          type: string
+
+    ContractAgreementData:
+      type: object
+      required:
+        - contractAgreementId
+        - contractDefinitionId
+        - status
+      properties:
+        contractAgreementId:
+          type: string
+          format: uuid
+          description: ID of contract agreement
+        contractDefinitionId:
+          type: string
+          description: ID of contract definition
+        consumerSignatureDate:
+          type: string
+          description: Consumer signature date
+        providerSignatureDate:
+          type: string
+          description: Provider signature date
+        status:
+          type: string
+          description: Status of the process, in initiated state.
+          example: TERMINATED
+          format: string
+          enum:
+            - INITIATED
+            - CREATED
+            - FINALIZING
+            - FINALIZED
+            - TERMINATED
+        contractNegotiationId:
+          type: string
+          description: Contract negotiation ID
+        assetId:
+          type: string
+          description: Asset ID
+        providerId:
+          type: string
+          description: Provider ID
+        consumerId:
+          type: string
+          description: Consumer ID
+        contractOfferId:
+          type: string
+          description: Contract offer ID
+      example:
+        contractAgreementId: 677186f6-1179-4cf1-b845-68d1c00c185f
+        contractDefinitionId: 777186f6-1179-4cf1-b845-68d1c00c185f
+        consumerSignatureDate: '2024-05-05T10:20:30'
+        providerSignatureDate: '2024-05-05T10:20:30'
+        status: FINALIZING
+        contractNegotiationId: C1-12
+        assetId: As5
+        providerId: PR1
+        consumerId: CNS44
+        contractOfferId: C1-12-33
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: Overall health status
+          enum: [ UP, DOWN ]
+          example: UP
+        groups:
+          type: array
+          description: Groups of probes aggregated in this health response
+          items:
+            type: string
+          example: [ "liveness", "readiness" ]
+        components:
+          type: object
+          description: Detailed component health information. Keys are component names, values are health objects.
+          additionalProperties:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                enum: [ UP, DOWN ]
+                description: Component status
+                example: UP
+              details:
+                type: object
+                description: Component-specific details
+                additionalProperties: true
+          example:
+            db:
+              status: UP
+              details:
+                database: PostgreSQL
+                validationQuery: isValid()
+            diskSpace:
+              status: UP
+              details:
+                total: 207929917440
+                free: 40679194624
+                threshold: 10485760
+                path: "/."
+                exists: true
+    ContractAgreementCreate:
+      type: object
+      properties:
+        contractNegotiationId:
+          type: string
+          example: "C1-12"
+          format: string
+        assetId:
+          type: string
+          example: "C1-12"
+          format: string
+        providerId:
+          type: string
+          example: "provider1"
+          format: string
+        consumerId:
+          type: string
+          example: "consumer1000"
+          format: string
+        contractOfferId:
+          type: string
+          example: "offerId123"
+          format: string
+      example:
+        contractNegotiationId: C1-12
+        assetId: As5
+        providerId: PR1
+        consumerId: CNS44
+        contractOfferId: C1-12-33
+    StatusUpdate:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: TERMINATED
+          format: string
+          enum:
+            - FINALIZED
+            - TERMINATED
+      example:
+        status: FINALIZED
+    VerifyCredentialRequest:
+      description: Verifiable Credential JSON
+      type: object
+      additionalProperties: true
+      allOf:
+        - $ref: "#/components/schemas/VerifiableCredential"
+    VerifiableCredential:
+      type: object
+      description: W3C Verifiable Credential
+      additionalProperties: true
+      required:
+        - "@context"
+        - type
+        - issuer
+        - credentialSubject
+      properties:
+        "@context":
+          description: JSON-LD context defining the semantic meaning of the credential
+          oneOf:
+            - type: string
+              format: uri
+            - type: array
+              items:
+                oneOf:
+                  - type: string
+                    format: uri
+                  - type: object
+        id:
+          type: string
+          format: uri
+          description: Globally unique identifier for the verifiable credential
+        type:
+          description: Type definitions for the credential
+          oneOf:
+            - type: string
+            - type: array
+              minItems: 1
+              items:
+                type: string
+          example:
+            - VerifiableCredential
+        name:
+          type: string
+          description: Human-readable name of the credential
+        description:
+          type: string
+          description: Human-readable description of the credential
+        issuer:
+          description: Entity that issued the verifiable credential
+          oneOf:
+            - type: string
+              format: uri
+            - type: object
+              additionalProperties: true
+        issuanceDate:
+          type: string
+          format: date-time
+        credentialSubject:
+          description: Subject(s) to which the claims in the credential apply
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: array
+              items:
+                type: object
+                additionalProperties: true
+        validFrom:
+          type: string
+          format: date-time
+          description: Date and time when the credential becomes valid
+        validUntil:
+          type: string
+          format: date-time
+          description: Date and time when the credential expires
+        credentialStatus:
+          description: Information used to determine the current status of the credential
+          type: object
+          additionalProperties: true
+        credentialSchema:
+          description: Schema defining the structure of the credential subject
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: array
+              items:
+                type: object
+                additionalProperties: true
+        refreshService:
+          description: Service used to refresh the credential
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: array
+              items:
+                type: object
+                additionalProperties: true
+        termsOfUse:
+          description: Terms of use associated with the credential
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: array
+              items:
+                type: object
+                additionalProperties: true
+        evidence:
+          description: Evidence used to support the claims in the credential
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: array
+              items:
+                type: object
+                additionalProperties: true
+        proof:
+          description: Cryptographic proofs used to verify the credential
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: array
+              items:
+                type: object
+                additionalProperties: true
+      example:
+        "@context":
+          - "https://www.w3.org/2018/credentials/v1"
+        type:
+          - "VerifiableCredential"
+          - "ContractCreated"
+        issuer: "did:jwk:eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9..."
+        issuanceDate: "2024-10-01T10:09:52Z"
+        credentialSubject:
+          userId: "user-789"
+          collectionId: "X"
+          validUntil: "2026-10-01T10:09:53Z"
+        proof:
+          type: "Ed25519Signature2020"
+          created: "2024-10-01T10:09:53Z"
+          proofPurpose: "assertionMethod"
+          verificationMethod: "did:jwk:...#0"
+          proofValue: "z4byXHNDw6FS37D3HVj2bApCfGQzNUmA7opvuNFe6mae..."
+
+    Problem:
+      description: A Problem Details object (RFC 9457). Additional properties specific
+        to the problem type may be present.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the problem type
+          default: about:blank
+        title:
+          type: string
+          description: A short summary of the problem type. Written in English and
+            readable for engineers (usually not suited for non technical stakeholders
+            and not localized).
+          example: Service Unavailable
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code generated by the origin server for this
+            occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          exclusiveMaximum: true
+          example: 503
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of
+            the problem
+        instance:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the specific occurrence of
+            the problem. It may or may not yield further information if dereferenced.
+tags:
+  - name: health
+    description: Health service provides health check endpoints.
+  - name: verifiable-credentials
+    description: Operations with verifiable credentials.
+  - name: contract-agreements
+    description: Operations with contracts.
+  - name: contract-ui
+    description: Operations related with communication between EDC and contract-ui
+security:
+  - ApiKeyAuth: []

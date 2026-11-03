@@ -1,0 +1,116 @@
+{
+  "realm": "provider",
+  "enabled": true,
+  "sslRequired": "none",
+  "roles": {
+    "realm": [
+      {
+        "name": "contract_manager",
+        "description": "Manage usage contracts"
+      },
+      {
+        "name": "consent_manager",
+        "description": "Manage contract consent"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "contract-ui",
+      "name": "Contract manager UI",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:19103/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "rootUrl": "http://localhost:19103",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:19103/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "participant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "participant_id",
+            "claim.value": "provider-01",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "provider-admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "provider-admin@example.test",
+      "firstName": "Provider",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ProviderAdmin1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "contract_manager",
+        "consent_manager"
+      ],
+      "requiredActions": []
+    },
+    {
+      "username": "provider-operator",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "provider-operator@example.test",
+      "firstName": "Provider",
+      "lastName": "Operator",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ProviderOperator1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "contract_manager"
+      ],
+      "requiredActions": []
+    },
+    {
+      "username": "provider-norole",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "provider-norole@example.test",
+      "firstName": "Provider",
+      "lastName": "Norole",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ProviderNoRole1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [],
+      "requiredActions": []
+    }
+  ]
+}

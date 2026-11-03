@@ -1,0 +1,626 @@
+---
+openapi: 3.0.3
+info:
+  title: Contract UI Service API
+  description: UI for contract and billing module
+  version: '1.0.0'
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  contact:
+    name: Simpl Programme
+    email: cnect-simpl@ec.europa.eu
+    url: https://simpl-programme.ec.europa.eu/
+servers:
+  - url: https://localhost:8086/contract-ui/v1
+    description: Contract UI
+paths:
+  "/health":
+    get:
+      tags:
+        - health
+      summary: health check endpoint
+      description: Health check endpoint
+      operationId: checkLiveness
+      responses:
+        '200':
+          description: OK response.
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                "$ref": "#/components/schemas/HealthResponse"
+              example:
+                status: UP
+                groups:
+                  - liveness
+                  - readiness
+                components:
+                  diskSpace:
+                    status: UP
+                    details:
+                      total: 135024029696
+                      free: 42437074944
+                      threshold: 10485760
+                      path: C:\workspace\CONTRACTS-BILLING\repos\contract-ui\.
+                      exists: true
+                  livenessState:
+                    status: UP
+                  ping:
+                    status: UP
+                  readinessState:
+                    status: UP
+                  ssl:
+                    status: UP
+                    details:
+                      validChains: [ ]
+                      invalidChains: [ ]
+        '503':
+          description: Service Unavailable
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:internalServerError"
+                status: 503
+                title: Service Unavailable
+                detail: Service Unavailable
+
+  /contractOffers/{contractNegotiationId}:
+    post:
+      tags:
+        - contract-offer
+      summary: Create contract offer presentation
+      description: Creates a contract offer presentation and returns url to it
+      operationId: createContractOfferPresentation
+      parameters:
+        - name: contractNegotiationId
+          in: path
+          required: true
+          description: Contract Negotiation Id
+          schema:
+            type: string
+          example: 12345
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractOffer'
+            example:
+              humanReadable: "<table><tr><td>Resource</td><td>XYZ1</td></tr></table>"
+              hash: "8743b52063cd84097a65d1633f5c74f5"
+      responses:
+        '201':
+          description: Contract offer created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ContractOfferResponse"
+              example:
+                offerStatus: CREATED
+                offerUrl: https://contract-ui.simpl.eu:9999/contract-ui/v1/contractOffers/12345
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unauthorized"
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:forbidden"
+                status: 403
+                title: Forbidden
+                detail: Access denied
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:methodNotSupported"
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract-ui/v1/contractOffers/1234"
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:notAcceptable"
+                status: 406
+                title: Not Acceptable
+                instance: "/contract-ui/v1/contractOffers/1234"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:internalServerError"
+                status: 500
+                title: Server Error
+                detail: Server Error
+    get:
+      tags:
+        - contract-offer
+      summary: Get contract offer
+      operationId: getContractOffer
+      parameters:
+        - name: contractNegotiationId
+          in: path
+          required: true
+          description: Contract Negotiation Id
+          schema:
+            type: string
+          example: 12345
+      responses:
+        '200':
+          description: Contract Offer data
+          content:
+            application/json:
+              schema:
+                "$ref": '#/components/schemas/ContractOffer'
+              example:
+                contractNegotiationId: "12345"
+                humanReadableData: "<table><tr><td>Resource-1</td><td>XYZ1</td></tr></table>"
+                contractData: null
+                hashData: "8743b52063cd84097a65d1633f5c74f5"
+                status: "ACCEPTED"
+                createdDate: "2026-06-03T13:38:15.561754"
+                lastUpdatedDate: "2026-07-07T11:10:08.977688"
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:argumentTypeMismatch"
+                status: 400
+                title: Bad Request
+                detail: Invalid request param
+                instance: "/contract-ui/v1/contractOffers/1234"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unauthorized"
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:forbidden"
+                status: 403
+                title: Forbidden
+                detail: Access denied
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:singleCustomException"
+                status: 404
+                title: Not Found
+                detail: Contract offer not found for contractNegotiationId = 1234
+                instance: "/contract-ui/v1/contractOffers/1234"
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:methodNotSupported"
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract-ui/v1/contractOffers/1234"
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:notAcceptable"
+                status: 406
+                title: Not Acceptable
+                instance: "/contract-ui/v1/contractOffers/1234"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:internalServerError"
+                status: 500
+                title: Server Error
+                detail: Server Error
+
+  /contractOffers:
+    get:
+      tags:
+        - all-contract-offers
+      summary: Get all contract offers
+      operationId: getAllContractOffers
+      responses:
+        '200':
+          description: Contract Offers data
+          content:
+            application/json:
+              schema:
+                "$ref": '#/components/schemas/ContractOffer'
+              example:
+                - contractNegotiationId: "12345"
+                  humanReadableData: "<table><tr><td>Resource-1</td><td>XYZ1</td></tr></table>"
+                  contractData: null
+                  hashData: "8743b52063cd84097a65d1633f5c74f5"
+                  status: "ACCEPTED"
+                  createdDate: "2026-06-03T13:38:15.561754"
+                  lastUpdatedDate: "2026-07-07T11:10:08.977688"
+                - contractNegotiationId: "67890"
+                  humanReadableData: "<table><tr><td>Resource-2</td><td>XYZ2</td></tr></table>"
+                  contractData: null
+                  hashData: "1234567890abcdef1234567890abcdef"
+                  status: "CREATED"
+                  createdDate: "2026-07-01T10:00:00.000000"
+                  lastUpdatedDate: "2026-07-01T10:00:00.000000"
+                - contractNegotiationId: "13579"
+                  humanReadableData: "<table><tr><td>Resource-3</td><td>XYZ3</td></tr></table>"
+                  contractData: null
+                  hashData: "abcdef1234567890abcdef1234567890"
+                  status: "REJECTED"
+                  createdDate: "2026-07-02T12:00:00.000000"
+                  lastUpdatedDate: "2026-07-03T09:30:00.000000"
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:argumentTypeMismatch"
+                status: 400
+                title: Bad Request
+                detail: Invalid request param
+                instance: "/contract-ui/v1/contractOffers/1234"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unauthorized"
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:forbidden"
+                status: 403
+                title: Forbidden
+                detail: Access denied
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:singleCustomException"
+                status: 404
+                title: Not Found
+                detail: Contract offer not found for contractNegotiationId = 1234
+                instance: "/contract-ui/v1/contractOffers/1234"
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:methodNotSupported"
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract-ui/v1/contractOffers/1234"
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:notAcceptable"
+                status: 406
+                title: Not Acceptable
+                instance: "/contract-ui/v1/contractOffers/1234"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:internalServerError"
+                status: 500
+                title: Server Error
+                detail: Server Error
+
+  /contractOffers/{contractNegotiationId}/{operation}:
+    patch:
+      tags:
+        - contractOffers
+      summary: Set contract offer status
+      description: Capture user decision about ACCEPTED or REJECTED contract offer
+      operationId: setContractOfferState
+      parameters:
+        - name: contractNegotiationId
+          in: path
+          required: true
+          description: Contract Negotiation Id
+          schema:
+            type: string
+          example: 12345
+        - name: operation
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [accept, reject]
+          example: accept
+      responses:
+        '200':
+          description: Status set
+          content:
+            application/json:
+              schema:
+                type: string
+              example:
+                contractNegotiationId: "12345"
+                humanReadableData: "<table><tr><td>Resource-1</td><td>XYZ1</td></tr></table>"
+                contractData: null
+                hashData: "8743b52063cd84097a65d1633f5c74f5"
+                status: "ACCEPTED"
+                createdDate: "2026-06-03T13:38:15.561754"
+                lastUpdatedDate: "2026-07-07T11:10:08.977688"
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:argumentTypeMismatch"
+                status: 400
+                title: Bad Request
+                detail: Invalid request param
+                instance: "/contract-ui/v1/contractOffers/1234/accept"
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unauthorized"
+                status: 401
+                title: Unauthorized
+                detail: Invalid API Key
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:forbidden"
+                status: 403
+                title: Forbidden
+                detail: Access denied
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:singleCustomException"
+                status: 404
+                title: Not Found
+                detail: Contract offer not found for contractNegotiationId = 1234
+                instance: "/contract-ui/v1/contractOffers/1234/accept"
+        '405':
+          description: Method Not allowed
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:methodNotSupported"
+                status: 405
+                title: Method Not Allowed
+                instance: "/contract-ui/v1/contractOffers/1234/accept"
+        '406':
+          description: Not Acceptable
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:notAcceptable"
+                status: 406
+                title: Not Acceptable
+                instance: "/contract-ui/v1/contractOffers/1234/accept"
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:unsupportedMediaType"
+                status: 415
+                title: Unsupported Media Type
+                instance: "/contract-ui/v1/contractOffers/1234/accept"
+        '500':
+          description: Server Error
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/Problem"
+              example:
+                type: "urn:problem-type:simpl:internalServerError"
+                status: 500
+                title: Server Error
+                detail: Server Error
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+  schemas:
+    ContractOffer:
+      type: object
+      required:
+        - humanReadable
+        - hash
+      properties:
+        humanReadable:
+          description: Human readable format of contract offer in html format
+          type: string
+        hash:
+          description: Hash calculated for human readable field
+          type: string
+        status:
+          description: Offer status
+          enum: [ CREATED, ACCEPTED, REJECTED ]
+          type: string
+    ContractOfferResponse:
+      type: object
+      required:
+        - offerUrl
+      properties:
+        offerUrl:
+          type: string
+          example: http://localhost:8080/contract-ui/v1/contractOffers/x1234
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: Overall health status
+          enum: [ UP, DOWN ]
+          example: UP
+        groups:
+          type: array
+          description: Groups of probes aggregated in this health response
+          items:
+            type: string
+          example: [ "liveness", "readiness" ]
+        components:
+          type: object
+          description: Detailed component health information. Keys are component names, values are health objects.
+          additionalProperties:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                enum: [ UP, DOWN ]
+                description: Component status
+                example: UP
+              details:
+                type: object
+                description: Component-specific details
+                additionalProperties: true
+          example:
+            db:
+              status: UP
+              details:
+                database: PostgreSQL
+                validationQuery: isValid()
+            diskSpace:
+              status: UP
+              details:
+                total: 207929917440
+                free: 40679194624
+                threshold: 10485760
+                path: "/."
+                exists: true
+    Problem:
+      description: A Problem Details object (RFC 9457). Additional properties specific
+        to the problem type may be present.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the problem type
+          default: about:blank
+        title:
+          type: string
+          description: A short summary of the problem type. Written in English and
+            readable for engineers (usually not suited for non technical stakeholders
+            and not localized).
+          example: Service Unavailable
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code generated by the origin server for this
+            occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          exclusiveMaximum: true
+          example: 503
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of
+            the problem
+        instance:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the specific occurrence of
+            the problem. It may or may not yield further information if dereferenced.
+tags:
+  - name: health
+    description: Health service provides health check endpoints.
+  - name: contract-offer
+    description: Operations with contract offers.
+security:
+  - ApiKeyAuth: []

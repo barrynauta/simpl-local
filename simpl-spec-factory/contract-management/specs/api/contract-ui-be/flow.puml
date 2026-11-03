@@ -1,0 +1,43 @@
+@startuml
+title Human readable related flow
+
+participant EDC
+participant "Contract\norchestrator"
+participant "Contract\nbackend"
+participant "Contract-ui\nbackend"
+participant "Contract-ui\nfrontend"
+participant "User"
+
+== Create human readable ==
+
+EDC -> "Contract\norchestrator": POST\n/contractOffers/{contractNegotiationId}
+"Contract\norchestrator" --> "Contract\nbackend": ASYNC\nkafka request event
+"Contract\nbackend" -> "Contract-ui\nbackend": POST\n/contractOffers/{contractNegotiationId}
+"Contract\nbackend" <- "Contract-ui\nbackend": response:\nofferUrl: <frontend>/contractOffers/{contractNegotiationId}
+"Contract\norchestrator" <-- "Contract\nbackend": ASYNC\nkafka response event
+EDC <- "Contract\norchestrator": POST\n/contractOffers/{contractNegotiationId}/result
+
+== Show human readable ==
+
+"User" -> "Contract-ui\nfrontend": GET\n/contractOffers/{contractNegotiationId}
+"Contract-ui\nbackend" <- "Contract-ui\nfrontend": GET\n/contractOffers/{contractNegotiationId}
+"Contract-ui\nbackend" -> "Contract-ui\nfrontend": response:\njson with contract offer data
+"User" <- "Contract-ui\nfrontend": response\nhtml page
+
+== Accept human readable ==
+
+"User" -> "Contract-ui\nfrontend": accept button pressed
+"Contract-ui\nbackend" <- "Contract-ui\nfrontend": POST\n/contractOffers/{contractNegotiationId}/accept
+"Contract-ui\nbackend" -> "Contract\nbackend": POST\n/contractOffers/{contractNegotiationId}/accept
+"Contract\norchestrator" <-- "Contract\nbackend": ASYNC\nkafka response event
+EDC <- "Contract\norchestrator": POST\n/contractOffers/{contractNegotiationId}/accept
+
+== Reject human readable ==
+
+"User" -> "Contract-ui\nfrontend": reject button pressed
+"Contract-ui\nbackend" <- "Contract-ui\nfrontend": POST\n/contractOffers/{contractNegotiationId}/reject
+"Contract-ui\nbackend" -> "Contract\nbackend": POST\n/contractOffers/{contractNegotiationId}/reject
+"Contract\norchestrator" <-- "Contract\nbackend": ASYNC\nkafka response event
+EDC <- "Contract\norchestrator": POST\n/contractOffers/{contractNegotiationId}/reject
+
+@enduml

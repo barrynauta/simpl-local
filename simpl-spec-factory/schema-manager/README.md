@@ -27,6 +27,9 @@ The Vocabulary Manager was well specified: paired API and UI stories, 30 decisio
 | [`generated/run1/`](./generated/run1/) | Step 3: the build, with `TRACEABILITY.md` and `BUILD-LOG.md` |
 | [`pipeline/`](./pipeline/) | The briefs for steps 2 to 4 as used |
 | [`experiments/swap/`](./experiments/swap/README.md) | Step 5: swap experiments with upstream |
+| [`experiments/pso/`](./experiments/pso/README.md) | Step 6: the PSO test suite on the build and upstream |
 | [`findings.md`](./findings.md) | Findings per step |
 
 Swap tests (28 Oct): the same API walk on both backends gives the same status for 33 of 41 calls; each UI works for every user action on the other backend, with a few empty columns and one blank page. The schema files are not interchangeable: the rules for a valid file differ and neither is published. See [`experiments/swap/`](./experiments/swap/README.md).
+
+PSO tests (29 Oct): the API tests of the PSO test team pass 20 of 27 on the build (upstream 14 of 27); none of the 7 failures is a build defect. See [`experiments/pso/`](./experiments/pso/README.md).

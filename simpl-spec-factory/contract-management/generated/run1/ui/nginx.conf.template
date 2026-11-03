@@ -1,0 +1,27 @@
+server {
+    listen 8080;
+    server_name _;
+    root /usr/share/nginx/html;
+
+    location = /health {
+        default_type application/json;
+        return 200 '{"status":"UP"}';
+    }
+
+    location = /config.json {
+        default_type application/json;
+        add_header Cache-Control "no-store";
+        return 200 '{"keycloakUrl":"${KEYCLOAK_URL}","realm":"${UI_REALM}","party":"${UI_PARTY}"}';
+    }
+
+    location /contract-ui/ {
+        proxy_pass ${UIBE_UPSTREAM};
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        client_max_body_size 10m;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

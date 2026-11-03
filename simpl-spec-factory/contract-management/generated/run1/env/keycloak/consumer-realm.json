@@ -1,0 +1,96 @@
+{
+  "realm": "consumer",
+  "enabled": true,
+  "sslRequired": "none",
+  "roles": {
+    "realm": [
+      {
+        "name": "contract_manager",
+        "description": "Manage usage contracts"
+      },
+      {
+        "name": "consent_manager",
+        "description": "Manage contract consent"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "contract-ui",
+      "name": "Contract manager UI",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:19203/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "rootUrl": "http://localhost:19203",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:19203/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "participant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "participant_id",
+            "claim.value": "consumer-01",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "consumer-admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "consumer-admin@example.test",
+      "firstName": "Consumer",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ConsumerAdmin1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "contract_manager"
+      ],
+      "requiredActions": []
+    },
+    {
+      "username": "consumer-norole",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "consumer-norole@example.test",
+      "firstName": "Consumer",
+      "lastName": "Norole",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ConsumerNoRole1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [],
+      "requiredActions": []
+    }
+  ]
+}

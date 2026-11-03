@@ -67,3 +67,13 @@ Each joint crossed on its own, configuration only. Details and commands: [`exper
 - **One contract point:** the OpenAPI enum for the status is `active` and `revoked`; the build follows it, upstream's catalogue only accepts upper case and answers 400. This alone is 17 of the 24 failures of the first combination.
 - **The rest is newer stories and error handling:** quality scores and filters and the detail lookup through the Governance Authority are not in the May code; upstream answers with `iana:` problem types or plain JSON errors, and its adapter does not pass the token on every call.
 - **Lesson:** as for the Schema Manager, the API contract holds better than the suite numbers suggest. Where the build and upstream differ, the build follows the current OpenAPI and upstream follows its own earlier version.
+
+## 2026-10-29: step 6, PSO tests
+
+The API tests of the PSO test team, run unchanged through a small stand-in for the participant gateway. Details and commands: [`experiments/pso/`](./experiments/pso/README.md).
+
+- **Build: 32 of 52. Upstream (May stack): 17 of 52.**
+- **10 scenarios need live signing** through SD Tooling and the signer, on both targets: environment.
+- **None of the other 10 build failures is a build defect:** 5 hit operations the factory left out (D10) or never saw (`/query/search`, in no spec), 4 decisions the digest took differently (D2 Problem JSON against the older `message` field, D66 roles against the IAA role `T2IAA_M`), 1 seed data (the Gaia-X Core ontology, missing on both).
+- **PSO partly tests the older contract:** the error shape with `message` and a role the catalogue OpenAPI does not name. As for the Schema Manager, where PSO and the factory differ, PSO follows the running system.
+- **Upstream's 35 failures are mostly the local stack:** 12 because it runs without Keycloak, 11 because the May stack has no client backend.

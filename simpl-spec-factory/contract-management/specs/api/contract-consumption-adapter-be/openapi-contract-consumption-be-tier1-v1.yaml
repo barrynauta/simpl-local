@@ -1,0 +1,873 @@
+info:
+  title: Contract Consumption API
+  description: |-
+    This API enables the discovery, negotiation, and consumption of data contracts
+    between data providers and consumers in a secure and standardized way. It supports transfer initiation,
+    contract negotiation, and resource address management.
+
+    ## Business Context
+
+    The API facilitates data exchange in a federated data space. Consumers can search for data offers, negotiate contracts,
+    and initiate data transfers from providers. The API ensures secure and traceable interactions between participants.
+
+
+    ### Key Actors
+
+    - **Provider**: Offers data assets.
+    - **Consumer**: Requests and consumes data.
+
+    ### Typical Flow
+
+    1. Search for data offers.
+
+    2. Negotiate a contract.
+
+    3. Initiate a transfer.
+
+    4. Monitor transfer status.
+  contact:
+    name: Simpl Programme
+    url: https://simpl-programme.ec.europa.eu/
+    email: cnect-simpl@ec.europa.eu
+  license:
+    name: European Union Public License (EUPL) 1.2
+    url: https://interoperable-europe.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf
+  version: "1.0"
+servers:
+- url: https://contract-consumption-be.dev.simpl-europe.eu/v1
+security:
+- bearerAuth: []
+openapi: 3.0.1
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: IAA cloud gateway JWT token
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Template:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+    InputObject:
+      type: object
+      properties:
+        in:
+          type: string
+          enum:
+          - body
+          - path
+          - query
+          - header
+        name:
+          type: string
+        value:
+          type: object
+    Dataset:
+      type: object
+      properties:
+        providerParticipantId:
+          type: string
+        providerEndpointUrl:
+          type: string
+        assetId:
+          type: string
+        offerId:
+          type: string
+        policy:
+          $ref: '#/components/schemas/Policy'
+    ContractNegotiation:
+      type: object
+      properties:
+        contractAgreementId:
+          type: string
+        state:
+          type: string
+        counterPartyAddress:
+          type: string
+        counterPartyId:
+          type: string
+        errorDetail:
+          type: string
+        protocol:
+          type: string
+        type:
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        '@id':
+          type: string
+    ConflictProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    TransferProcess:
+      type: object
+      properties:
+        finalState:
+          type: string
+        assetId:
+          type: string
+        contractId:
+          type: string
+        correlationId:
+          type: string
+        transferType:
+          type: string
+        errorDetail:
+          type: string
+        type:
+          type: string
+        stateTimestamp:
+          type: integer
+          format: int64
+        '@id':
+          type: string
+        state:
+          type: string
+    ContractNegotiationId:
+      type: object
+      properties:
+        contractNegotiationId:
+          type: string
+    InputValidationIssue:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        detail:
+          type: string
+        in:
+          type: string
+          enum:
+          - body
+          - path
+          - query
+          - header
+        name:
+          type: string
+        value:
+          type: object
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/InputObject'
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    ContractNegotiationRequest:
+      required:
+      - assetId
+      - contractDefinitionId
+      - providerEndpoint
+      type: object
+      properties:
+        providerEndpoint:
+          minLength: 1
+          type: string
+        contractDefinitionId:
+          minLength: 1
+          type: string
+        assetId:
+          minLength: 1
+          type: string
+    UnauthorizedProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    PolicyConstraint:
+      type: object
+      properties:
+        condition:
+          type: string
+        conditionOperator:
+          type: string
+        conditionValue:
+          type: string
+    JsonNode:
+      type: object
+    NotFoundProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    CatalogSearchResult:
+      type: object
+      properties:
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Dataset'
+    BadRequestProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/InputValidationIssue'
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    InternalServerErrorProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    TransferRequest:
+      required:
+      - contractId
+      - dataDestination
+      - providerEndpoint
+      - templateId
+      type: object
+      properties:
+        providerEndpoint:
+          minLength: 1
+          type: string
+        contractId:
+          minLength: 1
+          type: string
+        templateId:
+          minLength: 1
+          type: string
+        dataDestination:
+          $ref: '#/components/schemas/JsonNode'
+    DataAddressInfo:
+      type: object
+      properties:
+        type:
+          type: string
+        properties:
+          oneOf:
+          - $ref: '#/components/schemas/KafkaBrokerProperties'
+    Policy:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+          - ACCESS
+          - USAGE
+        policyConstraints:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyConstraint'
+    ForbiddenProblem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        href:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: object
+    DataAddressProperties:
+      type: object
+      properties:
+        transferTypeDestination:
+          type: string
+          writeOnly: true
+      discriminator:
+        propertyName: transferTypeDestination
+    KafkaBrokerProperties:
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/DataAddressProperties'
+      - type: object
+        properties:
+          endpoint:
+            type: string
+          topic:
+            type: string
+          groupPrefix:
+            type: string
+          pollDuration:
+            type: string
+          accessToken:
+            type: string
+          securityProtocol:
+            type: string
+          saslMechanism:
+            type: string
+          accessTokenExpiresIn:
+            type: integer
+            format: int32
+    TransferProcessId:
+      type: object
+      properties:
+        transferProcessId:
+          type: string
+paths:
+  /transfers/{transferProcessId}/dataAddress:
+    get:
+      tags:
+      - Transfer Process
+      summary: Returns the EDC data address info for an already started transfer process
+      description: Retrieves the data address info related to the specified transfer process ID. For example, this endpoint can be used to obtain the properties required to connect to the provider's Kafka broker when a 'KafkaBroker' transfer process has been started.
+      operationId: getTransferDataAddress
+      parameters:
+      - name: transferProcessId
+        in: path
+        description: The ID of the transfer process whose data address should be retrieved
+        required: true
+        schema:
+          minLength: 1
+          type: string
+        example: c76e83a1-2271-4143-a3f5-4f64d4cb5ecc
+      responses:
+        "200":
+          description: Data address Info successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataAddressInfo'
+              examples:
+                kafkaDataAddress:
+                  description: Example of a data address info returned for a 'KafkaBroker' transfer process type
+                  value:
+                    type: KafkaBroker
+                    properties:
+                      bootstrapServers: kafka-broker-01.simpl-europe.eu:9093,kafka-broker-02.simpl-europe.eu:9093
+                      topic: simpl.data.asset-123
+                      securityProtocol: SASL_SSL
+                      groupPrefix: simpl-consumer-group-
+                      pollDuration: PT30S
+                      accessToken: eyJhbGciOiJSUzI1NiJ9...
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/BadRequestProblem'
+              examples:
+                Bad Request Error Example:
+                  description: Bad Request Error Example
+                  value:
+                    type: urn:problem-type:simpl:validationError
+                    title: Invalid payload
+                    status: 400
+                    detail: missing required arguments
+        "401":
+          description: "Unauthorized Ã¢â‚¬â€\x9D missing or invalid authentication credentials"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedProblem'
+              examples:
+                Unauthorized Error Example:
+                  description: Unauthorized Error Example
+                  value:
+                    type: urn:problem-type:simpl:unauthorized
+                    title: Unauthorized
+                    status: 401
+                    detail: Missing or invalid authentication credentials
+                    instance: /transfers/c76e83a1-2271-4143-a3f5-4f64d4cb5ecc/dataAddress
+        "403":
+          description: "Forbidden Ã¢â‚¬â€\x9D the caller is not authorized to access this resource"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenProblem'
+              examples:
+                Forbidden Error Example:
+                  description: Forbidden Error Example
+                  value:
+                    type: urn:problem-type:simpl:forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: The caller is not authorized to access this resource
+                    instance: /transfers/c76e83a1-2271-4143-a3f5-4f64d4cb5ecc/dataAddress
+        "404":
+          description: "Not Found Ã¢â‚¬â€\x9D no transfer process found for the specified transferProcessId"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotFoundProblem'
+              examples:
+                Not Found Error Example:
+                  description: Not Found Error Example
+                  value:
+                    type: urn:problem-type:simpl:transferProcessNotFound
+                    title: Transfer Process Not Found
+                    status: 404
+                    detail: No transfer process found for transferProcessId c76e83a1-2271-4143-a3f5-4f64d4cb5ecc
+                    instance: /transfers/c76e83a1-2271-4143-a3f5-4f64d4cb5ecc/dataAddress
+        "409":
+          description: "Conflict Ã¢â‚¬â€\x9D the transfer process has not been started yet"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ConflictProblem'
+              examples:
+                Conflict Error Example:
+                  description: Conflict Error Example
+                  value:
+                    type: urn:problem-type:simpl:transferProcessDataAddressNotAvailable
+                    title: Data Address Not Available
+                    status: 409
+                    detail: The transfer process has not been started yet
+                    instance: /transfers/c76e83a1-2271-4143-a3f5-4f64d4cb5ecc/dataAddress
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorProblem'
+              examples:
+                Internal Server Error Example:
+                  description: Internal Server Error Example
+                  value:
+                    type: urn:problem-type:simpl:internalServerError
+                    title: Internal Server Error
+                    status: 500
+                    detail: Unexpected internal error
+                    instance: /transfers/c76e83a1-2271-4143-a3f5-4f64d4cb5ecc/dataAddress
+  /resourceAddresses/templates/{templateId}/schema:
+    get:
+      tags:
+      - Resource Address
+      summary: Returns a destination address template schema based on templateId
+      description: Returns the JSON schema template for a specific resource address. This schema defines the structure and constraints for configuring a data destination.
+      operationId: getDestinationAddressTemplate
+      parameters:
+      - name: templateId
+        in: path
+        description: The template id
+        required: true
+        schema:
+          type: string
+          example: TPL-1
+      responses:
+        "200":
+          description: Template (JSON schema) for the sourceAddress
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                IonosS3:
+                  summary: IonosS3 template example
+                  description: IonosS3
+                  value:
+                    type: object
+                    properties:
+                      bucketName:
+                        type: string
+                      region:
+                        type: string
+                    required:
+                    - bucketName
+        "404":
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotFoundProblem'
+              examples:
+                Not Found Error Example:
+                  description: Not Found Error Example
+                  value:
+                    type: urn:problem-type:simpl:resourceAddressNotFound
+                    title: Resource Address Not Found
+                    status: 404
+                    detail: No template found for templateId 1
+  /transfers:
+    post:
+      tags:
+      - Transfer Process
+      summary: Initiate a new transfer process
+      description: Starts a data transfer process using a previously negotiated contract. This operation enables the actual movement of data from provider to consumer.
+      operationId: startTransfer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+            examples:
+              transferRequest:
+                description: transferRequest
+                value:
+                  providerEndpoint: https://edc-provider.dev.simpl-europe.eu/protocol
+                  contractId: 4a7f28e5-33a9-4f9e-9de9-a4f687502bce
+                  templateId: "1"
+                  dataDestination:
+                    type: IonosS3
+                    region: de
+                    storage: s3-eu-central-1.ionoscloud.com
+                    bucketName: simpl-cons
+                    objectName: european_health_data.csv
+                    path: folder1/
+                    keyName: test-key-name
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferProcessId'
+              examples:
+                successfulTransferStart:
+                  description: successfulTransferStart
+                  value:
+                    transferProcessId: c76e83a1-2271-4143-a3f5-4f64d4cb5ecc
+  /contracts:
+    post:
+      tags:
+      - Contract
+      summary: Initiate a new contract negotiation
+      description: Initiates a contract negotiation between a consumer and a provider for a selected data offer. This step is required before any data transfer can occur.
+      operationId: startContractNegotiation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractNegotiationRequest'
+            examples:
+              transferRequest:
+                description: transferRequest
+                value:
+                  providerEndpoint: http://endpoint.provider.com
+                  contractDefinitionId: 961ead7f-d8b2-4fc6-8e94-e3efbe2127ea
+                  assetId: asset-id
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractNegotiationId'
+              examples:
+                negotiationStarted:
+                  description: negotiationStarted
+                  value:
+                    contractNegotiationId: 9e82cdd6-4aba-4a77-8dcc-f1a9f56d82c5
+  /resourceAddresses/sharingMethods/{sharingMethodId}/templates:
+    get:
+      tags:
+      - Resource Address
+      summary: Returns the list of destination address templates by sharing method and offering type.
+      description: Fetches a list of address templates associated with a specific sharing method and offering type. Helps consumers understand how to configure data destinations.
+      operationId: getDestinationAddressTemplates
+      parameters:
+      - name: offeringType
+        in: query
+        description: The offering type identifier
+        required: true
+        schema:
+          type: string
+          enum:
+          - APPLICATION
+          - DATA
+          - INFRASTRUCTURE
+      - name: sharingMethodId
+        in: path
+        description: The resource sharing method identifier
+        required: true
+        schema:
+          type: string
+          enum:
+          - HTTPDATA_PUSH
+          - IONOS_S3
+      responses:
+        "200":
+          description: A list of templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+              examples:
+                templates:
+                  summary: List of templates
+                  description: templates
+                  value:
+                  - id: "1"
+                    label: Template 1
+                  - id: "2"
+                    label: Template 2
+                  - id: "3"
+                    label: Template 3
+  /resourceAddresses/templates/{templateId}/uiSchema:
+    get:
+      tags:
+      - Resource Address
+      summary: Returns a destination address UI schema based on templateId.
+      description: Returns a UI schema for rendering the resource address form. This helps front-end applications generate user-friendly forms for data destination configuration.
+      operationId: getDestinationAddressUiSchema
+      parameters:
+      - name: templateId
+        in: path
+        description: The template id
+        required: true
+        schema:
+          type: string
+          example: TPL-1
+      responses:
+        "200":
+          description: UI schema for the sourceAddress
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                amazonS3UI:
+                  summary: UI schema example
+                  description: amazonS3UI
+                  value:
+                    ui:order:
+                    - bucketName
+                    - region
+        "404":
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/NotFoundProblem'
+              examples:
+                Not Found Error Example:
+                  description: Not Found Error Example
+                  value:
+                    type: urn:problem-type:simpl:resourceAddressNotFound
+                    title: Resource Address Not Found
+                    status: 404
+                    detail: No UI schema found for templateId 1
+  /connectorCatalog/assets:
+    post:
+      tags:
+      - Contract
+      summary: Search for offers registered in the provider connector catalog in order to get parameters to initiate a contract negotiation
+      description: Allows a consumer to extract detailed information about a specific asset of interest from the provider connector's catalog. This provides the preliminary information necessary to initiate the contract negotiation phase.
+      operationId: searchCatalogAssets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractNegotiationRequest'
+            examples:
+              transferRequest:
+                description: transferRequest
+                value:
+                  providerEndpoint: http://endpoint.provider.com
+                  contractDefinitionId: 961ead7f-d8b2-4fc6-8e94-e3efbe2127ea
+                  assetId: asset-id
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogSearchResult'
+              examples:
+                catalogResponse:
+                  description: catalogResponse
+                  value:
+                    offers:
+                    - providerParticipantId: provider-id-123456
+                      providerEndpointUrl: https://provider-edc.example.com/api/v1/dsp
+                      assetId: asset-123-xyz
+                      offerId: offer-456-abc
+                      policy:
+                        id: policy-789-def
+                        type: USE
+                        policyConstraints:
+                        - leftOperand: PURPOSE
+                          operator: EQ
+                          rightOperand: data-sharing
+                    - providerParticipantId: provider-id-987654
+                      providerEndpointUrl: https://another-provider.example.com/api/v1/dsp
+                      assetId: asset-789-uvw
+                      offerId: offer-321-rst
+                      policy:
+                        id: policy-654-ghi
+                        type: ACCESS
+                        policyConstraints: []
+  /contracts/{contractNegotiationId}:
+    get:
+      tags:
+      - Contract
+      summary: Return the contract negotiation status
+      description: Retrieves the current status of a contract negotiation. Useful for tracking the progress and outcome of the negotiation process.
+      operationId: getContractNegotiationStatus
+      parameters:
+      - name: contractNegotiationId
+        in: path
+        description: The ID of the contract negotiation to retrieve the status for
+        required: true
+        schema:
+          minLength: 1
+          type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractNegotiation'
+              examples:
+                negotiationStatus:
+                  description: negotiationStatus
+                  value:
+                    '@id': 9e82cdd6-4aba-4a77-8dcc-f1a9f56d82c5
+                    contractAgreementId: ca-12345-abcde
+                    state: CONFIRMED
+                    counterPartyAddress: https://provider-edc.example.com/api/v1/dsp
+                    counterPartyId: provider-id-123456
+                    protocol: dataspace-protocol-http
+                    type: CONSUMER
+                    createdAt: 1716825600000
+  /transfers/{transferProcessId}:
+    get:
+      tags:
+      - Transfer Process
+      summary: Returns the transfer process status
+      description: Returns the current status of a data transfer process. Allows consumers to monitor the progress and completion of data delivery.
+      operationId: getTransferStatus
+      parameters:
+      - name: transferProcessId
+        in: path
+        description: The ID of the transfer process to retrieve the status for
+        required: true
+        schema:
+          minLength: 1
+          type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferProcess'
+              examples:
+                transferProcessStatus:
+                  description: transferProcessStatus
+                  value:
+                    '@id': c76e83a1-2271-4143-a3f5-4f64d4cb5ecc
+                    state: COMPLETED
+                    finalState: COMPLETED
+                    assetId: asset-123456
+                    contractId: contract-789012
+                    correlationId: corr-345678
+                    transferType: HttpData
+                    type: CONSUMER
+                    stateTimestamp: 1716825600000

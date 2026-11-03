@@ -80,3 +80,11 @@ Upstream and build crossed, configuration only. Details and commands: [`experime
 - **Upstream UI on the build backend:** every user action works, with the same calls and statuses as on upstream. Only the "Latest version" column stays empty.
 - **Build UI on the upstream backend:** create, new version, download, publish and revoke work. The details page stays blank: the UI expects the `status` the OpenAPI promises on version items, upstream does not send it. Three list columns stay empty.
 - **Lesson:** at the API level the two are close, closer than the suite results suggest. The real interoperability gap is the schema file: what makes a file valid lives in code on both sides, not in the specs.
+
+## 2026-10-29: step 6, PSO tests
+
+The API tests of the PSO test team, run unchanged against the build and upstream: an independent test source, written from the same stories. Details and commands: [`experiments/pso/`](./experiments/pso/README.md).
+
+- **Build: 20 of 27** with an empty default property list (15 of 27 as built: PSO's schema file carries none of the D31 default properties). **Upstream: 14 of 27.**
+- **None of the 7 failures is a build defect:** 4 hit decisions the digest took differently (D5 twice, D16, the out-of-scope vocabulary operations), 2 the resource type rule of step 2, 1 the environment (a Tier 1 user created through IAA).
+- **The unstated rule is in PSO's test case** (SIMPL-18293), so it is known to the testers but not written in any story. The OpenAPI lists no 401 where PSO expects 400 without a token: PSO follows the letter of the contract, the digest chose 401.

@@ -18,6 +18,9 @@ Chosen as the biggest one: the whole catalogue, with three backends (catalogue-b
 | [`pipeline/`](./pipeline/) | The briefs for steps 1 to 3 as used |
 | [`generated/run1/`](./generated/run1/) | Step 3: the build (backends, UI, stubs, Keycloak realms, federation and seed files), with `TRACEABILITY.md`, `BUILD-LOG.md` and `docs/`. The keys, passwords and client secrets in it are the throwaway test values of the digest (D23, section 5) |
 | [`experiments/swap/`](./experiments/swap/README.md) | Step 5: swap experiments per joint |
+| [`experiments/pso/`](./experiments/pso/README.md) | Step 6: the PSO test suite on the build and upstream |
 | [`findings.md`](./findings.md) | Findings per step |
+
+PSO tests (29 Oct): the API tests of the PSO test team pass 32 of 52 on the build (upstream 17 of 52); 10 need live signing, none of the other 10 is a build defect. See [`experiments/pso/`](./experiments/pso/README.md).
 
 Run the build with `cd generated/run1 && docker compose -p simpl-catalogue-factory up -d --build --wait`.

@@ -1,0 +1,21 @@
+upstream	health	GET	200	
+upstream	read existing	GET	200	
+upstream	file existing	GET	200	
+upstream	read unknown	GET	404	urn:error:single-custom-exception
+upstream	read malformed id	GET	400	urn:error:argument-type-mismatch
+upstream	file unknown	GET	404	urn:error:single-custom-exception
+upstream	read no key	GET	401	urn:error:unauthorized
+upstream	read wrong key	GET	401	urn:error:unauthorized
+upstream	read as xml	GET	500	urn:error:internal-server-error
+upstream	delete (no such method)	DELETE	405	urn:error:method-not-supported
+upstream	search all, empty body	POST	405	urn:error:method-not-supported
+upstream	search by nid, empty body	POST	400	urn:error:single-custom-exception
+upstream	search by nid, with assetId	POST	200	
+upstream	status unknown ids	PATCH	200	
+upstream	issue, empty body	POST	400	urn:error:data-validation
+upstream	create, empty body	POST	400	urn:error:data-validation
+upstream	verification, empty body	PUT	200	
+upstream	offer, unknown nid	POST	404	
+upstream	offer accept, unknown nid	PATCH	404	
+upstream	offer update, unknown nid	PUT	404	
+upstream	agreement fields	assetId,consumerId,consumerSignatureDate,contractAgreementId,contractDefinitionId,contractNegotiationId,contractOfferId,providerId,providerSignatureDate,status
