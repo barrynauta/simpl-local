@@ -106,3 +106,34 @@ Configuration only, no source change ([`experiments/swap-rust/`](./experiments/s
 - **The specs carry over to another language.** With the same decisions, a Rust backend reaches the same 74 of 74 as the Java one, and both UIs run on it unchanged. The OpenAPI is a real, language-neutral contract.
 - **A second, independent build is a cheap spec review.** The Rust writer read one rule more literally than the Java writer and exposed a gap in D18 that 74 green tests on the Java build had hidden. It also listed 26 open points, several of them new.
 - **What still ties the specs to one stack** is small and lives outside the API: the named-graph layout in Fuseki, a reference to "the same versioning library as schema management", and the 5 MB upload limit. Worth stating in the specs as requirements, not as library choices.
+
+## 2026-11-08: code comparison with upstream
+
+Upstream backend at `7755e1f` (29 Sep 2026), upstream UI at `1148b17` (20 Oct 2026), against [`generated/run1/`](./generated/run1/) and [`generated/run2-rust/`](./generated/run2-rust/). Lines of code without blank lines and comments.
+
+| | Upstream | Generated, Java | Generated, Rust |
+|---|---|---|---|
+| Backend code | 4,858 (74 files) | 2,413 (37 files) | 3,760 (16 files) |
+| Backend tests | 5,118 | 742 | about 600, plus tests inside the code files |
+| UI code | about 4,300, plus 1,600 lines of types generated from the OpenAPI | 1,250 | uses either UI |
+| UI tests | 6,410 | none | |
+| Black-box suite ([`tests/`](./tests/README.md)) | | about 1,900 (14 feature files, API and browser), runs on any build | the same suite |
+| Deployment and tooling | Helm charts (about 2,100 lines), coverage, formatter, licence check, CI | docker compose | docker compose |
+
+- **The generated code is about half the size and does more itself.** Upstream takes its semantic validation from a shared library (`simpl-semantic-validation-sdk`); the build writes its own (about 460 lines). Upstream reads the user from the token and leaves the token check to the gateway; the build checks the token itself.
+- **Structure.** Upstream uses classic layers (controller, service, repository, dto, response, exception) with many small classes; error handling alone is 13 classes, and the lifecycle rules are spread over three service classes. The Java build has a small domain core: `VocabularyLifecycle` (79 lines) holds the version and status rules (D9 to D11) and is tested without mocks. The validation code defines an interface that the store implements. Its weak spot is the controller (384 lines): it checks query parameters by hand and filters, sorts and pages in memory. The Rust build is the cleanest: one `Store` trait with a Fuseki and an in-memory adapter, so the tests run without a database.
+- **Testing.** Upstream has more test code than code, but mostly with mocks: 14 test classes use Mockito, the two largest repository tests have 53 and 67 mocks. They check that the SPARQL text is built, not what it returns. No test runs on a real Fuseki. This is how a well-tested code base passes 58 of 74 black-box scenarios. The builds have few unit tests; their test asset is the black-box suite, which does not depend on the implementation.
+- **Both builds page in memory.** They load all vocabularies, sort them and take one page in code. Upstream pages in the SPARQL query. Fine for the 306 vocabularies of the swap test, not for 50,000. Two writers who did not see each other's work made the same choice, so this is a gap in the specs: no volume or response time is stated, so no test can catch it.
+- **Code made to pass a test.** The Java build has a `MonotonicClock` so that sorting on dates is stable in the tests. It works inside one process only; with two replicas it means nothing.
+- **Traceability.** The generated code cites stories and decisions 30 times (for example "SIMPL-18162, 18164, D23, D29"). Upstream code cites none.
+- **Not built, and not measured:** Helm charts, coverage and formatter checks, licence headers, CI. This is the distance from a working build to a deliverable.
+
+### Conclusions
+
+- **Inside a component, code maintainability matters less when the code can be regenerated.** If the specs, the decision list and the black-box suite are the source, the code is a build product. Nobody needs to maintain it by hand.
+- **Around the component it still matters, and moves to the specs and the tests.** Four conditions:
+  - The tests must cover what matters, also the non-functional requirements. What no test checks can change silently between two builds; the in-memory paging is the proof.
+  - The external contracts and the data layout must stay stable. The swap test already needed a data migration.
+  - Each regeneration is a new code base, so security and quality scans must run in the pipeline, not as manual reviews.
+  - Production problems are still debugged by people. Small, readable code helps; the build is half the size.
+- **For the specs:** add volume and response time per component. The paging case shows why.
