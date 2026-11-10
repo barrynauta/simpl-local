@@ -36,7 +36,7 @@ A reader who opens a page in the first attempt sees a requirement item without c
 | Only published items show their text; the others show key, level, title and status | The tree is complete, and nothing unpublished leaks. |
 | "Notes on the source" on each page | Problems in the source are listed without changing the text. |
 | Folders follow the levels: business process › L0 › L1 › L2 › Epic › user story, one folder per item, named after its level and key (for example `L1-SIMPL-10171`) | The structure shows the trace by itself, also when there are hundreds of items. Names stay short and stable. |
-| Cancelled items stay, marked as cancelled | History is kept and the reader is not misled. |
+| Cancelled items are left out | They are not part of the requirements, so they have no value for a reader. |
 
 ## What the final publication should do
 
@@ -51,7 +51,7 @@ A list of requirements for the generator that PSO will build.
 7. Check every item against the handbook linking rules, and tag and list the items that fail.
 8. Publish a complete tree: keep every parent and child link from the source. When an item is not published, still show its key, level, title and status, marked "not published".
 9. State the publication criteria, so readers know why an item is in or out.
-10. Keep cancelled items, marked, with the reason for the cancellation. Take the status from the source, never from where the generator put the item.
+10. Leave cancelled items out. Take the status from the source, never from where the generator put the item.
 11. Check the source text for obvious problems (typos, contradicting status fields, published flag) and report them, without changing the text.
 
 ## Open points

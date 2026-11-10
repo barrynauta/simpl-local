@@ -34,7 +34,7 @@ The steps as the public process page names them. The items in this folder have n
 
 ## What this folder holds
 
-The L0 item [SIMPL-16074](L0-SIMPL-16074/README.md) stands for the supporting activity. Under it are 8 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **67 items:** 1 L0, 8 L1, 18 L2, 24 Epic, 16 User story.
+The L0 item [SIMPL-16074](L0-SIMPL-16074/README.md) stands for the supporting activity. Under it are 8 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **65 items:** 1 L0, 8 L1, 18 L2, 23 Epic, 15 User story.
 
 | L1 | High-level requirement | Status | Items under it |
 | --- | --- | --- | --- |
@@ -42,7 +42,7 @@ The L0 item [SIMPL-16074](L0-SIMPL-16074/README.md) stands for the supporting ac
 | [SIMPL-19288](L0-SIMPL-16074/L1-SIMPL-19288/README.md) | Participant consults their own data orchestration workflows | Defined | 4 |
 | [SIMPL-19289](L0-SIMPL-16074/L1-SIMPL-19289/README.md) | Participant creates a new version of a data orchestration workflow | Defined | 2 |
 | [SIMPL-19290](L0-SIMPL-16074/L1-SIMPL-19290/README.md) | Participant deletes a data orchestration workflow | Defined | 4 |
-| [SIMPL-19291](L0-SIMPL-16074/L1-SIMPL-19291/README.md) | Participant executes a data orchestration workflow | Defined | 21 |
+| [SIMPL-19291](L0-SIMPL-16074/L1-SIMPL-19291/README.md) | Participant executes a data orchestration workflow | Defined | 19 |
 | [SIMPL-19292](L0-SIMPL-16074/L1-SIMPL-19292/README.md) | Participant monitors and accesses data orchestration workflow execution logs | Defined | 6 |
 | [SIMPL-30520](L0-SIMPL-16074/L1-SIMPL-30520/README.md) | Participant defines used distribution model | Defined | 16 |
 | [SIMPL-30560](L0-SIMPL-16074/L1-SIMPL-30560/README.md) | Participant executes workflow on saved distribution configuration | Defined | 3 |
@@ -74,12 +74,10 @@ Every item, with its level, title and status.
         - [SIMPL-25746](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-1620/Epic-SIMPL-2068/Story-SIMPL-25746/README.md) User story · Provider configures lineage metadata at job and service level · DevTeam PBI is ready for Implementation check
         - [SIMPL-25747](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-1620/Epic-SIMPL-2068/Story-SIMPL-25747/README.md) User story · Participant captures lineage within workflows · DevTeam PBI is ready for Implementation check
         - [SIMPL-27497](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-1620/Epic-SIMPL-2068/Story-SIMPL-27497/README.md) User story · Provider generates PROV-O lineage report for processed datasets · DevTeam PBI is ready for Implementation check
-      - [SIMPL-2069](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-1620/Epic-SIMPL-2069/README.md) Epic · Participant visualises dataset lineage · Cancelled · *🔴 cancelled*
     - [SIMPL-19318](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-19318/README.md) L2 · Participant manually executes a data orchestration workflow · Defined
       - [SIMPL-19334](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-19318/Epic-SIMPL-19334/README.md) Epic · A Participant manually starts the execution of a data orchestration workflow · Defined
     - [SIMPL-19319](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-19319/README.md) L2 · Participant executes data orchestration workflows automatically based on events · Defined
       - [SIMPL-19335](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-19319/Epic-SIMPL-19335/README.md) Epic · A Participant automatically executes an event-triggered data orchestration workflow execution · Defined
-        - [SIMPL-21844](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-19319/Epic-SIMPL-19335/Story-SIMPL-21844/README.md) User story · API for Workflows and Default Config Retrieval · PBI Cancelled · *🔴 cancelled*
         - [SIMPL-22926](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-19319/Epic-SIMPL-19335/Story-SIMPL-22926/README.md) User story · API for Workflow and Default Config Retrieval · Ready for DG Acceptance
       - [SIMPL-22371](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-19319/Epic-SIMPL-22371/README.md) Epic · A Participant associates an event-triggered data orchestration workflow to a resource description · Defined
         - [SIMPL-20783](L0-SIMPL-16074/L1-SIMPL-19291/L2-SIMPL-19319/Epic-SIMPL-22371/Story-SIMPL-20783/README.md) User story · API for Resource - Workflow Association and Configuration Validation · Ready for DG Acceptance

@@ -69,11 +69,10 @@ The keywords Given, When, Then, And and But are in bold, with a capital first le
 
 ## Status
 
-Status shows where an item is in its life cycle. Some of the statuses you see in this folder:
+Status shows where an item is in its life cycle. Cancelled items are left out of this folder. Some of the statuses you see:
 
 | Status | Meaning |
 | --- | --- |
 | Defined, PBI Defined | Written and approved after elicitation. The handbook keeps the key fields stable from PBI Defined on. |
 | In Progress | Being worked on. |
 | Internal QA check | An internal review step. |
-| Cancelled | Dropped. Kept for history. |

@@ -45,16 +45,16 @@ The steps as the public process page names them. The items in this folder have n
 
 ## What this folder holds
 
-The L0 item [SIMPL-10768](L0-SIMPL-10768/README.md) stands for the business process. Under it are 9 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **258 items:** 1 L0, 9 L1, 32 L2, 69 Epic, 147 User story.
+The L0 item [SIMPL-10768](L0-SIMPL-10768/README.md) stands for the business process. Under it are 9 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **250 items:** 1 L0, 9 L1, 32 L2, 69 Epic, 139 User story.
 
 | L1 | High-level requirement | Status | Items under it |
 | --- | --- | --- | --- |
 | [SIMPL-12897](L0-SIMPL-10768/L1-SIMPL-12897/README.md) | A Provider consults its own Resource descriptions | Defined | 20 |
 | [SIMPL-14640](L0-SIMPL-10768/L1-SIMPL-14640/README.md) | The Governance Authority revokes a resource description | Defined | 4 |
-| [SIMPL-14687](L0-SIMPL-10768/L1-SIMPL-14687/README.md) | The Governance Authority publishes a Resource description | In Progress | 48 |
-| [SIMPL-14688](L0-SIMPL-10768/L1-SIMPL-14688/README.md) | A Provider creates a new Resource description | In Progress | 108 |
+| [SIMPL-14687](L0-SIMPL-10768/L1-SIMPL-14687/README.md) | The Governance Authority publishes a Resource description | In Progress | 47 |
+| [SIMPL-14688](L0-SIMPL-10768/L1-SIMPL-14688/README.md) | A Provider creates a new Resource description | In Progress | 103 |
 | [SIMPL-14699](L0-SIMPL-10768/L1-SIMPL-14699/README.md) | A Provider requests the revocation of a Resource description | Defined | 4 |
-| [SIMPL-14728](L0-SIMPL-10768/L1-SIMPL-14728/README.md) | A Provider creates a new version of a Resource description | In Progress | 40 |
+| [SIMPL-14728](L0-SIMPL-10768/L1-SIMPL-14728/README.md) | A Provider creates a new version of a Resource description | In Progress | 38 |
 | [SIMPL-14729](L0-SIMPL-10768/L1-SIMPL-14729/README.md) | A Provider signs and submits a new Resource description or a new version of a Resource description | Defined | 17 |
 | [SIMPL-21117](L0-SIMPL-10768/L1-SIMPL-21117/README.md) | The Provider notifies Consumers about the revocation of a resource description | In Progress | 4 |
 | [SIMPL-21118](L0-SIMPL-10768/L1-SIMPL-21118/README.md) | A Provider notifies Consumers about a new version of a Resource description | In Progress | 3 |
@@ -108,7 +108,6 @@ Every item, with its level, title and status.
         - [SIMPL-21591](L0-SIMPL-10768/L1-SIMPL-14687/L2-SIMPL-14748/Epic-SIMPL-17801/Story-SIMPL-21591/README.md) User story · [API] The Governance Authority notifies a Provider about syntax validation errors · Ready for DG Acceptance
       - [SIMPL-25371](L0-SIMPL-10768/L1-SIMPL-14687/L2-SIMPL-14748/Epic-SIMPL-25371/README.md) Epic · The Governance Authority provides feedback to a Provider about syntax validation errors of a policy · In Progress
         - [SIMPL-31640](L0-SIMPL-10768/L1-SIMPL-14687/L2-SIMPL-14748/Epic-SIMPL-25371/Story-SIMPL-31640/README.md) User story · [API] The Governance Authority provides feedback to a Provider about policy syntax validation errors · FOR SC TO RESPOND
-        - [SIMPL-31641](L0-SIMPL-10768/L1-SIMPL-14687/L2-SIMPL-14748/Epic-SIMPL-25371/Story-SIMPL-31641/README.md) User story · [UI] The Provider views policy syntax validation errors in the resource description editor · PBI Cancelled · *🔴 cancelled*
     - [SIMPL-14749](L0-SIMPL-10768/L1-SIMPL-14687/L2-SIMPL-14749/README.md) L2 · The Governance Authority validates the semantics of a new Resource description or a new version of a Resource Description · Defined
       - [SIMPL-889](L0-SIMPL-10768/L1-SIMPL-14687/L2-SIMPL-14749/Epic-SIMPL-889/README.md) Epic · The Governance Authority checks the semantics of a new Resource description or a new version of a Resource Description · Defined
         - [SIMPL-490](L0-SIMPL-10768/L1-SIMPL-14687/L2-SIMPL-14749/Epic-SIMPL-889/Story-SIMPL-490/README.md) User story · Semantic Validation Engine · DevTeam PBI is ready for Implementation check
@@ -179,16 +178,12 @@ Every item, with its level, title and status.
       - [SIMPL-935](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-935/README.md) Epic · A Provider is supported in defining an access policy by a using policy template via API · In Progress
         - [SIMPL-2938](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-935/Story-SIMPL-2938/README.md) User story · API for Access Policy · Ready for DG Acceptance
         - [SIMPL-3546](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-935/Story-SIMPL-3546/README.md) User story · [API] Access Policy multiple attributes per Permission · PBI Defined
-        - [SIMPL-3549](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-935/Story-SIMPL-3549/README.md) User story · [API] Access Policy possible to define Prohibitions · PBI Cancelled · *🔴 cancelled*
-        - [SIMPL-3550](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-935/Story-SIMPL-3550/README.md) User story · [QueryMapper] Access Policy possible to define Prohibitions · PBI Cancelled · *🔴 cancelled*
         - [SIMPL-31346](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-935/Story-SIMPL-31346/README.md) User story · [API] Provider retrieves the list of access policy templates · DevTeam PBI is ready for Implementation check
         - [SIMPL-31347](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-935/Story-SIMPL-31347/README.md) User story · [API] Provider retrieves the details of an access policy template · DevTeam PBI is ready for Implementation check
       - [SIMPL-936](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-936/README.md) Epic · A Provider assigns access policies to a new resource description by using policy template via UI · In Progress
         - [SIMPL-493](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-936/Story-SIMPL-493/README.md) User story · UI for defining access policies · DevTeam PBI is ready for Implementation check
         - [SIMPL-2581](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-936/Story-SIMPL-2581/README.md) User story · Define Access Policy for the SD-Schema · DevTeam PBI is ready for Implementation check
         - [SIMPL-3545](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-936/Story-SIMPL-3545/README.md) User story · [UI] Access Policy multiple attributes per Permission · FOR SC TO RESPOND
-        - [SIMPL-3548](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-936/Story-SIMPL-3548/README.md) User story · [UI] Access Policy possible to define Prohibitions · PBI Cancelled · *🔴 cancelled*
-        - [SIMPL-18345](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-936/Story-SIMPL-18345/README.md) User story · [UI] Assign access policies to a new Resource description · PBI Cancelled · *🔴 cancelled*
         - [SIMPL-31405](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-936/Story-SIMPL-31405/README.md) User story · [UI] Provider selects an access policy template in the resource description wizard · DevTeam PBI is ready for Implementation check
         - [SIMPL-31406](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-936/Story-SIMPL-31406/README.md) User story · [UI] Provider fills in the access policy template parameters in the resource description wizard · DevTeam PBI is ready for Implementation check
         - [SIMPL-31407](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14733/Epic-SIMPL-936/Story-SIMPL-31407/README.md) User story · [UI] Provider sees inline validation feedback for access policy template parameters · DevTeam PBI is ready for Implementation check
@@ -206,7 +201,6 @@ Every item, with its level, title and status.
         - [SIMPL-31386](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14734/Epic-SIMPL-960/Story-SIMPL-31386/README.md) User story · [API] Provider retrieves the details of a usage policy template · DevTeam PBI is ready for Implementation check
       - [SIMPL-961](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14734/Epic-SIMPL-961/README.md) Epic · A Provider assigns usage policies to a new resource description by using policy template via UI · In Progress
         - [SIMPL-424](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14734/Epic-SIMPL-961/Story-SIMPL-424/README.md) User story · UI for definition of usage policies · DevTeam PBI is ready for Implementation check
-        - [SIMPL-18346](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14734/Epic-SIMPL-961/Story-SIMPL-18346/README.md) User story · [UI] Assign usage policies to a new Resource description · PBI Cancelled · *🔴 cancelled*
         - [SIMPL-31452](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14734/Epic-SIMPL-961/Story-SIMPL-31452/README.md) User story · [UI] Provider selects a usage policy template in the resource description wizard · DevTeam PBI is ready for Implementation check
         - [SIMPL-31453](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14734/Epic-SIMPL-961/Story-SIMPL-31453/README.md) User story · [UI] Provider fills in the usage policy template parameters in the resource description wizard · DevTeam PBI is ready for Implementation check
         - [SIMPL-31454](L0-SIMPL-10768/L1-SIMPL-14688/L2-SIMPL-14734/Epic-SIMPL-961/Story-SIMPL-31454/README.md) User story · [UI] Provider sees inline validation feedback for usage policy template parameters · DevTeam PBI is ready for Implementation check
@@ -276,7 +270,6 @@ Every item, with its level, title and status.
         - [SIMPL-28325](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14739/Epic-SIMPL-24801/Story-SIMPL-28325/README.md) User story · [UI] Update infrastructure deployment script link · DevTeam PBI is ready for Implementation check
     - [SIMPL-14740](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14740/README.md) L2 · A Provider updates the access policies of a new version of a Resource description · In Progress
       - [SIMPL-4887](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14740/Epic-SIMPL-4887/README.md) Epic · A Provider updates the access policies of a new version of a Resource description by using policy templatesvia UI · In Progress
-        - [SIMPL-18686](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14740/Epic-SIMPL-4887/Story-SIMPL-18686/README.md) User story · [UI] Asssign access policy to a new version of a resource description · PBI Cancelled · *🔴 cancelled*
         - [SIMPL-31543](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14740/Epic-SIMPL-4887/Story-SIMPL-31543/README.md) User story · [UI] Provider sees the access policies carried over from the previous resource description version · PBI INTERNAL QA
         - [SIMPL-31544](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14740/Epic-SIMPL-4887/Story-SIMPL-31544/README.md) User story · [UI] Provider selects an access policy template in the new resource description version wizard · PBI INTERNAL QA
         - [SIMPL-31545](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14740/Epic-SIMPL-4887/Story-SIMPL-31545/README.md) User story · [UI] Provider fills in the access policy template parameters in the new resource description version wizard · PBI INTERNAL QA
@@ -284,7 +277,6 @@ Every item, with its level, title and status.
         - [SIMPL-31547](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14740/Epic-SIMPL-4887/Story-SIMPL-31547/README.md) User story · [UI] Provider saves the updated access policies on the new resource description version · PBI Defined
     - [SIMPL-14741](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14741/README.md) L2 · A Provider updates the usage policies of a new version of a Resource description · In Progress
       - [SIMPL-18030](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14741/Epic-SIMPL-18030/README.md) Epic · A Provider updates the usage policies of a new version of a resource description by using policy template via UI · In Progress
-        - [SIMPL-18688](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14741/Epic-SIMPL-18030/Story-SIMPL-18688/README.md) User story · [UI] Assign usage policies to the new version of Resource description · PBI Cancelled · *🔴 cancelled*
         - [SIMPL-31575](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14741/Epic-SIMPL-18030/Story-SIMPL-31575/README.md) User story · [UI] Provider sees the usage policies carried over from the previous resource description version · PBI INTERNAL QA
         - [SIMPL-31576](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14741/Epic-SIMPL-18030/Story-SIMPL-31576/README.md) User story · [UI] Provider selects a usage policy template in the new resource description version wizard · PBI INTERNAL QA
         - [SIMPL-31577](L0-SIMPL-10768/L1-SIMPL-14728/L2-SIMPL-14741/Epic-SIMPL-18030/Story-SIMPL-31577/README.md) User story · [UI] Provider fills in the usage policy template parameters in the new resource description version wizard · PBI INTERNAL QA

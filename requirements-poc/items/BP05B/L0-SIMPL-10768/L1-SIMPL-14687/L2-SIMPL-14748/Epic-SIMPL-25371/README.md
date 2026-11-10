@@ -48,4 +48,4 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 | --- | --- |
 | **Business process** | [BP05B](../../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp05b-provider-manages-resource-descriptions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp05b-provider-manages-resource-descriptions)) |
 | **Parent** | [SIMPL-14748](../README.md) (L2) The Governance Authority provides feedback to a Provider about syntax validation errors |
-| **Children** | [SIMPL-31640](Story-SIMPL-31640/README.md) (User story) [API] The Governance Authority provides feedback to a Provider about policy syntax validation errors<br>[SIMPL-31641](Story-SIMPL-31641/README.md) (User story) [UI] The Provider views policy syntax validation errors in the resource description editor |
+| **Children** | [SIMPL-31640](Story-SIMPL-31640/README.md) (User story) [API] The Governance Authority provides feedback to a Provider about policy syntax validation errors |

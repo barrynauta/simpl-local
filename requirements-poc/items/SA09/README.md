@@ -33,12 +33,12 @@ The steps as the public process page names them. The items in this folder have n
 
 ## What this folder holds
 
-The L0 item [SIMPL-26074](L0-SIMPL-26074/README.md) stands for the supporting activity. Under it are 2 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **39 items:** 1 L0, 2 L1, 4 L2, 6 Epic, 26 User story.
+The L0 item [SIMPL-26074](L0-SIMPL-26074/README.md) stands for the supporting activity. Under it are 2 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **37 items:** 1 L0, 2 L1, 4 L2, 6 Epic, 24 User story.
 
 | L1 | High-level requirement | Status | Items under it |
 | --- | --- | --- | --- |
-| [SIMPL-26083](L0-SIMPL-26074/L1-SIMPL-26083/README.md) | Data Provider manages consent assertion status changes | In Progress | 8 |
-| [SIMPL-27082](L0-SIMPL-26074/L1-SIMPL-27082/README.md) | Data Provider manages consent assertions for shared data resources | Defined | 28 |
+| [SIMPL-26083](L0-SIMPL-26074/L1-SIMPL-26083/README.md) | Data Provider manages consent assertion status changes | In Progress | 7 |
+| [SIMPL-27082](L0-SIMPL-26074/L1-SIMPL-27082/README.md) | Data Provider manages consent assertions for shared data resources | Defined | 27 |
 
 ## Tree
 
@@ -53,7 +53,6 @@ Every item, with its level, title and status.
         - [SIMPL-28599](L0-SIMPL-26074/L1-SIMPL-26083/L2-SIMPL-27195/Epic-SIMPL-27206/Story-SIMPL-28599/README.md) User story · [UI] Data Provider updates consent assertion status from consent assertion details page · DevTeam PBI is ready for Implementation check
         - [SIMPL-29116](L0-SIMPL-26074/L1-SIMPL-26083/L2-SIMPL-27195/Epic-SIMPL-27206/Story-SIMPL-29116/README.md) User story · [UI] Data Provider updates consent assertion status from consent assertion list · DevTeam PBI is ready for Implementation check
       - [SIMPL-27207](L0-SIMPL-26074/L1-SIMPL-26083/L2-SIMPL-27195/Epic-SIMPL-27207/README.md) Epic · Data Provider notifies Consumers upon consent assertion status change · In Progress
-        - [SIMPL-32215](L0-SIMPL-26074/L1-SIMPL-26083/L2-SIMPL-27195/Epic-SIMPL-27207/Story-SIMPL-32215/README.md) User story · [API Definition] Contract notifies Contract-UI about contract offer status change · PBI Cancelled · *🔴 cancelled*
   - [SIMPL-27082](L0-SIMPL-26074/L1-SIMPL-27082/README.md) L1 · Data Provider manages consent assertions for shared data resources · Defined
     - [SIMPL-27154](L0-SIMPL-26074/L1-SIMPL-27082/L2-SIMPL-27154/README.md) L2 · Data Provider creates resource consent assertions for shared data resources · Defined
       - [SIMPL-27203](L0-SIMPL-26074/L1-SIMPL-27082/L2-SIMPL-27154/Epic-SIMPL-27203/README.md) Epic · Data Provider creates a resource consent assertion · Defined
@@ -71,7 +70,6 @@ Every item, with its level, title and status.
         - [SIMPL-28600](L0-SIMPL-26074/L1-SIMPL-27082/L2-SIMPL-27156/Epic-SIMPL-27205/Story-SIMPL-28600/README.md) User story · [UI] Data Provider updates consent assertion · DevTeam PBI is ready for Implementation check
         - [SIMPL-28601](L0-SIMPL-26074/L1-SIMPL-27082/L2-SIMPL-27156/Epic-SIMPL-27205/Story-SIMPL-28601/README.md) User story · [UI] Data Provider lists and filters consent assertions · DevTeam PBI is ready for Implementation check
         - [SIMPL-28602](L0-SIMPL-26074/L1-SIMPL-27082/L2-SIMPL-27156/Epic-SIMPL-27205/Story-SIMPL-28602/README.md) User story · [UI] Data provider shows the details of a consent assertion · DevTeam PBI is ready for Implementation check
-        - [SIMPL-29113](L0-SIMPL-26074/L1-SIMPL-27082/L2-SIMPL-27156/Epic-SIMPL-27205/Story-SIMPL-29113/README.md) User story · [DEPRECATED] [UI] Data Provider views the details of a consent assertion · PBI Cancelled · *🔴 cancelled*
         - [SIMPL-29955](L0-SIMPL-26074/L1-SIMPL-27082/L2-SIMPL-27156/Epic-SIMPL-27205/Story-SIMPL-29955/README.md) User story · [API][IMPROVEMENT] Data provider configures the maximum amount of metadata key-value pairs for a consent assertion · DevTeam PBI is ready for Implementation check
         - [SIMPL-30219](L0-SIMPL-26074/L1-SIMPL-27082/L2-SIMPL-27156/Epic-SIMPL-27205/Story-SIMPL-30219/README.md) User story · [UI][IMPROVEMENT] Add creation date and update date to consent assertion list · DevTeam PBI is ready for Implementation check
       - [SIMPL-30295](L0-SIMPL-26074/L1-SIMPL-27082/L2-SIMPL-27156/Epic-SIMPL-30295/README.md) Epic · Data provider manages consent assertions - Improvement · Defined

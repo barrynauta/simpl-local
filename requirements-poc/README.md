@@ -1,6 +1,6 @@
 # Simpl-Open requirements: proof of concept
 
-This folder shows Simpl-Open requirements and backlog items as pages that a reader can understand without help. It is a counter proposal to the first publication attempt in [`simpl/pso/jira-test-issues`](https://code.europa.eu/simpl/pso/jira-test-issues). It starts from the same ten items and adds the full tree they belong to: 753 items in six business processes. It is a one-off mock-up for internal PSO review. The final publication will be built by PSO once the requirements for it are agreed.
+This folder shows Simpl-Open requirements and backlog items as pages that a reader can understand without help. It is a counter proposal to the first publication attempt in [`simpl/pso/jira-test-issues`](https://code.europa.eu/simpl/pso/jira-test-issues). It starts from the same ten items and adds the full tree they belong to: 683 items in six business processes. It is a one-off mock-up for internal PSO review. The final publication will be built by PSO once the requirements for it are agreed.
 
 ## What you find here
 
@@ -45,6 +45,7 @@ You can start anywhere. Pick the view that matches your question.
 - **Items**: the ten items of `jira-test-issues` on 10 November 2026, and every L0, L1, L2, Epic and user story in the trees they belong to. Tasks, tests and bugs are left out. The ten are marked ★ in [All items](all-items.md).
 - **Source of the content**: the requirements source on 10 November 2026, not PSO's export. PSO's export left out parent links and children; the [trace gaps](trace-gaps.md) page shows what it lost.
 - **Published items only.** An item's text is shown only when the item is published on the requirements website. For an Epic or user story, the L2, L1 or L0 above it decides. The ten items of PSO's export are shown in full, as PSO already made them public. Other items show only key, level, title and status.
+- **Cancelled items are left out.** They are not part of the requirements.
 - **Texts are kept as written.** The words are not changed and typos are not corrected. Only the layout of user stories and acceptance criteria is made the same everywhere (see [the levels page](levels.md#how-user-stories-and-acceptance-criteria-are-written)). Links to internal pages are replaced by "(internal page)", and names of people and email addresses are removed.
 - **Item keys are plain text.** The source system needs a login, so keys link only to pages in this folder.
 - **Business process links** go to the public [business-processes](https://code.europa.eu/simpl/simpl-open/foundations/business-processes) repository and to the public requirements site [simpl-programme.ec.europa.eu](https://simpl-programme.ec.europa.eu).

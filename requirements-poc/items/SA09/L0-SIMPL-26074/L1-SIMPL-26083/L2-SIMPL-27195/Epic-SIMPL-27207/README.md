@@ -30,4 +30,4 @@ Folder: [items](../../../../../README.md) / [SA09](../../../../README.md) / [L0-
 | --- | --- |
 | **Business process** | [SA09](../../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa09-data-provider-manages-consent-assertions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/sa09-data-provider-manages-consent-assertions)) |
 | **Parent** | [SIMPL-27195](../README.md) (L2) Data Provider withdraws and reactivates consent assertions |
-| **Children** | [SIMPL-32215](Story-SIMPL-32215/README.md) (User story) [API Definition] Contract notifies Contract-UI about contract offer status change |
+| **Children** | None. |

@@ -18,4 +18,4 @@ Simpl-Open shall support a *Participant* to automatically capture and document d
 | --- | --- |
 | **Business process** | [SA01](../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa01-data-orchestration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/sa01-data-orchestration-used-participant)) |
 | **Parent** | [SIMPL-19291](../README.md) (L1) Participant executes a data orchestration workflow |
-| **Children** | [SIMPL-2068](Epic-SIMPL-2068/README.md) (Epic) Participant captures dataset lineage for processed datasets<br>[SIMPL-2069](Epic-SIMPL-2069/README.md) (Epic) Participant visualises dataset lineage |
+| **Children** | [SIMPL-2068](Epic-SIMPL-2068/README.md) (Epic) Participant captures dataset lineage for processed datasets |

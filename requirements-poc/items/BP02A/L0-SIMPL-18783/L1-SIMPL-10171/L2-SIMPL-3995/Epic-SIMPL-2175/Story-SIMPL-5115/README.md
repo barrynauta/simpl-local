@@ -34,4 +34,3 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 | --- | --- |
 | **Business process** | [BP02A](../../../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp02a-configure-idtrust-security-solution)) |
 | **Parent** | [SIMPL-2175](../README.md) (Epic) Onboarding Process Governance Framework - resources/documents |
-| **Also under** | [SIMPL-2181](../../Epic-SIMPL-2181/README.md) (Epic) API for onboarding Process Governance Framework - mandatory resources/documents |

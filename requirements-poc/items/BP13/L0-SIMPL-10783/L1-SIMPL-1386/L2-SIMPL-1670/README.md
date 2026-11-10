@@ -16,4 +16,4 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 | --- | --- |
 | **Business process** | [BP13](../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp13-it-administration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp13-it-administration)) |
 | **Parent** | [SIMPL-1386](../README.md) (L1) Using infrastructure from a provider - IAM |
-| **Children** | [SIMPL-2173](Epic-SIMPL-2173/README.md) (Epic) Enable Access Control models on Provided PaaS Infrastructure<br>[SIMPL-2174](Epic-SIMPL-2174/README.md) (Epic) Request Access to Infrastructure Resources |
+| **Children** | None. |

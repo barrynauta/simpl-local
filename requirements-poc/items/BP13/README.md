@@ -18,13 +18,13 @@ Read more on the [public process page](https://code.europa.eu/simpl/simpl-open/f
 
 ## What this folder holds
 
-The L0 item [SIMPL-10783](L0-SIMPL-10783/README.md) stands for the business process. Under it are 18 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **191 items:** 1 L0, 18 L1, 39 L2, 58 Epic, 75 User story.
+The L0 item [SIMPL-10783](L0-SIMPL-10783/README.md) stands for the business process. Under it are 18 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **159 items:** 1 L0, 18 L1, 39 L2, 35 Epic, 66 User story.
 
 | L1 | High-level requirement | Status | Items under it |
 | --- | --- | --- | --- |
 | [SIMPL-1273](L0-SIMPL-10783/L1-SIMPL-1273/README.md) | Access control policies - agent to agent *(not published)* | In Progress | 16 |
 | [SIMPL-1275](L0-SIMPL-10783/L1-SIMPL-1275/README.md) | Agent setup and initialisation | Defined | 11 |
-| [SIMPL-1277](L0-SIMPL-10783/L1-SIMPL-1277/README.md) | Authentication process - IAA | In Progress | 27 |
+| [SIMPL-1277](L0-SIMPL-10783/L1-SIMPL-1277/README.md) | Authentication process - IAA | In Progress | 17 |
 | [SIMPL-1278](L0-SIMPL-10783/L1-SIMPL-1278/README.md) | Business continuity and disaster recovery *(not published)* | Blocked | 5 |
 | [SIMPL-1279](L0-SIMPL-10783/L1-SIMPL-1279/README.md) | Encryption mechanisms - data at rest *(not published)* | Blocked | 1 |
 | [SIMPL-1280](L0-SIMPL-10783/L1-SIMPL-1280/README.md) | Encryption mechanisms - data in motion | In Progress | 7 |
@@ -32,11 +32,11 @@ The L0 item [SIMPL-10783](L0-SIMPL-10783/README.md) stands for the business proc
 | [SIMPL-1294](L0-SIMPL-10783/L1-SIMPL-1294/README.md) | SIMPL Agent standard Cross Cutting Concern to handle cross capabilities/agents communication *(not published)* | Blocked | 5 |
 | [SIMPL-1295](L0-SIMPL-10783/L1-SIMPL-1295/README.md) | SIMPL Agent standard Cross Cutting Concern to handle cross capabilities/agents communication - Configurability *(not published)* | Blocked | 5 |
 | [SIMPL-1301](L0-SIMPL-10783/L1-SIMPL-1301/README.md) | Business continuity and disaster recovery | Defined | 2 |
-| [SIMPL-1376](L0-SIMPL-10783/L1-SIMPL-1376/README.md) | Infrastructure interoperability | Defined | 17 |
-| [SIMPL-1378](L0-SIMPL-10783/L1-SIMPL-1378/README.md) | Additional Network and Security Services - Firewall integration - software | Defined | 6 |
+| [SIMPL-1376](L0-SIMPL-10783/L1-SIMPL-1376/README.md) | Infrastructure interoperability | Defined | 10 |
+| [SIMPL-1378](L0-SIMPL-10783/L1-SIMPL-1378/README.md) | Additional Network and Security Services - Firewall integration - software | Defined | 2 |
 | [SIMPL-1379](L0-SIMPL-10783/L1-SIMPL-1379/README.md) | A Participants set the VPN configuration for secure data transfer and secure access to Simpl-Open resources | Defined | 3 |
-| [SIMPL-1386](L0-SIMPL-10783/L1-SIMPL-1386/README.md) | Using infrastructure from a provider - IAM | Defined | 3 |
-| [SIMPL-13574](L0-SIMPL-10783/L1-SIMPL-13574/README.md) | A Participant uses the Simpl-Open landing page | In Progress | 17 |
+| [SIMPL-1386](L0-SIMPL-10783/L1-SIMPL-1386/README.md) | Using infrastructure from a provider - IAM | Defined | 1 |
+| [SIMPL-13574](L0-SIMPL-10783/L1-SIMPL-13574/README.md) | A Participant uses the Simpl-Open landing page | In Progress | 8 |
 | [SIMPL-23891](L0-SIMPL-10783/L1-SIMPL-23891/README.md) | Governance Authority publishes its public profile *(not published)* | In Progress | 23 |
 | [SIMPL-31424](L0-SIMPL-10783/L1-SIMPL-31424/README.md) | Governance Authority maintains a contact email for each participant | In Progress | 19 |
 | [SIMPL-32447](L0-SIMPL-10783/L1-SIMPL-32447/README.md) | Participant publishes its public profile *(not published)* | In Progress | 4 |
@@ -85,9 +85,6 @@ Every item, with its level, title and status.
         - [SIMPL-17648](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2049/Story-SIMPL-17648/README.md) User story · [API] Participant user pings a remote participant agent · Ready for DG Acceptance
         - [SIMPL-17653](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2049/Story-SIMPL-17653/README.md) User story · [API] Dataspace Participant agent pings a peer participant · Ready for DG Acceptance
         - [SIMPL-17954](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2049/Story-SIMPL-17954/README.md) User story · [UI][REFACTOR] Verify connectivity to other dataspace participants · Ready for DG Acceptance
-      - [SIMPL-2051](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2051/README.md) Epic · Managing secure communication between agents - reverse proxy · Cancelled · *🔴 cancelled*
-      - [SIMPL-2052](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2052/README.md) Epic · API for managing secure communication between agents - verify API access · Cancelled · *🔴 cancelled*
-      - [SIMPL-2053](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2053/README.md) Epic · API for managing secure communication between agents - authenticate API request · Cancelled · *🔴 cancelled*
       - [SIMPL-2054](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2054/README.md) Epic · Verify agent credentials · In Progress
         - [SIMPL-17495](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2054/Story-SIMPL-17495/README.md) User story · [API] Participant agent retrieves participant details by credential · Ready for DG Acceptance
         - [SIMPL-17496](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2054/Story-SIMPL-17496/README.md) User story · [API] Participant agent retrieves participant details by identifier · Ready for DG Acceptance
@@ -96,13 +93,6 @@ Every item, with its level, title and status.
         - [SIMPL-17645](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2054/Story-SIMPL-17645/README.md) User story · [API] Dataspace Participant agent validates a credential · Ready for DG Acceptance
         - [SIMPL-17685](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2054/Story-SIMPL-17685/README.md) User story · [API] Dataspace participant agent retrieves its participant profile · Ready for DG Acceptance
         - [SIMPL-18905](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2054/Story-SIMPL-18905/README.md) User story · [API] Dataspace participant agent validates a Tier 1 credential · Ready for DG Acceptance
-      - [SIMPL-2055](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2055/README.md) Epic · API for managing secure communication between agents - block invalid agents · Cancelled · *🔴 cancelled*
-      - [SIMPL-2056](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2056/README.md) Epic · API for managing secure communication between agents - verify trusted agents · Cancelled · *🔴 cancelled*
-      - [SIMPL-2057](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2057/README.md) Epic · API for managing secure communication between agents - trust federation API · Cancelled · *🔴 cancelled*
-      - [SIMPL-2058](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2058/README.md) Epic · API for managing secure communication between agents - verify IAA · Cancelled · *🔴 cancelled*
-      - [SIMPL-2059](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2059/README.md) Epic · API for managing secure communication between agents - validate Identity Attributes · Cancelled · *🔴 cancelled*
-      - [SIMPL-2060](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2060/README.md) Epic · API for managing secure communication between agents - verify trusted credentials · Cancelled · *🔴 cancelled*
-      - [SIMPL-2061](L0-SIMPL-10783/L1-SIMPL-1277/L2-SIMPL-1616/Epic-SIMPL-2061/README.md) Epic · API for managing secure communication between agents - enforce agent policies · Cancelled · *🔴 cancelled*
   - [SIMPL-1278](L0-SIMPL-10783/L1-SIMPL-1278/README.md) L1 · Business continuity and disaster recovery · Blocked · *not published*
     - [SIMPL-1638](L0-SIMPL-10783/L1-SIMPL-1278/L2-SIMPL-1638/README.md) L2 · Replication of identity provider federation · Blocked · *not published*
     - [SIMPL-1639](L0-SIMPL-10783/L1-SIMPL-1278/L2-SIMPL-1639/README.md) L2 · Replication of security attribute provider · Blocked · *not published*
@@ -141,34 +131,21 @@ Every item, with its level, title and status.
       - [SIMPL-2089](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1627/Epic-SIMPL-2089/README.md) Epic · Offer Virtualization-Ready Minimal Consumer Agent Image · For DG Connect Review
       - [SIMPL-2090](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1627/Epic-SIMPL-2090/README.md) Epic · VM Repository for Minimal Consumer Agent Image · In Preparation
       - [SIMPL-2091](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1627/Epic-SIMPL-2091/README.md) Epic · Select a Standard for the building and registry of the Agent image · For DG Connect Review
-      - [SIMPL-2092](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1627/Epic-SIMPL-2092/README.md) Epic · Configure Agent Capabilities · Cancelled · *🔴 cancelled*
-      - [SIMPL-2093](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1627/Epic-SIMPL-2093/README.md) Epic · Provide Deployment Scripts · Cancelled · *🔴 cancelled*
-      - [SIMPL-2094](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1627/Epic-SIMPL-2094/README.md) Epic · Deploy Simpl on Virtualization Platforms · Cancelled · *🔴 cancelled*
-      - [SIMPL-2095](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1627/Epic-SIMPL-2095/README.md) Epic · Access Simpl VM Image from Trusted Repository · Cancelled · *🔴 cancelled*
     - [SIMPL-1628](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1628/README.md) L2 · Containerisation ready · Defined
       - [SIMPL-2096](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1628/Epic-SIMPL-2096/README.md) Epic · Register Container Image to be offered for Consumer Agent · In Preparation
       - [SIMPL-2097](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1628/Epic-SIMPL-2097/README.md) Epic · Use Trusted Container Registry for Consumer Agent · In Preparation
       - [SIMPL-2098](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1628/Epic-SIMPL-2098/README.md) Epic · Ensure Standards Compliance for Container's Orchestration Platform · In Preparation
-      - [SIMPL-2099](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1628/Epic-SIMPL-2099/README.md) Epic · Configure Agent Capabilities · Cancelled · *🔴 cancelled*
       - [SIMPL-2100](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1628/Epic-SIMPL-2100/README.md) Epic · Provide Installation Scripts for Consumer Agent · In Preparation
-      - [SIMPL-2101](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1628/Epic-SIMPL-2101/README.md) Epic · Deploy Simpl in Orchestration Environments · Cancelled · *🔴 cancelled*
-      - [SIMPL-2102](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1628/Epic-SIMPL-2102/README.md) Epic · Access Simpl Container Image from Trusted Registry · Cancelled · *🔴 cancelled*
       - [SIMPL-17537](L0-SIMPL-10783/L1-SIMPL-1376/L2-SIMPL-1628/Epic-SIMPL-17537/README.md) Epic · Provide Deployment Scripts for Governance Authority Agent · For DG Connect Review
   - [SIMPL-1378](L0-SIMPL-10783/L1-SIMPL-1378/README.md) L1 · Additional Network and Security Services - Firewall integration - software · Defined
     - [SIMPL-1645](L0-SIMPL-10783/L1-SIMPL-1378/L2-SIMPL-1645/README.md) L2 · A Participant integrates their Simpl-Open agent with software firewall solutions · Defined
-      - [SIMPL-2118](L0-SIMPL-10783/L1-SIMPL-1378/L2-SIMPL-1645/Epic-SIMPL-2118/README.md) Epic · Preconfigured Software Firewall Solution · Cancelled · *🔴 cancelled*
       - [SIMPL-2119](L0-SIMPL-10783/L1-SIMPL-1378/L2-SIMPL-1645/Epic-SIMPL-2119/README.md) Epic · A Participant integrates their Simpl-Open agent with software firewall solutions · Defined
-      - [SIMPL-2120](L0-SIMPL-10783/L1-SIMPL-1378/L2-SIMPL-1645/Epic-SIMPL-2120/README.md) Epic · Firewall Alerts and Notifications · Cancelled · *🔴 cancelled*
-      - [SIMPL-2121](L0-SIMPL-10783/L1-SIMPL-1378/L2-SIMPL-1645/Epic-SIMPL-2121/README.md) Epic · Configure Firewall Rules and Settings · Cancelled · *🔴 cancelled*
-      - [SIMPL-2122](L0-SIMPL-10783/L1-SIMPL-1378/L2-SIMPL-1645/Epic-SIMPL-2122/README.md) Epic · Receive Real-Time Alerts and Notifications · Cancelled · *🔴 cancelled*
   - [SIMPL-1379](L0-SIMPL-10783/L1-SIMPL-1379/README.md) L1 · A Participants set the VPN configuration for secure data transfer and secure access to Simpl-Open resources · Defined
     - [SIMPL-1648](L0-SIMPL-10783/L1-SIMPL-1379/L2-SIMPL-1648/README.md) L2 · A Participant sets the VPN configuration for data transfer between the Simpl-Open agent and data resource source or destination · Defined
       - [SIMPL-30019](L0-SIMPL-10783/L1-SIMPL-1379/L2-SIMPL-1648/Epic-SIMPL-30019/README.md) Epic · A Provider sets the VPN configuration for data transfer between the data resource source and their Simpl-Open agent · Defined
       - [SIMPL-30020](L0-SIMPL-10783/L1-SIMPL-1379/L2-SIMPL-1648/Epic-SIMPL-30020/README.md) Epic · A Consumer sets the VPN configuration for data transfer between their Simpl-Open agent and the data resource destination · Defined
   - [SIMPL-1386](L0-SIMPL-10783/L1-SIMPL-1386/README.md) L1 · Using infrastructure from a provider - IAM · Defined
     - [SIMPL-1670](L0-SIMPL-10783/L1-SIMPL-1386/L2-SIMPL-1670/README.md) L2 · Integration with Infrastructure Identity and Access Management (IAM) · In Preparation · *not published*
-      - [SIMPL-2173](L0-SIMPL-10783/L1-SIMPL-1386/L2-SIMPL-1670/Epic-SIMPL-2173/README.md) Epic · Enable Access Control models on Provided PaaS Infrastructure · Cancelled · *not published, 🔴 cancelled*
-      - [SIMPL-2174](L0-SIMPL-10783/L1-SIMPL-1386/L2-SIMPL-1670/Epic-SIMPL-2174/README.md) Epic · Request Access to Infrastructure Resources · Cancelled · *not published, 🔴 cancelled*
   - [SIMPL-13574](L0-SIMPL-10783/L1-SIMPL-13574/README.md) L1 · A Participant uses the Simpl-Open landing page · In Progress
     - [SIMPL-12044](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/README.md) L2 · A Participant uses the Simpl-Open landing page adapted to their Participant type · In Progress
       - [SIMPL-12046](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-12046/README.md) Epic · A Participant uses the Simpl-Open landing page adapted to their Participant type · Ready for validation and verification
@@ -176,15 +153,6 @@ Every item, with its level, title and status.
         - [SIMPL-27802](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-12046/Story-SIMPL-27802/README.md) User story · Configure landing page tiles via UI · Ready for DG Acceptance
       - [SIMPL-28280](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/README.md) Epic · A Participant uses the Simpl-Open landing page adapted to their user role [Improvement] · In Progress
         - [SIMPL-28207](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/Story-SIMPL-28207/README.md) User story · A Participant displays the functionalities aligned with their user role on the landing page UI · PBI INTERNAL QA
-        - [SIMPL-30966](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/Story-SIMPL-30966/README.md) User story · The Users&Roles service available to authorised users across all Participant Types · PBI Cancelled · *🔴 cancelled*
-        - [SIMPL-31029](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/Story-SIMPL-31029/README.md) User story · The Resource Description Management service is available to authorised users of Provider Participant Type · PBI Cancelled · *🔴 cancelled*
-        - [SIMPL-31030](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/Story-SIMPL-31030/README.md) User story · The Catalogue Search service is available to authorised users of Consumer and Provider Participant Types · PBI Cancelled · *🔴 cancelled*
-        - [SIMPL-31034](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/Story-SIMPL-31034/README.md) User story · The Onboarding service is available to authorised Governance Authority user · PBI Cancelled · *🔴 cancelled*
-        - [SIMPL-31079](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/Story-SIMPL-31079/README.md) User story · The Security Attribute Provider service available to authorised Governance Authority users · PBI Cancelled · *🔴 cancelled*
-        - [SIMPL-31080](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/Story-SIMPL-31080/README.md) User story · The Identity Provider service service is available to authorised Governance Authority user · PBI Cancelled · *🔴 cancelled*
-        - [SIMPL-31084](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/Story-SIMPL-31084/README.md) User story · The Federation Configuration service available to authorised Governance Authority users · PBI Cancelled · *🔴 cancelled*
-        - [SIMPL-31086](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/Story-SIMPL-31086/README.md) User story · The Infrastructure Service Manager service is available to authorised users of Infrastructure Provider Participant Type · PBI Cancelled · *🔴 cancelled*
-        - [SIMPL-31089](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/Story-SIMPL-31089/README.md) User story · The Logging & Monitoring services are available to authorised users across all Participant Types · PBI Cancelled · *🔴 cancelled*
         - [SIMPL-32348](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-28280/Story-SIMPL-32348/README.md) User story · A Participant uses the landing page to access the ticketing system · PBI INTERNAL QA
       - [SIMPL-29224](L0-SIMPL-10783/L1-SIMPL-13574/L2-SIMPL-12044/Epic-SIMPL-29224/README.md) Epic · A Participant uses the Simpl-Open landing page adapted to their user role: Contract & Audit UI [Improvement] · For DG Connect Review
   - [SIMPL-23891](L0-SIMPL-10783/L1-SIMPL-23891/README.md) L1 · Governance Authority publishes its public profile · In Progress · *not published*

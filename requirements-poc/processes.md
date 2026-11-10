@@ -10,7 +10,7 @@ The Governance Authority sets up identification and trust for its data space: id
 
 Full tree: [BP02A folder](items/BP02A/README.md) · [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp02a-configure-idtrust-security-solution)
 
-120 items: 1 L0, 4 L1, 8 L2, 35 Epic, 72 User story.
+94 items: 1 L0, 4 L1, 8 L2, 15 Epic, 66 User story.
 
 - [SIMPL-18783](items/BP02A/L0-SIMPL-18783/README.md) L0 · BP02A - Configure ID/Trust security solution · In Progress
   - [SIMPL-10171](items/BP02A/L0-SIMPL-18783/L1-SIMPL-10171/README.md) L1 · Configure Onboarding Procedure Templates · In Progress
@@ -24,7 +24,7 @@ A Provider creates resource descriptions, new versions of them and revocation re
 
 Full tree: [BP05B folder](items/BP05B/README.md) · [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp05b-provider-manages-resource-descriptions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp05b-provider-manages-resource-descriptions)
 
-258 items: 1 L0, 9 L1, 32 L2, 69 Epic, 147 User story.
+250 items: 1 L0, 9 L1, 32 L2, 69 Epic, 139 User story.
 
 - [SIMPL-10768](items/BP05B/L0-SIMPL-10768/README.md) L0 · BP05B - Provider manages resource descriptions · In Progress
   - [SIMPL-12897](items/BP05B/L0-SIMPL-10768/L1-SIMPL-12897/README.md) L1 · A Provider consults its own Resource descriptions · Defined
@@ -59,7 +59,7 @@ IT administration of a Simpl-Open agent: network and security services, infrastr
 
 Full tree: [BP13 folder](items/BP13/README.md) · [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp13-it-administration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp13-it-administration)
 
-191 items: 1 L0, 18 L1, 39 L2, 58 Epic, 75 User story.
+159 items: 1 L0, 18 L1, 39 L2, 35 Epic, 66 User story.
 
 - [SIMPL-10783](items/BP13/L0-SIMPL-10783/README.md) L0 · BP13 - IT Administration · New
   - [SIMPL-1273](items/BP13/L0-SIMPL-10783/L1-SIMPL-1273/README.md) L1 · Access control policies - agent to agent · In Progress · *not published*
@@ -87,7 +87,7 @@ Providers and Consumers design, run and monitor repeatable data processing workf
 
 Full tree: [SA01 folder](items/SA01/README.md) · [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa01-data-orchestration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/sa01-data-orchestration-used-participant)
 
-67 items: 1 L0, 8 L1, 18 L2, 24 Epic, 16 User story.
+65 items: 1 L0, 8 L1, 18 L2, 23 Epic, 15 User story.
 
 - [SIMPL-16074](items/SA01/L0-SIMPL-16074/README.md) L0 · SA01 - Data orchestration used by a Participant · Defined
   - [SIMPL-19287](items/SA01/L0-SIMPL-16074/L1-SIMPL-19287/README.md) L1 · Participant creates a new data orchestration workflow · Defined
@@ -105,7 +105,7 @@ A Data Provider creates, withdraws and reactivates consent assertions on its dat
 
 Full tree: [SA09 folder](items/SA09/README.md) · [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa09-data-provider-manages-consent-assertions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/sa09-data-provider-manages-consent-assertions)
 
-39 items: 1 L0, 2 L1, 4 L2, 6 Epic, 26 User story.
+37 items: 1 L0, 2 L1, 4 L2, 6 Epic, 24 User story.
 
 - [SIMPL-26074](items/SA09/L0-SIMPL-26074/README.md) L0 · SA09 - Data Provider manages consent assertions · In Progress
   - [SIMPL-26083](items/SA09/L0-SIMPL-26074/L1-SIMPL-26083/README.md) L1 · Data Provider manages consent assertion status changes · In Progress

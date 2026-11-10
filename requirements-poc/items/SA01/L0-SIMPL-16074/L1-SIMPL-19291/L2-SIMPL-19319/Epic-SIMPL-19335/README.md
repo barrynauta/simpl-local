@@ -61,4 +61,4 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 | --- | --- |
 | **Business process** | [SA01](../../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa01-data-orchestration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/sa01-data-orchestration-used-participant)) |
 | **Parent** | [SIMPL-19319](../README.md) (L2) Participant executes data orchestration workflows automatically based on events |
-| **Children** | [SIMPL-21844](Story-SIMPL-21844/README.md) (User story) API for Workflows and Default Config Retrieval<br>[SIMPL-22926](Story-SIMPL-22926/README.md) (User story) API for Workflow and Default Config Retrieval |
+| **Children** | [SIMPL-22926](Story-SIMPL-22926/README.md) (User story) API for Workflow and Default Config Retrieval |
