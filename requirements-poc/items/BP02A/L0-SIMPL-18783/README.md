@@ -6,40 +6,27 @@ Folder: [items](../../README.md) / [BP02A](../README.md) / **L0-SIMPL-18783**
 
 **L0 requirement (the business process as a requirement)** · Status **In Progress**
 
-**Trace:** [BP02A Configure ID/Trust security solution](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) › **SIMPL-18783** (L0) › [SIMPL-10171](L1-SIMPL-10171/README.md) (L1)
+**Trace:** [BP02A](../README.md) › **SIMPL-18783** (L0)
 
 ## What this item is
 
 This is the L0 item for business process [BP02A Configure ID/Trust security solution](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md). In BP02A the Governance Authority sets up identification and trust for its data space: identity attributes, onboarding procedure templates and security settings. Requirements for BP02A hang under this item.
 
-## Content
+## Text
 
-The description only names an internal BP02A page, without a link. The same process is public:
-
-- Business process page: [BP02A in the business-processes repository](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md)
-- Requirements site: [bp02a-configure-idtrust-security-solution](https://simpl-programme.ec.europa.eu/book-page/bp02a-configure-idtrust-security-solution)
-
-Process steps, from the public page:
-
-| Step | Name |
-| --- | --- |
-| BP02A.01 | Configure data space identity attributes |
-| BP02A.02 | Configure onboarding procedure templates |
-| BP02A.03 | Configure the data space security settings |
+Link BP02A: [BP02A - Configure ID/Trust security solution|an internal page]
 
 ## Where it fits
 
 | | |
 | --- | --- |
-| **Business process** | [BP02A Configure ID/Trust security solution](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) |
-| **Parent** | None. L0 is the top level. |
-| **Children in this folder** | [SIMPL-10171](L1-SIMPL-10171/README.md) (L1) |
-| **Children not in this folder** | SIMPL-10192 Configure Dataspace Identity Attributes (L1, HLR 2A.2). Listed on the public BP02A page, not in the export. |
+| **Business process** | [BP02A](../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp02a-configure-idtrust-security-solution)) |
+| **Parent** | None: this is the top of the tree. Above it: SIMPL-10764 (not in this folder). |
+| **Children** | [SIMPL-10171](L1-SIMPL-10171/README.md) (L1) Configure Onboarding Procedure Templates<br>[SIMPL-10176](L1-SIMPL-10176/README.md) (L1) Configure Communication Security Settings<br>[SIMPL-10192](L1-SIMPL-10192/README.md) (L1) Configure Dataspace Identity Attributes<br>[SIMPL-31409](L1-SIMPL-31409/README.md) (L1) Governance Authority configures onboarding terms and conditions |
 
 ## Notes on the source
 
-Problems found in the published export. They are listed here, not fixed in the text above.
+Problems found in the source and in PSO's export of 10 November 2026. They are listed here, not fixed in the text above.
 
-- The description is the title of a link to an internal page, without the link itself.
-- One of the two L1 requirements of BP02A (SIMPL-10192) is not in the export, so the tree under BP02A looks smaller than it is.
-- "Completion rate 10" has no unit.
+- The text is the title of a link to an internal page, without the link itself.
+- PSO's export showed only one of its four L1 children.

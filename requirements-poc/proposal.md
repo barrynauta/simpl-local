@@ -2,7 +2,7 @@
 
 > Part of the [Simpl-Open requirements proof of concept](README.md).
 
-This page explains what this proof of concept changes compared with the first publication attempt in [`simpl/pso/jira-test-issues`](https://code.europa.eu/simpl/pso/jira-test-issues), and what the final publication should do. Both use the same ten items.
+This page explains what this proof of concept changes compared with the first publication attempt in [`simpl/pso/jira-test-issues`](https://code.europa.eu/simpl/pso/jira-test-issues), and what the final publication should do. Both start from the same ten items. This proof of concept adds the full tree they belong to.
 
 ## The problem
 
@@ -10,9 +10,11 @@ A reader who opens a page in the first attempt sees a requirement item without c
 
 - **No introduction.** The repository README is still the GitLab template. Nothing says what Simpl-Open is, what the repository contains or who it is for.
 - **Levels not explained.** L0, L1, L2, Epic and Story are folder names only. The Development Handbook defines them, but the pages do not use those definitions.
-- **No trace to the business process.** The process is named only in the two L0 items, as the title of an internal page without a link or as "SA09: [[REDACTED]]". Lower items do not show their process at all. Four of the nine published items have no parent.
+- **No trace to the business process.** The process is named only in the two L0 items, as the title of an internal page without a link or as "SA09: [[REDACTED]]". Lower items do not show their process at all.
 - **Content hidden behind metadata.** Each page opens with timeline and classification tables. The requirement comes last.
 - **Broken formatting.** Acceptance criteria lose their Given / When / Then structure in two items, and raw HTML (`<strong>`, `<br>`) shows in the text.
+- **Lost links.** Six of the ten items show no parent, so they look like orphans. All six have a parent in the source. The export also leaves out most children: SIMPL-10171 shows none of its three L2 items.
+- **Wrong status.** SIMPL-31429 is shown as Cancelled under "Out of scope". The source never cancelled it.
 - **Long file names.** Files are named after the full title, so links turn into `SIMPL-30641%20-%20A%20Provider%20removes...`.
 
 ## What this proof of concept does
@@ -27,8 +29,9 @@ A reader who opens a page in the first attempt sees a requirement item without c
 | A short "What this item is" paragraph | The reader knows what the item is about before reading the formal text. |
 | Content first, and only the level and status as metadata | The requirement is what readers come for. Workflow fields mean nothing to a reader. |
 | Acceptance criteria as Given / When / Then lists | Criteria are readable and testable. |
-| **⚠ Trace gap** tags and a [trace gaps](trace-gaps.md) page | Missing links are visible, not hidden. |
-| "Not in this folder" entries on the [process view](processes.md) | The reader sees what the export left out. |
+| The full tree of each business process, from L0 down to user story | The reader sees an item with all its context, not a sample. |
+| A [trace gaps](trace-gaps.md) page that checks every item against the linking rules | Missing links would be visible, not hidden. In this tree there are none. |
+| Only published items show their text; the others show key, level, title and status | The tree is complete, and nothing unpublished leaks. |
 | "Notes on the source" on each page | Problems in the source are listed without changing the text. |
 | Folders follow the levels: business process › L0 › L1 › L2 › Epic › user story, one folder per item, named after its level and key (for example `L1-SIMPL-10171`) | The structure shows the trace by itself, also when there are hundreds of items. Names stay short and stable. |
 | Cancelled items stay, marked as cancelled | History is kept and the reader is not misled. |
@@ -40,13 +43,13 @@ A list of requirements for the generator that PSO will build.
 1. Generate the start page, the levels page and the process view, not only item pages.
 2. Give every item page a context line, a level, a trace line and a short description.
 3. Link each item to its public business process page and requirements site page.
-4. Put each item in a folder named after its level and key, for example `L1-SIMPL-10171`, inside the folder of its parent, from the business process down. Items without a parent go in the folder of their business process, or in a `no-business-process` folder.
+4. Put each item in a folder named after its level and key, for example `L1-SIMPL-10171`, inside the folder of its parent, from the business process down. Items without a parent would go in a `no-business-process` folder, tagged as a trace gap.
 5. Render user stories and acceptance criteria as markdown, with the Given / When / Then structure kept.
 6. Put the content first. Show the level and status only, and leave out workflow fields such as priority, version and completion rate.
 7. Check every item against the handbook linking rules, and tag and list the items that fail.
-8. Publish a complete tree: when an item is published, show its parent and children too, or at least list them as "not published".
+8. Publish a complete tree: keep every parent and child link from the source. When an item is not published, still show its key, level, title and status, marked "not published".
 9. State the publication criteria, so readers know why an item is in or out.
-10. Keep cancelled items, marked, with the reason for the cancellation.
+10. Keep cancelled items, marked, with the reason for the cancellation. Take the status from the source, never from where the generator put the item.
 11. Check the source text for obvious problems (typos, contradicting status fields, published flag) and report them, without changing the text.
 
 ## Open points

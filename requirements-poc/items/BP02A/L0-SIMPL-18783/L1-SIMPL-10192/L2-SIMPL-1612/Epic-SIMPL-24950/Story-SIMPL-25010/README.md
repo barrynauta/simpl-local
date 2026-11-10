@@ -1,0 +1,52 @@
+> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../../../../../README.md) · [What the levels mean](../../../../../../../levels.md) · [All items](../../../../../../../all-items.md) · [By business process](../../../../../../../processes.md)
+
+Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md) / [L0-SIMPL-18783](../../../../README.md) / [L1-SIMPL-10192](../../../README.md) / [L2-SIMPL-1612](../../README.md) / [Epic-SIMPL-24950](../README.md) / **Story-SIMPL-25010**
+
+# SIMPL-25010: [UI] Governance authority manages federable identity attributes
+
+**User story (implementable work)** · Status **Ready for DG Acceptance**
+
+**Trace:** [BP02A](../../../../../README.md) › [SIMPL-18783](../../../../README.md) (L0) › [SIMPL-10192](../../../README.md) (L1) › [SIMPL-1612](../../README.md) (L2) › [SIMPL-24950](../README.md) (Epic) › **SIMPL-25010** (User story)
+
+## Text
+
+*This user story improves the APIs related to identity attributes. Refer to SIMPL-720 for an overview of the initial v1 endpoints (already deprecated), and to SIMPL-25198, SIMPL-14569 for the v2 impacted endpoints.*\
+----\
+**As A**
+
+user with *Tier 2 identity attributes manager* (T2IAA_M) role in the Dataspace Governance Authority, viewing the list of identity attributes of my dataspace
+
+**I want**
+
+to view and mark each of my custom identity attributes as federable or non-federable
+
+**So that**
+
+I can control which attributes are visible to external Governance Authorities and therefore available for federation mapping.
+
+**Acceptance Criteria**
+
+1. **GIVEN** that I am logged in with the T2IAA_M\
+   **WHEN** I open the page that shows the list of the identity attributes\
+   **THEN** I see a new column with header "Federable" (next to the "Public" column of SIMPL-25008, the order will be Built-In, Public, Federable)\
+   **AND** in each row, I can see Yes or No depending on the value of the "federable" property
+1. **GIVEN** that I am logged in with the T2IAA_M\
+   **WHEN** I open the page that shows the list of the identity attributes\
+   **AND** click on the button to update an identity attribute\
+   **THEN** I see a toggle that allows me to change the value of the "federable" property
+1. **GIVEN** that I am logged in with the T2IAA_M\
+   **WHEN** I open the page that shows the list of the identity attributes\
+   **AND** click on the button to save an updated identity attribute\
+   **THEN** the identity attribute is saved\
+   **AND** the "federable" property updated accordingly
+1. **GIVEN** that I am logged in with the T2IAA_M\
+   **WHEN** I mark the identity attribute as federable in the identity attribute creation page\
+   **AND** save the new identity attribute\
+   **THEN** the identity attribute is saved and marked as federable
+
+## Where it fits
+
+| | |
+| --- | --- |
+| **Business process** | [BP02A](../../../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp02a-configure-idtrust-security-solution)) |
+| **Parent** | [SIMPL-24950](../README.md) (Epic) Governance Authority marks identity attributes as federable |

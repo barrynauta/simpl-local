@@ -50,7 +50,7 @@ An item that does not meet its rule is tagged **⚠ Trace gap** on its page.
 
 ## Status
 
-Status shows where an item is in its life cycle. The ones you see in this folder, roughly in order:
+Status shows where an item is in its life cycle. Some of the statuses you see in this folder:
 
 | Status | Meaning |
 | --- | --- |

@@ -1,0 +1,36 @@
+> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../../../../../README.md) · [What the levels mean](../../../../../../../levels.md) · [All items](../../../../../../../all-items.md) · [By business process](../../../../../../../processes.md)
+
+Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md) / [L0-SIMPL-18783](../../../../README.md) / [L1-SIMPL-10192](../../../README.md) / [L2-SIMPL-1612](../../README.md) / [Epic-SIMPL-10199](../README.md) / **Story-SIMPL-1051**
+
+# SIMPL-1051: [UI] Identity Attributes Management page - creating Identity Attribute
+
+**User story (implementable work)** · Status **Ready for DG Acceptance**
+
+**Trace:** [BP02A](../../../../../README.md) › [SIMPL-18783](../../../../README.md) (L0) › [SIMPL-10192](../../../README.md) (L1) › [SIMPL-1612](../../README.md) (L2) › [SIMPL-10199](../README.md) (Epic) › **SIMPL-1051** (User story)
+
+## Text
+
+**As A**
+
+user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attributes table list
+
+**I want to**
+
+see a button on top of the attributes table list
+
+**So that**
+
+clicking on it I can navigate to the Identity Attribute creation page
+
+Acceptance Criteria:
+
+- **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page, then a "Create Identity Attribute" button is displayed above the Identity Attributes table list.**
+- **Given that the user is logged in with the** **IATTR_M role** \in the Dataspace Governance Authority, when the user clicks on the "Create Identity Attribute" button, then the user is redirected to the Identity Attribute creation page.
+- **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page, then the "Create Identity Attribute" button is enabled and clickable, allowing the user to initiate the creation of a new Identity Attribute.**
+
+## Where it fits
+
+| | |
+| --- | --- |
+| **Business process** | [BP02A](../../../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp02a-configure-idtrust-security-solution)) |
+| **Parent** | [SIMPL-10199](../README.md) (Epic) Managing identity attributes |
