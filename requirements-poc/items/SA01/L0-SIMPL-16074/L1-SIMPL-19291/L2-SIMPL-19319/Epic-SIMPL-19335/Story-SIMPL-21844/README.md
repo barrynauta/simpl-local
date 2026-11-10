@@ -12,33 +12,31 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 ## Text
 
-**As a** Provider
-
-**I want to** retrieve the default configuration for a workflow and access the list of available workflows from the orchestration platform
-
+**As a** Provider\
+**I want to** retrieve the default configuration for a workflow and access the list of available workflows from the orchestration platform\
 **So that** I can quickly configure workflows and select the correct workflow for resource processing.
 
 Acceptance Criteria:
 
 **Workflow List Retrieval**
 
-**Given** I am a participant configuring a workflow execution for a resource\
-**And** I want to explore available workflows in the orchestration platform\
-**When** I submit a request to retrieve the list of workflows via API\
-**Then** the API returns the complete list of workflows with their identifiers and descriptions
+1. **Given** I am a participant configuring a workflow execution for a resource\
+   **And** I want to explore available workflows in the orchestration platform\
+   **When** I submit a request to retrieve the list of workflows via API\
+   **Then** the API returns the complete list of workflows with their identifiers and descriptions
 
-**Given** I am a participant configuring a workflow execution for a resource\
-**And** I want to explore available workflows in my orchestration platform\
-**When** The service is unavailable or there arent't available workflow\
-**Then** the API rejects the request\
-**And** I receive a clear error message describing the issue
+2. **Given** I am a participant configuring a workflow execution for a resource\
+   **And** I want to explore available workflows in my orchestration platform\
+   **When** The service is unavailable or there arent't available workflow\
+   **Then** the API rejects the request\
+   **And** I receive a clear error message describing the issue
 
 **Workflow** **Default Configuration Retrieval**
 
-**Given** I am a participant configuring a workflow execution for a resource\
-**And** I select a workflow\
-**When** I submit a request to retrieve the default workflow configuration via API\
-**Then** the API returns a configuration template with default values
+3. **Given** I am a participant configuring a workflow execution for a resource\
+   **And** I select a workflow\
+   **When** I submit a request to retrieve the default workflow configuration via API\
+   **Then** the API returns a configuration template with default values
 
 ## Where it fits
 

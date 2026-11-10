@@ -10,26 +10,19 @@ Folder: [items](../../../../../README.md) / [SA09](../../../../README.md) / [L0-
 
 ## Text
 
-**As a**
-
-Data Provider
-
-**I want to**
-
-ensure that all Consumers bound to a consent assertion are notified whenever its status changes
-
-**So that**
-
-Consumers can promptly act on the updated consent status of the data resource.
+**As a** Data Provider\
+**I want to** ensure that all Consumers bound to a consent assertion are notified whenever its status changes\
+**So that** Consumers can promptly act on the updated consent status of the data resource.
 
 **Acceptance Criteria:**
 
-1. **GIVEN** a consent assertion has been withdrawn\
-   **WHEN** the status change is processed by the platform\
-   **THEN** all bound Consumers are notified that the data resource is no longer available for consumption
-1. **GIVEN** a consent assertion has been reactivated\
-   **WHEN** the status change is processed by the platform\
-   **THEN** all bound Consumers are notified that the data resource is available for ingestion
+1. **Given** a consent assertion has been withdrawn\
+   **When** the status change is processed by the platform\
+   **Then** all bound Consumers are notified that the data resource is no longer available for consumption
+
+2. **Given** a consent assertion has been reactivated\
+   **When** the status change is processed by the platform\
+   **Then** all bound Consumers are notified that the data resource is available for ingestion
 
 ## Where it fits
 

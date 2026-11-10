@@ -12,9 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 Disclaimer: This story is to support the future contract link and is not implementing contracts in any way. The requirements related to contracts need to be defined.
 
-As a Provider User\
-I want to calculate the hash of the Contract Template document referenced in the self-description\
-So that I can check if the document was modified
+**As a** Provider User\
+**I want to** calculate the hash of the Contract Template document referenced in the self-description\
+**So that** I can check if the document was modified
 
 **Technical Specification**
 

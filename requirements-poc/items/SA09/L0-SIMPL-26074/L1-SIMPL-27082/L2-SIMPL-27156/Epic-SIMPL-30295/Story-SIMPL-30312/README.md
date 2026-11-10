@@ -13,29 +13,23 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 *This US improves SIMPL-28602 in such a way that contract* *consent assertions details page will include a link to the contract UI,* *which will show a prefiltered list with the only contract linked to the assertion.*
 
 *Note for testers: this User Story only covers the presence of the link and verifies that it contains the assertion ID. The behaviour of the linked page is out of scope and will be addressed in other User Stories.*\
-----\
-**As a**
+----
 
-Data Provider End User who is responsible for creating and managing contracts (CONTRACT_M), viewing the details of a contract consent assertion
-
-**I want**
-
-via UI, view the link that brings me to the related contract in the contract manager
-
-**So that**
-
-I can quickly navigate to the contract linked to a contract consent assertion without having to manually search for them in the contract UI
+**As a** Data Provider End User who is responsible for creating and managing contracts (CONTRACT_M), viewing the details of a contract consent assertion\
+**I want** via UI, view the link that brings me to the related contract in the contract manager\
+**So that** I can quickly navigate to the contract linked to a contract consent assertion without having to manually search for them in the contract UI
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am an authenticated user with the CONTRACT_M role\
-   **AND** the GET /consentAssertions/consentAssertionId returns the URL of the contract UI in the linkedResourceUrl parameter (it may not be present depending on backend configurations, as per SIMPL-30299)\
-   **WHEN** I open the detail page for a contract consent assertion\
-   **THEN** I see a link "View contract"
-1. **GIVEN** that I am an authenticated user with the CONTRACT_M role\
-   **AND** the GET /consentAssertions/consentAssertionId does NOT return the URL of the contract UI in the linkedResourceUrl parameter (it may not be present depending on backend configurations, as per SIMPL-30299)\
-   **WHEN** I open the detail page for a contract consent assertion\
-   **THEN** I don't see the link "View contract"
+1. **Given** that I am an authenticated user with the CONTRACT_M role\
+   **And** the GET /consentAssertions/consentAssertionId returns the URL of the contract UI in the linkedResourceUrl parameter (it may not be present depending on backend configurations, as per SIMPL-30299)\
+   **When** I open the detail page for a contract consent assertion\
+   **Then** I see a link "View contract"
+
+2. **Given** that I am an authenticated user with the CONTRACT_M role\
+   **And** the GET /consentAssertions/consentAssertionId does NOT return the URL of the contract UI in the linkedResourceUrl parameter (it may not be present depending on backend configurations, as per SIMPL-30299)\
+   **When** I open the detail page for a contract consent assertion\
+   **Then** I don't see the link "View contract"
 
 ## Where it fits
 

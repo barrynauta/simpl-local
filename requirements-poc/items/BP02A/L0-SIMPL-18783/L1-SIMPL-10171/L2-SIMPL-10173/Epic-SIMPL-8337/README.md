@@ -10,23 +10,19 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As a**
-
-Dataspace governance authority,
-
-**I want to**
-
-define a content check rule for an onboarding procedure template by adding a URL to an external validation service
-
-**So that**\
-I can validate document content by integrating custom logic through external services.
+**As a** Dataspace governance authority,\
+**I want to** define a content check rule for an onboarding procedure template by adding a URL to an external validation service\
+**So that** I can validate document content by integrating custom logic through external services.
 
 **Acceptance Criteria**
 
-1. **GIVEN that I am defining an onboarding procedure template** **WHEN I add a rule of type** **CONTENT CHECK** **THEN I should be able to insert a name, a description,** a validity interval for the rule, a flag to state if the rule is enabled or not, and select one of the documents defined for the onboarding procedure template{}
-1. **GIVEN** that I am defining an onboarding procedure template{} ** **WHEN I add a rule of type** **CONTENT CHECK** **THEN I should able to flag an "auto-approved" field that states that if the rule evaluator evaluates the rule positively THEN the onboarding request can be automatically approved**
-1. **GIVEN** **that I am defining an onboarding procedure template** **WHEN I add a rule of type** **CONTENT CHECK** **THEN I should able to flag a "required" field that states that the rule evaluator evaluates the rule negatively, then the onboarding request must be automatically temporarily rejected and resubmitted to the applicant**
-1. **GIVEN** **that I am defining an onboarding procedure template** **WHEN  I add a rule of type CONTENT CHECK THEN I should be able to insert a URL parameter pointing to an external validation engine used to validate the document content that implements a well-defined API contract**
+1. **Given** that I am defining an onboarding procedure template **when** I add a rule of type CONTENT CHECK **then** I should be able to insert a name, a description, a validity interval for the rule, a flag to state if the rule is enabled or not, and select one of the documents defined for the onboarding procedure template{}
+
+2. **Given** that I am defining an onboarding procedure template{} **when** I add a rule of type CONTENT CHECK **then** I should able to flag an "auto-approved" field that states that if the rule evaluator evaluates the rule positively **then** the onboarding request can be automatically approved
+
+3. **Given** that I am defining an onboarding procedure template **when** I add a rule of type CONTENT CHECK **then** I should able to flag a "required" field that states that the rule evaluator evaluates the rule negatively, then the onboarding request must be automatically temporarily rejected and resubmitted to the applicant
+
+4. **Given** that I am defining an onboarding procedure template **when** I add a rule of type CONTENT CHECK **then** I should be able to insert a URL parameter pointing to an external validation engine used to validate the document content that implements a well-defined API contract
 
 ## Where it fits
 

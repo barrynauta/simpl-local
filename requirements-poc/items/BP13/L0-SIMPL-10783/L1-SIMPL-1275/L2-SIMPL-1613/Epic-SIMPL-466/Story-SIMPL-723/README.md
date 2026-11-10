@@ -10,22 +10,15 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As A**
-
-Dataspace participant agent after any request of a signed ephemeral proof to dataspace governance authority
-
-**I want to**
-
-check any difference between my local Identity Attribute ([Identity Attribute|an internal page]) list copy and the list of Identity Attributes contained in the signed Ephemeral Proof ([Ephemeral Proof|an internal page]) and, if there is a difference, trigger a synchronization procedure to update the local Identity Attribute list copy
-
-**So that**
-
-I can keep the local Identity Attribute list copy in sync with the latest ephemeral proof
+**As a** Dataspace participant agent after any request of a signed ephemeral proof to dataspace governance authority\
+**I want to** check any difference between my local Identity Attribute (Identity Attribute (internal page)) list copy and the list of Identity Attributes contained in the signed Ephemeral Proof (Ephemeral Proof (internal page)) and, if there is a difference, trigger a synchronization procedure to update the local Identity Attribute list copy\
+**So that** I can keep the local Identity Attribute list copy in sync with the latest ephemeral proof
 
 **Acceptance Criteria:**
 
-- **Given that I am a dataspace participant agent and the proof contains differences between my stored list and the new one, when I receive the proof, then a synchronization procedure is triggered to update the local Identity Attribute copy**
-- **Given that I am a dataspace participant agent and the proof does not contain differences between my stored list and the new one, when I receive the proof, then no synchronization procedure is triggered and the local Identity Attribute copy remains unchanged**
+1. **Given** that I am a dataspace participant agent and the proof contains differences between my stored list and the new one, **when** I receive the proof, **then** a synchronization procedure is triggered to update the local Identity Attribute copy
+
+2. **Given** that I am a dataspace participant agent and the proof does not contain differences between my stored list and the new one, **when** I receive the proof, **then** no synchronization procedure is triggered and the local Identity Attribute copy remains unchanged
 
 ## Where it fits
 

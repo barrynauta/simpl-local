@@ -12,17 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**
-
-Dataspace participant (including the Dataspace Governance Authority)
-
-**I want to**
-
-via an API, create a new identity attribute
-
-**So that**
-
-I define new identity attributes
+**As a** Dataspace participant (including the Dataspace Governance Authority)\
+**I want to** via an API, create a new identity attribute\
+**So that** I define new identity attributes
 
 **FULL US ID:** ITADM-FUNC-001-FUNC-005/US_1185
 

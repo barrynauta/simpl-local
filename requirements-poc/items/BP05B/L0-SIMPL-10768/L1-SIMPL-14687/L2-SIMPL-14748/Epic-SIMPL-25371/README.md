@@ -10,10 +10,9 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 ## Text
 
-**As a** Governance Authority
-
-**I want to** provide feedback to a Provider about invalid syntax of a policy in a resource description\
-**so that** the Provider can correct the errors.
+**As a** Governance Authority\
+**I want to** provide feedback to a Provider about invalid syntax of a policy in a resource description\
+**So that** the Provider can correct the errors.
 
 **Acceptance Criterion 1: Provide feedback about syntax validation errors of an access policies**
 

@@ -10,7 +10,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-**As a** service provider **I want** interactively fill a self-description for my dataset in the UI **so that** I can ensuring compliance with the required structure and metadata.
+**As a** service provider\
+**I want** interactively fill a self-description for my dataset in the UI\
+**So that** I can ensuring compliance with the required structure and metadata.
 
 **Linked Sovereign X US ID:** TAE_US_029, TAE_US_032, TAE_US_033
 

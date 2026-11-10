@@ -11,8 +11,8 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 ## Text
 
 **As a** Provider,\
-**I want** to download the documents associated with Contract Clauses categories (Intended purpose) for the resources published on the Catalogue,\
-**so that** I can verify and review the related contractual documentation.
+**I want to** download the documents associated with Contract Clauses categories (Intended purpose) for the resources published on the Catalogue,\
+**So that** I can verify and review the related contractual documentation.
 
 **Technical Description**\
 This task aims to enhance the Contract Clauses section of the SDTooling UI by providing access to documents uploaded by the provider. For each Contract Clauses category (Intended Purpose), SD-Tooling UI shall verify whether the document is available. Whenever the document exists for a given category (Intended Purpose), the application shall display a **Download** button associated with that document. Upon user interaction, SD-Tooling UI shall invoke the API exposed by **xfsc-adv-search component** implemented under **ticket** SIMPL-29049 to retrieve the selected document and download it to the user's device.
@@ -21,32 +21,32 @@ This task aims to enhance the Contract Clauses section of the SDTooling UI by pr
 
 ###### AC1 - Display Download Action
 
-**Given** the Provider is viewing the Contract Clauses section of a published resource\
-**And** the document is available for an Intended Purpose Contract Clauses\
-**When** the section is displayed\
-**Then** a **Download** button shall be displayed for each available document\
-**And** the document name shall be visible to the user.
+1. **Given** the Provider is viewing the Contract Clauses section of a published resource\
+   **And** the document is available for an Intended Purpose Contract Clauses\
+   **When** the section is displayed\
+   **Then** a Download button shall be displayed for each available document\
+   **And** the document name shall be visible to the user.
 
 ###### AC2 - Successful Download
 
-**Given** a **Download** button is displayed for a document\
-**When** the Provider clicks the **Download** button\
-**And** the document is successfully retrieved by the backend service\
-**Then** the document shall be downloaded to the user's device.
+2. **Given** a Download button is displayed for a document\
+   **When** the Provider clicks the Download button\
+   **And** the document is successfully retrieved by the backend service\
+   **Then** the document shall be downloaded to the user's device.
 
 ###### AC3 - No Documents Available
 
-**Given** the Provider is viewing a Contract Clauses category for which no documents are available\
-**When** the Contract Clauses section is displayed\
-**Then** no **Download** button shall be displayed for that category.
+3. **Given** the Provider is viewing a Contract Clauses category for which no documents are available\
+   **When** the Contract Clauses section is displayed\
+   **Then** no Download button shall be displayed for that category.
 
 ###### AC4 - Download Failure Handling
 
-**Given** a **Download** button is displayed for a document\
-**When** the Provider clicks the **Download** button\
-**And** the document cannot be retrieved due to an API or backend error\
-**Then** the download shall not start\
-**And** the user shall be notified with an appropriate error message displayed within the dedicated SD-Tooling error notification area located at the top of the page containing following message "A technical issue has occurred, and it is not possible to access the file content"
+4. **Given** a Download button is displayed for a document\
+   **When** the Provider clicks the Download button\
+   **And** the document cannot be retrieved due to an API or backend error\
+   **Then** the download shall not start\
+   **And** the user shall be notified with an appropriate error message displayed within the dedicated SD-Tooling error notification area located at the top of the page containing following message "A technical issue has occurred, and it is not possible to access the file content"
 
 .
 

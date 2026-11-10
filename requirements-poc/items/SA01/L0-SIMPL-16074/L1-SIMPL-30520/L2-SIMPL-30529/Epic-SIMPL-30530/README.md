@@ -10,18 +10,17 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-**As a** Participant\
-**I want to** define the execution container cluster of the distribution model of a data orchestration workflow\
-**so that** the workflow can run on the infrastructure scenario that matches my operational and business constraints.
+**As a** Participant\
+**I want to** define the execution container cluster of the distribution model of a data orchestration workflow\
+**So that** the workflow can run on the infrastructure scenario that matches my operational and business constraints.
 
 **Acceptance Criteria**
 
-**Given** I am authenticated as a Participant, with a role authorising the definition of data orchestration workflows\
-**And** I have defined a data orchestration workflow\
-**And** I have chosen distribution model compatible with the target execution container cluser
-
-**Then** I am able to **configure** the target execution container cluster\
-**And** the selected execution container cluster is saved as part of the workflow configuration
+1. **Given** I am authenticated as a Participant, with a role authorising the definition of data orchestration workflows\
+   **And** I have defined a data orchestration workflow\
+   **And** I have chosen distribution model compatible with the target execution container cluser\
+   **Then** I am able to configure the target execution container cluster\
+   **And** the selected execution container cluster is saved as part of the workflow configuration
 
 ## Where it fits
 

@@ -63,29 +63,31 @@ Regarding AssetOrchestrator /workflows API is possible to check outcome in follo
 
 ###### **AC - successful asset/workflow association**
 
-**Given** a provider has selected a workflow‑enabled sharing‑method template during the creation of a resource description\
-**And** the provider provides a valid workflow identifier\
-**And** the provider provides a valid and complete workflow configuration\
-**When** the resource description is submitted\
-**Then** the system validates the workflow and its configuration\
-**And** the workflow-asset association is recorded\
-**And** a success response is returned to the caller indicating that the workflow association is active
+1. **Given** a provider has selected a workflow‑enabled sharing‑method template during the creation of a resource description\
+   **And** the provider provides a valid workflow identifier\
+   **And** the provider provides a valid and complete workflow configuration\
+   **When** the resource description is submitted\
+   **Then** the system validates the workflow and its configuration\
+   **And** the workflow-asset association is recorded\
+   **And** a success response is returned to the caller indicating that the workflow association is active
 
-**AC - invalid workflow configuration**\
-**Given** a provider has selected a workflow‑enabled sharing‑method template during the creation of a resource description\
-**And** the provider provides an invalid or incomplete workflow configuration\
-**When** the resource description is submitted\
-**Then** the system rejects the submission\
-**And** no workflow-asset association is recorded\
-**And** a structured validation error is returned to the caller with details about the failure
+**AC - invalid workflow configuration**
 
-**AC - invalid workflow identifier**\
-**Given** a provider has selected a workflow‑enabled sharing‑method template during the creation of a resource description\
-**And** the provider provides a workflow identifier that does not exist or is not valid\
-**When** the resource description is submitted\
-**Then** the system rejects the submission\
-**And** no workflow-asset association is recorded\
-**And** a structured error is returned indicating that the workflow identifier is invalid
+2. **Given** a provider has selected a workflow‑enabled sharing‑method template during the creation of a resource description\
+   **And** the provider provides an invalid or incomplete workflow configuration\
+   **When** the resource description is submitted\
+   **Then** the system rejects the submission\
+   **And** no workflow-asset association is recorded\
+   **And** a structured validation error is returned to the caller with details about the failure
+
+**AC - invalid workflow identifier**
+
+3. **Given** a provider has selected a workflow‑enabled sharing‑method template during the creation of a resource description\
+   **And** the provider provides a workflow identifier that does not exist or is not valid\
+   **When** the resource description is submitted\
+   **Then** the system rejects the submission\
+   **And** no workflow-asset association is recorded\
+   **And** a structured error is returned indicating that the workflow identifier is invalid
 
 ## Where it fits
 

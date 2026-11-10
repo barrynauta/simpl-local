@@ -12,31 +12,30 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **As a** Provider end user,\
 **I want to** update the link to the deployment script in a new version of an infrastructure resource description via UI,\
-**so that** I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type.
+**So that** I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type.
 
 **Acceptance criteria:**
 
 **AC1 - A Provider updates the link to the infrastructure deployment script in a new version of a resource description via UI**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of Resource Descriptions\
-**and** I am creating a new version of an infrastructure resource description\
-**When** I reach the step "Asset Properties" in the wizard\
-**Then** the infrastructure resource type specific metadata are prefilled with the values from the previous version, including the previously selected deployment script\
-**And** the list of active deployment scripts is retrieved\
-**And** this list is presented in a dropdown\
-**And** I can select one of the available deployments scripts.
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new version of an infrastructure resource description\
+   **When** I reach the step "Asset Properties" in the wizard\
+   **Then** the infrastructure resource type specific metadata are prefilled with the values from the previous version, including the previously selected deployment script\
+   **And** the list of active deployment scripts is retrieved\
+   **And** this list is presented in a dropdown\
+   **And** I can select one of the available deployments scripts.
 
 **AC2 - A Provider finishes updating the link to the infrastructure deployment script in a new version of a resource description via UI**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of Resource Descriptions\
-**and** I am creating a new version of an infrastructure resource description\
-**When** I reach the step "Asset Properties" in the wizard
-
-**and** I update the link to the infrastructure deployment script\
-**Then** the updated deployment script is associated with the new version of the resource description being created\
-**and** I can navigate to the next step in the wizard
+2. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new version of an infrastructure resource description\
+   **When** I reach the step "Asset Properties" in the wizard\
+   **And** I update the link to the infrastructure deployment script\
+   **Then** the updated deployment script is associated with the new version of the resource description being created\
+   **And** I can navigate to the next step in the wizard
 
 ## Where it fits
 

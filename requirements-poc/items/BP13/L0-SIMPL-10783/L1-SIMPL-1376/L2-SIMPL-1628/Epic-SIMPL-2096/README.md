@@ -11,16 +11,16 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 ## Text
 
 **As a** Data Space Governance Authority\
-**I want** to provide a version of the SIMPL-Open Consumer Agent packaged as a container image\
+**I want to** provide a version of the SIMPL-Open Consumer Agent packaged as a container image\
 **So that** App, Data, and Infrastructure Consumers can deploy SIMPL-Open easily in containerised environments
 
 -
 
 **Acceptance Criterion**
 
-**Given** that some Consumers cannot set up complex DevOps pipelines\
-**When** they need to deploy the SIMPL-Open Consumer Agent\
-**Then** a lightweight, minimal container image of the Consumer Agent must be available for direct deployment on supported container platforms, ensuring easy and consistent setup
+1. **Given** that some Consumers cannot set up complex DevOps pipelines\
+   **When** they need to deploy the SIMPL-Open Consumer Agent\
+   **Then** a lightweight, minimal container image of the Consumer Agent must be available for direct deployment on supported container platforms, ensuring easy and consistent setup
 
 ## Where it fits
 

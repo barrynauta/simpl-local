@@ -10,28 +10,24 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As a**\
-dataspace agent
-
-**I want to**\
-send a ping request to a peer participant's endpoint
-
-**So that**\
-I can verify mutual connectivity and retrieve the peer's public identity details recognized in the dataspace
+**As a** dataspace agent\
+**I want to** send a ping request to a peer participant's endpoint\
+**So that** I can verify mutual connectivity and retrieve the peer's public identity details recognized in the dataspace
 
 **Acceptance Criteria:**
 
-1. **GIVEN** the caller is a participant agent presenting a valid Tier-2 credential and an ephemeral proof over mTLS\
-   **WHEN** it sends a GET /ping request to a peer agent\
-   **THEN** the API returns HTTP 200 OK\
-   **AND** the response body contains a JSON object with at least:\
+1. **Given** the caller is a participant agent presenting a valid Tier-2 credential and an ephemeral proof over mTLS\
+   **When** it sends a GET /ping request to a peer agent\
+   **Then** the API returns HTTP 200 OK\
+   **And** the response body contains a JSON object with at least:\
    *id:* the peer participant UUID\
    *organization:* the peer participant's organization name\
    *identityAttributes:* an array containing the peer's assigned identity attributes
-1. **GIVEN** the caller is a participant agent authenticated over mTLS\
-   **AND** the caller does not provide a Tier-2 credential to identify itself\
-   **WHEN** it sends a GET /ping request\
-   **THEN** the API returns HTTP 401 Unauthorized
+
+2. **Given** the caller is a participant agent authenticated over mTLS\
+   **And** the caller does not provide a Tier-2 credential to identify itself\
+   **When** it sends a GET /ping request\
+   **Then** the API returns HTTP 401 Unauthorized
 
 ## Where it fits
 

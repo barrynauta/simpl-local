@@ -10,26 +10,19 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As A**
-
-dataspace participant agent receiving the *ping* request from another identified dataspace participant agent (the requestor)
-
-**I want to**
-
-expose an API that provides a *pong* response to the requestor, containing the identity attributes received during the ephemeral proof exchange from the requestor agent. This API must not have any ABAC control in place (it can be invoked by any other dataspace participant)
-
-**So that**
-
-the requestor can call that API to test the connectivity to other agents within dataspace.
+**As a** dataspace participant agent receiving the *ping* request from another identified dataspace participant agent (the requestor)\
+**I want to** expose an API that provides a *pong* response to the requestor, containing the identity attributes received during the ephemeral proof exchange from the requestor agent. This API must not have any ABAC control in place (it can be invoked by any other dataspace participant)\
+**So that** the requestor can call that API to test the connectivity to other agents within dataspace.
 
 **Acceptance Criteria:**
 
-1. **GIVEN** that I am a dataspace agent\
-   **WHEN** I receive a ping request via the API from an identified dataspace participant\
-   **THEN** the API returns a 200 OK status code.
-1. **GIVEN** that I am a dataspace agent\
-   **WHEN** I receive a ping request via the API from an identified dataspace participant\
-   **THEN** the API returns a pong response containing the identityAttributes received during the ephemeral proof exchange with the requesting agent.
+1. **Given** that I am a dataspace agent\
+   **When** I receive a ping request via the API from an identified dataspace participant\
+   **Then** the API returns a 200 OK status code.
+
+2. **Given** that I am a dataspace agent\
+   **When** I receive a ping request via the API from an identified dataspace participant\
+   **Then** the API returns a pong response containing the identityAttributes received during the ephemeral proof exchange with the requesting agent.
 
 ## Where it fits
 

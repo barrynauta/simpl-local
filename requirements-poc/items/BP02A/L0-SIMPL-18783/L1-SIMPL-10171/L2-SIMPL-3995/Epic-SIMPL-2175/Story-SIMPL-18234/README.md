@@ -14,42 +14,40 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 *This story is an improvement of (internal page) and covers a new field "application instructions" to be added to the fields requested upon onboarding procedure template creation and update.*
 
-*Given the new eIDAS rule that is about to be introduced (see (internal page)) there is the need to help users to understand which documents to upload or which actions to take during their onboarding. This new field, aims to help the GA to outline these instructions and make them visible to the applicants.*\
-----\
-**As A**
+1. **Given** the new eIDAS rule that is about to be introduced (see (internal page)) there is the need to help users to understand which documents to upload or which actions to take during their onboarding. This new field, aims to help the GA to outline these instructions and make them visible to the applicants._\
+   ----
 
-Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing details of an onboarding template
-
-**I want to**
-
-via UI, be able to add a descriptive, human-readable "application instructions"
-
-**So that**
-
-Applicants can read these instructions during the onboarding process and understand which documents to upload and which rules to follow.
+**As a** Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing details of an onboarding template\
+**I want to** via UI, be able to add a descriptive, human-readable "application instructions"\
+**So that** Applicants can read these instructions during the onboarding process and understand which documents to upload and which rules to follow.
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
-   **WHEN** I open the Onboarding Procedure Template creation page\
-   **THEN** I want to see a non-mandatory textarea field where I can insert multiline application instructions
-1. **GIVEN** I am creating an Onboarding Procedure Template with application instructions\
-   **WHEN** I click the button to save changes\
-   **THEN** the template is successfully saved with the application instructions included
-1. **GIVEN** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
-   **WHEN** I open the Onboarding Procedure Template update page\
-   **THEN** I want to see a non-mandatory textarea field where I can update multiline application instructions
-1. **GIVEN** I am updating an Onboarding Procedure Template with application instructions\
-   **WHEN** I click the button to save changes\
-   **THEN** the template is successfully saved with the application instructions included
-1. **GIVEN** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
-   **WHEN** I open the Onboarding Procedure Template update page\
-   **AND** navigate to the documents or rules tab\
-   **THEN** I want to see a warning that suggests "Make sure the application instructions info accurately explains the required documents and rules defined in this section."
-1. **GIVEN** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
-   **WHEN** I open the Onboarding Procedure Template detail page\
-   **AND** the application instruction field has been filled\
-   **THEN** I want to see the application instructions for that onboarding template
+2. **Given** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
+   **When** I open the Onboarding Procedure Template creation page\
+   **Then** I want to see a non-mandatory textarea field where I can insert multiline application instructions
+
+3. **Given** I am creating an Onboarding Procedure Template with application instructions\
+   **When** I click the button to save changes\
+   **Then** the template is successfully saved with the application instructions included
+
+4. **Given** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
+   **When** I open the Onboarding Procedure Template update page\
+   **Then** I want to see a non-mandatory textarea field where I can update multiline application instructions
+
+5. **Given** I am updating an Onboarding Procedure Template with application instructions\
+   **When** I click the button to save changes\
+   **Then** the template is successfully saved with the application instructions included
+
+6. **Given** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
+   **When** I open the Onboarding Procedure Template update page\
+   **And** navigate to the documents or rules tab\
+   **Then** I want to see a warning that suggests "Make sure the application instructions info accurately explains the required documents and rules defined in this section."
+
+7. **Given** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
+   **When** I open the Onboarding Procedure Template detail page\
+   **And** the application instruction field has been filled\
+   **Then** I want to see the application instructions for that onboarding template
 
 ## Where it fits
 

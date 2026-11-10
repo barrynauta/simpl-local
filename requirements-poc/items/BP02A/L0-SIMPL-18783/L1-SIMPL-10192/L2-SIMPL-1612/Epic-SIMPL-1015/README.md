@@ -12,12 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**\
-data space authority\
-**I want**\
-a UI to disable an existing identity attribute\
-**So that**\
-I hide the selected identity attribute from the usable attributes
+**As a** data space authority\
+**I want** a UI to disable an existing identity attribute\
+**So that** I hide the selected identity attribute from the usable attributes
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

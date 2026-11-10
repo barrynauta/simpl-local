@@ -12,7 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-As a Provider authorised to manage resource descriptions, I want to include the usage policies I kept, added or changed in the new resource-description version, so that the submitted version carries the policy set I chose.
+**As a** Provider authorised to manage resource descriptions,\
+**I want to** include the usage policies I kept, added or changed in the new resource-description version,\
+**So that** the submitted version carries the policy set I chose.
 
 #### Acceptance criteria
 
@@ -115,12 +117,12 @@ Use the existing RD submission integration linked by SIMPL-25712. Invalidate a p
 #### Additional notes
 
 - API definition ticket: (internal page)
-- [an internal page]
-- [an internal page]
+- (internal page)
+- (internal page)
 
 - Shared policy-template API definition, SIMPL-31345 (internal page)
-- [R08 ODRL template technical description|an internal page]
-- [ODRL template architecture rationale|an internal page]
+- R08 ODRL template technical description (internal page)
+- ODRL template architecture rationale (internal page)
 
 ## Where it fits
 

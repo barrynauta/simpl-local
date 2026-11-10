@@ -10,26 +10,26 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As** a Participant,\
-**I want** to use a landing page adapted to my Participant type and user role,\
+**As a** Participant,\
+**I want to** use a landing page adapted to my Participant type and user role,\
 **So that** I can easily access the relevant Simpl-Open functionalities.
 
 ###### Acceptance Criteria
 
 ###### AC1.1 - Display eligible tiles
 
-**Given** I am authenticated\
-**and** the Landing Page has a Participant type configured for its deployment\
-**When** I access the Landing Page\
-**Then** I see only tiles configured for that Participant type for which I meet the configured eligibility requirement of the UI the tile opens\
-**and** a tile with no configured eligibility requirement is hidden unless it is explicitly marked public\
-**and** a tile is hidden when its eligibility cannot be determined.
+1. **Given** I am authenticated\
+   **And** the Landing Page has a Participant type configured for its deployment\
+   **When** I access the Landing Page\
+   **Then** I see only tiles configured for that Participant type for which I meet the configured eligibility requirement of the UI the tile opens\
+   **And** a tile with no configured eligibility requirement is hidden unless it is explicitly marked public\
+   **And** a tile is hidden when its eligibility cannot be determined.
 
 ###### AC1.2 - Apply eligibility during customisation
 
-**Given** I am authenticated\
-**When** I customise my Landing Page\
-**Then** I can view and customise only tiles available to me under AC1.1.
+2. **Given** I am authenticated\
+   **When** I customise my Landing Page\
+   **Then** I can view and customise only tiles available to me under AC1.1.
 
 ###### Technical Info
 

@@ -11,7 +11,7 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 ## Text
 
 **As a** Participant\
-**I want** to integrate my Simpl-Open agent with existing enterprise firewalls or cloud‑native security groups\
+**I want to** integrate my Simpl-Open agent with existing enterprise firewalls or cloud‑native security groups\
 **So that** I can protect my Simpl-Open Agent from external infrastructure threats (Outer Agent Firewall) and securing the microservices internally (Inner Agent Firewall).
 
 **Acceptance Criteria**

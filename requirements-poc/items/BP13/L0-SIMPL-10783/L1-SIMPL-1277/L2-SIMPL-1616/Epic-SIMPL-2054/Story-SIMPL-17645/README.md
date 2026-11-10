@@ -12,26 +12,22 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 *This user story outlines the adaptation and migration of the v1 API implementation to v2, based on guidelines derived from the API definition tasks. Linked to this, there are the API definition tasks that explain what this API will substitute.*
 
-**As a**\
-dataspace agent
-
-**I want to**\
-via an API, submit a credential (X.509 certificate in PEM format) to be verified
-
-**So that**\
-I can confirm the credential is valid in the dataspace before trusting or proceeding with peer interactions
+**As a** dataspace agent\
+**I want to** via an API, submit a credential (X.509 certificate in PEM format) to be verified\
+**So that** I can confirm the credential is valid in the dataspace before trusting or proceeding with peer interactions
 
 **Acceptance Criteria:**
 
-1. **GIVEN** the caller is an internal service within the participant agent (not via a Tier 1 gateway)\
-   **AND** it provides a JSON body containing the credential PEM under the content field\
-   **WHEN** it sends a POST /credentials/validate\
-   **THEN** the API returns HTTP 204 No Content (the credential is valid)
-1. **GIVEN** the caller is an internal service within the participant agent (not via a Tier 1 gateway)\
-   **AND** it provides an invalid JSON body\
-   **OR** it provides a JSON body containing a malformed content field as the credential to verify\
-   **WHEN** it sends a POST /credentials/validate\
-   **THEN** the API returns HTTP 400 Bad Request
+1. **Given** the caller is an internal service within the participant agent (not via a Tier 1 gateway)\
+   **And** it provides a JSON body containing the credential PEM under the content field\
+   **When** it sends a POST /credentials/validate\
+   **Then** the API returns HTTP 204 No Content (the credential is valid)
+
+2. **Given** the caller is an internal service within the participant agent (not via a Tier 1 gateway)\
+   **And** it provides an invalid JSON body\
+   OR it provides a JSON body containing a malformed content field as the credential to verify\
+   **When** it sends a POST /credentials/validate\
+   **Then** the API returns HTTP 400 Bad Request
 
 ## Where it fits
 

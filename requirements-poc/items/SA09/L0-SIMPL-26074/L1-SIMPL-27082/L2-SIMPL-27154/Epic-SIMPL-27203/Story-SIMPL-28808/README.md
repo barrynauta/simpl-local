@@ -11,30 +11,26 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 ## Text
 
 _This user story improves SIMPL-17522 by allowing a user with the SIMPL_USER role to retrieve the participant details of the agent of their organisation. In the context of consent management, this API will be used to populate the participant party of the assertion during creation._\
-----\
-**As a**
+----
 
-Simpl-Open user with the SIMPL_USER role
-
-**I want to**
-
-via an API, request information about the participant linked to my organisations's agent
-
-**So that**\
-So that I can obtain the participant's organisation details and identifiers, and get a clearer overview of my organisation's presence in the dataspace
+**As a** Simpl-Open user with the SIMPL_USER role\
+**I want to** via an API, request information about the participant linked to my organisations's agent\
+**So that** I can obtain the participant's organisation details and identifiers, and get a clearer overview of my organisation's presence in the dataspace
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am logged in with the SIMPL_USER role\
-   **AND** my organisation's agent is onboarded\
-   **WHEN** I send a GET /participant request\
-   **THEN** the API returns HTTP 200 OK [SEE *SIMPL-17522 for the details of the repsonse]*
-1. **GIVEN** I am logged in without the SIMPL_USER role\
-   **WHEN** I send a GET /participant request\
-   **THEN** the API returns a 403 response
-1. **GIVEN** I am not logged in\
-   **WHEN** I send a GET /participant request\
-   **THEN** the API returns a 401 response
+1. **Given** I am logged in with the SIMPL_USER role\
+   **And** my organisation's agent is onboarded\
+   **When** I send a GET /participant request\
+   **Then** the API returns HTTP 200 OK [SEE *SIMPL-17522 for the details of the repsonse]*
+
+2. **Given** I am logged in without the SIMPL_USER role\
+   **When** I send a GET /participant request\
+   **Then** the API returns a 403 response
+
+3. **Given** I am not logged in\
+   **When** I send a GET /participant request\
+   **Then** the API returns a 401 response
 
 ## Where it fits
 

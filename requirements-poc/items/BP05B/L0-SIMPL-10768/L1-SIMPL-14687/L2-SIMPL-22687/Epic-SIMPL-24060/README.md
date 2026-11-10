@@ -27,51 +27,50 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 ###### AC1 - Triggering the Evaluation
 
-**Given:** the Governance has received a new resource description or new version of a resource description for publication,\
-**When** the resource description passes structural and schema validation,\
-**Then** Simpl-Open automatically executes the metadata quality evaluation process.
+1. **Given** the Governance has received a new resource description or new version of a resource description for publication,\
+   **When** the resource description passes structural and schema validation,\
+   **Then** Simpl-Open automatically executes the metadata quality evaluation process.
 
 ###### AC2 - Quality Rule Validation
 
-**Given** a valid resource description\
-**When** the evaluation process is executed\
-**Then** all quality rules are validated to be fullfilled or not. A quality rule is counted as 1 if it is validated for a resource description as true or 0 if not.
+2. **Given** a valid resource description\
+   **When** the evaluation process is executed\
+   **Then** all quality rules are validated to be fullfilled or not. A quality rule is counted as 1 if it is validated for a resource description as true or 0 if not.
 
-!an internal page
+(image not shown)
 
 ###### AC3 - Dimension Score Calculation
 
-**Given** a valid resource description\
-**When** the evaluation process is executed\
-**Then** for each defined quality dimension the dimension quality score is calculated as weighted sum of all quality rules of the respective dimension.
+3. **Given** a valid resource description\
+   **When** the evaluation process is executed\
+   **Then** for each defined quality dimension the dimension quality score is calculated as weighted sum of all quality rules of the respective dimension.
 
 In mathematical terms the score of a dimension **d** for a resource description **rd,** is the sum over all validation of the quality rule **q** for the **rd** times the weight of **q:**
 
-*!an internal page
+**(image not shown)**
 
 ###### AC4 - Overall Score Calculation
 
-**Given** a valid resource description\
-**When** the evaluation process is executed\
-**Then** an metadata quality overall score is calculated as the weighted sum over all dimension quality score.
+4. **Given** a valid resource description\
+   **When** the evaluation process is executed\
+   **Then** an metadata quality overall score is calculated as the weighted sum over all dimension quality score.
 
 (image not shown)
 
 ###### AC5 - Classification Assignment
 
-**Given** calculated overall and dimension scores\
-**When** classification rules are applied\
-**Then** a metadata quality classification is assigned:
+5. **Given** calculated overall and dimension scores\
+   **When** classification rules are applied\
+   **Then** a metadata quality classification is assigned:
 
-- For the overall score
-
-- For each quality dimension
+   - For the overall score
+   - For each quality dimension
 
 ###### AC6 - Output of Evaluation
 
-**Given** the evaluation process is completed\
-**Then** the evaluation produces structured quality results (scores and classifications)\
-**And** the results are stored as metadata related to the evaluated resource description.
+6. **Given** the evaluation process is completed\
+   **Then** the evaluation produces structured quality results (scores and classifications)\
+   **And** the results are stored as metadata related to the evaluated resource description.
 
 ## Where it fits
 

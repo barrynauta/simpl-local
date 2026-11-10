@@ -11,8 +11,9 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 ## Text
 
 **As a** Provider\
-**I want** to define an SLA information point based on the consumption logs of my resources and other relevant logs\
-**so that** I can include the SLA information point in the contract clause SLA\
+**I want to** define an SLA information point based on the consumption logs of my resources and other relevant logs\
+**So that** I can include the SLA information point in the contract clause SLA
+
 and assess whether I am providing the performance as promised in the usage contract
 
 **Acceptance criteria:**

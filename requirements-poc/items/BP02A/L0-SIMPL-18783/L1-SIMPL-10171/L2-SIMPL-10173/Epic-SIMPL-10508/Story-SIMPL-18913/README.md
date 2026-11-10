@@ -14,32 +14,29 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 *This story invalidates AC4 and AC5 of SIMPL-8499.* *It has been created to solve SIMPL-16360.*
 
-**As a**\
-Dataspace Governance Authority end user with the T2IAA_M (Tier 2 authorization manager) role
-
-**I want to**\
-via API, save invalid COMPOSITE onboarding validation rules in a disabled state
-
-**So that**\
-I can draft validation rules without being blocked, while ensuring only valid rules can be enabled
+**As a** Dataspace Governance Authority end user with the T2IAA_M (Tier 2 authorization manager) role\
+**I want to** via API, save invalid COMPOSITE onboarding validation rules in a disabled state\
+**So that** I can draft validation rules without being blocked, while ensuring only valid rules can be enabled
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am a dataspace governance authority user with the T2IAA_M role, wanting to update a COMPOSITE rule **\
-   **WHEN** I POST /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/ with invalid parameters\
-   **AND** the rule is marked as disabled\
-   **THEN** I want to receive a 200 Ok response\
-   **AND** the draft disabled rule is saved
-1. **GIVEN** that I am a dataspace governance authority user with the T2IAA_M role, wanting to update a COMPOSITE rule **\
-   **WHEN** I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId} with invalid parameters\
-   **AND** the rule is marked as disabled\
-   **THEN** I want to receive a 200 OK response\
-   **AND** the draft disabled rule is saved
-1. **GIVEN** that I am a dataspace governance authority user with the T2IAA_M role, wanting to update or create a COMPOSITE rule **\
-   **WHEN** I create (POST) or update (PUT) a COMPOSITE rule with less than two rules\
-   **AND** the rule is disabled\
-   **THEN** I want to receive a 200 Ok response\
-   **AND** the draft disabled rule is saved{}
+1. **Given** that I am a dataspace governance authority user with the T2IAA_M role, wanting to update a COMPOSITE rule\
+   **When** I POST /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/ with invalid parameters\
+   **And** the rule is marked as disabled\
+   **Then** I want to receive a 200 Ok response\
+   **And** the draft disabled rule is saved
+
+2. **Given** that I am a dataspace governance authority user with the T2IAA_M role, wanting to update a COMPOSITE rule\
+   **When** I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId} with invalid parameters\
+   **And** the rule is marked as disabled\
+   **Then** I want to receive a 200 OK response\
+   **And** the draft disabled rule is saved
+
+3. **Given** that I am a dataspace governance authority user with the T2IAA_M role, wanting to update or create a COMPOSITE rule\
+   **When** I create (POST) or update (PUT) a COMPOSITE rule with less than two rules\
+   **And** the rule is disabled\
+   **Then** I want to receive a 200 Ok response\
+   **And** the draft disabled rule is saved{}
 
 ## Where it fits
 

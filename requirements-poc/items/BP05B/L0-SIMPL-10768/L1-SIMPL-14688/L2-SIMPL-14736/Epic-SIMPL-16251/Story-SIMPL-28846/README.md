@@ -20,9 +20,9 @@ This story does not cover creating or updating the Resource Description. Inclusi
 
 **User Story**
 
-As a Provider,\
-I want to upload a Contract Clause document through the agreed upload capability,\
-so that the document can be stored on the Provider side and the generated metadata / reference can be returned for later use in the Resource Description flow.
+**As a** Provider,\
+**I want to** upload a Contract Clause document through the agreed upload capability,\
+**So that** the document can be stored on the Provider side and the generated metadata / reference can be returned for later use in the Resource Description flow.
 
 **Architecture decision**
 
@@ -112,53 +112,53 @@ Acceptance Criteria
 
 AC1 Uploaded document is validated
 
-Given a Provider user uploads a Contract Clause document\
-When the upload request is submitted\
-Then Simpl-Open validates the document against the supported document format, MIME type and file size rules defined by the upload API implementation.
+1. **Given** a Provider user uploads a Contract Clause document\
+   **When** the upload request is submitted\
+   **Then** Simpl-Open validates the document against the supported document format, MIME type and file size rules defined by the upload API implementation.
 
 AC2 Valid document is stored and metadata is returned
 
-Given a Provider user uploads a Contract Clause document\
-And the uploaded document is successfully validated\
-When Simpl-Open processes the uploaded document\
-Then Simpl-Open calculates the hash from the exact uploaded document content using the configured hash algorithm\
-And Simpl-Open generates document metadata including hash, hashAlgorithm, document reference / source reference and documentId, documentName, mediaType where available\
-And Simpl-Open stores the document and the generated metadata on the Provider side\
-And Simpl-Open returns the generated metadata, including the hash and hashAlgorithm, to the Provider user.
+2. **Given** a Provider user uploads a Contract Clause document\
+   **And** the uploaded document is successfully validated\
+   **When** Simpl-Open processes the uploaded document\
+   **Then** Simpl-Open calculates the hash from the exact uploaded document content using the configured hash algorithm\
+   **And** Simpl-Open generates document metadata including hash, hashAlgorithm, document reference / source reference and documentId, documentName, mediaType where available\
+   **And** Simpl-Open stores the document and the generated metadata on the Provider side\
+   **And** Simpl-Open returns the generated metadata, including the hash and hashAlgorithm, to the Provider user.
 
 AC3 Invalid document is rejected
 
-Given a Provider user uploads a Contract Clause document\
-When the document is not successfully validated against the supported document format, MIME type or file size rules defined by the upload API implementation\
-Then Simpl-Open returns a clear validation error to the Provider user\
-And Simpl-Open does not store the document.
+3. **Given** a Provider user uploads a Contract Clause document\
+   **When** the document is not successfully validated against the supported document format, MIME type or file size rules defined by the upload API implementation\
+   **Then** Simpl-Open returns a clear validation error to the Provider user\
+   **And** Simpl-Open does not store the document.
 
 AC4 Metadata generation failure is handled
 
-Given a Provider user uploads a Contract Clause document\
-And the uploaded document is successfully validated\
-When metadata generation fails\
-Then Simpl-Open returns a clear error message to the Provider user\
-And Simpl-Open does not treat the upload as successful\
-And Simpl-Open does not return successful document metadata to the Provider user.
+4. **Given** a Provider user uploads a Contract Clause document\
+   **And** the uploaded document is successfully validated\
+   **When** metadata generation fails\
+   **Then** Simpl-Open returns a clear error message to the Provider user\
+   **And** Simpl-Open does not treat the upload as successful\
+   **And** Simpl-Open does not return successful document metadata to the Provider user.
 
 AC5 Storage failure is handled
 
-Given a Provider user uploads a Contract Clause document\
-And the uploaded document is successfully validated\
-And the required metadata is successfully generated\
-When storing the document with its metadata fails\
-Then Simpl-Open returns a clear error message to the Provider user\
-And Simpl-Open does not treat the upload as successful\
-And Simpl-Open does not return successful document metadata to the Provider user.
+5. **Given** a Provider user uploads a Contract Clause document\
+   **And** the uploaded document is successfully validated\
+   **And** the required metadata is successfully generated\
+   **When** storing the document with its metadata fails\
+   **Then** Simpl-Open returns a clear error message to the Provider user\
+   **And** Simpl-Open does not treat the upload as successful\
+   **And** Simpl-Open does not return successful document metadata to the Provider user.
 
 AC6 Re-uploaded document does not overwrite an existing stored document
 
-Given a Contract Clause document has already been uploaded and stored\
-When the Provider user uploads another Contract Clause document\
-Then Simpl-Open processes the upload as a separate upload request\
-And Simpl-Open must not silently overwrite an already stored document object\
-And the returned metadata must refer to the document content processed in the current upload request.
+6. **Given** a Contract Clause document has already been uploaded and stored\
+   **When** the Provider user uploads another Contract Clause document\
+   **Then** Simpl-Open processes the upload as a separate upload request\
+   **And** Simpl-Open must not silently overwrite an already stored document object\
+   **And** the returned metadata must refer to the document content processed in the current upload request.
 
 **Dependencies**
 

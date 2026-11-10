@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As an Infrastructure Consumer, I want to receive real-time alerts and notifications from the software firewall, so that I can promptly respond to security events and take appropriate actions to protect my infrastructure.
+**As an** Infrastructure Consumer,\
+**I want to** receive real-time alerts and notifications from the software firewall,\
+**So that** I can promptly respond to security events and take appropriate actions to protect my infrastructure.
 
 AC: Given that the software firewall detects security events, When an incident occurs, Then real-time alerts and notifications are sent to Infrastructure Consumers to enable timely response and take appropriate actions.
 

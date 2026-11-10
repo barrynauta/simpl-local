@@ -13,45 +13,41 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 *The primary objective of an eIDAS rule is to verify whether a specific eIDAS attribute is present and/or contains a defined value. A combination of conditions on multiple eIDAS attributes can be achieved by the combination of multiple eIDAS rules.*
 
 *Rules disablement and cancellation are covered in Epic SIMPL-12326.*\
-----\
-**As A**
+----
 
-Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing details of an onboarding procedure template
-
-**I want**
-
-via a UI, to creates and updates ** rules of type eIDAS
-
-**So that**
-
-I can automate the evaluation of eIDAS attributes during the onboarding of a participant
+**As a** Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing details of an onboarding procedure template\
+**I want** via a UI, to creates and updates rules of type eIDAS\
+**So that** I can automate the evaluation of eIDAS attributes during the onboarding of a participant
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** the eIDAS login is enabled in the deployment configurations of the onboarding frontend component  ^(1)^\
-   **WHEN** I navigate to the Rules tab\
-   **AND** I click on the "Edit Rules" and then the "Add Rules" button\
-   **THEN** I see a dropdown list that contains the item "eIDAS rule"
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** the eIDAS login is enabled in the deployment configurations of the onboarding frontend component  ^(1)^\
-   **AND** the eIDAS document template hasn't been created in the documents section of the page (see SIMPL-20516)\
-   **WHEN** I click on the "Add Rules" button\
-   **THEN** the item "eIDAS rule" list item is not clickable\
-   **AND** below the "eIDAS document" label, I see the message "Please create an eIDAS document template to enable eIDAS rules"
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** the eIDAS login is enabled in the deployment configurations of the onboarding frontend component  ^(1)^\
-   **AND** the eIDAS document template has been created in the documents section of the page (see SIMPL-20516)\
-   **WHEN** I click on the "Add Rules" button\
-   **THEN** the item "eIDAS rule" item is clickable
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** the eIDAS login is enabled in the deployment configurations of the onboarding frontend component  (1)\
-   **WHEN** I click the button to create a new eIDAS rule\
-   **THEN** a form to create the rule is shown\
-   **AND** the form contains the following fields (only underlined fields are new for the eIDAS rule)\
+1. **Given** that I am authenticated with the T2IAA_M role\
+   **And** the eIDAS login is enabled in the deployment configurations of the onboarding frontend component ^(1)^\
+   **When** I navigate to the Rules tab\
+   **And** I click on the "Edit Rules" and then the "Add Rules" button\
+   **Then** I see a dropdown list that contains the item "eIDAS rule"
+
+2. **Given** that I am authenticated with the T2IAA_M role\
+   **And** the eIDAS login is enabled in the deployment configurations of the onboarding frontend component ^(1)^\
+   **And** the eIDAS document template hasn't been created in the documents section of the page (see SIMPL-20516)\
+   **When** I click on the "Add Rules" button\
+   **Then** the item "eIDAS rule" list item is not clickable\
+   **And** below the "eIDAS document" label, I see the message "Please create an eIDAS document template to enable eIDAS rules"
+
+3. **Given** that I am authenticated with the T2IAA_M role\
+   **And** the eIDAS login is enabled in the deployment configurations of the onboarding frontend component ^(1)^\
+   **And** the eIDAS document template has been created in the documents section of the page (see SIMPL-20516)\
+   **When** I click on the "Add Rules" button\
+   **Then** the item "eIDAS rule" item is clickable
+
+4. **Given** that I am authenticated with the T2IAA_M role\
+   **And** the eIDAS login is enabled in the deployment configurations of the onboarding frontend component (1)\
+   **When** I click the button to create a new eIDAS rule\
+   **Then** a form to create the rule is shown\
+   **And** the form contains the following fields (only underlined fields are new for the eIDAS rule)\
    a required "Rule Name" input text field to enter the rule name (max 255 chars)\
    a required "Rule Description" input text field to enter the rule description (max 500 characters)\
-   a required  "Document" select field prepopulated to the eIDAS document template name\
+   a required "Document" select field prepopulated to the eIDAS document template name\
    a required "Valid From" (required) and "Valid To" (non required) fields to indicate the date validity range of the rule\
    +a required "Applicable To" radio button with "Natural Person" and "Legal Person" options+\
    +a required "eIDAS Attribute" dropdown field that allows to chose one eIDAS identity attribute (filtered by Natural or Legal person)+\
@@ -60,27 +56,32 @@ I can automate the evaluation of eIDAS attributes during the onboarding of a par
    a "enabled" checkbox that allows activation or deactivation of the rule\
    a "Autoapprove" checkbox that links the rule to the automatic approval of the onboarding request\
    a "Required" checkbox to indicate that the rule is required for the request to pass the automatic validation
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **WHEN** I fill all required fields and any optional fields with valid data\
-   **THEN** the "Save Changes" button becomes active
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** I click on the button to edit the rules\
-   **AND** an eIDAS rule has already been defined\
-   **WHEN**  I update all required fields and any optional fields with valid data\
-   **THEN** the "Save Changes" button is enabled for the update
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** the "Save Changes" button is enabled\
-   **WHEN** I click the button\
-   **THEN** the rule is saved
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** the eIDAS login is disabled in the deployment configurations of the onboarding frontend component  ^(1)^\
-   **WHEN** I navigate to the Rules tab\
-   **AND** I click on the "Edit Rules" and then the "Add Rules" button\
-   **THEN** I see a dropdown list that does not contain the item "eIDAS rule"
-1. **GIVEN** that I am an IT system administrator, responsible for installing the onboarding frontend component ^(1)^\
-   **WHEN** I read the [deployment documentation](https://code.europa.eu/simpl/simpl-open/development/iaa/fe-onboarding/-/blob/main/documents/deployment-guide/README.md?ref_type=heads) of the component\
-   **THEN** I see the property to use to enable or disable the eIDAS login feature\
-   **AND** I see that by default the feature is disabled
+
+5. **Given** that I am authenticated with the T2IAA_M role\
+   **When** I fill all required fields and any optional fields with valid data\
+   **Then** the "Save Changes" button becomes active
+
+6. **Given** that I am authenticated with the T2IAA_M role\
+   **And** I click on the button to edit the rules\
+   **And** an eIDAS rule has already been defined\
+   **When** I update all required fields and any optional fields with valid data\
+   **Then** the "Save Changes" button is enabled for the update
+
+7. **Given** that I am authenticated with the T2IAA_M role\
+   **And** the "Save Changes" button is enabled\
+   **When** I click the button\
+   **Then** the rule is saved
+
+8. **Given** that I am authenticated with the T2IAA_M role\
+   **And** the eIDAS login is disabled in the deployment configurations of the onboarding frontend component ^(1)^\
+   **When** I navigate to the Rules tab\
+   **And** I click on the "Edit Rules" and then the "Add Rules" button\
+   **Then** I see a dropdown list that does not contain the item "eIDAS rule"
+
+9. **Given** that I am an IT system administrator, responsible for installing the onboarding frontend component ^(1)^\
+   **When** I read the [deployment documentation](https://code.europa.eu/simpl/simpl-open/development/iaa/fe-onboarding/-/blob/main/documents/deployment-guide/README.md?ref_type=heads) of the component\
+   **Then** I see the property to use to enable or disable the eIDAS login feature\
+   **And** I see that by default the feature is disabled
 
 *(1) By default, this feature is disabled on the component, and should be enabled at deployment time by the IT Administrators installing the component into the agent (see last AC).*
 

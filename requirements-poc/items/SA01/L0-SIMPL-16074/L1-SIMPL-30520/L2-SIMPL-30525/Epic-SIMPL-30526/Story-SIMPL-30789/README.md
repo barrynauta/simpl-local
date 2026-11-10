@@ -12,8 +12,8 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 **As a** Participant with a role authorising the definition of data orchestration workflows,\
 **I want to** consult a user guide that explains the service-level distribution model and its interaction with each integration pattern,\
-**so that** I can decide when step-level distribution is the right choice and understand setup implications.\
-**Documentation context:** The service distribution model uses a step-level Kubernetes executor for dispatch. It is compatible with both integration patterns: tightly coupled setup relies on direct runtime connectivity for native execution-state handling, while loosely coupled setup can offload selected compute actions to external pods and still return runtime telemetry.
+**So that** I can decide when step-level distribution is the right choice and understand setup implications.\
+Documentation context: The service distribution model uses a step-level Kubernetes executor for dispatch. It is compatible with both integration patterns: tightly coupled setup relies on direct runtime connectivity for native execution-state handling, while loosely coupled setup can offload selected compute actions to external pods and still return runtime telemetry.\
 
 **Acceptance Criteria**
 

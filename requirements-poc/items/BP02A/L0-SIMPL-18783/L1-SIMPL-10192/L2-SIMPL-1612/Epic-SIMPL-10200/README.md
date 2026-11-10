@@ -10,22 +10,16 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**\
-data space authority
-
-**I want to**
-
-enable the assignability of an existing identity on participant Tier1 user credentials
-
-**So that**\
-dataspace participants can assign identity attributes to their end users.
+**As a** data space authority\
+**I want to** enable the assignability of an existing identity on participant Tier1 user credentials\
+**So that** dataspace participants can assign identity attributes to their end users.
 
 **Acceptance Criteria**
 
-1. GIVEN I am a user with the appropriate role\
-   AND an identity attribute exists in the system\
-   WHEN I update the identity attribute configuration\
-   THEN I can mark it as assignable
+1. **Given** I am a user with the appropriate role\
+   **And** an identity attribute exists in the system\
+   **When** I update the identity attribute configuration\
+   **Then** I can mark it as assignable
 
 ## Where it fits
 

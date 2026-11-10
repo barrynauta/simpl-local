@@ -10,23 +10,15 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 
 ## Text
 
-**As a**
-
-Simpl-Open End User responsible with the Consent Manager (CONSENT_M) role, responsible for managing consent assertions
-
-**I want to**
-
-via UI, update the details of a consent assertion including name, description and metadata
-
-**So that**
-
-I can correct or enrich the assertion's information without having to recreate it.
+**As a** Simpl-Open End User responsible with the Consent Manager (CONSENT_M) role, responsible for managing consent assertions\
+**I want to** via UI, update the details of a consent assertion including name, description and metadata\
+**So that** I can correct or enrich the assertion's information without having to recreate it.
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am logged in with CONSENT_M role\
-   **WHEN** I open the edit page for a consent assertion\
-   **THEN** I see\
+1. **Given** that I am logged in with CONSENT_M role\
+   **When** I open the edit page for a consent assertion\
+   **Then** I see\
    the name of the assertion (editable form, mandatory, min length 3, max length 255)\
    the type of the assertion\
    the description of the assertion (editable form, mandatory, min length 3, max length 2048)\
@@ -39,40 +31,47 @@ I can correct or enrich the assertion's information without having to recreate i
    a "Notified on status change" column showing if the participant must be notified upon assertion status change\
    a "Save" button\
    a "Cancel" button
-1. **GIVEN** that I am logged in with CONSENT_M role\
-   **AND** updated the consent assertion with valid data\
-   **WHEN** I click on the Save button\
-   **THEN** the name, description and metadata are updated\
-   **AND** a success message appears that says that the consent assertion has been updated
-1. **GIVEN** that I am logged in with the CONSENT_M role\
-   **AND** I open the page to update a consent assertion\
-   **WHEN** I fill name and description with invalid values\
-   **THEN** the save button is disabled\
-   **AND** an error messages are shown on the respective fields{}
-1. **GIVEN** that I am logged in with the CONSENT_M role\
-   **AND** I open the page to update a consent assertion\
-   **WHEN** I fill two or more metadata key-value pairs with the same key (case-insensitive match)\
-   **THEN** the save button becomes or remains disabled\
-   **AND** an error is shown saying that the metadata keys should be unique
-1. **GIVEN** that I am logged in with the CONSENT_M role\
-   **AND** I open the page to update a consent assertion\
-   **WHEN** I reach the maximum number of metadata entries configured in the application configuration (default to 10)\
-   **THEN** the UI prevents me from adding more metadata entries
-1. **GIVEN** that I am logged in with the CONSENT_M role\
-   **AND** I open the page to update a consent assertion\
-   **WHEN** I click on the cancel button\
-   **THEN** a pop-up appears with the text "All unsaved changes will be lost. Do you want to proceed?"\
-   **AND** upon confirmation I am redirected to the assertion details or list page (depending on the page I navigated from)
-1. **GIVEN** that I am logged in with the CONSENT_M role\
-   **AND** I open the page to update a consent assertion\
-   **WHEN** I don't fill both the key and value of a metadata entry\
-   **THEN** the save button becomes or remains disabled\
-   **AND** an error is shown saying that the metadata must contain key and value
-1. **GIVEN** that I am logged in with the CONSENT_M role\
-   **AND** the participant agent is not fully onboarded (note. GET tier1/v2/participant API of the authentication provider component returns an empty participant ID or a 404)\
-   **WHEN** I open the page to update a consent assertion\
-   **THEN** I am redirected to a new error page\
-   **AND** I see a message stating *"The Simpl-Open agent is not fully onboarded. Complete the onboarding of the agent to create the consent assertions"*
+
+2. **Given** that I am logged in with CONSENT_M role\
+   **And** updated the consent assertion with valid data\
+   **When** I click on the Save button\
+   **Then** the name, description and metadata are updated\
+   **And** a success message appears that says that the consent assertion has been updated
+
+3. **Given** that I am logged in with the CONSENT_M role\
+   **And** I open the page to update a consent assertion\
+   **When** I fill name and description with invalid values\
+   **Then** the save button is disabled\
+   **And** an error messages are shown on the respective fields{}
+
+4. **Given** that I am logged in with the CONSENT_M role\
+   **And** I open the page to update a consent assertion\
+   **When** I fill two or more metadata key-value pairs with the same key (case-insensitive match)\
+   **Then** the save button becomes or remains disabled\
+   **And** an error is shown saying that the metadata keys should be unique
+
+5. **Given** that I am logged in with the CONSENT_M role\
+   **And** I open the page to update a consent assertion\
+   **When** I reach the maximum number of metadata entries configured in the application configuration (default to 10)\
+   **Then** the UI prevents me from adding more metadata entries
+
+6. **Given** that I am logged in with the CONSENT_M role\
+   **And** I open the page to update a consent assertion\
+   **When** I click on the cancel button\
+   **Then** a pop-up appears with the text "All unsaved changes will be lost. Do you want to proceed?"\
+   **And** upon confirmation I am redirected to the assertion details or list page (depending on the page I navigated from)
+
+7. **Given** that I am logged in with the CONSENT_M role\
+   **And** I open the page to update a consent assertion\
+   **When** I don't fill both the key and value of a metadata entry\
+   **Then** the save button becomes or remains disabled\
+   **And** an error is shown saying that the metadata must contain key and value
+
+8. **Given** that I am logged in with the CONSENT_M role\
+   **And** the participant agent is not fully onboarded (note. GET tier1/v2/participant API of the authentication provider component returns an empty participant ID or a 404)\
+   **When** I open the page to update a consent assertion\
+   **Then** I am redirected to a new error page\
+   **And** I see a message stating *"The Simpl-Open agent is not fully onboarded. Complete the onboarding of the agent to create the consent assertions"*
 
 ## Where it fits
 

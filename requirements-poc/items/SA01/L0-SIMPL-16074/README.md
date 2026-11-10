@@ -8,9 +8,17 @@ Folder: [items](../../README.md) / [SA01](../README.md) / **L0-SIMPL-16074**
 
 **Trace:** [SA01](../README.md) › **SIMPL-16074** (L0)
 
+## What this item is
+
+This is the L0 item for supporting activity [SA01](../README.md). It stands for the whole supporting activity, so that its requirements can hang under it: 8 high-level requirements (L1), with their detailed requirements, Epics and user stories below them.
+
+SA01 is a supporting activity: it supports business processes, but it has no value on its own. With it, a Provider or a Consumer designs, runs and monitors data processing workflows that can be repeated and traced.
+
+The supporting activity has 6 steps. The [SA01 page](../README.md) describes them, with the actors and what must be in place before it starts.
+
 ## Text
 
-Link SA01: [SA01 - Data orchestration used by a Participant|an internal page]
+*In the source, the text of this item is only a link to an internal page about the process.* The public version of that page is the [SA01 process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa01-data-orchestration/README.md).
 
 ## Where it fits
 

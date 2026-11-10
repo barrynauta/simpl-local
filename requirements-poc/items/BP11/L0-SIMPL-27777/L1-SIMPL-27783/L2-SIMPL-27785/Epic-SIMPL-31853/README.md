@@ -14,16 +14,16 @@ This Epic makes sure that once a usage contract for an infrastructure resource i
 
 ## Text
 
-**As a** Provider,\
+**As a** Provider,\
 **I want to** decommission an infrastructure resource when the revocation request of the usage contract is accepted\
-**so that** I ensure that the Consumer cannot continue using the resource after the revocation of the usage contract
+**So that** I ensure that the Consumer cannot continue using the resource after the revocation of the usage contract
 
 **Acceptance Criteria**
 
-**Given** a usage contract of an infrastructure resource for which the revocation request is accepted\
-**When** I the usage contract is revoked\
-**Then** the access credentials of the infrastructure resource are deactivated\
-**And** the decommissioning process of the infrastructure resource is triggered
+1. **Given** a usage contract of an infrastructure resource for which the revocation request is accepted\
+   **When** I the usage contract is revoked\
+   **Then** the access credentials of the infrastructure resource are deactivated\
+   **And** the decommissioning process of the infrastructure resource is triggered
 
 Note: The decommissioning of the infrastructure resource will be performed after the quarantine period set by the Infrastructure Provider (outside of the scope of Simpl-Open).
 

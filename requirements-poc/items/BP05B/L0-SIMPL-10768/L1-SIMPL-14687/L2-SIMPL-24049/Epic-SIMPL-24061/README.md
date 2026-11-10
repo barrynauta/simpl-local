@@ -23,25 +23,21 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 ###### AC1 - Automatic Approval
 
-**Given** a new resource description or a new version of a resource description is submitted\
-**And** the resource description is valid (i.e., it has successfully passed structural and schema validation)
-
-**When** the automatic overall quality score and the quality scores per dimension are calculated\
-**And** the overall metadata quality score is higher than the overall metadata quality threshold\
-**And** the metadata quality score for each dimension is higher than the quality threshold defined for that dimension
-
-**Then** Simpl-Open automatically approves the resource description for publication.
+1. **Given** a new resource description or a new version of a resource description is submitted\
+   **And** the resource description is valid (i.e., it has successfully passed structural and schema validation)\
+   **When** the automatic overall quality score and the quality scores per dimension are calculated\
+   **And** the overall metadata quality score is higher than the overall metadata quality threshold\
+   **And** the metadata quality score for each dimension is higher than the quality threshold defined for that dimension\
+   **Then** Simpl-Open automatically approves the resource description for publication.
 
 ###### AC2 - Automatic Rejection
 
-**Given** a new resource description or a new version of a resource description is submitted\
-**And** the resource description is valid (i.e., it has successfully passed structural and schema validation)
-
-**When** the automatic overall quality score and the quality scores per dimension are calculated\
-**And** the overall metadata quality score is lower than or equal to the overall metadata quality threshold\
-**Or** the metadata quality score for at least one dimension is lower than or equal to the quality threshold defined for that dimension
-
-**Then** Simpl-Open automatically rejects the resource description for publication.
+2. **Given** a new resource description or a new version of a resource description is submitted\
+   **And** the resource description is valid (i.e., it has successfully passed structural and schema validation)\
+   **When** the automatic overall quality score and the quality scores per dimension are calculated\
+   **And** the overall metadata quality score is lower than or equal to the overall metadata quality threshold\
+   Or the metadata quality score for at least one dimension is lower than or equal to the quality threshold defined for that dimension\
+   **Then** Simpl-Open automatically rejects the resource description for publication.
 
 ## Where it fits
 

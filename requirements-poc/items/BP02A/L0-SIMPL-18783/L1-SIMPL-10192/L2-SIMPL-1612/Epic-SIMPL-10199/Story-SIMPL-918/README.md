@@ -10,29 +10,21 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attributes table list
-
-**I want to**
-
-select the list sort order by "Identifier", "Code" or "Last update date" columns in ascending/descending direction
-
-**So that**
-
-I view an ordered paginated list of Identity Attributes based on the selected filter
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attributes table list\
+**I want to** select the list sort order by "Identifier", "Code" or "Last update date" columns in ascending/descending direction\
+**So that** I view an ordered paginated list of Identity Attributes based on the selected filter
 
 **Acceptance Criteria:**
 
-1. **Given that I am a user logged in with the IATTR_M role in the Dataspace Governance Authority, when I access the Identity Attributes Management page and view the Identity Attributes table list, I should see options to select the sort order by "Identifier", "Code", or "Last update date" columns in ascending or descending direction.**
+1. **Given** that I am a user logged in with the IATTR_M role in the Dataspace Governance Authority, **when** I access the Identity Attributes Management page and view the Identity Attributes table list, I should see options to select the sort order by "Identifier", "Code", or "Last update date" columns in ascending or descending direction.
 
-1. **Given that I have selected "Identifier" as the sort criterion, when I choose the ascending direction, the Identity Attributes table list should be sorted in alphabetical order by Name in ascending order.**
+2. **Given** that I have selected "Identifier" as the sort criterion, **when** I choose the ascending direction, the Identity Attributes table list should be sorted in alphabetical order by Name in ascending order.
 
-1. **Given that I have selected "Code" as the sort criterion, when I choose the ascending direction, the Identity Attributes table list should be sorted in alphabetical order by Code in ascending order.**
+3. **Given** that I have selected "Code" as the sort criterion, **when** I choose the ascending direction, the Identity Attributes table list should be sorted in alphabetical order by Code in ascending order.
 
-1. **Given that I have selected "Last update date" as the sort criterion, when I choose the descending direction, the Identity Attributes table list should be sorted in reverse chronological order by Last update date in descending order.**
+4. **Given** that I have selected "Last update date" as the sort criterion, **when** I choose the descending direction, the Identity Attributes table list should be sorted in reverse chronological order by Last update date in descending order.
 
-1. **Given that I have sorted the Identity Attributes table list based on the selected column and direction, when I navigate through the paginated list, the sorting order should be maintained consistently across all pages, ensuring that the selected sort criterion applies uniformly to all displayed Identity Attributes.**
+5. **Given** that I have sorted the Identity Attributes table list based on the selected column and direction, **when** I navigate through the paginated list, the sorting order should be maintained consistently across all pages, ensuring that the selected sort criterion applies uniformly to all displayed Identity Attributes.
 
 ## Where it fits
 

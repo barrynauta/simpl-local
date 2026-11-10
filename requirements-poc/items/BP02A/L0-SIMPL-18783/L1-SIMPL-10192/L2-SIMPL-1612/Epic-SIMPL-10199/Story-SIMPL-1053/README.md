@@ -10,23 +10,17 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attribute detail information page
-
-**I want to**
-
-see a button on top of the detail page
-
-**So that**
-
-clicking on it I can navigate to the Identity Attribute edit page
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attribute detail information page\
+**I want to** see a button on top of the detail page\
+**So that** clicking on it I can navigate to the Identity Attribute edit page
 
 **Acceptance Criteria:**
 
-1. **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user navigates to the Identity Attribute detail information page, then an"Edit" button is displayed above the Identity Attribute details.**
-1. **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user clicks on the "Edit" button on the Identity Attribute detail information page, then the user is redirected to the Identity Attribute edit page.**
-1. **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user clicks on the "Edit" button, then the system loads the Identity Attribute edit page with the current values of the Identity Attribute pre-populated in the form fields, allowing the user to edit the existing Identity Attribute.**
+1. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attribute detail information page, **then** an"Edit" button is displayed above the Identity Attribute details.
+
+2. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user clicks on the "Edit" button on the Identity Attribute detail information page, **then** the user is redirected to the Identity Attribute edit page.
+
+3. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user clicks on the "Edit" button, **then** the system loads the Identity Attribute edit page with the current values of the Identity Attribute pre-populated in the form fields, allowing the user to edit the existing Identity Attribute.
 
 ## Where it fits
 

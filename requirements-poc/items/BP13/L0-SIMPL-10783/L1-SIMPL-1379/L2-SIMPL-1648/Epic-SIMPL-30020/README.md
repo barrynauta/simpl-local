@@ -11,7 +11,7 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 ## Text
 
 **As a** Consumer\
-**I want** to set the VPN configuration for data transfer between the Simpl-Open agent and data resource destination.\
+**I want to** set the VPN configuration for data transfer between the Simpl-Open agent and data resource destination.\
 **So that** I can ensure that my data resource is securely transferred from the Simpl-Open agent of the Consumer to the data resource destination.
 
 **Acceptance criteria**

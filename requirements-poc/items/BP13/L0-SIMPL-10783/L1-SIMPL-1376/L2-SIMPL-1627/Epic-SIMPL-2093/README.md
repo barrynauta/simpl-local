@@ -12,12 +12,15 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As an Infrastructure Provider, I want to provide scripts to automatically deploy the agent on virtualisation platforms, so that users can streamline the installation process of SIMPL on their infrastructure.
+**As an** Infrastructure Provider,\
+**I want to** provide scripts to automatically deploy the agent on virtualisation platforms,\
+**So that** users can streamline the installation process of SIMPL on their infrastructure.
 
-AC:\
-Given that Infrastructure Provider need a simple deployment process on virtualisation platforms for SIMPL agent,\
-When automated deployment scripts are available,\
-Then the installation process is streamlined and standardised.
+AC:
+
+1. **Given** that Infrastructure Provider need a simple deployment process on virtualisation platforms for SIMPL agent,\
+   **When** automated deployment scripts are available,\
+   **Then** the installation process is streamlined and standardised.
 
 ## Where it fits
 

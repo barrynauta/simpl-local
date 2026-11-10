@@ -12,7 +12,7 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As a** Simpl-Open administrator\
+**As a** Simpl-Open administrator\
 **I want** an authorised Governance Authority participant type within the specific user roles to access the Security Attribute Provider service,\
 **So that** Governance Authority can perform activities related to management and assignment of the participant's identity attributes, in accordance with the user's assigned role.
 
@@ -20,25 +20,24 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ###### AC1  The Security Attribute Provider service is visible to authorised Governance Authority users
 
-**Given** a user is authenticated with the Governance Authority Participant type,
-
-**When** the user role is assigned the role IATTR_M, or NOTARY,\
-**Then** the Security Attribute Provider service is displayed on their Simpl-Open landing page,\
-**and** this user can access the Security Attribute Provider service.
+1. **Given** a user is authenticated with the Governance Authority Participant type,\
+   **When** the user role is assigned the role IATTR_M, or NOTARY,\
+   **Then** the Security Attribute Provider service is displayed on their Simpl-Open landing page,\
+   **And** this user can access the Security Attribute Provider service.
 
 ###### AC2 The Security Attribute Provider service access is restricted for unauthorised user roles
 
-**Given** a user is authenticated with the Governance Authority Participant type,\
-**When** they are not assigned to one of the roles authorised for the Security Attribute Provider service,\
-**Then** the Security Attribute Provider service is not displayed on their Simpl-Open landing page,\
-**and** access to this service is denied.
+2. **Given** a user is authenticated with the Governance Authority Participant type,\
+   **When** they are not assigned to one of the roles authorised for the Security Attribute Provider service,\
+   **Then** the Security Attribute Provider service is not displayed on their Simpl-Open landing page,\
+   **And** access to this service is denied.
 
 ###### AC2 The Security Attribute Provider service access is restricted for unauthorised user types
 
-**Given** a user is authenticated with a Consumer or a Provider Participant type,\
-**When** they access to their Simpl-Open landing page,\
-**Then** the Security Attribute Provider service is not displayed on their Simpl-Open landing page,\
-**and** access to this service is denied.
+3. **Given** a user is authenticated with a Consumer or a Provider Participant type,\
+   **When** they access to their Simpl-Open landing page,\
+   **Then** the Security Attribute Provider service is not displayed on their Simpl-Open landing page,\
+   **And** access to this service is denied.
 
 ## Where it fits
 

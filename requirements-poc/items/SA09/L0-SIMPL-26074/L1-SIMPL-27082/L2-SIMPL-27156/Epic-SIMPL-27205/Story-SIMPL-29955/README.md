@@ -10,28 +10,25 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 
 ## Text
 
-**As a**\
-Simpl-Open Platform Administrator responsible for operating and configuring the Consent Management backend
-
-**I want to**\
-configure a maximum size limit for the metadata key-value pair list on consent assertions
-
-**So that**\
-the size of metadata remains within acceptable bounds and does not impact system performance or log manageability.
+**As a** Simpl-Open Platform Administrator responsible for operating and configuring the Consent Management backend\
+**I want to** configure a maximum size limit for the metadata key-value pair list on consent assertions\
+**So that** the size of metadata remains within acceptable bounds and does not impact system performance or log manageability.
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am an authenticated user with the Consent Manager role (CONSENT_M)\
-   **WHEN** I invoke the PATCH /tier1/v1/consentAssertions/{consentAssertionId} API\
-   **AND** the key-value metadata list length is greater than the configured max size\
-   **THEN** I obtain a 400 Bad Request\
-   **AND** the response contains a message stating "Maximum number of keypairs allowed is X"
-1. **GIVEN** I am an authenticated user with the Consent Manager role (CONSENT_M)\
-   **WHEN** I invoke the POST /tier1/v1/consentAssertions API\
-   **AND** the key-value metadata list length is greater than the configured max size\
-   **THEN** I obtain a 400 Bad Request\
-   **AND** the response contains a message stating "Maximum number of keypairs allowed is X"
-1. The consent.metadata.max-size property must be documented in the component properties documentation and must have a default of 10 items.
+1. **Given** I am an authenticated user with the Consent Manager role (CONSENT_M)\
+   **When** I invoke the PATCH /tier1/v1/consentAssertions/{consentAssertionId} API\
+   **And** the key-value metadata list length is greater than the configured max size\
+   **Then** I obtain a 400 Bad Request\
+   **And** the response contains a message stating "Maximum number of keypairs allowed is X"
+
+2. **Given** I am an authenticated user with the Consent Manager role (CONSENT_M)\
+   **When** I invoke the POST /tier1/v1/consentAssertions API\
+   **And** the key-value metadata list length is greater than the configured max size\
+   **Then** I obtain a 400 Bad Request\
+   **And** the response contains a message stating "Maximum number of keypairs allowed is X"
+
+   - The consent.metadata.max-size property must be documented in the component properties documentation and must have a default of 10 items.
 
 ## Where it fits
 

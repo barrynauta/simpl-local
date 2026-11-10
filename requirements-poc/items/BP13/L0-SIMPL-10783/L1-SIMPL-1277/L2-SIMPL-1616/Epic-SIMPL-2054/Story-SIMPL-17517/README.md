@@ -10,34 +10,31 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As a**\
-dataspace agent
-
-**I want to**\
-via an API, request information about a given participant
-
-**So that**\
-I can obtain the participant's organisation and identifiers to validate their identity and be sure of the peer identity
+**As a** dataspace agent\
+**I want to** via an API, request information about a given participant\
+**So that** I can obtain the participant's organisation and identifiers to validate their identity and be sure of the peer identity
 
 **Acceptance Criteria:**
 
-1. **GIVEN** the caller is an internal service within the participant agent\
-   **AND** it provides a valid UUID participantId\
-   **WHEN** it sends a GET /participants/{participantId} request\
-   **THEN** the API returns HTTP 200 OK\
-   **AND** the response body contains a JSON object with at least the following fields:\
+1. **Given** the caller is an internal service within the participant agent\
+   **And** it provides a valid UUID participantId\
+   **When** it sends a GET /participants/{participantId} request\
+   **Then** the API returns HTTP 200 OK\
+   **And** the response body contains a JSON object with at least the following fields:\
    +*id:*+ the unique UUID of the participant\
    *organization:* the name of the organisation represented by the participant\
    authorityCreationTimestamp: the timestamp of participant creation\
    authorityUpdateTimestamp: the timestamp of the last update
-1. **GIVEN** the caller is an internal service within the participant agent\
-   **AND** the participantId path parameter is not a valid UUID\
-   **WHEN** it sends a GET /participants/{participantId}request\
-   **THEN** the API returns HTTP 400 Bad Request
-1. **GIVEN** the caller is an internal service within the participant agent\
-   **AND** it provides a valid UUID participantId that is not associated with any participant\
-   **WHEN** it sends a GET /participants/{participantId} request\
-   **THEN** the API returns HTTP 404 Not Found
+
+2. **Given** the caller is an internal service within the participant agent\
+   **And** the participantId path parameter is not a valid UUID\
+   **When** it sends a GET /participants/{participantId}request\
+   **Then** the API returns HTTP 400 Bad Request
+
+3. **Given** the caller is an internal service within the participant agent\
+   **And** it provides a valid UUID participantId that is not associated with any participant\
+   **When** it sends a GET /participants/{participantId} request\
+   **Then** the API returns HTTP 404 Not Found
 
 ## Where it fits
 

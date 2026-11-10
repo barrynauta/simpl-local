@@ -4,13 +4,45 @@ Folder: [items](../README.md) / **BP02A**
 
 # BP02A - Configure ID/Trust security solution
 
-The Governance Authority sets up identification and trust for its data space: identity attributes, onboarding procedure templates with validation rules, and security settings.
+In BP02A the Governance Authority prepares its data space for identification and trust. It does this before the first participants join, and it can change the settings later.
 
-Public pages: [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp02a-configure-idtrust-security-solution)
+First, the Governance Authority decides which identity attributes participants can hold, next to the attributes that Simpl-Open has built in. Simpl-Open uses these attributes for attribute-based access control between agents. Then it sets up an onboarding procedure template for each participant type: which documents a candidate must provide, how long they stay valid, and which validation rules help to review an onboarding request. Last, it configures the security settings of the data space, for example the encryption methods and how long a token stays valid.
 
-**120 items:** 1 L0, 4 L1, 8 L2, 35 Epic, 72 User story.
+When BP02A is done, the data space is ready to onboard participants, and participants can communicate securely.
+
+Read more on the [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) and the [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp02a-configure-idtrust-security-solution).
+
+## Who takes part
+
+- Governance Authority
+
+## Before it starts
+
+- The Governance Authority has installed the Simpl-Open agent with the default identity attributes (BP02).
+- The representative of the Governance Authority is logged in and has the right role (BP03B).
+
+## Steps
+
+The steps as the public process page names them. The items in this folder have no field for the step, so the tree below is ordered by item, not by step.
+
+- **BP02A.01 Configure data space identity attributes**: add custom identity attributes next to the built-in ones.
+- **BP02A.02 Configure onboarding procedure templates**: for each participant type, the documents, how long they stay valid, and the validation rules.
+- **BP02A.03 Configure the data space security settings**: for example encryption methods and token expiry.
+
+## What this folder holds
+
+The L0 item [SIMPL-18783](L0-SIMPL-18783/README.md) stands for the business process. Under it are 4 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **120 items:** 1 L0, 4 L1, 8 L2, 35 Epic, 72 User story.
+
+| L1 | High-level requirement | Status | Items under it |
+| --- | --- | --- | --- |
+| [SIMPL-10171](L0-SIMPL-18783/L1-SIMPL-10171/README.md) | Configure Onboarding Procedure Templates | In Progress | 55 |
+| [SIMPL-10176](L0-SIMPL-18783/L1-SIMPL-10176/README.md) | Configure Communication Security Settings *(not published)* | In Preparation | 3 |
+| [SIMPL-10192](L0-SIMPL-18783/L1-SIMPL-10192/README.md) | Configure Dataspace Identity Attributes | Defined | 54 |
+| [SIMPL-31409](L0-SIMPL-18783/L1-SIMPL-31409/README.md) | Governance Authority configures onboarding terms and conditions *(not published)* | In Progress | 3 |
 
 ## Tree
+
+Every item, with its level, title and status.
 
 - [SIMPL-18783](L0-SIMPL-18783/README.md) L0 · BP02A - Configure ID/Trust security solution · In Progress
   - [SIMPL-10171](L0-SIMPL-18783/L1-SIMPL-10171/README.md) L1 · Configure Onboarding Procedure Templates · In Progress

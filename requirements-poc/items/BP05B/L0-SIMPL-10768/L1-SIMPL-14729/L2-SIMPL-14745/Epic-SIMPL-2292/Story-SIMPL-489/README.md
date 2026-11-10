@@ -10,9 +10,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-As a Provider Agent\
-I want validate the syntax of the self-description\
-So that to ensure the self-description adheres to the rules and structure defined by the JSON and JSON-LD specifications
+**As a** Provider Agent\
+**I want** validate the syntax of the self-description\
+**So that** to ensure the self-description adheres to the rules and structure defined by the JSON and JSON-LD specifications
 
 AC
 

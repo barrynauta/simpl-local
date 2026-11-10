@@ -14,7 +14,7 @@ Create a policy that has Read or Write as an action and link it to attributes th
 
 Link to internal wiki:
 
-[an internal page]
+(internal page)
 
 FE: String field to enter the policy (TBD Internal ,,POC'') - To address in SIMPL-493
 

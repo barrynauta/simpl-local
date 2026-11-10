@@ -11,25 +11,20 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 ## Text
 
 *This epics improves SIMPL-12326, by allowing the deletion of validation rules even if they are linked to an onboarding request.*\
-----\
-**As A**
+----
 
-dataspace governance authority user
-
-**I want**
-
-to delete document validation rules even when they are linked to onboarding requests
-
-**So** **that**\
-I can delete rules that are no longer relevant for future onboarding procedures, by also preserving a snapshot of them to be used for past onboarding requests
+**As a** dataspace governance authority user\
+**I want** to delete document validation rules even when they are linked to onboarding requests\
+**So that** I can delete rules that are no longer relevant for future onboarding procedures, by also preserving a snapshot of them to be used for past onboarding requests
 
 **Acceptance Criteria**
 
-1. [Deprecates AC1 of SIMPL-12326]\
-   **GIVEN** that I have defined a validation rule for an onboarding procedure template\
-   **WHEN** I issue a delete request **\
-   **THEN** the rule is permanently deleted from the onboarding procedure template\
-   **AND** existing onboarding requests continue to use a snapshot of the rule at the time it was applied
+1. [Deprecates AC1 of SIMPL-12326]
+
+1. **Given** that I have defined a validation rule for an onboarding procedure template\
+   **When** I issue a delete request\
+   **Then** the rule is permanently deleted from the onboarding procedure template\
+   **And** existing onboarding requests continue to use a snapshot of the rule at the time it was applied
 
 ## Where it fits
 

@@ -93,8 +93,8 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 - Access-template details: SIMPL-31347 (internal page)
 - Validation: SIMPL-31407 (internal page)
 - Resource Description submission: SIMPL-31433 (internal page)
-- [Policies|an internal page]
-- [Resource Description UI|an internal page]
+- Policies (internal page)
+- Resource Description UI (internal page)
 
 ## Where it fits
 

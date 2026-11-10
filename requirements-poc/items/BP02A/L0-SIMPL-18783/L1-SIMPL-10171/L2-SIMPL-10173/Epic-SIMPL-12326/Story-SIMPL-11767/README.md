@@ -11,24 +11,21 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 ## Text
 
 *This story covers only the deletion of a rule. The action of disabling a rule is covered in SIMPL-7923 (AC6), SIMPL-10511 (AC6), SIMPL-8500 (AC12).*\
-----\
-**As A**
+----
 
-dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role
-
-**I want**
-
-via API, to delete a document validation rule
-
-**So** **that**\
-I can delete unused rules from an onboarding procedure template.
+**As a** dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role\
+**I want** via API, to delete a document validation rule\
+**So that** I can delete unused rules from an onboarding procedure template.
 
 **Acceptance Criteria**
 
-1. **GIVEN that I am a dataspace governance authority user with the T2IAA_M role and a validation rule is not used in any existing onboarding request when I DELETE /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId} THEN the rule is physically deleted**
-1. GIVEN that I am a dataspace governance authority user with the T2IAA_M role and a validation rule is used in at least one onboarding request when I DELETE /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId} THEN the request is rejected with a 400 bad request{}
-1. **GIVEN that I am a dataspace governance authority user with the T2IAA_M role and a validation rule in the current list of rules is not used in any existing onboarding request WHEN I update the list of rules via** **PUT** **/onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules AND not include such rule in the updated list** **THEN the rule is physically deleted**
-1. **GIVEN that I am a dataspace governance authority user with the T2IAA_M role and a validation rule** **in the current list of rules** **is used in at least one onboarding request WHEN I update the list of rules via PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules AND** **not include such rule in** **the updated list** **THEN the request is rejected with a 400 bad request**
+1. **Given** that I am a dataspace governance authority user with the T2IAA_M role and a validation rule is not used in any existing onboarding request **when** I DELETE /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId} **then** the rule is physically deleted
+
+2. **Given** that I am a dataspace governance authority user with the T2IAA_M role and a validation rule is used in at least one onboarding request **when** I DELETE /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId} **then** the request is rejected with a 400 bad request{}
+
+3. **Given** that I am a dataspace governance authority user with the T2IAA_M role and a validation rule in the current list of rules is not used in any existing onboarding request **when** I update the list of rules via PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules **and** not include such rule in the updated list **then** the rule is physically deleted
+
+4. **Given** that I am a dataspace governance authority user with the T2IAA_M role and a validation rule in the current list of rules is used in at least one onboarding request **when** I update the list of rules via PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules **and** not include such rule in the updated list **then** the request is rejected with a 400 bad request
 
 ## Where it fits
 

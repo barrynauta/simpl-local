@@ -10,22 +10,17 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**
-
-dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role
-
-**I want**
-
-to delete or disable document validation rules
-
-**So** **that**\
-I can prevent using rules that are no longer relevant for future onboarding procedures
+**As a** dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role\
+**I want** to delete or disable document validation rules\
+**So that** I can prevent using rules that are no longer relevant for future onboarding procedures
 
 **Acceptance Criteria**
 
-1. **GIVEN that I have defined a validation rule for an onboarding procedure template, and the rule has never been evaluated and is not linked to any onboarding request WHEN I issue a delete request THEN the rule is permanently deleted from the onboarding procedure template.**
-1. **GIVEN that I have defined a validation rule for an onboarding procedure template, and the rule has been previously evaluated or is linked to one or more existing onboarding requests WHEN I issue a delete request THEN the deletion of the rule is rejected.**
-1. GIVEN that I have defined a validation rule for an onboarding procedure template, and the rule is linked to at least one onboarding request WHEN I attempt to delete the rule THEN the system guides me to disable the rule instead, preventing its deletion{}
+1. **Given** that I have defined a validation rule for an onboarding procedure template, and the rule has never been evaluated and is not linked to any onboarding request **when** I issue a delete request **then** the rule is permanently deleted from the onboarding procedure template.
+
+2. **Given** that I have defined a validation rule for an onboarding procedure template, and the rule has been previously evaluated or is linked to one or more existing onboarding requests **when** I issue a delete request **then** the deletion of the rule is rejected.
+
+3. **Given** that I have defined a validation rule for an onboarding procedure template, and the rule is linked to at least one onboarding request **when** I attempt to delete the rule **then** the system guides me to disable the rule instead, preventing its deletion{}
 
 ## Where it fits
 

@@ -12,7 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-As a Provider authorised to manage resource descriptions, I want to enter values in the selected access-policy template, so that I can prepare an access policy for the new RD version.
+**As a** Provider authorised to manage resource descriptions,\
+**I want to** enter values in the selected access-policy template,\
+**So that** I can prepare an access policy for the new RD version.
 
 #### Acceptance criteria
 
@@ -98,12 +100,12 @@ Policy confirmation and final submission: SIMPL-31547 (internal page).
 #### Additional notes
 
 - API definition ticket: (internal page)
-- [an internal page]
-- [an internal page]
+- (internal page)
+- (internal page)
 
 - Shared policy-template API definition, SIMPL-31345 (internal page)
-- [R08 ODRL template technical description|an internal page]
-- [ODRL template architecture rationale|an internal page]
+- R08 ODRL template technical description (internal page)
+- ODRL template architecture rationale (internal page)
 
 ## Where it fits
 

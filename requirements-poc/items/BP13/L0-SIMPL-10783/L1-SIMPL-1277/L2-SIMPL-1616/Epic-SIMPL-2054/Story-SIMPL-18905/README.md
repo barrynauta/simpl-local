@@ -16,26 +16,22 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 *This is an internal API (i.e. not exposed via Tier1 gateway) that allows other components to ensure that the Tier 1 Credentials (JWTs) issued by other participants are trusted.*
 
-**As a**\
-dataspace agent component
-
-**I want to**\
-via an API, submit an End-User Tier 1 credential to be verified
-
-**So that**\
-I can ensure that the user has been authenticated by an onboarded participant and that the information contained in the credential can be trusted
+**As a** dataspace agent component\
+**I want to** via an API, submit an End-User Tier 1 credential to be verified\
+**So that** I can ensure that the user has been authenticated by an onboarded participant and that the information contained in the credential can be trusted
 
 **Acceptance Criteria:**
 
-1. **GIVEN** the caller is an internal service within the participant agent (not via a Tier 1 gateway)\
-   **AND** it provides a JSON body containing the End-User JWT\
-   **WHEN** it sends a POST /tierOneCredentials/validate\
-   **THEN** the API returns HTTP 204 No Content (the credential is valid)
-1. **GIVEN** the caller is an internal service within the participant agent (not via a Tier 1 gateway)\
-   **AND** it provides an invalid JSON body\
-   **OR** it provides a JSON body containing a malformed content field as the credential to verify\
-   **WHEN** it sends a POST /tierOneCredentials/validate\
-   **THEN** the API returns HTTP 400 Bad Request
+1. **Given** the caller is an internal service within the participant agent (not via a Tier 1 gateway)\
+   **And** it provides a JSON body containing the End-User JWT\
+   **When** it sends a POST /tierOneCredentials/validate\
+   **Then** the API returns HTTP 204 No Content (the credential is valid)
+
+2. **Given** the caller is an internal service within the participant agent (not via a Tier 1 gateway)\
+   **And** it provides an invalid JSON body\
+   OR it provides a JSON body containing a malformed content field as the credential to verify\
+   **When** it sends a POST /tierOneCredentials/validate\
+   **Then** the API returns HTTP 400 Bad Request
 
 ## Where it fits
 

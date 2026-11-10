@@ -16,27 +16,19 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 ##### Acceptance Criteria
 
-**Given** a new valid resource description or a new valid version of a resource description is received by the Governance Authority\
-**When** the metadata quality evaluation is completed\
-**Then** Simpl-Open automatically notifies the Provider who submitted the resource description
+1. **Given** a new valid resource description or a new valid version of a resource description is received by the Governance Authority\
+   **When** the metadata quality evaluation is completed\
+   **Then** Simpl-Open automatically notifies the Provider who submitted the resource description\
+   **And** the notification shall include at least the following information:
 
-**And** the notification shall include at least the following information:
-
-- The overall metadata quality score
-
-- The overall metadata quality classification
-
-- The metadata quality score for each defined quality dimension
-
-- The metadata quality classification for each defined quality dimension
-
-- The overall decision result:
-
+   - The overall metadata quality score
+   - The overall metadata quality classification
+   - The metadata quality score for each defined quality dimension
+   - The metadata quality classification for each defined quality dimension
+   - The overall decision result:
    - Approved for publication (metadata quality is higher than all required thresholds), or
-
    - Rejected (overall score is lower than the overall threshold and/or at least one dimension score is lower than its defined threshold)
-
-- A clear indication of which threshold(s) were not met, in case of rejection
+   - A clear indication of which threshold(s) were not met, in case of rejection
 
 ## Where it fits
 

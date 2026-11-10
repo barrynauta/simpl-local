@@ -64,11 +64,11 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 #### Additional notes
 
 | Figma: [https://www.figma.com/design/YZZ6QWqLcVHlNhjnI81Wzm/Catalogue--negotiation-and-transfer-UX-UI?node-id=2378-13252&t=o3dEx1c6tEbK4PpV-0](https://www.figma.com/design/YZZ6QWqLcVHlNhjnI81Wzm/Catalogue--negotiation-and-transfer-UX-UI?node-id=2378-13252&t=o3dEx1c6tEbK4PpV-0) |
-| [an internal page] |
-| [an internal page] |
-| [an internal page] |
-| [an internal page] |
-| [an internal page] |
+| (internal page) |
+| (internal page) |
+| (internal page) |
+| (internal page) |
+| (internal page) |
 
 ## Where it fits
 

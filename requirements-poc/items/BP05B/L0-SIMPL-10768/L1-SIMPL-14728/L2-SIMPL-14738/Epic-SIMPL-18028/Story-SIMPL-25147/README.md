@@ -51,15 +51,15 @@ The newly implemented EdcConnectorAdapter API must therefore:
 
 ###### Successful retrieval of resourceAddress
 
-**Given** a valid `resourceDescription` identifier (`{}assetID{`}) is provided in a request to the API\
-**When** the API processes the request to retrieve the resource address associated with that identifier\
-**Then** the API returns the corresponding `resourceAddress` in JSON format
+1. **Given** a valid `resourceDescription` identifier (`{}assetID{`}) is provided in a request to the API\
+   **When** the API processes the request to retrieve the resource address associated with that identifier\
+   **Then** the API returns the corresponding `resourceAddress` in JSON format
 
 ###### resourceAddress not available
 
-**Given** a request is sent to the API to retrieve the resource address for a valid `resourceDescription` identifier (`{}assetID{`})\
-**When** the API is unable to obtain the corresponding `resourceAddress` due to it being unavailable, missing, or due to an error occurring during retrieval\
-**Then** the API returns a response indicating that the requested `resourceAddress` is not available
+2. **Given** a request is sent to the API to retrieve the resource address for a valid `resourceDescription` identifier (`{}assetID{`})\
+   **When** the API is unable to obtain the corresponding `resourceAddress` due to it being unavailable, missing, or due to an error occurring during retrieval\
+   **Then** the API returns a response indicating that the requested `resourceAddress` is not available
 
 ## Where it fits
 

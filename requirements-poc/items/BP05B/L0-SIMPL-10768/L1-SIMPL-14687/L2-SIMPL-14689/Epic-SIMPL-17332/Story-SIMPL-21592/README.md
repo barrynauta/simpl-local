@@ -132,7 +132,7 @@ scenarios to check for both - new resource description and new version of a reso
 | --- |
 |  |  |
 
-[an internal page]
+(internal page)
 
 ## Where it fits
 

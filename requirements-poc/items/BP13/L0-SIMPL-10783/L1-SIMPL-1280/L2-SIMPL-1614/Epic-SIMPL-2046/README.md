@@ -10,17 +10,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-**As a**
-
-Service that monitors communication between participants,
-
-**I want**
-
-to encrypt, using mTLS approach, any communication between participants,
-
-**So that**
-
-I can ensure that the communication between agents is secured.
+**As a** Service that monitors communication between participants,\
+**I want** to encrypt, using mTLS approach, any communication between participants,\
+**So that** I can ensure that the communication between agents is secured.
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

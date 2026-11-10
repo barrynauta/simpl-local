@@ -11,18 +11,18 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 ## Text
 
 **As a** Provider\
-**I want** to add a contract clause related to resource consent of the data resource to a new resource description via UI\
-**So that** the Consumer agrees that resource consent (and thus access to the resource) can be withdrawn
+**I want to** add a contract clause related to resource consent of the data resource to a new resource description via UI\
+**So that** the Consumer agrees that resource consent (and thus access to the resource) can be withdrawn
 
 **Acceptance criteria**
 
-**Given** I am authenticated as a Provider\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new resource description\
-**When** I reach the step "Access policies - resource consent" in the wizard\
-**and** I create an access policy related to resource consent\
-**and** I upload a document related to the resource consent status changes\
-**Then** Simpl-Open adds a contract clause of the type consent to the resource description linked to the uploaded document
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step "Access policies - resource consent" in the wizard\
+   **And** I create an access policy related to resource consent\
+   **And** I upload a document related to the resource consent status changes\
+   **Then** Simpl-Open adds a contract clause of the type consent to the resource description linked to the uploaded document
 
 ## Where it fits
 

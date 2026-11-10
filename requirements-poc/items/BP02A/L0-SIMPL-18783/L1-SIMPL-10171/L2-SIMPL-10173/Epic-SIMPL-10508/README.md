@@ -10,26 +10,23 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As a**
-
-Dataspace governance authority,
-
-**I want to**
-
-define a composite rule combining content check and presence check rules or other composite rules. In such combination. I want to be able to indicate that all must be valid or that at least one must be valid.
-
-**So that**
-
-I can define custom custom logical conditions and combine multiple validation checks
+**As a** Dataspace governance authority,\
+**I want to** define a composite rule combining content check and presence check rules or other composite rules. In such combination. I want to be able to indicate that all must be valid or that at least one must be valid.\
+**So that** I can define custom custom logical conditions and combine multiple validation checks
 
 **Acceptance Criteria**
 
-1. **GIVEN that I am defining an** **onboarding procedure template** **WHEN I add a rule of type** **COMPOSITE** **THEN I should be able to insert a name, a description,** **a validity interval for the rule, a flag to state if the rule is enabled or not**
-1. **GIVEN that I am defining an onboarding procedure template WHEN I add a rule of type** **COMPOSITE CHECK** **THEN I should able to define an "auto-approved" flag that states that if the rule evaluator evaluates the rule positively THEN the onboarding request can be automatically approved**
-1. **GIVEN that I am defining an onboarding procedure template WHEN I add a rule of type** **COMPOSITE** **THEN I should able to flag a "required" field that states that the rule evaluator evaluates the rule negatively, then the onboarding request must be automatically temporarily rejected and resubmitted to the applicant**
-1. **GIVEN that I am defining an onboarding procedure template** **WHEN I add a rule of type COMPOSITE THEN I should be able to create an unlimited number of children rules of type CONTENT CHECK, PRESENCE CHECK or COMPOSITE**
-1. **GIVEN that I am defining an onboarding procedure template** **WHEN I add a rule of type COMPOSITE and its children rule THEN I should NOT be able to create flag the children rules with the "auto-approved" and "required" flags**
-1. **GIVEN that I am defining an onboarding procedure template** WHEN clicking the button to create a rule of type COMPOSITE THEN I should be able to choose a logical strategy ("At least one must be valid" or "All must be valid") to specify whether the composite rule is considered successful when either one or all of its child rules are evaluated successfully.{}
+1. **Given** that I am defining an onboarding procedure template **when** I add a rule of type COMPOSITE **then** I should be able to insert a name, a description, a validity interval for the rule, a flag to state if the rule is enabled or not
+
+2. **Given** that I am defining an onboarding procedure template **when** I add a rule of type COMPOSITE CHECK **then** I should able to define an "auto-approved" flag that states that if the rule evaluator evaluates the rule positively **then** the onboarding request can be automatically approved
+
+3. **Given** that I am defining an onboarding procedure template **when** I add a rule of type COMPOSITE **then** I should able to flag a "required" field that states that the rule evaluator evaluates the rule negatively, then the onboarding request must be automatically temporarily rejected and resubmitted to the applicant
+
+4. **Given** that I am defining an onboarding procedure template **when** I add a rule of type COMPOSITE **then** I should be able to create an unlimited number of children rules of type CONTENT CHECK, PRESENCE CHECK or COMPOSITE
+
+5. **Given** that I am defining an onboarding procedure template **when** I add a rule of type COMPOSITE and its children rule **then** I should NOT be able to create flag the children rules with the "auto-approved" and "required" flags
+
+6. **Given** that I am defining an onboarding procedure template **when** clicking the button to create a rule of type COMPOSITE **then** I should be able to choose a logical strategy ("At least one must be valid" or "All must be valid") to specify whether the composite rule is considered successful when either one or all of its child rules are evaluated successfully.{}
 
 ## Where it fits
 

@@ -10,24 +10,16 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 
 ## Text
 
-**As a**
-
-Simpl-Open End User responsible with the Consent Manager (CONSENT_M) role, responsible for managing consent assertions
-
-**I want to**
-
-via API, view the list of consent assertions created within the system
-
-**so that**
-
-I have a clear overview of the consent assertions created within my agent, which allows me to properly manage the assertions.
+**As a** Simpl-Open End User responsible with the Consent Manager (CONSENT_M) role, responsible for managing consent assertions\
+**I want to** via API, view the list of consent assertions created within the system\
+**So that** I have a clear overview of the consent assertions created within my agent, which allows me to properly manage the assertions.
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am an authenticated user with CONSENT_M role\
-   **WHEN** I send a GET /tier1/v1/consentAssertions API request\
-   **THEN** I receive a 200 OK response\
-   **AND** I receive a paginated list of consent assertions with:\
+1. **Given** I am an authenticated user with CONSENT_M role\
+   **When** I send a GET /tier1/v1/consentAssertions API request\
+   **Then** I receive a 200 OK response\
+   **And** I receive a paginated list of consent assertions with:\
    the assertion ID (UUID)\
    the assertion name (String)\
    the assertion description (String)\
@@ -41,22 +33,26 @@ I have a clear overview of the consent assertions created within my agent, which
    the notificationRequired boolean flag\
    the acknowledgementRequired boolean flag\
    the acknowledgementStatus (NOT_REQUIRED, ACTIVE, WITHDRAWN)\
-   **AND** pagination metadata: page, pageSize, total, and navigation URIs (first, last, prev, next)
-1. **GIVEN** I am an authenticated user with CONSENT_M role\
-   **WHEN** I send a GET /tier1/v1/consentAssertions\
-   **AND** I specified a search filter (name, status, type, metadata)\
-   **THEN** I receive a 200 OK response\
-   **AND** I receive a paginated list of consent assertions that match the filter criteria{}
-1. **GIVEN** I am an authenticated user with CONSENT_M role\
-   **WHEN** I send a GET /tier1/v1/consentAssertions\
-   **AND** I specified one or more sorting criteria (name, status, type, creationTimestamp, updateTimestamp, all in ascending or desending order)\
-   **THEN** I receive a paginated list of consent assertions sorted by the given criteria
-1. **GIVEN** I am an unauthenticated user\
-   **WHEN** I invoke a GET /tier1/v1/consentAssertions\
-   **THEN** I receive a 401 Unauthorized response
-1. **GIVEN** I am an authenticated user without CONSENT_M role\
-   **WHEN** I send a GET /tier1/v1/consentAssertions\
-   **THEN** I receive a 403 Forbidden response
+   **And** pagination metadata: page, pageSize, total, and navigation URIs (first, last, prev, next)
+
+2. **Given** I am an authenticated user with CONSENT_M role\
+   **When** I send a GET /tier1/v1/consentAssertions\
+   **And** I specified a search filter (name, status, type, metadata)\
+   **Then** I receive a 200 OK response\
+   **And** I receive a paginated list of consent assertions that match the filter criteria{}
+
+3. **Given** I am an authenticated user with CONSENT_M role\
+   **When** I send a GET /tier1/v1/consentAssertions\
+   **And** I specified one or more sorting criteria (name, status, type, creationTimestamp, updateTimestamp, all in ascending or desending order)\
+   **Then** I receive a paginated list of consent assertions sorted by the given criteria
+
+4. **Given** I am an unauthenticated user\
+   **When** I invoke a GET /tier1/v1/consentAssertions\
+   **Then** I receive a 401 Unauthorized response
+
+5. **Given** I am an authenticated user without CONSENT_M role\
+   **When** I send a GET /tier1/v1/consentAssertions\
+   **Then** I receive a 403 Forbidden response
 
 ## Where it fits
 

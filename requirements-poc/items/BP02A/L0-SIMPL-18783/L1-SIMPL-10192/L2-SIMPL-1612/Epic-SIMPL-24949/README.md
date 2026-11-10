@@ -10,30 +10,24 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As a**
-
-Governance Authority
-
-**I want to**
-
-mark each of my identity attributes as public or non-public
-
-**So that**
-
-I can control which attributes are visible to external Governance Authorities and therefore available for federation mapping.
+**As a** Governance Authority\
+**I want to** mark each of my identity attributes as public or non-public\
+**So that** I can control which attributes are visible to external Governance Authorities and therefore available for federation mapping.
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am a Governance Authority user with the appropriate roles\
-   **WHEN** I mark a custom identity attribute as public or non-public\
-   **THEN** the *public* property is updated accordingly
-1. **GIVEN** I am a Governance Authority user with the appropriate roles\
-   **WHEN** I access the public visibility setting of a built-in identity attribute\
-   **THEN** the public attribute is already defined\
-   **AND** the *public* property cannot be modified
-1. **GIVEN** I am a Governance Authority user with the appropriate roles\
-   **WHEN** I list the built-in identity attributes\
-   **THEN** only identity attributes related to search and consumption are marked as public
+1. **Given** I am a Governance Authority user with the appropriate roles\
+   **When** I mark a custom identity attribute as public or non-public\
+   **Then** the *public* property is updated accordingly
+
+2. **Given** I am a Governance Authority user with the appropriate roles\
+   **When** I access the public visibility setting of a built-in identity attribute\
+   **Then** the public attribute is already defined\
+   **And** the *public* property cannot be modified
+
+3. **Given** I am a Governance Authority user with the appropriate roles\
+   **When** I list the built-in identity attributes\
+   **Then** only identity attributes related to search and consumption are marked as public
 
 ## Where it fits
 

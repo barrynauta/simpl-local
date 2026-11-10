@@ -11,26 +11,26 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 ## Text
 
 **As a** Data Space Governance Authority\
-**I want** to provide a central repository for the lightweight, minimal SIMPL-Open Consumer Agent virtual machine image\
+**I want to** provide a central repository for the lightweight, minimal SIMPL-Open Consumer Agent virtual machine image\
 **So that** App, Data, and Infrastructure Consumers can easily access, download, and deploy the Consumer Agent on supported virtualization platforms
 
 **As a** Data Space Governance Authority\
-**I want** to provide a lightweight, minimal version of the SIMPL-Open Consumer Agent packaged as a container image\
+**I want to** provide a lightweight, minimal version of the SIMPL-Open Consumer Agent packaged as a container image\
 **So that** App, Data, and Infrastructure Consumers can deploy SIMPL-Open easily in containerised environments
 
 -
 
 **Acceptance Criterion**
 
-**Given** that Consumers require the lightweight, minimal SIMPL-Open Consumer Agent\
-**When** they search for available deployment options\
-**Then** they must be able to find, download, and consistently use the Consumer Agent image from a central repository, ensuring easy and standardized deployments
+1. **Given** that Consumers require the lightweight, minimal SIMPL-Open Consumer Agent\
+   **When** they search for available deployment options\
+   **Then** they must be able to find, download, and consistently use the Consumer Agent image from a central repository, ensuring easy and standardized deployments
 
 **Acceptance Criterion**
 
-**Given** that some Consumers cannot set up complex DevOps pipelines\
-**When** they need to deploy the SIMPL-Open Consumer Agent\
-**Then** a lightweight, minimal container image of the Consumer Agent must be available for direct deployment on supported container platforms, ensuring easy and consistent setup
+2. **Given** that some Consumers cannot set up complex DevOps pipelines\
+   **When** they need to deploy the SIMPL-Open Consumer Agent\
+   **Then** a lightweight, minimal container image of the Consumer Agent must be available for direct deployment on supported container platforms, ensuring easy and consistent setup
 
 ## Where it fits
 

@@ -10,21 +10,13 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority
-
-**I want to**
-
-via an API, enable a specific Identity Attribute ([Identity Attribute|an internal page]) and the Identity Attribute is shown from the Identity Attributes list
-
-**So that**
-
-I can assign the specific Identity Attribute to any Participant
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority\
+**I want to** via an API, enable a specific Identity Attribute (Identity Attribute (internal page)) and the Identity Attribute is shown from the Identity Attributes list\
+**So that** I can assign the specific Identity Attribute to any Participant
 
 **Acceptance Criteria:**
 
-1. **Given that the user is logged in with the IATTR_M dataspace governance authority role, and the API endpoint for disabling an identity attribute is available, when the user sends a PUT via the API to update an Identity Attribute with the value for assignable property to true, then the Identity Attribute returned by the update got the assignable value to true**
+1. **Given** that the user is logged in with the IATTR_M dataspace governance authority role, and the API endpoint for disabling an identity attribute is available, **when** the user sends a PUT via the API to update an Identity Attribute with the value for assignable property to true, **then** the Identity Attribute returned by the update got the assignable value to true
 
 ## Where it fits
 

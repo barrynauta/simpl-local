@@ -54,7 +54,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 - The dropdown containing the resource types that can be selected is implemented in (internal page)
 - If the dropdown does not contain any resource type, meaning that the dataspace does not have any schema, then, obviously, nothing can be selected and no wizard can be opened.
 - API to retrieve the schema defined in (internal page) and implemented in (internal page)
-- "Entities" in the schema are defined on [an internal page|an internal page] and, with respect to the UI, further described on an internal page
+- "Entities" in the schema are defined on an internal page and, with respect to the UI, further described on an internal page
 
 ## Where it fits
 

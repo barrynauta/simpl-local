@@ -12,11 +12,8 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As a**
-
-Dataspace governance authority,
-
-**I want,**
+**As a** Dataspace governance authority,\
+**I want** ,
 
 through an UI, to define which resources/documentation are mandatory to be provided during the onboarding procedure,
 

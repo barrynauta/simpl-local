@@ -10,28 +10,24 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As A**
-
-any participant user with the Tier 2 authorization manager, in the Tier2 resources exclusion management page, viewing the list of Tier2 gateway resources exclusions table list
-
-**I want to**
-
-see a table list with this heading:
+**As a** any participant user with the Tier 2 authorization manager, in the Tier2 resources exclusion management page, viewing the list of Tier2 gateway resources exclusions table list\
+**I want to** see a table list with this heading:
 
 - URL
 - reason for exclusion
 - exclusion date
 
-**So that**
-
-I view the paginated list of defined Tier2 gateway resources exclusions for my agent
+**So that** I view the paginated list of defined Tier2 gateway resources exclusions for my agent
 
 **Acceptance Criteria:**
 
-1. **Given that the user is logged in with the T2IAA_M role, when the user navigates to the Tier2 resources exclusion management page, then the page displays an empty table with the correct column headings: "URL", "Reason for Exclusion", and "Exclusion Date".**
-1. **Given that the user is logged in with the T2IAA_M role, when the user navigates to the Tier2 resources exclusion management page and there are defined Tier2 gateway resources exclusions, then the table displays a paginated list of Tier2 gateway resources exclusions with their corresponding values for "URL", "Reason for Exclusion", and "Exclusion Date".**
-1. **Given that the user is logged in with the T2IAA_M role, when the user navigates to the Tier2 resources exclusion management page, then the table displays a pagination control that allows the user to navigate through the list of Tier2 gateway resources exclusions.**
-1. **Given that the user is logged in with the T2IAA_M role, when the user navigates to the Tier2 resources exclusion management page, then the table displays a consistent and readable format for dates in the "Exclusion Date" column.**
+1. **Given** that the user is logged in with the T2IAA_M role, **when** the user navigates to the Tier2 resources exclusion management page, **then** the page displays an empty table with the correct column headings: "URL", "Reason for Exclusion", and "Exclusion Date".
+
+2. **Given** that the user is logged in with the T2IAA_M role, **when** the user navigates to the Tier2 resources exclusion management page and there are defined Tier2 gateway resources exclusions, **then** the table displays a paginated list of Tier2 gateway resources exclusions with their corresponding values for "URL", "Reason for Exclusion", and "Exclusion Date".
+
+3. **Given** that the user is logged in with the T2IAA_M role, **when** the user navigates to the Tier2 resources exclusion management page, **then** the table displays a pagination control that allows the user to navigate through the list of Tier2 gateway resources exclusions.
+
+4. **Given** that the user is logged in with the T2IAA_M role, **when** the user navigates to the Tier2 resources exclusion management page, **then** the table displays a consistent and readable format for dates in the "Exclusion Date" column.
 
 ## Where it fits
 

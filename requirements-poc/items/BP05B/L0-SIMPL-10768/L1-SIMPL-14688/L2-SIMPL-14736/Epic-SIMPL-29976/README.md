@@ -11,18 +11,18 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 ## Text
 
 **As a** Provider\
-**I want** to add a contract clause related to the intended purpose of the data resource to a new resource description via UI\
+**I want to** add a contract clause related to the intended purpose of the data resource to a new resource description via UI\
 **So that** I can ensure that the Consumer agrees that they will only use the data resource for the intended purpose
 
 **Acceptance criteria**
 
-**Given** I am authenticated as a Provider\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new resource description\
-**When** I reach the step "Access policies - resource consent" in the wizard\
-**and** I create an access policy related to resource consent\
-**and** I upload a document related to the intended purpose of the data resource\
-**Then** Simpl-Open adds a contract clause of the type consent to the resource description linked to the uploaded document
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step "Access policies - resource consent" in the wizard\
+   **And** I create an access policy related to resource consent\
+   **And** I upload a document related to the intended purpose of the data resource\
+   **Then** Simpl-Open adds a contract clause of the type consent to the resource description linked to the uploaded document
 
 ## Where it fits
 

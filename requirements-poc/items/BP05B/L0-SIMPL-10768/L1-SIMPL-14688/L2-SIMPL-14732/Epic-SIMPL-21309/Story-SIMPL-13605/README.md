@@ -11,7 +11,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 ## Text
 
 **As a** Provider creating a resource description for an infrastructure resource,\
-**I want** to fill out the deployment script popup with Title, Description, Cloud -Provider- Environment, and upload a deployment script,\
+**I want to** fill out the deployment script popup with Title, Description, Cloud -Provider- Environment, and upload a deployment script,\
 **So that** I can associate a valid deployment script with my infrastructure resource description.\
 ----
 
@@ -32,40 +32,46 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ###### Acceptance Criteria
 
-**Scenario 1: Display Upload Form in Popup**\
-Given the provider clicks "Add deployment script +"\
-When the upload popup opens\
-Then the form fields Title, Description, Cloud Environment, and File Upload are shown and mandatory
+**Scenario 1: Display Upload Form in Popup**
 
-**Scenario 2: File Upload Widget UI**\
-Given the form to upload a deployment script for a resource description is visible\
-When the provider drags/drops or uploads a file from its device\
-Then the file name is displayed\
-And a remove (bin) button appears next to it
+1. **Given** the provider clicks "Add deployment script +"\
+   **When** the upload popup opens\
+   **Then** the form fields Title, Description, Cloud Environment, and File Upload are shown and mandatory
 
-**Scenario 3: Validate Form Before Submit**\
-Given the provider fills out the form and does not fill all fields or provides incorrect values\
-When the provider clicks Submit\
-Then inline errors are shown for missing or invalid fields\
-And the popup remains open for correction
+**Scenario 2: File Upload Widget UI**
 
-**Scenario 4: Submit Deployment Script Successfully**\
-Given the provider has provided correct values for all fields and uploaded a valid deployment script\
-When the provider submits\
-Then the popup closes\
-And the main form shows a visual indicator with the uploaded script info and deployment script id
+2. **Given** the form to upload a deployment script for a resource description is visible\
+   **When** the provider drags/drops or uploads a file from its device\
+   **Then** the file name is displayed\
+   **And** a remove (bin) button appears next to it
 
-**Scenario 5: Handle Submission Errors**\
-Given the provider has provided correct values for all fields but uploaded an invalid deployment script\
-When the provider submits\
-Then error messages related to deployment script validation are shown in the popup\
-And the popup remains open for correction
+**Scenario 3: Validate Form Before Submit**
 
-**Scenario 6: Cancel Upload**\
-Given the popup is open\
-When the provider clicks Cancel\
-Then the popup closes without saving or submitting\
-----
+3. **Given** the provider fills out the form and does not fill all fields or provides incorrect values\
+   **When** the provider clicks Submit\
+   **Then** inline errors are shown for missing or invalid fields\
+   **And** the popup remains open for correction
+
+**Scenario 4: Submit Deployment Script Successfully**
+
+4. **Given** the provider has provided correct values for all fields and uploaded a valid deployment script\
+   **When** the provider submits\
+   **Then** the popup closes\
+   **And** the main form shows a visual indicator with the uploaded script info and deployment script id
+
+**Scenario 5: Handle Submission Errors**
+
+5. **Given** the provider has provided correct values for all fields but uploaded an invalid deployment script\
+   **When** the provider submits\
+   **Then** error messages related to deployment script validation are shown in the popup\
+   **And** the popup remains open for correction
+
+**Scenario 6: Cancel Upload**
+
+6. **Given** the popup is open\
+   **When** the provider clicks Cancel\
+   **Then** the popup closes without saving or submitting\
+   ----
 
 Technical description:
 

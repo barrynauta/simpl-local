@@ -14,17 +14,16 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 **As a** Simpl-Open administrator\
 **I want** all Simpl-Open participant types within the specific user roles to access the Users&Roles service,\
-**so that** they can define roles used by the Authorisation Tier 1, manage the roles assignment of Tier 1 Authentication Provider end users and assign identity attributes to roles.
+**So that** they can define roles used by the Authorisation Tier 1, manage the roles assignment of Tier 1 Authentication Provider end users and assign identity attributes to roles.
 
 **Acceptance Criteria**
 
 **AC1 The Users&Roles** **service is accessed by authorised users across all Participant Types**
 
-**Given** a user is authenticated within any Participant Type,
-
-**When** the user role is assigned to the role T1UAR_M,\
-**Then** the Users&Role service is displayed on their Simpl-Open landing page,\
-**and** this user can access the Users&Role service.
+1. **Given** a user is authenticated within any Participant Type,\
+   **When** the user role is assigned to the role T1UAR_M,\
+   **Then** the Users&Role service is displayed on their Simpl-Open landing page,\
+   **And** this user can access the Users&Role service.
 
 ## Where it fits
 

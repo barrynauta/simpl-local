@@ -12,9 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 Disclaimer: The User Story is intended to link resources that are referred as a placeholder for the SLA, which is yet to be defined.
 
-As a Provider User\
-I want to use an UI to set the reference to SLA Agreements to the self-description\
-So that I can set the SLA Agreements for my dataset/application/infrastructure.
+**As a** Provider User\
+**I want to** use an UI to set the reference to SLA Agreements to the self-description\
+**So that** I can set the SLA Agreements for my dataset/application/infrastructure.
 
 **Technical Specification**
 

@@ -11,36 +11,33 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 ## Text
 
 This US improves task SIMPL-28594 and SIMPL-28595 in such a way that resource consent assertions will include a link to the catalogue UI, which will show a prefiltered list with all the resource descriptions (zero or more) linked to the assertion\
-----\
-**As a**
+----
 
-Data Provider End User who is responsible for creating and publishing the resource descriptions on the catalogue (SD_PUBLISHER)
-
-**I want**
-
-via API, obtain a direct link from a consent assertion to the related resource descriptions list in the catalogue
-
-**So that**
-
-I can quickly navigate to the entities linked to a resource consent assertion without having to manually search for them in the catalogue UI.
+**As a** Data Provider End User who is responsible for creating and publishing the resource descriptions on the catalogue (SD_PUBLISHER)\
+**I want** via API, obtain a direct link from a consent assertion to the related resource descriptions list in the catalogue\
+**So that** I can quickly navigate to the entities linked to a resource consent assertion without having to manually search for them in the catalogue UI.
 
 **Acceptance Criteria**
 
-1. [IMPROVES AC1 of SIMPL-28594]\
-   **GIVEN** I am an authenticated user with SD_PUBLISHER role\
-   **AND** the catalogue UI template URL is configured in the application configuration of the consent manager backend component\
-   **WHEN** I send a GET /tier1/v1/consentAssertions API request\
-   **THEN** I receive a 200 OK response\
-   **AND** I receive a paginated list of consent assertions\
-   **AND** in addition to the parameters already listed, each assertion contains a linkedResourceUrl field with a URL of the catalogue
-1. [IMPROVES AC1 of SIMPL-28595]\
-   **GIVEN** I am an authenticated user with the SD_PUBLISHER role\
-   **AND** the catalogue UI template URL is configured in the application configuration of the consent manager backend component\
-   **AND** a consent assertion has been created in the past\
-   **WHEN** I GET /tier1/v1/consentAssertions/{consentAssertionId} on that assertion\
-   **THEN** I receive a 200 Ok response\
-   **AND** in addition to the parameters already listed, the response contains also a linkedResourceUrl field with a URL of the catalogue
-1. The documentation of the consent management backend component must include a dedicated configuration that allows to input a catalogueUrlTemplate parameter in the format of "https://example.com?resourceConsentAssertionId=%s, where the %s will be replaced with the consent assertion id.
+1. [IMPROVES AC1 of SIMPL-28594]
+
+1. **Given** I am an authenticated user with SD_PUBLISHER role\
+   **And** the catalogue UI template URL is configured in the application configuration of the consent manager backend component\
+   **When** I send a GET /tier1/v1/consentAssertions API request\
+   **Then** I receive a 200 OK response\
+   **And** I receive a paginated list of consent assertions\
+   **And** in addition to the parameters already listed, each assertion contains a linkedResourceUrl field with a URL of the catalogue
+
+   - [IMPROVES AC1 of SIMPL-28595]
+
+2. **Given** I am an authenticated user with the SD_PUBLISHER role\
+   **And** the catalogue UI template URL is configured in the application configuration of the consent manager backend component\
+   **And** a consent assertion has been created in the past\
+   **When** I GET /tier1/v1/consentAssertions/{consentAssertionId} on that assertion\
+   **Then** I receive a 200 Ok response\
+   **And** in addition to the parameters already listed, the response contains also a linkedResourceUrl field with a URL of the catalogue
+
+   - The documentation of the consent management backend component must include a dedicated configuration that allows to input a catalogueUrlTemplate parameter in the format of "https://example.com?resourceConsentAssertionId=%s, where the %s will be replaced with the consent assertion id.
 
 ## Where it fits
 

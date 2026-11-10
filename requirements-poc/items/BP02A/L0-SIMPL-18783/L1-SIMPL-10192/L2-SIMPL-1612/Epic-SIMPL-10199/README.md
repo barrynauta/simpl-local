@@ -10,12 +10,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**\
-data space authority\
-**I want**\
-a UI and an API to create, list, modify, delete, enable and disable identity attributes\
-**So that**\
-I manage identity attributes
+**As a** data space authority\
+**I want** a UI and an API to create, list, modify, delete, enable and disable identity attributes\
+**So that** I manage identity attributes
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

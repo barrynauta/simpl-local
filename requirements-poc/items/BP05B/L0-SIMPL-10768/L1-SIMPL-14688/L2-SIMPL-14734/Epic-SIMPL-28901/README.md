@@ -12,7 +12,8 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 **As a** Provider\
 **I want to** define a policy information point based on the consumption logs of my resources\
-**so that** I can include the policy information point in the usage policy\
+**So that** I can include the policy information point in the usage policy
+
 **and** assess whether the Consumer of my resource follows the usage policy by evaluating the policy constraints using the policy information point
 
 **Acceptance criteria:**

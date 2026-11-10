@@ -12,7 +12,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 **As a** Provider\
 **I want to** add a new usage policy template\
-**so that** I can use that when I assign a usage policy in a resource description.
+**So that** I can use that when I assign a usage policy in a resource description.
 
 **Acceptance Criterion: Create a new usage policy template through configuration**\
 The Provider can define a new usage policy template through configuration. Simpl-Open will support the Provider by providing documentation and an example on

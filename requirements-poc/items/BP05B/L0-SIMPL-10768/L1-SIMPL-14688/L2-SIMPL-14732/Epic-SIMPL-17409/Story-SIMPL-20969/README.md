@@ -63,14 +63,15 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 | then|I can navigate to the next step in the wizard. |
 | --- |
 
-**Provider tries to submit a Resource Description without mandatory application metadata**\
-**Given** I am authenticated as a Provider end user\
-**And** I have a role authorising the management of Resource Descriptions\
-**And** I am creating a new resource description\
-**When** I attempt to submit the Self Description\
-**And** the mandatory application resource type specific metadata required by the selected schema is missing or invalid\
-**Then** the Self Description cannot be submitted\
-**And** I am informed that the application metadata must be completed according to the selected resource type schema
+**Provider tries to submit a Resource Description without mandatory application metadata**
+
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new resource description\
+   **When** I attempt to submit the Self Description\
+   **And** the mandatory application resource type specific metadata required by the selected schema is missing or invalid\
+   **Then** the Self Description cannot be submitted\
+   **And** I am informed that the application metadata must be completed according to the selected resource type schema
 
 ## Where it fits
 

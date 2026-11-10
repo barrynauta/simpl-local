@@ -12,32 +12,29 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 *This user story outlines the adaptation and migration of the v1 API implementation to v2, based on guidelines derived from the API definition tasks. Linked to this, there are the API definition tasks that explain what this API will substitute.*
 
-**As a**\
-participant user with no specific roles in the agent
-
-**I want to**\
-check connectivity to another participant agent by its fully qualified domain name (FQDN)
-
-**So that**\
-I can verify the remote agent is reachable
+**As a** participant user with no specific roles in the agent\
+**I want to** check connectivity to another participant agent by its fully qualified domain name (FQDN)\
+**So that** I can verify the remote agent is reachable
 
 **Acceptance Criteria:**
 
-1. **GIVEN** that I am an authenticated user with no specific role\
-   **AND** I provide a valid fqdn query parameter\
-   **WHEN** I send a GET /ping request\
-   **THEN** the API returns HTTP 200 OK\
-   **AND** the response body is a JSON object containing at least:\
+1. **Given** that I am an authenticated user with no specific role\
+   **And** I provide a valid fqdn query parameter\
+   **When** I send a GET /ping request\
+   **Then** the API returns HTTP 200 OK\
+   **And** the response body is a JSON object containing at least:\
    *id:* the unique UUID of the remote participant\
    *organization:* the name of the remote participant's organization\
    *identityAttributes:* a list of assigned identity attributes (each with at least id, code, name)
-1. **GIVEN** that I am an authenticated user with no specific role\
-   **AND** the FQDN query parameter is missing or invalid\
-   **WHEN** I send a GET /ping request\
-   **THEN** the API returns HTTP 400 Bad Request
-1. **GIVEN** that I am not authenticated\
-   **WHEN** I send a GET /ping? request\
-   **THEN** the API returns HTTP 401 Unauthorized
+
+2. **Given** that I am an authenticated user with no specific role\
+   **And** the FQDN query parameter is missing or invalid\
+   **When** I send a GET /ping request\
+   **Then** the API returns HTTP 400 Bad Request
+
+3. **Given** that I am not authenticated\
+   **When** I send a GET /ping? request\
+   **Then** the API returns HTTP 401 Unauthorized
 
 ## Where it fits
 

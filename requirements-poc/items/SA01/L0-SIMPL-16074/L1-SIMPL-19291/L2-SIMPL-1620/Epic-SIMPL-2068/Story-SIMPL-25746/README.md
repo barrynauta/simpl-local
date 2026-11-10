@@ -12,7 +12,7 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 **As a** Data Provider or Consumer,\
 **I want to** configure lineage dataset references and upstream input references in workflow run config,\
-**so that** lineage generation can build a semantically linked provenance graph.
+**So that** lineage generation can build a semantically linked provenance graph.
 
 ###### Technical Details:
 
@@ -37,41 +37,41 @@ Input services: Services that run as part of the workflow and emit references us
 
 ###### **AC1**
 
-**Given** a workflow run configuration includes a -valid flag- valid lineage configuration to activate the lineage generation\
-**When** the workflow run completes succesfully\
-**Then** the lineage output is built
+1. **Given** a workflow run configuration includes a -valid flag- valid lineage configuration to activate the lineage generation\
+   **When** the workflow run completes succesfully\
+   **Then** the lineage output is built
 
 ###### **AC2**
 
-**Given** a dataset name is provided in the lineage configuration\
-**When** lineage output is built\
-**Then** the system generates a URI using the uri_prefix and dataset name as an identifier for the dataset\
-**And** that identifier is used in the lineage report
+2. **Given** a dataset name is provided in the lineage configuration\
+   **When** lineage output is built\
+   **Then** the system generates a URI using the uri_prefix and dataset name as an identifier for the dataset\
+   **And** that identifier is used in the lineage report
 
 ###### **AC3**
 
-**Given** one or more input services (services that read data, e.g., from S3 or other data sources) provide valid references to other URI\
-**When** lineage output is built\
-**Then** those URIs are accepted as upstream references\
-**And** they are available for prov:used and derived linkage
+3. **Given** one or more input services (services that read data, e.g., from S3 or other data sources) provide valid references to other URI\
+   **When** lineage output is built\
+   **Then** those URIs are accepted as upstream references\
+   **And** they are available for prov:used and derived linkage
 
 ###### **AC4**
 
-**Given** lineage configuration is invalid\
-**When** lineage output is built\
-**Then** lineage generation is skipped\
-**And** the skip reason includes a stable non-sensitive error code
+4. **Given** lineage configuration is invalid\
+   **When** lineage output is built\
+   **Then** lineage generation is skipped\
+   **And** the skip reason includes a stable non-sensitive error code
 
 ###### **AC5**
 
-**Given** no dataset name is provided in the config\
-**When** lineage output is built\
-**Then** the system generates a URI using the uri_prefix and run_id as an identifier for the dataset\
-**And** that identifier is used in the lineage report
+5. **Given** no dataset name is provided in the config\
+   **When** lineage output is built\
+   **Then** the system generates a URI using the uri_prefix and run_id as an identifier for the dataset\
+   **And** that identifier is used in the lineage report
 
 ###### Context:
 
-Technical Description: [an internal page]
+Technical Description: (internal page)
 
 ## Where it fits
 

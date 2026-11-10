@@ -10,23 +10,17 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-**As a** Participant
-
-**I want to** configure the execution target for a workflow
-
-**so that** the workflow can run either against an agent-integrated runtime or an externally hosted cluster without changing the orchestration logic.
+**As a** Participant\
+**I want to** configure the execution target for a workflow\
+**So that** the workflow can run either against an agent-integrated runtime or an externally hosted cluster without changing the orchestration logic.
 
 **Acceptance Criteria**
 
-**Given** I am authenticated as a Participant with permission to configure workflows
-
-**When** I create or update a workflow
-
-**Then** I can save the distribution model together with the execution target
-
-**And** the execution target can represent either an agent-integrated runtime or an external participant-owned cluster
-
-**And** the workflow remains executable only when the configured target is available.
+1. **Given** I am authenticated as a Participant with permission to configure workflows\
+   **When** I create or update a workflow\
+   **Then** I can save the distribution model together with the execution target\
+   **And** the execution target can represent either an agent-integrated runtime or an external participant-owned cluster\
+   **And** the workflow remains executable only when the configured target is available.
 
 ## Where it fits
 

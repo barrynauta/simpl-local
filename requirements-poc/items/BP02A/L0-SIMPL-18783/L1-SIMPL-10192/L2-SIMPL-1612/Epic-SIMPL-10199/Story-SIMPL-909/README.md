@@ -10,23 +10,17 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attributes table list
-
-**I want to**
-
-interact with each row of the table list, clicking on them
-
-**So that**
-
-I view the Identity Attribute detail information page
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attributes table list\
+**I want to** interact with each row of the table list, clicking on them\
+**So that** I view the Identity Attribute detail information page
 
 **Acceptance Criteria:**
 
-1. **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user is viewing the Identity Attributes table list, then each row in the table is clickable.**
-1. **Given that the user is logged in with the** **IATTR_M** **in the Dataspace Governance Authority, when the user clicks on a row in the Identity Attributes table list, then the system navigates to the Identity Attribute detail information page for the selected Identity Attribute.**
-1. **Given that the user is logged in with the** **IATTR_M** **in the Dataspace Governance Authority, when the user is on the Identity Attribute detail information page, then the page displays the detailed information of the selected Identity Attribute, including identifier, code, if it is assignable to agent local roles, creation date, last update date.**
+1. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user is viewing the Identity Attributes table list, **then** each row in the table is clickable.
+
+2. **Given** that the user is logged in with the IATTR_M in the Dataspace Governance Authority, **when** the user clicks on a row in the Identity Attributes table list, **then** the system navigates to the Identity Attribute detail information page for the selected Identity Attribute.
+
+3. **Given** that the user is logged in with the IATTR_M in the Dataspace Governance Authority, **when** the user is on the Identity Attribute detail information page, **then** the page displays the detailed information of the selected Identity Attribute, including identifier, code, if it is assignable to agent local roles, creation date, last update date.
 
 ## Where it fits
 

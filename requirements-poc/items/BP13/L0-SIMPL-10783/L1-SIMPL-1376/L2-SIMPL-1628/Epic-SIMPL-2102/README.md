@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As an Infrastructure Consumer, I want to access the SIMPL container image from a trusted Container Registry, so that I can securely obtain the image for deployment in my orchestrated environment.
+**As an** Infrastructure Consumer,\
+**I want to** access the SIMPL container image from a trusted Container Registry,\
+**So that** I can securely obtain the image for deployment in my orchestrated environment.
 
 AC: Given that secure image access is required, When a trusted registry is implemented, Then Infrastructure Consumers can securely obtain the image of SIMPL container image securely for deployment in their orchestrated environment.
 

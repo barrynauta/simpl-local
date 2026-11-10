@@ -12,7 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-As a Provider authorised to manage resource descriptions, I want to select one or more identity attributes for an access policy, so that I can specify which attributes a Consumer must have to access my resource.
+**As a** Provider authorised to manage resource descriptions,\
+**I want to** select one or more identity attributes for an access policy,\
+**So that** I can specify which attributes a Consumer must have to access my resource.
 
 #### Acceptance criteria
 
@@ -93,8 +95,8 @@ Trusted publication validation checks the completed policy and any final policy 
 
 #### Supporting documentation
 
-- [R08 ODRL template technical description|an internal page]
-- [R08 policy assignment and validation requirements|an internal page]
+- R08 ODRL template technical description (internal page)
+- R08 policy assignment and validation requirements (internal page)
 - Shared policy-template API definition, SIMPL-31345 (internal page)
 
 ##### Policy wizard screenshots

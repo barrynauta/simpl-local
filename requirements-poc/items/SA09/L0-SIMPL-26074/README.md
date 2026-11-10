@@ -10,11 +10,15 @@ Folder: [items](../../README.md) / [SA09](../README.md) / **L0-SIMPL-26074**
 
 ## What this item is
 
-This is the L0 item for supporting activity [SA09 Data Provider manages consent assertions](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa09-data-provider-manages-consent-assertions/README.md). SA09 covers how a Data Provider creates, withdraws and reactivates consent assertions on its data resources, and how Consumers are told when the status changes.
+This is the L0 item for supporting activity [SA09](../README.md). It stands for the whole supporting activity, so that its requirements can hang under it: 2 high-level requirements (L1), with their detailed requirements, Epics and user stories below them.
+
+SA09 is a supporting activity for data that contains personal data. A consent assertion records whether the consent of the data subjects is still valid for a data set. Its status decides whether Consumers may use the data.
+
+The supporting activity has 4 steps. The [SA09 page](../README.md) describes them, with the actors and what must be in place before it starts.
 
 ## Text
 
-SA09: [an internal page]
+*In the source, the text of this item is only a link to an internal page about the process.* The public version of that page is the [SA09 process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa09-data-provider-manages-consent-assertions/README.md).
 
 ## Where it fits
 

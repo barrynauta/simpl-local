@@ -10,9 +10,9 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 ## Text
 
-**As a** Governance Authority\
-**I want to** automatically validate the syntax of policies in a new resource description or a new version of a resource description\
-**so that** the published resource descriptions are consistent, reliable and compliant with pre-defined standards.
+**As a** Governance Authority\
+**I want to** automatically validate the syntax of policies in a new resource description or a new version of a resource description\
+**So that** the published resource descriptions are consistent, reliable and compliant with pre-defined standards.
 
 **Acceptance Criterion 1: Syntax validation access policies**
 

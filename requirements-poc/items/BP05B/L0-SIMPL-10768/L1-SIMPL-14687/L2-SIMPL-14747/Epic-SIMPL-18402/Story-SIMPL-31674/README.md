@@ -12,7 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-As a Provider preparing a new version of a resource description, I want the editor to check each access or usage policy when I add or change it, so that I can fix errors before submitting the full version.
+**As a** Provider preparing a new version of a resource description,\
+**I want** the editor to check each access or usage policy when I add or change it,\
+**So that** I can fix errors before submitting the full version.
 
 #### Acceptance criteria
 

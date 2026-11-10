@@ -10,23 +10,17 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As A**
-
-Dataspace participant agent
-
-**I want to**
-
-Update the local Identity Attribute ([Identity Attribute|an internal page]) copy with the one present in the Ephemeral Proof ([Ephemeral Proof|an internal page])
-
-**So that**
-
-I can keep the Identity Attribute local copy in sync with the latest Ephemeral Proof.
+**As a** Dataspace participant agent\
+**I want to** Update the local Identity Attribute (Identity Attribute (internal page)) copy with the one present in the Ephemeral Proof (Ephemeral Proof (internal page))\
+**So that** I can keep the Identity Attribute local copy in sync with the latest Ephemeral Proof.
 
 **Acceptance Criteria:**
 
-- **Given that I am a dataspace participant agent, when I receive an ephemeral proof, then I update the local Identity Attribute copy with the one present in the ephemeral proof**
-- Given that I am a dataspace participant agent, when I receive an ephemeral proof, then the local Identity Attribute copy is updated with the latest and updated list of Identity Attributes
-- **Given that I am a dataspace participant agent and I receive multiple ephemeral proofs, when I update the local Identity Attribute copy, then the local copy is updated with the latest and updated list of Identity Attributes each time**
+1. **Given** that I am a dataspace participant agent, **when** I receive an ephemeral proof, **then** I update the local Identity Attribute copy with the one present in the ephemeral proof
+
+2. **Given** that I am a dataspace participant agent, **when** I receive an ephemeral proof, **then** the local Identity Attribute copy is updated with the latest and updated list of Identity Attributes
+
+3. **Given** that I am a dataspace participant agent and I receive multiple ephemeral proofs, **when** I update the local Identity Attribute copy, **then** the local copy is updated with the latest and updated list of Identity Attributes each time
 
 ## Where it fits
 

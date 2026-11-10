@@ -35,30 +35,30 @@ Following ticket for processing workflow template creation -&gt; (internal page)
 
 ###### **Processing‑workflow template is visible when applicable**
 
-**Given** the user is creating a new resource description\
-**And** the selected sharing method supports processing workflows\
-**When** the system retrieves the list of available templates\
-**Then** the list of templates is shown\
-**And** the the user can see a dedicated template for configuring a processing workflow
+1. **Given** the user is creating a new resource description\
+   **And** the selected sharing method supports processing workflows\
+   **When** the system retrieves the list of available templates\
+   **Then** the list of templates is shown\
+   **And** the the user can see a dedicated template for configuring a processing workflow
 
 ###### **Workflow‑related fields are displayed**
 
-**Given** the user has selected the processing‑workflow template\
-**When** the template loads\
-**Then** field for selecting a workflow is displayed\
-**And** field for providing the workflow configuration is also displayed
+2. **Given** the user has selected the processing‑workflow template\
+   **When** the template loads\
+   **Then** field for selecting a workflow is displayed\
+   **And** field for providing the workflow configuration is also displayed
 
 ###### **Workflow list is shown when available**
 
-**Given** the user has selected the processing‑workflow template\
-**When** the system obtains the available workflows\
-**Then** the user sees a list of workflows that can be selected
+3. **Given** the user has selected the processing‑workflow template\
+   **When** the system obtains the available workflows\
+   **Then** the user sees a list of workflows that can be selected
 
 ###### **Error while retrieving workflows**
 
-**Given** the user has selected the processing‑workflow template\
-**When** an error occurs while obtaining the workflow list\
-**Then** the user sees an error message indicating that workflows cannot be loaded
+4. **Given** the user has selected the processing‑workflow template\
+   **When** an error occurs while obtaining the workflow list\
+   **Then** the user sees an error message indicating that workflows cannot be loaded
 
 ## Where it fits
 

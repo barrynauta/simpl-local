@@ -99,7 +99,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 - Access-policy templates API - SIMPL-31345 (internal page)
 - Access-policy template details - SIMPL-31347 (internal page)
-- [Policy Definition|an internal page]
+- Policy Definition (internal page)
 - [W3C ODRL Information Model](https://www.w3.org/TR/odrl-model/)
 
 ## Where it fits

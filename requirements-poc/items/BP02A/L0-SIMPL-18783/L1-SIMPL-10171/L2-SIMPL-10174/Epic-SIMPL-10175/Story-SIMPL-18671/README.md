@@ -14,23 +14,19 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 *This story improves the process of assigning identity attributes to participants on the participant details page. It modifies the behaviour described in SIMPL-3905 and aligns with the behaviour described for onboarding procedure templates SIMPL-8227, ensuring consistency. See the attached video to see how the page works on the onboarding procedure templates, the same behaviour will apply for the participant details page.*
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Participants Management page, viewing a participant's detail information page
-
-**I want to**
-
-via UI, add Identity Attributes to the participant
-
-**So that**\
-I can manage the assignment of Identity Attributes to participants
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Participants Management page, viewing a participant's detail information page\
+**I want to** via UI, add Identity Attributes to the participant\
+**So that** I can manage the assignment of Identity Attributes to participants
 
 **Acceptance Criteria**
 
-1. **GIVEN I am logged in as** **Tier 2 identity attributes manager (IATTR_M),** **navigating to the details page of a participant WHEN I click the "Edit Attributes" button THEN I should see an empty list of identity attributes AND an "Add Attribute" button that allows me to add them to the participant**
-1. **GIVEN I am logged in as** **Tier 2 identity attributes manager (IATTR_M),** **navigating to the** **details page of a participant WHEN I click the "Add Attribute" button THEN I should see a pop-up window that allows me to choose a subset of identity attributes pre-defined for the data space**
-1. **GIVEN I am logged in as** **Tier 2 identity attributes manager (IATTR_M),** **navigating to the** **details page of a participant** **AND open the** **pop-up window with the list of available identity attributes** **WHEN I select one or more attributes and** **I** **click the add button** **THEN the popup closes and the attribute is added to the identity attributes of the participant AND by clicking the SAVE button I confirm the selected attributes**
-1. **GIVEN I am logged in as** **Tier 2 identity attributes manager (IATTR_M)** **navigating to the** **details page of a participant** **AND seeing the list**  **of the identity attributes for the participant** **WHEN I click on the "trash" icon to delete an identity attribute and click the SAVE button to confirm THEN the deleted identity attributes will be unlinked from the participant and the Identity Attributes section switches in the read only state by showing the "Edit attributes" button**
+1. **Given** I am logged in as Tier 2 identity attributes manager (IATTR_M), navigating to the details page of a participant **when** I click the "Edit Attributes" button **then** I should see an empty list of identity attributes **and** an "Add Attribute" button that allows me to add them to the participant
+
+2. **Given** I am logged in as Tier 2 identity attributes manager (IATTR_M), navigating to the details page of a participant **when** I click the "Add Attribute" button **then** I should see a pop-up window that allows me to choose a subset of identity attributes pre-defined for the data space
+
+3. **Given** I am logged in as Tier 2 identity attributes manager (IATTR_M), navigating to the details page of a participant **and** open the pop-up window with the list of available identity attributes **when** I select one or more attributes and I click the add button **then** the popup closes and the attribute is added to the identity attributes of the participant **and** by clicking the SAVE button I confirm the selected attributes
+
+4. **Given** I am logged in as Tier 2 identity attributes manager (IATTR_M) navigating to the details page of a participant **and** seeing the list of the identity attributes for the participant **when** I click on the "trash" icon to delete an identity attribute and click the SAVE button to confirm **then** the deleted identity attributes will be unlinked from the participant and the Identity Attributes section switches in the read only state by showing the "Edit attributes" button
 
 ## Where it fits
 

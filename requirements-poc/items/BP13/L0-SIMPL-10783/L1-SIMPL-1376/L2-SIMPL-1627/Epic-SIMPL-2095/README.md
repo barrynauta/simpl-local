@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As an Infrastructure Consumer, I want to access the Simpl VM image from a trusted repository, so that I can securely obtain the image for deployment on my infrastructure.
+**As an** Infrastructure Consumer,\
+**I want to** access the Simpl VM image from a trusted repository,\
+**So that** I can securely obtain the image for deployment on my infrastructure.
 
 AC: Given that trusted sources are required for security, When the Simpl VM image is accessed by a Infrastructure Consumer from a trusted repository, Then it is securely obtained for deployment on his infrastructure.
 

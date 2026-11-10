@@ -20,18 +20,17 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ###### AC1  The Onboarding service is available to authorised Governance Authority users
 
-**Given** a user is authenticated with the Governance Authority Participant type,
-
-**When** the user role is assigned the role NOTARY, T2IAA_M, or APPLICANT,\
-{}Then the Onboarding service is displayed on their Simpl-Open landing page,\
-**and** this user can access the Onboarding service.
+1. **Given** a user is authenticated with the Governance Authority Participant type,\
+   **When** the user role is assigned the role NOTARY, T2IAA_M, or APPLICANT,\
+   {}Then the Onboarding service is displayed on their Simpl-Open landing page,\
+   **And** this user can access the Onboarding service.
 
 ###### AC2 The Onboarding service access is restricted for unauthorised user roles
 
-**Given** a user is authenticated with the Governance Authority Participant type,\
-**When** they are not assigned to one of the roles authorised for the Onboarding service,\
-**Then** the Onboarding service is not displayed on their Simpl-Open landing page,\
-**and** access to this service is denied.
+2. **Given** a user is authenticated with the Governance Authority Participant type,\
+   **When** they are not assigned to one of the roles authorised for the Onboarding service,\
+   **Then** the Onboarding service is not displayed on their Simpl-Open landing page,\
+   **And** access to this service is denied.
 
 ## Where it fits
 

@@ -12,7 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-As a Provider authorised to manage resource descriptions, I want to see the usage policies already assigned to a resource description when I prepare a new RD version, so that I can review and retain them or make changes before submitting.
+**As a** Provider authorised to manage resource descriptions,\
+**I want to** see the usage policies already assigned to a resource description when I prepare a new RD version,\
+**So that** I can review and retain them or make changes before submitting.
 
 #### Acceptance criteria
 
@@ -103,11 +105,11 @@ As a Provider authorised to manage resource descriptions, I want to see the usag
 #### Additional notes
 
 - API definition ticket: (internal page)
-- [an internal page]
-- [an internal page]
+- (internal page)
+- (internal page)
 
 - Shared policy-template API definition, SIMPL-31345 (internal page)
-- [R08 technical description|an internal page]
+- R08 technical description (internal page)
 
 ## Where it fits
 

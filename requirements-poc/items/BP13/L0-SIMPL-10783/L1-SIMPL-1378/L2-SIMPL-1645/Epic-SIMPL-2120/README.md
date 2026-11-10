@@ -13,16 +13,16 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 ## Text
 
 **As an** Infrastructure Provider\
-**I want** to provide alerts and notifications from the integrated software firewall\
+**I want to** provide alerts and notifications from the integrated software firewall\
 **So that** Infrastructure Consumers and Application Providers can receive timely information about events and respond appropriately
 
 -
 
 **Acceptance Criterion**
 
-**Given** that the software firewall is set to detect events,\
-**When** such an event occurs,\
-**Then** alerts and notifications are sent to Infrastructure Consumers to enable response and take appropriate actions.
+1. **Given** that the software firewall is set to detect events,\
+   **When** such an event occurs,\
+   **Then** alerts and notifications are sent to Infrastructure Consumers to enable response and take appropriate actions.
 
 ## Where it fits
 

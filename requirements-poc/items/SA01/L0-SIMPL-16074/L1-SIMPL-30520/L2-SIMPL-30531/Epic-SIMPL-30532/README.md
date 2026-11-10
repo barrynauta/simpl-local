@@ -10,19 +10,18 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-**As a** Participant\
-**I want to** define the distributed processing cluster of the sub-service distribution model of a data orchestration workflow\
-**so that** distributed processing services can use an appropriate compute environment for large-scale execution.
+**As a** Participant\
+**I want to** define the distributed processing cluster of the sub-service distribution model of a data orchestration workflow\
+**So that** distributed processing services can use an appropriate compute environment for large-scale execution.
 
 **Acceptance Criteria**
 
-**Given** I am authenticated as a Participant, with a role authorising the definition of data orchestration workflows\
-**And** I have defined a data orchestration workflow suitable for sub-service distribution\
-**And** I have chosen the sub-service distribution model
-
-**Then** I am able to **configure** the target distributed processing cluster\
-**And** the selected distributed processing cluster is saved as part of the workflow configuration\
-**And** the workflow configuration can also include the distributed processing connection settings required for distributed processing during execution.
+1. **Given** I am authenticated as a Participant, with a role authorising the definition of data orchestration workflows\
+   **And** I have defined a data orchestration workflow suitable for sub-service distribution\
+   **And** I have chosen the sub-service distribution model\
+   **Then** I am able to configure the target distributed processing cluster\
+   **And** the selected distributed processing cluster is saved as part of the workflow configuration\
+   **And** the workflow configuration can also include the distributed processing connection settings required for distributed processing during execution.
 
 ## Where it fits
 

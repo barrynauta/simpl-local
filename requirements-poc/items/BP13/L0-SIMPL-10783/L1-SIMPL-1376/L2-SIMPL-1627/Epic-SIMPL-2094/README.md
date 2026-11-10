@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As an Infrastructure Consumer, I want to deploy Simpl on virtualization platforms using the provided VM image, so that I can utilise Simpl's services within my virtualized environment.
+**As an** Infrastructure Consumer,\
+**I want to** deploy Simpl on virtualization platforms using the provided VM image,\
+**So that** I can utilise Simpl's services within my virtualized environment.
 
 AC: Given that Infrastructure Consumers require Simpl on virtualization platforms,\
 When they access and deploy the provided VM image,\

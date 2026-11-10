@@ -41,25 +41,18 @@ Following list of response code:
 
 **Retrieval of a specific schema version**
 
-**Given** a participant requests to view a resource description through sd-tooling UI
-
-**When** the sd-tooling UI invokes the sd-tooling-be API requesting a specific schema identifier and version
-
-**Then** sd-tooling-be shall return the requested schema version to the UI
-
-**And** the schema shall be retrieved from the NFS storage or, if not available, via the sync-schema-adapter from the schema-management-service.
+1. **Given** a participant requests to view a resource description through sd-tooling UI\
+   **When** the sd-tooling UI invokes the sd-tooling-be API requesting a specific schema identifier and version\
+   **Then** sd-tooling-be shall return the requested schema version to the UI\
+   **And** the schema shall be retrieved from the NFS storage or, if not available, via the sync-schema-adapter from the schema-management-service.
 
 **Schema version not available**
 
-**Given** a participant requests to view a resource description through sd-tooling UI
-
-**When** the sd-tooling UI invokes the sd-tooling-be API requesting a schema version that is not available locally
-
-**And** the schema version cannot be retrieved via the sync-schema-adapter from the schema-management-service
-
-**Then** sd-tooling-be shall return an explicit error indicating that the requested schema version is not available
-
-**And** the sd-tooling UI shall display an error indicating that the resource description cannot be rendered.
+2. **Given** a participant requests to view a resource description through sd-tooling UI\
+   **When** the sd-tooling UI invokes the sd-tooling-be API requesting a schema version that is not available locally\
+   **And** the schema version cannot be retrieved via the sync-schema-adapter from the schema-management-service\
+   **Then** sd-tooling-be shall return an explicit error indicating that the requested schema version is not available\
+   **And** the sd-tooling UI shall display an error indicating that the resource description cannot be rendered.
 
 ## Where it fits
 

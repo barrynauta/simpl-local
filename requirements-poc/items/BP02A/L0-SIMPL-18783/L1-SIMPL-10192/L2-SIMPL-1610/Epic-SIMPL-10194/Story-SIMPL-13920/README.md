@@ -10,23 +10,19 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As a**\
-user responsible for managing data space identity attributes (`{}IATTR_M{`} role), viewing the list of identity attributes in the data space,
-
-**I want**\
-to be prevented from editing built-in identity attributes,
-
-**So that**\
-I ensure that built-in identity attributes remain unchanged and the data space remains compliant with the SIMPL-Open standard.
+**As a** user responsible for managing data space identity attributes (`{}IATTR_M{`} role), viewing the list of identity attributes in the data space,\
+**I want** to be prevented from editing built-in identity attributes,\
+**So that** I ensure that built-in identity attributes remain unchanged and the data space remains compliant with the SIMPL-Open standard.
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am a user with IATTR_M role, responsible for managing identity attributes\
-   **WHEN** viewing the list of identity attributes\
-   **THEN** I want the edit and delete button to be hidden when an identity attribute is built-in *(see attached screenshot)*
-1. **GIVEN** that I am a user with IATTR_M role, responsible for managing identity attributes\
-   **WHEN** viewing the list of identity attributes\
-   **THEN** I want to be able to filter by built-in identity attributes
+1. **Given** that I am a user with IATTR_M role, responsible for managing identity attributes\
+   **When** viewing the list of identity attributes\
+   **Then** I want the edit and delete button to be hidden when an identity attribute is built-in *(see attached screenshot)*
+
+2. **Given** that I am a user with IATTR_M role, responsible for managing identity attributes\
+   **When** viewing the list of identity attributes\
+   **Then** I want to be able to filter by built-in identity attributes
 
 ## Where it fits
 

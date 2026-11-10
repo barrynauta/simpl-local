@@ -112,8 +112,8 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 - Shared API definition: SIMPL-31345 (internal page)
 - Usage-template details: SIMPL-31386 (internal page)
-- [Policies|an internal page]
-- [Resource Description UI|an internal page]
+- Policies (internal page)
+- Resource Description UI (internal page)
 - [UX/UI design](https://www.figma.com/design/YZZ6QWqLcVHlNhjnI81Wzm/Catalogue--negotiation-and-transfer-UX-UI)
 
 ## Where it fits

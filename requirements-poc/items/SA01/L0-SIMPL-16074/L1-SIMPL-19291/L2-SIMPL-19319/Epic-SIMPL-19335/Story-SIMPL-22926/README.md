@@ -11,7 +11,7 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 ## Text
 
 **As a** Participant,\
-**I want** **to,** through API, retrieve the list of available workflows from the orchestration platform and retrieve the default configuration for a specific workflow,\
+**I want to** , through API, retrieve the list of available workflows from the orchestration platform and retrieve the default configuration for a specific workflow,\
 **So that** I can associate my target resource with a processing workflow and its configuration at the time of submitting the resource description.
 
 ##### Acceptance Criteria:
@@ -22,33 +22,22 @@ Scenario: The Provider wants to retrieve the list of workflows available in the 
 
 **Positive Case:**
 
-**Given** I am an authenticated user with a resource description management role,
-
-**And** I am creating a resource description,
-
-**When** I request the list of previously defined workflows,
-
-**Then** the API returns the complete list of defined workflows,
-
-**And** for each returned workflow, the list includes its id and name,
-
-**And** the API responds with status code 200
+1. **Given** I am an authenticated user with a resource description management role,\
+   **And** I am creating a resource description,\
+   **When** I request the list of previously defined workflows,\
+   **Then** the API returns the complete list of defined workflows,\
+   **And** for each returned workflow, the list includes its id and name,\
+   **And** the API responds with status code 200
 
 **Negative Case:**
 
-**Given** I am an authenticated user with a resource description management role,
-
-**And** I am creating a resource description,
-
-**When** I request the list of previously defined workflows,
-
-**And** The service is unavailable
-
-**Then** the API rejects the request
-
-**And** the API responds with status code 502
-
-**And** I receive a clear error message describing the issue
+2. **Given** I am an authenticated user with a resource description management role,\
+   **And** I am creating a resource description,\
+   **When** I request the list of previously defined workflows,\
+   **And** The service is unavailable\
+   **Then** the API rejects the request\
+   **And** the API responds with status code 502\
+   **And** I receive a clear error message describing the issue
 
 **Workflow** **Default Configuration Retrieval**
 
@@ -56,55 +45,35 @@ Scenario: The Provider wants to retrieve the list of workflows available in the 
 
 **Positive Case:**
 
-**Given** I am an authenticated user with a resource description management role,
-
-**And** I am creating a resource description,
-
-**When** I submit the API request with a workflow name that is available in the orchestration platform,
-
-**Then** the API retrieves the default configuration associated with that workflow
-
-**And** the API responds with status code 200
+3. **Given** I am an authenticated user with a resource description management role,\
+   **And** I am creating a resource description,\
+   **When** I submit the API request with a workflow name that is available in the orchestration platform,\
+   **Then** the API retrieves the default configuration associated with that workflow\
+   **And** the API responds with status code 200
 
 **Negative Case:**
 
-**Given** I am an authenticated user with a resource description management role,
+4. **Given** I am an authenticated user with a resource description management role,\
+   **And** I am creating a resource description,\
+   **When** I submit the API request with an invalid request parameter\
+   **Then** the API rejects the default configuration request,\
+   **And** the API responds with status code 400\
+   **And** I receive a clear error message describing the issue
 
-**And** I am creating a resource description,
+5. **Given** I am an authenticated user with a resource description management role,\
+   **And** I am creating a resource description,\
+   **When** I submit the API request with a workflow name that is not available in the orchestration platform,\
+   **Then** the API rejects the default configuration request,\
+   **And** the API responds with status code 404\
+   **And** I receive a clear error message describing the issue
 
-**When** I submit the API request with an invalid request parameter
-
-**Then** the API rejects the default configuration request,
-
-**And** the API responds with status code 400
-
-**And** I receive a clear error message describing the issue
-
-**Given** I am an authenticated user with a resource description management role,
-
-**And** I am creating a resource description,
-
-**When** I submit the API request with a workflow name that is not available in the orchestration platform,
-
-**Then** the API rejects the default configuration request,
-
-**And** the API responds with status code 404
-
-**And** I receive a clear error message describing the issue
-
-**Given** I am an authenticated user with a resource description management role,
-
-**And** I am creating a resource description,
-
-**When** I submit the API request with a workflow name that is available in the orchestration platform,
-
-**And** The service is unavailable
-
-**Then** the API rejects the request
-
-**And** the API responds with status code 502
-
-**And** I receive a clear error message describing the issue
+6. **Given** I am an authenticated user with a resource description management role,\
+   **And** I am creating a resource description,\
+   **When** I submit the API request with a workflow name that is available in the orchestration platform,\
+   **And** The service is unavailable\
+   **Then** the API rejects the request\
+   **And** the API responds with status code 502\
+   **And** I receive a clear error message describing the issue
 
 ## Where it fits
 

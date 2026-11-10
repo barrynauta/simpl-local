@@ -10,26 +10,26 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 ## Text
 
-**As a** Provider\
-**I want to** trigger the update of the resource consent assertion related to a selected resource description via UI\
-**So that** I can ensure that the access to the resource is aligned the resource consent status.
+**As a** Provider\
+**I want to** trigger the update of the resource consent assertion related to a selected resource description via UI\
+**So that** I can ensure that the access to the resource is aligned the resource consent status.
 
 **Acceptance criterion 1**
 
-**Given** I am authenticated as a Provider\
-**and** I have a role authorising the management of resource descriptions and consent\
-**and** I am retrieving the details of a resource description in the catalogue\
-**When** I check the resource consent status\
-**And** I choose to update the resource consent status\
-**Then** I am redirected to the consent manager to perform the change
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions and consent\
+   **And** I am retrieving the details of a resource description in the catalogue\
+   **When** I check the resource consent status\
+   **And** I choose to update the resource consent status\
+   **Then** I am redirected to the consent manager to perform the change
 
 **Acceptance criterion 2**
 
-**Given** I am authenticated as a Provider\
-**and** I have a role authorising the management of resource descriptions and consent\
-**When** I have updated the status of a resource consent assertion\
-**Then** I am redirected to the catalogue\
-**And** the resource descriptions affected by the resource consent assertion are shown.
+2. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions and consent\
+   **When** I have updated the status of a resource consent assertion\
+   **Then** I am redirected to the catalogue\
+   **And** the resource descriptions affected by the resource consent assertion are shown.
 
 ## Where it fits
 

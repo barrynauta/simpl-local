@@ -10,40 +10,34 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attributes table list
-
-**I want to**
-
-see a table list with this heading:
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attributes table list\
+**I want to** see a table list with this heading:
 
 - Identifier;
-
 - Code;
-
 - Assignable to roles (boolean value true if the Identity Attribute can be assigned to a participant's local role);
-
 - Enabled (boolean value true if the Identity Attribute is assignable to participants);
-
 - In use (boolean value true if assigned to some participant in dataspace)
 - Creation date;
-
 - Last update date.
 
-**So that**
-
-I view the paginated list of defined Identity Attributes
+**So that** I view the paginated list of defined Identity Attributes
 
 **Acceptance Criteria:**
 
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page, then the page displays an empty table with the correct column headings: "Identifier", "Code", "Assignable to roles", "Enabled", "In use", "Creation Date", and "Last Update Date".**
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page and there are Identity Attributes defined, then the table displays a paginated list of Identity Attributes with their corresponding values for "Identifier", "Code", "Assignable to roles", "Enabled", "In use", "Creation Date", and "Last Update Date".**
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page, then the "Assignable to roles" column displays a boolean value (true or false) indicating whether the Identity Attribute can be assigned to a participant's local role.**
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page, then the "Enabled" column displays a boolean value (true or false) indicating whether the Identity Attribute is assignable to participants.**
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page, then the "In use" column displays a boolean value (true or false) indicating whether the Identity Attribute is assigned to at least one participant in the dataspace.**
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page, then the table displays a pagination control that allows the user to navigate through the list of Identity Attributes.**
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page, then the table displays a consistent and readable format for dates in the "Creation Date" and "Last Update Date" columns.**
+1. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attributes Management page, **then** the page displays an empty table with the correct column headings: "Identifier", "Code", "Assignable to roles", "Enabled", "In use", "Creation Date", and "Last Update Date".
+
+2. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attributes Management page and there are Identity Attributes defined, **then** the table displays a paginated list of Identity Attributes with their corresponding values for "Identifier", "Code", "Assignable to roles", "Enabled", "In use", "Creation Date", and "Last Update Date".
+
+3. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attributes Management page, **then** the "Assignable to roles" column displays a boolean value (true or false) indicating whether the Identity Attribute can be assigned to a participant's local role.
+
+4. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attributes Management page, **then** the "Enabled" column displays a boolean value (true or false) indicating whether the Identity Attribute is assignable to participants.
+
+5. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attributes Management page, **then** the "In use" column displays a boolean value (true or false) indicating whether the Identity Attribute is assigned to at least one participant in the dataspace.
+
+6. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attributes Management page, **then** the table displays a pagination control that allows the user to navigate through the list of Identity Attributes.
+
+7. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attributes Management page, **then** the table displays a consistent and readable format for dates in the "Creation Date" and "Last Update Date" columns.
 
 ## Where it fits
 

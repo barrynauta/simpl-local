@@ -10,17 +10,17 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-**As a** Participant,\
-**I want to** use my landing page,\
-**so that** I can easily find my relevant Simpl-Open functionalities and get redirected to the UI where I can use them.
+**As a** Participant,\
+**I want to** use my landing page,\
+**So that** I can easily find my relevant Simpl-Open functionalities and get redirected to the UI where I can use them.
 
 **Acceptance Criterion 1 - Use of the landing page**
 
-**Given** I am authenticated as a Participant\
-**And** I have access rights to access the landing page\
-**When** I access the landing page via UI\
-**Then** I see the functionalities adapted to my Participant type\
-**And** Simpl-Open redirects me to the UI of the functionality I select.
+1. **Given** I am authenticated as a Participant\
+   **And** I have access rights to access the landing page\
+   **When** I access the landing page via UI\
+   **Then** I see the functionalities adapted to my Participant type\
+   **And** Simpl-Open redirects me to the UI of the functionality I select.
 
 **Acceptance Criterion 2 - Configuration of the landing page**
 

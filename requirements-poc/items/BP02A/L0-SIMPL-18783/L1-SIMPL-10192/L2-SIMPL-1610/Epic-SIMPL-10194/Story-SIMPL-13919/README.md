@@ -17,32 +17,30 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 *However, this approach lacks support for built-in identity attributes-a predefined set of attributes that must be consistently available across all SIMPL-Open data spaces. To address this:*
 
 1. *The default list will be updated to include the built-in identity attributes as documented here:*\
-   *[an internal page]*
+   *(internal page)*
 1. *The identity attributes contained in the list will be all marked as built in*
 1. *Customization of the built-in list during setup will be disabled to preserve consistency. If a Governance Authority needs to introduce additional identity attributes specific to their data space, they can do so manually through the existing UI.*
 
-----\
-**As a**\
-Dataspace Governance authority,
+----
 
-**I want**\
-the Simpl-Open built-in identity attributes to be automatically uploaded in the Security Attributes Provider component when I install my agent,
-
-**So that**\
-I can ensure a consistent and standardized set of identity attributes is available immediately, reducing manual setup effort and minimizing configuration errors.
+**As a** Dataspace Governance authority,\
+**I want** the Simpl-Open built-in identity attributes to be automatically uploaded in the Security Attributes Provider component when I install my agent,\
+**So that** I can ensure a consistent and standardized set of identity attributes is available immediately, reducing manual setup effort and minimizing configuration errors.
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am setting up for the first time the Governance Authority Agent for a data space\
-   **WHEN**  I complete all steps of the installation procedure for a Governance Authority agent\
-   **THEN** the Simpl-Open built-in identity attributes are automatically stored without manual action
-1. **GIVEN** the built-in identity attributes are uploaded\
-   **WHEN** I inspect the stored identity attributes\
-   **THEN** I can see that the identity attributes are all marked as built-in
-1. **GIVEN** I am updating the Governance Authority agent\
-   **AND** the previous version of the agent does not have identity attributes flagged as built-in\
-   **WHEN** the upload process completes\
-   **THEN** the already existing identity attributes whose CODE is equal to a new built-in identity attributes will be updated and marked as built-in
+1. **Given** I am setting up for the first time the Governance Authority Agent for a data space\
+   **When** I complete all steps of the installation procedure for a Governance Authority agent\
+   **Then** the Simpl-Open built-in identity attributes are automatically stored without manual action
+
+2. **Given** the built-in identity attributes are uploaded\
+   **When** I inspect the stored identity attributes\
+   **Then** I can see that the identity attributes are all marked as built-in
+
+3. **Given** I am updating the Governance Authority agent\
+   **And** the previous version of the agent does not have identity attributes flagged as built-in\
+   **When** the upload process completes\
+   **Then** the already existing identity attributes whose CODE is equal to a new built-in identity attributes will be updated and marked as built-in
 
 ## Where it fits
 

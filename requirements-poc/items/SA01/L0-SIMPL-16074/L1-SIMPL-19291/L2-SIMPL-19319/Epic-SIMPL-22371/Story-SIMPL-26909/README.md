@@ -44,25 +44,25 @@ The list of workflows includes both workflows defined by the provider within the
 
 **Templates are shown based on the selected sharing method**
 
-**Given** the user is creating a new resource description\
-**When** the user selects an app sharing method\
-**Then** the system retrieves the resource address templates associated with the selected sharing method\
-**And** the user sees the list of available templates\
-**And** the user can select one of these templates
+1. **Given** the user is creating a new resource description\
+   **When** the user selects an app sharing method\
+   **Then** the system retrieves the resource address templates associated with the selected sharing method\
+   **And** the user sees the list of available templates\
+   **And** the user can select one of these templates
 
 **Processing‑workflow template is shown when supported**
 
-**Given** the user is creating a new resource description\
-**And** the user has selected a resource address template\
-**When** the selected template includes workflow configuration\
-**Then** the user sees the list of available workflows\
-**And** the user can select one of these workflows
+2. **Given** the user is creating a new resource description\
+   **And** the user has selected a resource address template\
+   **When** the selected template includes workflow configuration\
+   **Then** the user sees the list of available workflows\
+   **And** the user can select one of these workflows
 
 **Default workflow configuration cannot be retrieved**
 
-**Given** the user has selected a resource address template that includes workflow configuration\
-**When** the default workflow configuration is not available or cannot be loaded\
-**Then** the user is informed that the default workflow configuration cannot be retrieved
+3. **Given** the user has selected a resource address template that includes workflow configuration\
+   **When** the default workflow configuration is not available or cannot be loaded\
+   **Then** the user is informed that the default workflow configuration cannot be retrieved
 
 ## Where it fits
 

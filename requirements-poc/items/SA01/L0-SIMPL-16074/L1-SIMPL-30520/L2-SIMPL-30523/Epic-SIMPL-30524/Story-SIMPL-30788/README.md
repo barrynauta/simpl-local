@@ -12,8 +12,8 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 **As a** Participant with a role authorising the definition of data orchestration workflows,\
 **I want to** consult a user guide that explains the workflow-level distribution model and where it fits among available integration patterns,\
-**so that** I can choose workflow-level distribution confidently for my use case.\
-**Documentation context:** The workflow distribution model remains a run-level execution model and is compatible with both integration patterns. In a tightly coupled setup, run workers execute with direct orchestration-runtime connectivity. In a loosely coupled setup, selected workloads can be delegated to external pods while still reporting runtime details back to the control plane.
+**So that** I can choose workflow-level distribution confidently for my use case.\
+Documentation context: The workflow distribution model remains a run-level execution model and is compatible with both integration patterns. In a tightly coupled setup, run workers execute with direct orchestration-runtime connectivity. In a loosely coupled setup, selected workloads can be delegated to external pods while still reporting runtime details back to the control plane.\
 
 **Acceptance Criteria**
 

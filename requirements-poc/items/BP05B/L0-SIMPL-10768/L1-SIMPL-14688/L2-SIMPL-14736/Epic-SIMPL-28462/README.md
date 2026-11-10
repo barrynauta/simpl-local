@@ -12,7 +12,8 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 **As a** Provider\
 **I want to** define a payment information point\
-**so that** I can include the payment information point in the billing schema\
+**So that** I can include the payment information point in the billing schema
+
 and assess the credit status of my usage contract
 
 **Acceptance criteria:**

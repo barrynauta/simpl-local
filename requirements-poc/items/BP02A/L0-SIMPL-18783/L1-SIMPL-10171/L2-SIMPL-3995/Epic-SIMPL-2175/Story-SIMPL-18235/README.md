@@ -14,42 +14,39 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 *This story is an improvement of (internal page) and covers a new field "application instructions" to be added to the fields requested upon onboarding procedure template creation and update.*
 
-*Given the new eIDAS rule that is about to be introduced (see (internal page)) there is the need to help users to understand which documents to upload or which actions to take during their onboarding. This new field, aims to help the GA to outline these instructions and make them visibile to the applicants.*\
-----\
-**As A**
+1. **Given** the new eIDAS rule that is about to be introduced (see (internal page)) there is the need to help users to understand which documents to upload or which actions to take during their onboarding. This new field, aims to help the GA to outline these instructions and make them visibile to the applicants._\
+   ----
 
-Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role
-
-**I want to**
-
-via API, be able to add a descriptive, human-readable "application instructions"
-
-**So that**
-
-Applicants can read these instructions during the onboarding process and understand which documents to upload and which rules to follow.
+**As a** Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role\
+**I want to** via API, be able to add a descriptive, human-readable "application instructions"\
+**So that** Applicants can read these instructions during the onboarding process and understand which documents to upload and which rules to follow.
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
-   **WHEN** I send a POST /onboardingProcedureTemplates\
-   **AND** the body contains a non-empty field *applicationInstructions*\
-   **THEN** the onboarding procedure template is saved with the new information
-1. **GIVEN** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
-   **WHEN** I send a POST /onboardingProcedureTemplates\
-   **AND** the body contains an empty *applicationInstructions*\
-   **THEN** the onboarding procedure template is saved and the applicationInstructions property is empty
-1. **GIVEN** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
-   **WHEN** I send a PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}\
-   **AND** the body contains a non-empty field *applicationInstructions*\
-   **THEN** the onboarding procedure template is updated with the new information
-1. **GIVEN** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
-   **WHEN** I send a PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}\
-   **AND** the body contains an empty *applicationInstructions*\
-   **THEN** the onboarding procedure template is saved and the applicationInstructions property is emptied
-1. **GIVEN** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
-   **WHEN** I send a PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}\
-   **AND** I provide an invalid request body with applicationInstructions longer than 2000 characters\
-   **THEN** the API returns HTTP 400 Bad Request
+2. **Given** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
+   **When** I send a POST /onboardingProcedureTemplates\
+   **And** the body contains a non-empty field *applicationInstructions*\
+   **Then** the onboarding procedure template is saved with the new information
+
+3. **Given** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
+   **When** I send a POST /onboardingProcedureTemplates\
+   **And** the body contains an empty *applicationInstructions*\
+   **Then** the onboarding procedure template is saved and the applicationInstructions property is empty
+
+4. **Given** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
+   **When** I send a PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}\
+   **And** the body contains a non-empty field *applicationInstructions*\
+   **Then** the onboarding procedure template is updated with the new information
+
+5. **Given** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
+   **When** I send a PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}\
+   **And** the body contains an empty *applicationInstructions*\
+   **Then** the onboarding procedure template is saved and the applicationInstructions property is emptied
+
+6. **Given** that I am logged in with the _Tier 2 authorization manager (T2IAA_M)_ role\
+   **When** I send a PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}\
+   **And** I provide an invalid request body with applicationInstructions longer than 2000 characters\
+   **Then** the API returns HTTP 400 Bad Request
 
 ## Where it fits
 

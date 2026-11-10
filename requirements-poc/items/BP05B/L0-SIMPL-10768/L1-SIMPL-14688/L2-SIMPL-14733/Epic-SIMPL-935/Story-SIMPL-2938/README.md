@@ -10,9 +10,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-As a Provider User\
-I want to use an API to assign the previously formulated machine-readable access policies to the self-description and thus to the dataset/application/infrastructure\
-so that the access to the dataset/application/infrastructure can be evaluated and enforced as defined in the policy.
+**As a** Provider User\
+**I want to** use an API to assign the previously formulated machine-readable access policies to the self-description and thus to the dataset/application/infrastructure\
+**So that** the access to the dataset/application/infrastructure can be evaluated and enforced as defined in the policy.
 
 +**Technical Description**+
 
@@ -20,7 +20,7 @@ The API must retrieve the parameters for the access policies, create a valid ODR
 
 Definition of the policies is descriped as follows:
 
-[an internal page|an internal page]
+an internal page
 
 Should written in the Form of ODRL Policies
 
@@ -42,9 +42,9 @@ For constraints we plan to support date time constraints that allow to specify w
 
 , {POLICY_URI}, {PROVIDER_URI} are later automatically replaced with the correct URI. {SECURITY_ATTRIBUTE_ID} need to be specified, for the first iteration from a list of static IDs later available over an API provided by Aruba.
 
-Example can be found here: [an internal page|an internal page]
+Example can be found here: an internal page
 
-[draftId=163807492&draftShareId=d0caf9a0-fa82-4153-b08e-e0238d00adc1&|an internal page]
+draftId=163807492&draftShareId=d0caf9a0-fa82-4153-b08e-e0238d00adc1& (internal page)
 
 Each Policy from the frontend is mapped into a new permission:
 
@@ -63,7 +63,7 @@ Those attributes are filled out automatically:\
 
 :\ URI of the provider from API by Aruba}}
 
-[an internal page]
+(internal page)
 
 +**Acceptance Criteria**+
 

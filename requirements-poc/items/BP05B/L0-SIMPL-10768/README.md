@@ -8,9 +8,17 @@ Folder: [items](../../README.md) / [BP05B](../README.md) / **L0-SIMPL-10768**
 
 **Trace:** [BP05B](../README.md) › **SIMPL-10768** (L0)
 
+## What this item is
+
+This is the L0 item for business process [BP05B](../README.md). It stands for the whole business process, so that its requirements can hang under it: 9 high-level requirements (L1), with their detailed requirements, Epics and user stories below them.
+
+In BP05B a Provider manages the descriptions of its resources in the data space catalogue, and the Governance Authority checks and publishes them. A resource description tells Consumers what a data set, an application or an infrastructure service is, and under which policies and contract terms they can use it.
+
+The business process has 15 steps. The [BP05B page](../README.md) describes them, with the actors and what must be in place before it starts.
+
 ## Text
 
-Link BP05B: [BP05B - Provider manages resource descriptions|an internal page]
+*In the source, the text of this item is only a link to an internal page about the process.* The public version of that page is the [BP05B process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp05b-provider-manages-resource-descriptions/README.md).
 
 ## Where it fits
 

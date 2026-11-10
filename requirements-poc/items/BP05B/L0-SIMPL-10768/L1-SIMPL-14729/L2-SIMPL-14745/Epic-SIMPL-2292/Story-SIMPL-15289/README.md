@@ -58,9 +58,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 - On resource description we need to link the IAA provider-id on the resource description
 - Relevant API's
-   - [an internal page] this is the page that describes how it works, note that the method - **GET /credential/my-id** ** **is replaced by** **GET /credentials** and the page will be updated ASAP.
-   - [an internal page]    see component #14 - Tier 2 Authentication Provider **Credential GET /credentials** method
-- [an internal page]  to get information on Identification, Authentication & Authorisatio
+   - (internal page) this is the page that describes how it works, note that the method - **GET /credential/my-id** ** **is replaced by** **GET /credentials** and the page will be updated ASAP.
+   - (internal page)    see component #14 - Tier 2 Authentication Provider **Credential GET /credentials** method
+- (internal page)  to get information on Identification, Authentication & Authorisatio
 
 Properties in the schema to be set:
 

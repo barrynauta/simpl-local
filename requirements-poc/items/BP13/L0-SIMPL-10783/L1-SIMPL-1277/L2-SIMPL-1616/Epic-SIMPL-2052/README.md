@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As A dataspace participant agent , I want via an API, verify if the incoming request can be accepted or rejected, so that I can reject unauthorized requests.
+**As a** dataspace participant agent ,\
+**I want** via an API, verify if the incoming request can be accepted or rejected,\
+**So that** I can reject unauthorized requests.
 
 ## Where it fits
 

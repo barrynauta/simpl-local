@@ -4,11 +4,31 @@ Folder: [items](../README.md) / **BP11**
 
 # BP11 - Consumer and Provider manage a usage contract
 
-A Consumer and a Provider manage a usage contract. There is no public process page, and the L0 item is not published.
+BP11 covers what a Consumer and a Provider do with a usage contract once they have agreed it: they consult it, follow up on its terms, and suspend, revoke or terminate it when needed.
 
-**78 items:** 1 L0, 6 L1, 16 L2, 29 Epic, 26 User story.
+There is no public process page for BP11 yet, and none of its items is published on the requirements website. This text is based on the titles of its high-level requirements only. The items below show their key, level, title and status, but not their text.
+
+## Who takes part
+
+- Consumer
+- Provider
+
+## What this folder holds
+
+The L0 item [SIMPL-27777](L0-SIMPL-27777/README.md) stands for the business process. Under it are 6 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **78 items:** 1 L0, 6 L1, 16 L2, 29 Epic, 26 User story.
+
+| L1 | High-level requirement | Status | Items under it |
+| --- | --- | --- | --- |
+| [SIMPL-27780](L0-SIMPL-27777/L1-SIMPL-27780/README.md) | A Provider and Consumer consult their usage contracts *(not published)* | In Progress | 6 |
+| [SIMPL-27783](L0-SIMPL-27777/L1-SIMPL-27783/README.md) | A Provider and Consumer manage the revocation of a usage contract *(not published)* | Defined | 11 |
+| [SIMPL-27787](L0-SIMPL-27777/L1-SIMPL-27787/README.md) | A Provider and Consumer manage the suspension of a usage contract *(not published)* | Defined | 18 |
+| [SIMPL-27796](L0-SIMPL-27777/L1-SIMPL-27796/README.md) | A Provider terminates a usage contract *(not published)* | Defined | 6 |
+| [SIMPL-28463](L0-SIMPL-27777/L1-SIMPL-28463/README.md) | A Participant follows up on the usage contract terms *(not published)* | Defined | 17 |
+| [SIMPL-28467](L0-SIMPL-27777/L1-SIMPL-28467/README.md) | A Participant performs usage contract actions related to the follow-up of usage contract terms *(not published)* | Defined | 13 |
 
 ## Tree
+
+Every item, with its level, title and status.
 
 - [SIMPL-27777](L0-SIMPL-27777/README.md) L0 · BP11 - Consumer and Provider manage a usage contract · For DG Connect Review · *not published*
   - [SIMPL-27780](L0-SIMPL-27777/L1-SIMPL-27780/README.md) L1 · A Provider and Consumer consult their usage contracts · In Progress · *not published*

@@ -12,17 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**
-
-Dataspace Governance Authority
-
-**I want**
-
-a UI to view the list of available identity attributes
-
-**So that**
-
-I use and manage them during dataspace lifecycle
+**As a** Dataspace Governance Authority\
+**I want** a UI to view the list of available identity attributes\
+**So that** I use and manage them during dataspace lifecycle
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

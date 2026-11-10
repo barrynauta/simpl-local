@@ -12,7 +12,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **As a** Governance Authority\
 **I want to** Simpl-Open to store the quality assessment as the validation report enriched with a link to the evaluated resource description\
-**so that** the outcome is reusable for approval and search.
+**So that** the outcome is reusable for approval and search.
 
 ##### Technical Details:
 
@@ -26,33 +26,33 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ###### AC1
 
-**Given** a resource description for which metadata quality is evaluated\
-**When** metadata quality evaluation for this resource description completes successfully\
-**Then** a Quality Assessment Report (QAR) for this evaluation is created\
-**And** the QAR includes overall score, dimension scores, overall classification, dimension classifications, and rule assertions\
-**And** Simpl-Open returns the QAR in the endpoint response\
-**And** the signed resource description payload is not changed.
+1. **Given** a resource description for which metadata quality is evaluated\
+   **When** metadata quality evaluation for this resource description completes successfully\
+   **Then** a Quality Assessment Report (QAR) for this evaluation is created\
+   **And** the QAR includes overall score, dimension scores, overall classification, dimension classifications, and rule assertions\
+   **And** Simpl-Open returns the QAR in the endpoint response\
+   **And** the signed resource description payload is not changed.
 
 ###### AC2
 
-**Given** a QAR is created for a resource description\
-**When** the QAR is returned by the endpoint\
-**Then** the QAR contains a `dqv:computedOn` link to the evaluated resource description\
-**And** the QAR can be unambiguously linked back to that resource description.
+2. **Given** a QAR is created for a resource description\
+   **When** the QAR is returned by the endpoint\
+   **Then** the QAR contains a `dqv:computedOn` link to the evaluated resource description\
+   **And** the QAR can be unambiguously linked back to that resource description.
 
 ###### AC3
 
-**Given** a QAR is created for a completed evaluation\
-**When** traceability fields are written\
-**Then** the QAR contains a link to the exact Metadata Quality Profile version used for this evaluation
+3. **Given** a QAR is created for a completed evaluation\
+   **When** traceability fields are written\
+   **Then** the QAR contains a link to the exact Metadata Quality Profile version used for this evaluation
 
 ###### AC4
 
-**Given** QAR creation is attempted after evaluation\
-**When** QAR creation fails\
-**Then** the flow is interrupted and the operation is reported as failed\
-**And** no incomplete QAR is returned in the endpoint response\
-**And** an error is logged and returned to the caller.
+4. **Given** QAR creation is attempted after evaluation\
+   **When** QAR creation fails\
+   **Then** the flow is interrupted and the operation is reported as failed\
+   **And** no incomplete QAR is returned in the endpoint response\
+   **And** an error is logged and returned to the caller.
 
 **OpenAPI Spec Link:**
 

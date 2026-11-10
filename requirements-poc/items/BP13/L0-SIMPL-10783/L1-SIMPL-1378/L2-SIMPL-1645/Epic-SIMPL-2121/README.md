@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As an Infrastructure Consumer, I want to configure and update software firewall rules and settings, so that I can ensure the security of my infrastructure and adapt to evolving security requirements.
+**As an** Infrastructure Consumer,\
+**I want to** configure and update software firewall rules and settings,\
+**So that** I can ensure the security of my infrastructure and adapt to evolving security requirements.
 
 AC: Given that security policies change over time, When Infrastructure Consumer configures firewall rules and settings are updated, Then the infrastructure remains secure and compliant by adjusting to evolving security requirements.
 

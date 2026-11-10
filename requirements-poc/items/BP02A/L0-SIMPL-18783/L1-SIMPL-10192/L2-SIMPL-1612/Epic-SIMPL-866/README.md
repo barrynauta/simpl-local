@@ -12,17 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**
-
-data space authority
-
-**I want to**
-
-via an API, modify an existing identity attribute
-
-**So that**
-
-I modify the selected identity attribute
+**As a** data space authority\
+**I want to** via an API, modify an existing identity attribute\
+**So that** I modify the selected identity attribute
 
 **FULL US ID:** ITADM-FUNC-001-FUNC-005/US_1186
 

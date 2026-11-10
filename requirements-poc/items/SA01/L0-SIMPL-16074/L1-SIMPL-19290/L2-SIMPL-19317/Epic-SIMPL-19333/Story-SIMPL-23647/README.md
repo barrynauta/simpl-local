@@ -19,55 +19,55 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 Scenario: **Retrieve workflow definitions linked to a resource**\
 The Participant needs visibility on whether a workflow is associated with an existing resource, to avoid deleting workflows that are still used.
 
-**Positive Case - Resource description provided**\
-**Given** I am an authenticated user,\
-**And** I am managing workflows,\
-**When** I request the list of workflows associated with a resource description provided in the request,\
-**Then** the API returns only the workflows linked to that resource description,\
-**And** each workflow includes its identifier and name,\
-**And** the API responds with status code 200.
+**Positive Case - Resource description provided**
 
-**Positive Case - No resource description provided**\
-**Given** I am an authenticated user,\
-**And** I am managing workflows,\
-**When** I request the list of workflows without providing any specific resource description,\
-**Then** the API returns all workflows that have at least one linked resource description,\
-**And** each workflow includes its identifier and name,\
-**And** the API responds with status code 200.
+1. **Given** I am an authenticated user,\
+   **And** I am managing workflows,\
+   **When** I request the list of workflows associated with a resource description provided in the request,\
+   **Then** the API returns only the workflows linked to that resource description,\
+   **And** each workflow includes its identifier and name,\
+   **And** the API responds with status code 200.
+
+**Positive Case - No resource description provided**
+
+2. **Given** I am an authenticated user,\
+   **And** I am managing workflows,\
+   **When** I request the list of workflows without providing any specific resource description,\
+   **Then** the API returns all workflows that have at least one linked resource description,\
+   **And** each workflow includes its identifier and name,\
+   **And** the API responds with status code 200.
 
 **Negative Case - Resource description not found (404)**
 
-**Given** I am an authenticated user,\
-**And** I am managing workflows,\
-**When** I request the workflows for a resource description that does not exist in the orchestration platform,\
-**Then** I am informed that the resource description was not found,\
-**And** the API responds with status code 404.
+3. **Given** I am an authenticated user,\
+   **And** I am managing workflows,\
+   **When** I request the workflows for a resource description that does not exist in the orchestration platform,\
+   **Then** I am informed that the resource description was not found,\
+   **And** the API responds with status code 404.
 
-**Negative Case - Unauthorised (401)**\
-**Given** I am not authenticated,\
-**And** I am managing workflows,\
-**When** I request the workflows for a resource description,\
-**Then** I am informed that authentication is required,\
-**And** the API responds with status code 401.
+**Negative Case - Unauthorised (401)**
 
-**Negative Case -** **Forbidden (403)**\
-**Given** I am an authenticated user,\
-**And** I do not have permission to manage workflows,\
-**When** I request the workflows for a resource description,\
-**Then** I am informed that I am not authorised to access the requested resource,\
-**And** the API responds with status code 403.
+4. **Given** I am not authenticated,\
+   **And** I am managing workflows,\
+   **When** I request the workflows for a resource description,\
+   **Then** I am informed that authentication is required,\
+   **And** the API responds with status code 401.
+
+**Negative Case -** **Forbidden (403)**
+
+5. **Given** I am an authenticated user,\
+   **And** I do not have permission to manage workflows,\
+   **When** I request the workflows for a resource description,\
+   **Then** I am informed that I am not authorised to access the requested resource,\
+   **And** the API responds with status code 403.
 
 **Negative Case -** **Bad request (400)**
 
-**Given** I am an authenticated user,
-
-**And** I am managing workflows,
-
-**When** I request the workflows for a resource description using an invalid or malformed identifier,
-
-**Then** I am informed that the request parameters are not valid,
-
-**And** the API responds with status code 400.
+6. **Given** I am an authenticated user,\
+   **And** I am managing workflows,\
+   **When** I request the workflows for a resource description using an invalid or malformed identifier,\
+   **Then** I am informed that the request parameters are not valid,\
+   **And** the API responds with status code 400.
 
 ## Where it fits
 

@@ -10,19 +10,17 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-**As a** Participant\
-**I want to** define the sub-service distribution model of a data orchestration workflow\
-**so that** services requiring high-volume or partitioned processing can use distributed compute capabilities.
+**As a** Participant\
+**I want to** define the sub-service distribution model of a data orchestration workflow\
+**So that** services requiring high-volume or partitioned processing can use distributed compute capabilities.
 
 **Acceptance Criteria**
 
-**Given** I am authenticated as a Participant, with a role authorising the definition of data orchestration workflows
-
-**When** I define the distribution model for a data orchestration workflow
-
-**And** I choose the sub-service distribution model\
-**Then** I am able to define the sub-service distribution model using code through an integrated workflow tooling\
-**And** the selected sub-service distribution model is saved as part of the workflow configuration
+1. **Given** I am authenticated as a Participant, with a role authorising the definition of data orchestration workflows\
+   **When** I define the distribution model for a data orchestration workflow\
+   **And** I choose the sub-service distribution model\
+   **Then** I am able to define the sub-service distribution model using code through an integrated workflow tooling\
+   **And** the selected sub-service distribution model is saved as part of the workflow configuration
 
 ## Where it fits
 

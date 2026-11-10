@@ -12,7 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-As a Provider authorised to manage resource descriptions, I want to see the previous version's access policies in the new-version wizard, so that I can retain them or change the new version.
+**As a** Provider authorised to manage resource descriptions,\
+**I want to** see the previous version's access policies in the new-version wizard,\
+**So that** I can retain them or change the new version.
 
 #### Acceptance criteria
 
@@ -88,12 +90,12 @@ The UI uses the existing previous-version retrieval flow. This story introduces 
 #### Additional notes
 
 - API definition ticket: (internal page)
-- [an internal page]
-- [an internal page]
+- (internal page)
+- (internal page)
 
 - Shared policy-template API definition, SIMPL-31345 (internal page)
-- [R08 ODRL template technical description|an internal page]
-- [ODRL template architecture rationale|an internal page]
+- R08 ODRL template technical description (internal page)
+- ODRL template architecture rationale (internal page)
 
 ## Where it fits
 

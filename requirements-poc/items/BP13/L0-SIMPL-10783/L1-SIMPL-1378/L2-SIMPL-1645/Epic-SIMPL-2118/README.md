@@ -13,16 +13,16 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 ## Text
 
 **As an** Infrastructure Provider\
-**I want** to allow Infrastructure Consumers and Application Providers to integrate preconfigured firewall software\
+**I want to** allow Infrastructure Consumers and Application Providers to integrate preconfigured firewall software\
 **So that** security standards can conveniently be addressed via a ready to install firewall solution.
 
 -
 
 **Acceptance Criteria**
 
-**Given** a Virtual Machine compatible with the Infrastructure Providers available preconfigured firewall solution\
-**When** the integrated preconfigured firewall software is installed\
-**Then** the firewall settings are set to the pre-defined standards provided by the Infrastructure Provider
+1. **Given** a Virtual Machine compatible with the Infrastructure Providers available preconfigured firewall solution\
+   **When** the integrated preconfigured firewall software is installed\
+   **Then** the firewall settings are set to the pre-defined standards provided by the Infrastructure Provider
 
 ## Where it fits
 

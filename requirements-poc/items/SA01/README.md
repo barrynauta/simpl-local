@@ -4,13 +4,52 @@ Folder: [items](../README.md) / **SA01**
 
 # SA01 - Data orchestration used by a Participant
 
-Providers and Consumers design, run and monitor repeatable data processing workflows.
+SA01 is a supporting activity: it supports business processes, but it has no value on its own. With it, a Provider or a Consumer designs, runs and monitors data processing workflows that can be repeated and traced.
 
-Public pages: [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa01-data-orchestration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/sa01-data-orchestration-used-participant)
+A workflow is a sequence of services, run in a fixed order. A service is one unit of work, for example a data transformation or a call to an external service. The services come from Simpl-Open, from the participant itself, or from the application catalogue. Simpl-Open does not check the business logic inside a workflow; that stays the responsibility of the participant.
 
-**67 items:** 1 L0, 8 L1, 18 L2, 24 Epic, 16 User story.
+A workflow can start in four ways: when a Consumer consumes the data, when the source data changes, on a time schedule, or by hand from the user interface. Each run is logged, so the participant can follow its status and find errors. The participant can also define a distribution model that says where the workflow runs.
+
+Read more on the [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa01-data-orchestration/README.md) and the [requirements site](https://simpl-programme.ec.europa.eu/book-page/sa01-data-orchestration-used-participant).
+
+## Who takes part
+
+- Participant, as Consumer or Provider
+
+## Before it starts
+
+- The participant is onboarded (BP03A).
+- The user is logged in and has the right roles (BP03B).
+
+## Steps
+
+The steps as the public process page names them. The items in this folder have no field for the step, so the tree below is ordered by item, not by step.
+
+- **SA01.01 Create a workflow**: the sequence of services, the input, the trigger and the expected output.
+- **SA01.02 Update a workflow**: each change is a new version, so the participant can roll back.
+- **SA01.03 Delete a workflow**: only when nothing depends on it; the logs are kept.
+- **SA01.04 Execute a workflow**
+- **SA01.05 Monitor a workflow execution**: status, logs, errors and bottlenecks.
+- **SA01.06 Define distribution model**
+
+## What this folder holds
+
+The L0 item [SIMPL-16074](L0-SIMPL-16074/README.md) stands for the supporting activity. Under it are 8 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **67 items:** 1 L0, 8 L1, 18 L2, 24 Epic, 16 User story.
+
+| L1 | High-level requirement | Status | Items under it |
+| --- | --- | --- | --- |
+| [SIMPL-19287](L0-SIMPL-16074/L1-SIMPL-19287/README.md) | Participant creates a new data orchestration workflow | Defined | 2 |
+| [SIMPL-19288](L0-SIMPL-16074/L1-SIMPL-19288/README.md) | Participant consults their own data orchestration workflows | Defined | 4 |
+| [SIMPL-19289](L0-SIMPL-16074/L1-SIMPL-19289/README.md) | Participant creates a new version of a data orchestration workflow | Defined | 2 |
+| [SIMPL-19290](L0-SIMPL-16074/L1-SIMPL-19290/README.md) | Participant deletes a data orchestration workflow | Defined | 4 |
+| [SIMPL-19291](L0-SIMPL-16074/L1-SIMPL-19291/README.md) | Participant executes a data orchestration workflow | Defined | 21 |
+| [SIMPL-19292](L0-SIMPL-16074/L1-SIMPL-19292/README.md) | Participant monitors and accesses data orchestration workflow execution logs | Defined | 6 |
+| [SIMPL-30520](L0-SIMPL-16074/L1-SIMPL-30520/README.md) | Participant defines used distribution model | Defined | 16 |
+| [SIMPL-30560](L0-SIMPL-16074/L1-SIMPL-30560/README.md) | Participant executes workflow on saved distribution configuration | Defined | 3 |
 
 ## Tree
+
+Every item, with its level, title and status.
 
 - [SIMPL-16074](L0-SIMPL-16074/README.md) L0 · SA01 - Data orchestration used by a Participant · Defined
   - [SIMPL-19287](L0-SIMPL-16074/L1-SIMPL-19287/README.md) L1 · Participant creates a new data orchestration workflow · Defined

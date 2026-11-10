@@ -14,32 +14,32 @@ This user story covers one step of the resource description wizard: when a Provi
 
 ## Text
 
-**As a** Provider end user\
-**I want** to remove contract clauses from a resource description via UI\
-**so that** I can ensure that the new version of the resource description includes the updated set of contract clauses
+**As a** Provider end user\
+**I want to** remove contract clauses from a resource description via UI\
+**So that** I can ensure that the new version of the resource description includes the updated set of contract clauses
 
 **Acceptance Criteria**
 
 **AC1 - A Provider removes contract clauses from a resource description via UI**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new version of a resource description\
-**When** I reach the step 'Contract Clauses' in the wizard\
-**Then** the UI shows the properties of the contract clauses prefilled with the values from the previous version\
-**and** I can remove one or more of the previously defined contract clauses
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new version of a resource description\
+   **When** I reach the step 'Contract Clauses' in the wizard\
+   **Then** the UI shows the properties of the contract clauses prefilled with the values from the previous version\
+   **And** I can remove one or more of the previously defined contract clauses
 
 **AC2 - A Provider finishes removing contract clauses via UI, resulting in a new version of a resource description**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new version of a resource description\
-**And** I reach the step 'Contract Clauses' in the wizard\
-**When** I choose to remove one or more of the previously defined contract clauses in the UI wizard,\
-**Then** those contract clauses are not associated anymore in the new version of the resource description\
-**And** I can navigate to the next step in the wizard
+2. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new version of a resource description\
+   **And** I reach the step 'Contract Clauses' in the wizard\
+   **When** I choose to remove one or more of the previously defined contract clauses in the UI wizard,\
+   **Then** those contract clauses are not associated anymore in the new version of the resource description\
+   **And** I can navigate to the next step in the wizard
 
-**References / Supporting Material / Documentation / Validation rules:** [Contract Clauses management|an internal page]
+**References / Supporting Material / Documentation / Validation rules:** Contract Clauses management (internal page)
 
 ## Where it fits
 

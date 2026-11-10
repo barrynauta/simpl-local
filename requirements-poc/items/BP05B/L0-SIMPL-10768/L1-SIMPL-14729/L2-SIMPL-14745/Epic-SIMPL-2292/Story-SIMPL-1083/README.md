@@ -10,11 +10,13 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-As a provider user I want to have an interface (using html forms) that I can use to define self-descriptions of various shape constraints defined using the SHACL ontology
+**As a** provider user\
+**I want to** have an interface (using html forms) that I can use to define self-descriptions of various shape constraints defined using the SHACL ontology
 
 - the interface should be dynamic and displayed based on the shape constraints
 - we should have no external branding visible on the interface
 - the form elements should display possible constraints and validations as data is inputed
+
 - when submitting the form I want a JSON-LD to be created and the shape as defined to be stored on the federated catalogue (with all the prerequisite steps, eg: signing )
 - initially the interface (form) should be able to handle shacl vocabulary as presented on SD-Tooling: [https://gitlab.eclipse.org/eclipse/xfsc/self-description-tooling/sd-creation-wizard-frontend/-/blob/main/documentation/shacl-angular-mapping.md?ref_type=heads](https://gitlab.eclipse.org/eclipse/xfsc/self-description-tooling/sd-creation-wizard-frontend/-/blob/main/documentation/shacl-angular-mapping.md?ref_type=heads)
 - I want the ability to change the shape for which I can define self description

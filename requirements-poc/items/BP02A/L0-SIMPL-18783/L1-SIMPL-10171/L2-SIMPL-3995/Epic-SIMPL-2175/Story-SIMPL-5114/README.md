@@ -10,28 +10,25 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-As **A**
-
-dataspace governance authority user with the *Tier 2 authorization manager* role in the Dataspace Governance Authority
-
-**I want to**
-
-via an API, use a CRUD interface ([CRUD Interface|an internal page]] for the Onboarding procedure template ([Onboarding procedure template|an internal page]).
-
-**So that**
-
-I can manage the Onboarding procedure template
+**As a** dataspace governance authority user with the *Tier 2 authorization manager* role in the Dataspace Governance Authority\
+**I want to** via an API, use a CRUD interface (CRUD Interface (internal page)] for the Onboarding procedure template (Onboarding procedure template (internal page)).\
+**So that** I can manage the Onboarding procedure template
 
 **Acceptance Criteria:**
 
-1. **Given that the user is logged in with the T2IAA_M role, and the API endpoint for retrieving an onboarding procedure template by ID is available, when the user sends a GET request to /onboardingProcedureTemplates/{onboardingProcedureTemplateId} with the required ID, then the response status code is 200 OK, and the response body contains the onboarding procedure template's details.**
-1. **Given that the user is logged in with the T2IAA_M role, and the API endpoint for updating an onboarding procedure template is available, when the user sends a PUT request to /onboardingProcedureTemplates/{onboardingProcedureTemplateId} with the required payload, then the response status code is 200 OK, and the response body contains the updated onboarding procedure template’s details.**
-1. **Given that the user is logged in with the T2IAA_M role, and the API endpoint for deleting an onboarding procedure template is available, when the user sends a DELETE request to /onboardingProcedureTemplates/{onboardingProcedureTemplateId}, then the response status code is 204 No Content, and the specified onboarding procedure template is removed.**
-1. **Given that the user is logged in with the T2IAA_M role, and the API endpoint for creating an onboarding procedure template is available, when the user sends a POST request to /onboardingProcedureTemplates with the required parameters, then the response status code is 201 Created, and the response body contains the newly created onboarding procedure template's details.**
-1. **Given that the user is logged in with the T2IAA_M role, and the API endpoint for retrieving all onboarding procedure templates is available,**\
-   **When the user sends a GET request to /onboardingProcedureTemplates,**\
-   **Then the response status code is 200 OK, and the response body contains a list of all onboarding procedure templates with their respective onboardingProcedureTemplateId.**
-1. **Given that the user is logged in without the T2IAA_M role, when the user attempts to send any request (GET, POST, PUT, or DELETE) to /onboardingProcedureTemplates endpoints, then the response status code is 403 Forbidden, and the response body contains an error message indicating insufficient permissions.**
+1. **Given** that the user is logged in with the T2IAA_M role, and the API endpoint for retrieving an onboarding procedure template by ID is available, **when** the user sends a GET request to /onboardingProcedureTemplates/{onboardingProcedureTemplateId} with the required ID, **then** the response status code is 200 OK, and the response body contains the onboarding procedure template's details.
+
+2. **Given** that the user is logged in with the T2IAA_M role, and the API endpoint for updating an onboarding procedure template is available, **when** the user sends a PUT request to /onboardingProcedureTemplates/{onboardingProcedureTemplateId} with the required payload, **then** the response status code is 200 OK, and the response body contains the updated onboarding procedure template’s details.
+
+3. **Given** that the user is logged in with the T2IAA_M role, and the API endpoint for deleting an onboarding procedure template is available, **when** the user sends a DELETE request to /onboardingProcedureTemplates/{onboardingProcedureTemplateId}, **then** the response status code is 204 No Content, and the specified onboarding procedure template is removed.
+
+4. **Given** that the user is logged in with the T2IAA_M role, and the API endpoint for creating an onboarding procedure template is available, **when** the user sends a POST request to /onboardingProcedureTemplates with the required parameters, **then** the response status code is 201 Created, and the response body contains the newly created onboarding procedure template's details.
+
+5. **Given** that the user is logged in with the T2IAA_M role, and the API endpoint for retrieving all onboarding procedure templates is available,\
+   **When** the user sends a GET request to /onboardingProcedureTemplates,\
+   **Then** the response status code is 200 OK, and the response body contains a list of all onboarding procedure templates with their respective onboardingProcedureTemplateId.
+
+6. **Given** that the user is logged in without the T2IAA_M role, **when** the user attempts to send any request (GET, POST, PUT, or DELETE) to /onboardingProcedureTemplates endpoints, **then** the response status code is 403 Forbidden, and the response body contains an error message indicating insufficient permissions.
 
 ## Where it fits
 

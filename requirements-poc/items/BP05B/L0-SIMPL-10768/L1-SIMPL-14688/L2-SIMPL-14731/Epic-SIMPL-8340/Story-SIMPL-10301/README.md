@@ -12,21 +12,21 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **As a** provider,\
 **I want to** view a list of available resource sharing methods and their associated templates,\
-**so that** I can understand the available options for sharing my resources effectively.
+**So that** I can understand the available options for sharing my resources effectively.
 
 **Acceptance Criteria:**\
 *
 
-   - **Given** I am logged in as a provider and filling in the resource description form,\
-   **When** I navigate to the "Resource Sharing Method" section,\
-   **Then** I should see the list of available resource sharing methods and be able to select one
+1. **Given** I am logged in as a provider and filling in the resource description form,\
+   **When** I navigate to the "Resource Sharing Method" section,\
+   **Then** I should see the list of available resource sharing methods and be able to select one
 
 *
 
-   - **Given** I am logged in as a provider and filling in the resource description form,\
-   **When** I navigate to the "Resource Sharing Method" section\
-   **and** I select a resource sharing method\
-   **Then** I should see the list of associated resource source templates and be able to select one
+2. **Given** I am logged in as a provider and filling in the resource description form,\
+   **When** I navigate to the "Resource Sharing Method" section\
+   **And** I select a resource sharing method\
+   **Then** I should see the list of associated resource source templates and be able to select one
 
 **Link to Figma mockup:**
 
@@ -38,7 +38,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **Internal page (including conceptual Data Model):**
 
-[an internal page]
+(internal page)
 
 ## Where it fits
 

@@ -11,51 +11,53 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 ## Text
 
 _This story extends SIMPL-28594, SIMPL-28595, SIMPL-28591 to allow the CONTRACT_M user to read and update the status of consent assertions._\
-----\
-**As a**
+----
 
-Data Provider End User who is responsible for managing contracts (CONTRACT_M)
-
-**I want** **
-
-via API, to read the list of consent assertions, read the details of a contract consent assertion and update its status
-
-**So that**
-
-I can manage consent assertions linked to established contracts
+**As a** Data Provider End User who is responsible for managing contracts (CONTRACT_M)\
+**I want** via API, to read the list of consent assertions, read the details of a contract consent assertion and update its status\
+**So that** I can manage consent assertions linked to established contracts
 
 **Acceptance Criteria**
 
 1. [ALL ACS of SIMPL-28594 must extend to the CONTRACT_M role, specific exceptions below]
-1. [EXTENDS AC1 of SIMPL-28594]\
-   **GIVEN** I am an authenticated user with CONTRACT_M role (and not CONSENT_M role)\
-   **WHEN** I send a GET /tier1/v1/consentAssertions API request\
-   **THEN** I receive a 200 OK response\
-   **AND** the response contains only assertions of type CONTRACT
-1. [EXTENDS AC5 of SIMPL-28594]\
-   **GIVEN** I am an authenticated user without CONSENT_M role or CONTRACT_M role\
-   **WHEN** I send a GET /tier1/v1/consentAssertions\
-   **THEN** I receive a 403 Forbidden response
-1. [ALL ACS of SIMPL-28595 must extend to the CONTRACT_M role, specific exceptions below]
-1. [EXTENDS AC5 of SIMPL-28595]\
-   **GIVEN** I am an authenticated user without CONSENT_M or CONTRACT_M role\
-   **WHEN** I send a GET /tier1/v1/consentAssertions/{consentAssertionId}\
-   **THEN** I receive a 403 Forbidden response
-1. **GIVEN** I am an authenticated user with CONTRACT_M role\
-   **WHEN** I send a GET /tier1/v1/consentAssertions/{consentAssertionId}\
-   **AND** the targeted consent assertion is not of type CONTRACT\
-   **THEN** I receive a 403 error message\
-   **AND** the response contains the message "You can only view contract consent assertions"
-1. [ALL ACS of SIMPL-28591 must extend to the CONTRACT_M role, specific exceptions below]
-1. [EXTENDS AC 11 of SIMPL-28591]\
-   **GIVEN** I am an authenticated user without the CONSENT_M role or the CONTRACT_M role\
-   **WHEN** I invoke the PATCH /tier1/v1/consentAssertions/{consentAssertionId}/status API\
-   **THEN** I receive a 403 Forbidden response
-1. **GIVEN** I am an authenticated user with CONTRACT_M role\
-   **WHEN** I invoke the PATCH /tier1/v1/consentAssertions/{consentAssertionId}/status API\
-   **AND** the targeted consent assertion is not of type CONTRACT\
-   **THEN** I receive a 403 error message\
-   **AND** the response contains the message "You can only change the status of contract consent assertions"
+1. [EXTENDS AC1 of SIMPL-28594]
+
+1. **Given** I am an authenticated user with CONTRACT_M role (and not CONSENT_M role)\
+   **When** I send a GET /tier1/v1/consentAssertions API request\
+   **Then** I receive a 200 OK response\
+   **And** the response contains only assertions of type CONTRACT
+
+   - [EXTENDS AC5 of SIMPL-28594]
+
+2. **Given** I am an authenticated user without CONSENT_M role or CONTRACT_M role\
+   **When** I send a GET /tier1/v1/consentAssertions\
+   **Then** I receive a 403 Forbidden response
+
+   - [ALL ACS of SIMPL-28595 must extend to the CONTRACT_M role, specific exceptions below]
+   - [EXTENDS AC5 of SIMPL-28595]
+
+3. **Given** I am an authenticated user without CONSENT_M or CONTRACT_M role\
+   **When** I send a GET /tier1/v1/consentAssertions/{consentAssertionId}\
+   **Then** I receive a 403 Forbidden response
+
+4. **Given** I am an authenticated user with CONTRACT_M role\
+   **When** I send a GET /tier1/v1/consentAssertions/{consentAssertionId}\
+   **And** the targeted consent assertion is not of type CONTRACT\
+   **Then** I receive a 403 error message\
+   **And** the response contains the message "You can only view contract consent assertions"
+
+   - [ALL ACS of SIMPL-28591 must extend to the CONTRACT_M role, specific exceptions below]
+   - [EXTENDS AC 11 of SIMPL-28591]
+
+5. **Given** I am an authenticated user without the CONSENT_M role or the CONTRACT_M role\
+   **When** I invoke the PATCH /tier1/v1/consentAssertions/{consentAssertionId}/status API\
+   **Then** I receive a 403 Forbidden response
+
+6. **Given** I am an authenticated user with CONTRACT_M role\
+   **When** I invoke the PATCH /tier1/v1/consentAssertions/{consentAssertionId}/status API\
+   **And** the targeted consent assertion is not of type CONTRACT\
+   **Then** I receive a 403 error message\
+   **And** the response contains the message "You can only change the status of contract consent assertions"
 
 ## Where it fits
 

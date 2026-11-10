@@ -13,7 +13,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 ###### User Story
 
 **As a** Provider\
-**I want** to configure a Resource Consent Access Policy for a Resource Description\
+**I want to** configure a Resource Consent Access Policy for a Resource Description\
 **So that** access to the resource can be governed according to the status of a Resource Consent Assertion.
 
 ###### Description
@@ -28,22 +28,22 @@ The selected assertion shall be associated with the newly created Resource Conse
 
 **AC1 - Select Resource Consent Assertion**
 
-**Given** I am creating or editing a Resource Description\
-**When** I access the Access Policy step\
-**Then** I can retrieve and consult the available Resource Consent Assertions
+1. **Given** I am creating or editing a Resource Description\
+   **When** I access the Access Policy step\
+   **Then** I can retrieve and consult the available Resource Consent Assertions
 
 **AC2 - Create Resource Consent Access Policy**
 
-**Given** I am in the Access Policy step\
-**When** I select a Resource Consent Assertion\
-**Then** a Resource Consent Access Policy is created\
-**And** the selected Resource Consent Assertion is linked to the policy
+2. **Given** I am in the Access Policy step\
+   **When** I select a Resource Consent Assertion\
+   **Then** a Resource Consent Access Policy is created\
+   **And** the selected Resource Consent Assertion is linked to the policy
 
 **AC3 - Assign Policy to Resource Description**
 
-**Given** a Resource Consent Access Policy has been created\
-**When** the Resource Description is saved\
-**Then** the policy is assigned to the Resource Description
+3. **Given** a Resource Consent Access Policy has been created\
+   **When** the Resource Description is saved\
+   **Then** the policy is assigned to the Resource Description
 
 ## Where it fits
 

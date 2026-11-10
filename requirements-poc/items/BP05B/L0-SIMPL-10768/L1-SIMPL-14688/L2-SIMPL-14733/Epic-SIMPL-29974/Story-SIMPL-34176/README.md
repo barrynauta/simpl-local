@@ -13,7 +13,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 ###### User Story
 
 **As a** Provider\
-**I want** to configure a Contract Consent Access Policy for a Resource Description\
+**I want to** configure a Contract Consent Access Policy for a Resource Description\
 **So that** access to the resource can also be governed according to the status of Contract Consent Assertions associated with usage contracts.
 
 ###### Description
@@ -28,21 +28,21 @@ When enabled, SD-Tooling shall create and associate a Contract Consent Access Po
 
 **AC1 - Enable Contract Consent Management**
 
-**Given** a Resource Consent Access Policy has been configured\
-**When** I access the Service Policy step\
-**Then** I can enable the Contract Consent option
+1. **Given** a Resource Consent Access Policy has been configured\
+   **When** I access the Service Policy step\
+   **Then** I can enable the Contract Consent option
 
 **AC2 - Create Contract Consent Access Policy**
 
-**Given** a Resource Consent Access Policy exists\
-**When** I enable the Contract Consent option\
-**Then** a Contract Consent Access Policy is created
+2. **Given** a Resource Consent Access Policy exists\
+   **When** I enable the Contract Consent option\
+   **Then** a Contract Consent Access Policy is created
 
 **AC3 - Assign Policy to Resource Description**
 
-**Given** a Contract Consent Access Policy has been created\
-**When** the Resource Description is saved\
-**Then** the Contract Consent Access Policy is assigned to the Resource Description
+3. **Given** a Contract Consent Access Policy has been created\
+   **When** the Resource Description is saved\
+   **Then** the Contract Consent Access Policy is assigned to the Resource Description
 
 ## Where it fits
 

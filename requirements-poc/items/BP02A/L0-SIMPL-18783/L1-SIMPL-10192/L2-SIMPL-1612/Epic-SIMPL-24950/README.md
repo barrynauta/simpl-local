@@ -10,27 +10,20 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As a**
-
-Governance Authority
-
-**I want to**
-
-mark each of my identity attributes as federable or non-federable
-
-**So that**
-
-I can control which capabilities can be extended to participants of federated data spaces through attribute mapping.
+**As a** Governance Authority\
+**I want to** mark each of my identity attributes as federable or non-federable\
+**So that** I can control which capabilities can be extended to participants of federated data spaces through attribute mapping.
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am a Governance Authority user with the appropriate roles\
-   **WHEN** I mark a custom identity attribute as federable or non-federable\
-   **THEN** the *federable* property of that attribute is updated accordingly
-1. **GIVEN** I am a Governance Authority user with the appropriate roles\
-   **WHEN** I access the federable setting of a built-in identity attribute\
-   **THEN** the federable attribute is already defined\
-   **AND** the *federable* property cannot be modified
+1. **Given** I am a Governance Authority user with the appropriate roles\
+   **When** I mark a custom identity attribute as federable or non-federable\
+   **Then** the *federable* property of that attribute is updated accordingly
+
+2. **Given** I am a Governance Authority user with the appropriate roles\
+   **When** I access the federable setting of a built-in identity attribute\
+   **Then** the federable attribute is already defined\
+   **And** the *federable* property cannot be modified
 
 ## Where it fits
 

@@ -10,17 +10,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-**As A**
-
-dataspace participant agent,
-
-**I want** **to**
-
-interact with other agents, establishing mTLS connections using the agent credentials,
-
-**So that**
-
-the communication between the agents will be secured.
+**As a** dataspace participant agent,\
+**I want to** interact with other agents, establishing mTLS connections using the agent credentials,\
+**So that** the communication between the agents will be secured.
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

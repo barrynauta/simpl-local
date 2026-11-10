@@ -85,18 +85,17 @@ After retrieving the JSON Schema the UI has to invoke AssetOrchestrator GET /wor
 
 ###### **AC1 - The provider can clearly view the resourceAddress information**
 
-**Given** a provider opens an existing resource description\
-**When** the system displays the resource details (in read‑only or edit mode)
-
-**Then** the provider can see all the previously entered resourceAddress information\
-**And** the information is presented in a clear and readable way
+1. **Given** a provider opens an existing resource description\
+   **When** the system displays the resource details (in read‑only or edit mode)\
+   **Then** the provider can see all the previously entered resourceAddress information\
+   **And** the information is presented in a clear and readable way
 
 ###### **AC2 - The information is displayed according to the structure of the original template**
 
-**Given** a resource description was created using a specific template\
-**When** the provider views it in edit mode\
-**Then** the system shows only the fields defined by that template\
-**And** the information appears embedded in the correct template‑specific layout and field structure
+2. **Given** a resource description was created using a specific template\
+   **When** the provider views it in edit mode\
+   **Then** the system shows only the fields defined by that template\
+   **And** the information appears embedded in the correct template‑specific layout and field structure
 
 ## Where it fits
 

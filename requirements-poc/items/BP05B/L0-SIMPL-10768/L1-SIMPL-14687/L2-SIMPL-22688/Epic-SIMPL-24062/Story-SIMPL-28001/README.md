@@ -10,10 +10,8 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-**As a** Governance Authority
-
-**I want to** return the metadata quality scores of a submitted resource description to the provider that submitted it
-
+**As a** Governance Authority\
+**I want to** return the metadata quality scores of a submitted resource description to the provider that submitted it\
 **So that** the provider can decide whether improvements are required on the metadata
 
 ###### Technical Details:
@@ -49,19 +47,19 @@ The `201 Created` response schema (currently `$ref: SelfDescription`) must be ex
 
 ###### AC1
 
-**Given** the metadata quality evaluation of a valid resource description is completed\
-**When** the verification of the metadata quality scores against the thresholds defined in the metadata quality definition is completed\
-**Then** Simpl-Open informs the Provider whether the resource description is accepted for publication or rejected\
-**And** the resource description is accepted for publication when all mandatory thresholds are met\
-**And** the resource description is rejected when one or more mandatory thresholds are not met\
-**And** Simpl-Open provides the result of the metadata quality evaluation\
-**And** this evaluation includes:
+1. **Given** the metadata quality evaluation of a valid resource description is completed\
+   **When** the verification of the metadata quality scores against the thresholds defined in the metadata quality definition is completed\
+   **Then** Simpl-Open informs the Provider whether the resource description is accepted for publication or rejected\
+   **And** the resource description is accepted for publication when all mandatory thresholds are met\
+   **And** the resource description is rejected when one or more mandatory thresholds are not met\
+   **And** Simpl-Open provides the result of the metadata quality evaluation\
+   **And** this evaluation includes:
 
-- overall score
-- overall classification
-- per-dimension scores
-- per-dimension classifications
-- failed thresholds when the resource description is rejected
+   - overall score
+   - overall classification
+   - per-dimension scores
+   - per-dimension classifications
+   - failed thresholds when the resource description is rejected
 
 ## Where it fits
 

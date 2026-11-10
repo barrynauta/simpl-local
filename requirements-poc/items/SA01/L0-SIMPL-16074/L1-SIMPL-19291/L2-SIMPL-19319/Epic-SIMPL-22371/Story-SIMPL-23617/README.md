@@ -10,9 +10,9 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 ## Text
 
-**As a** Data Provider,\
-**I want** Simpl- Open to trigger the workflow linked to a data resource description when a Consumer consumes the data resource\
-**So that** data resources are delivered to the Consumer aligned with my requirements
+**As a** Data Provider,\
+**I want** Simpl- Open to trigger the workflow linked to a data resource description when a Consumer consumes the data resource\
+**So that** data resources are delivered to the Consumer aligned with my requirements
 
 ##### Acceptance Criteria:
 
@@ -24,59 +24,40 @@ Scenario: The data consumer consumes a resource that has been associated with a 
 
 **AC1: testable E2E**
 
-**Given** a contract is established for a given resource description of a given provider and a given consumer
-
-**And** the resource description is linked to a workflow to be triggered at consumption
-
-**When** the data transfer for this resource description and consumer is triggered
-
-**Then** the linked workflow is triggered
-
-**And** the API responds with status code 202
-
-**And** the provider agent has access to the workflow execution run id and execution status
+1. **Given** a contract is established for a given resource description of a given provider and a given consumer\
+   **And** the resource description is linked to a workflow to be triggered at consumption\
+   **When** the data transfer for this resource description and consumer is triggered\
+   **Then** the linked workflow is triggered\
+   **And** the API responds with status code 202\
+   **And** the provider agent has access to the workflow execution run id and execution status
 
 **Negative Case:**
 
 **AC2: Only intended for API testing**
 
-**Given** a valid workflow execution endpoint
-
-**When** the workflow execution API is called with an invalid request parameter (e.g. assetId is blank or null)
-
-**Then** the API rejects the request
-
-**And** the API responds with status code 400
-
-**And** the API returns an error message describing the issue
+2. **Given** a valid workflow execution endpoint\
+   **When** the workflow execution API is called with an invalid request parameter (e.g. assetId is blank or null)\
+   **Then** the API rejects the request\
+   **And** the API responds with status code 400\
+   **And** the API returns an error message describing the issue
 
 **AC3: Only intended for API testing**
 
-**Given** a valid workflow execution endpoint
-
-**When** the workflow execution API is called
-
-**And** the assetId provided in the request has not active workflow associated with it
-
-**Then** the API rejects the request
-
-**And** the API responds with status code 404
-
-**And** the API returns an error message describing the issue
+3. **Given** a valid workflow execution endpoint\
+   **When** the workflow execution API is called\
+   **And** the assetId provided in the request has not active workflow associated with it\
+   **Then** the API rejects the request\
+   **And** the API responds with status code 404\
+   **And** the API returns an error message describing the issue
 
 **AC4:** testable E2E{}
 
-**Given** a valid workflow execution endpoint
-
-**When** the workflow execution API is called
-
-**And** the service is unavailable
-
-**Then** the API rejects the request
-
-**And** the API responds with status code 502
-
-**And** the API returns an error message describing the issue
+4. **Given** a valid workflow execution endpoint\
+   **When** the workflow execution API is called\
+   **And** the service is unavailable\
+   **Then** the API rejects the request\
+   **And** the API responds with status code 502\
+   **And** the API returns an error message describing the issue
 
 **Workflow execution status**
 
@@ -86,57 +67,39 @@ Scenario: The data consumer consumes a resource that has been associated with a 
 
 **AC5: Only intended for API testing**
 
-**Given** a valid workflow execution status endpoint
-
-**And** the workflow is linked to a resource description
-
-**And** the workflow execution has started successfully
-
-**When** the workflow execution status API is called
-
-**Then** the API  responds with status code 200
-
-**And** the API returns the execution progress status
+5. **Given** a valid workflow execution status endpoint\
+   **And** the workflow is linked to a resource description\
+   **And** the workflow execution has started successfully\
+   **When** the workflow execution status API is called\
+   **Then** the API responds with status code 200\
+   **And** the API returns the execution progress status
 
 **Negative Case:**
 
 AC6: Only intended for API testing{}
 
-**Given** a valid workflow execution status endpoint
-
-**When** the workflow execution status API is called with an invalid request parameter (e.g. runId is blank)
-
-**Then** the API rejects the request
-
-**And** the API responds with status code 400
-
-**And** the API returns an error message describing the issue
+6. **Given** a valid workflow execution status endpoint\
+   **When** the workflow execution status API is called with an invalid request parameter (e.g. runId is blank)\
+   **Then** the API rejects the request\
+   **And** the API responds with status code 400\
+   **And** the API returns an error message describing the issue
 
 **AC7: Only intended for API testing**
 
-**Given** a valid workflow execution status endpoint
-
-**When** the workflow execution status API is called with an invalid workflow execution run id
-
-**Then** the API rejects the request
-
-**And** the API responds with status code 404
-
-**And** the API returns an error message describing the issue
+7. **Given** a valid workflow execution status endpoint\
+   **When** the workflow execution status API is called with an invalid workflow execution run id\
+   **Then** the API rejects the request\
+   **And** the API responds with status code 404\
+   **And** the API returns an error message describing the issue
 
 **AC8: testable E2E**
 
-**Given** a valid workflow execution status endpoint
-
-**When** the workflow execution status API is called
-
-**And** The service is unavailable
-
-**Then** the API rejects the request
-
-**And** the API responds with status code 502
-
-**And** the API returns an error message describing the issue
+8. **Given** a valid workflow execution status endpoint\
+   **When** the workflow execution status API is called\
+   **And** The service is unavailable\
+   **Then** the API rejects the request\
+   **And** the API responds with status code 502\
+   **And** the API returns an error message describing the issue
 
 ##### Additional Notes:
 

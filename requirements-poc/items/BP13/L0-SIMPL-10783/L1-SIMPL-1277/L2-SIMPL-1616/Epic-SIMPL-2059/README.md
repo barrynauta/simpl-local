@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As A dataspace participant agent , I want via an API, accept requests that have validated identity attributes attached to the credentials of the counterpart participant, so that the communication between agents will be trusted.
+**As a** dataspace participant agent ,\
+**I want** via an API, accept requests that have validated identity attributes attached to the credentials of the counterpart participant,\
+**So that** the communication between agents will be trusted.
 
 ## Where it fits
 

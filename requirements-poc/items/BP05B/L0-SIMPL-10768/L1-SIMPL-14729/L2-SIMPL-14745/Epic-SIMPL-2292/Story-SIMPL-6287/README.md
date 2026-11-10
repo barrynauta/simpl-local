@@ -10,19 +10,13 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-As a data provider
+**As a** data provider\
+**I want to** during the process of publishing a resource to the catalogue, use an API
 
-I want to
-
-during the process of publishing a resource to the catalogue, use an API
-
-- to register the asset and policies (related to this resource) in the -EDC- connector  *
-
+- to register the asset and policies (related to this resource) in the -EDC- connector
 - Once registered, to retrieve the asset ID and insert that asset ID as an extra field in the resource description
 
-so that
-
-the asset ID is available to support the consumption of the resource when a consumer selects the resource description for consumption
+**So that** the asset ID is available to support the consumption of the resource when a consumer selects the resource description for consumption
 
 Note: for MVP, the connector is EDC.
 
@@ -40,43 +34,33 @@ AC:
 
 S1. Register a data asset in the connector of the provider with the correct properties:
 
-GIVEN the user is logged in as a Data Provider, connector is running and necessary permissions are granted,
-
-WHEN make a POST request to [/api/sd/enrichAndValidate](https://creation-wizard-api.dev.simpl-europe.eu/swagger-ui/index.html#/SD%20Controller/enrichAndValidate) with a valid asset definition including SD json file,
-
-THEN the asset is successfully registered, and the correct properties are set, as well the asset ID is correctly extracted.
+1. **Given** the user is logged in as a Data Provider, connector is running and necessary permissions are granted,\
+   **When** make a POST request to [/api/sd/enrichAndValidate](https://creation-wizard-api.dev.simpl-europe.eu/swagger-ui/index.html#/SD%20Controller/enrichAndValidate) with a valid asset definition including SD json file,\
+   **Then** the asset is successfully registered, and the correct properties are set, as well the asset ID is correctly extracted.
 
 S2. Verify that the returned asset ID is correctly inserted into the resource description:
 
-GIVEN Asset registration is successful, and asset ID is received
-
-WHEN receiving the asset ID from the registration API response and verify the insertion of the asset ID into the resource description.
-
-THEN the resource description contains the asset ID in the specified field.
+2. **Given** Asset registration is successful, and asset ID is received\
+   **When** receiving the asset ID from the registration API response and verify the insertion of the asset ID into the resource description.\
+   **Then** the resource description contains the asset ID in the specified field.
 
 S3.Register a data asset in the connector of the provider with missing properties
 
-GIVEN the user is logged in as a Data Provider, connector is running and necessary permissions are granted,
-
-WHEN initiate the resource publishing process yet missing one or more required resource attributes.
-
-THEN 1) the API returns an error status (e.g., HTTP 400). 2) the system prompts user with messages indicating which required fields are missing.
+3. **Given** the user is logged in as a Data Provider, connector is running and necessary permissions are granted,\
+   **When** initiate the resource publishing process yet missing one or more required resource attributes.\
+   **Then** 1) the API returns an error status (e.g., HTTP 400). 2) the system prompts user with messages indicating which required fields are missing.
 
 S4. Register a data asset in the connector of the provider yet the data asset is already existing
 
-GIVEN the user is logged in as a Data Provider, connector is running and necessary permissions are granted,
-
-WHEN initiate the resource publishing process of a existing data asset
-
-THEN 1) The API returns an error status (e.g., HTTP 409). 2) Appropriate error message indicating that the asset already exists is returned.
+4. **Given** the user is logged in as a Data Provider, connector is running and necessary permissions are granted,\
+   **When** initiate the resource publishing process of a existing data asset\
+   **Then** 1) The API returns an error status (e.g., HTTP 409). 2) Appropriate error message indicating that the asset already exists is returned.
 
 S5. Verify that the resource can be consumed using the asset ID in the description.
 
-GIVEN Asset registration is successful, and asset ID is part of the resource description, and the User has accessed the resource catalog as a consumer, and had selected the resource that contains the asset ID.
-
-WHEN Initiate the resource consumption process using the asset ID.
-
-THEN 1) Resource consumption is successful with no errors. 2) The system retrieves the resource correctly based on the asset ID.
+5. **Given** Asset registration is successful, and asset ID is part of the resource description, and the User has accessed the resource catalog as a consumer, and had selected the resource that contains the asset ID.\
+   **When** Initiate the resource consumption process using the asset ID.\
+   **Then** 1) Resource consumption is successful with no errors. 2) The system retrieves the resource correctly based on the asset ID.
 
 ## Where it fits
 

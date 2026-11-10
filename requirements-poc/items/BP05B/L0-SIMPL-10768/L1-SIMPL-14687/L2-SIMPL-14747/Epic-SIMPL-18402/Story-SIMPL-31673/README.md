@@ -156,8 +156,8 @@ A sender without the required management identity attributes receives HTTP 403, 
 
 #### Supporting documentation
 
-- [R08 ODRL template technical description|an internal page]
-- [R08 policy assignment and validation requirements|an internal page]
+- R08 ODRL template technical description (internal page)
+- R08 policy assignment and validation requirements (internal page)
 - Policy validation response contract, SIMPL-31639 (internal page)
 
 ## Where it fits

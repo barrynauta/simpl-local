@@ -88,8 +88,8 @@ API definition ticket: (internal page)
 
 #### Additional notes:
 
-- [an internal page]
-- [an internal page]
+- (internal page)
+- (internal page)
 
 ## Where it fits
 

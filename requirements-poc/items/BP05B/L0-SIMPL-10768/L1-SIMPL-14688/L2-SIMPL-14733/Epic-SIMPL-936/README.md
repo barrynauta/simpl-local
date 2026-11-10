@@ -12,7 +12,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 **As a** Provider\
 **I want to** use, via UI, an access policy template to assign an access policy to a new resource description\
-**so that** I can ensure that the access to the new resource description and the underlying resource is aligned with my internal rules and obligations.
+**So that** I can ensure that the access to the new resource description and the underlying resource is aligned with my internal rules and obligations.
 
 **Acceptance Criteria**
 

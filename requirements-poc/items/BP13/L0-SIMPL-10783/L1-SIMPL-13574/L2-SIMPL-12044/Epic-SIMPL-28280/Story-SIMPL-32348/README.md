@@ -10,25 +10,25 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As** a Participant,\
-**I want** to navigate to the Simpl-Open ticketing system via my landing page,\
+**As a** Participant,\
+**I want to** navigate to the Simpl-Open ticketing system via my landing page,\
 **So that** I can manage all my support tickets
 
 ###### **Acceptance Criterion 1 - Ticketing system configured**
 
-**Given** I am authenticated as a Participant user\
-**And** the URL of the ticketing system is configured by the Participant\
-**When** I access my Simpl-Open agent landing page\
-**And** I choose to access the ticketing system\
-**Then** I am redirected to the ticketing system
+1. **Given** I am authenticated as a Participant user\
+   **And** the URL of the ticketing system is configured by the Participant\
+   **When** I access my Simpl-Open agent landing page\
+   **And** I choose to access the ticketing system\
+   **Then** I am redirected to the ticketing system
 
 ###### **Acceptance Criterion 2 - Ticketing system not configured**
 
-**Given** I am authenticated as a Participant user\
-**And** the URL of the ticketing system is not configured by the Participant\
-**When** I access my Simpl-Open agent landing page\
-**And** I choose to access the ticketing system\
-**Then** Simpl-Open responds with a message including information about unavailability of the ticketing system
+2. **Given** I am authenticated as a Participant user\
+   **And** the URL of the ticketing system is not configured by the Participant\
+   **When** I access my Simpl-Open agent landing page\
+   **And** I choose to access the ticketing system\
+   **Then** Simpl-Open responds with a message including information about unavailability of the ticketing system
 
 ## Where it fits
 

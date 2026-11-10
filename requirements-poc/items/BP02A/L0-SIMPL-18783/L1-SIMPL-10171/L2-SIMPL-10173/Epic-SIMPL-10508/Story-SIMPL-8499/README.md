@@ -10,27 +10,25 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role
-
-**I want to**
-
-via API, manage the list of COMPOSITE validation rules for each onboarding procedure template
-
-**So** **that**
-
-I can define a hierarchical tree structure combining content check and presence check rules to automate the validation of a document's content. This structure also supports users with the NOTARY role during the approval or rejection process of onboarding requests.
+**As a** dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role\
+**I want to** via API, manage the list of COMPOSITE validation rules for each onboarding procedure template\
+**So that** I can define a hierarchical tree structure combining content check and presence check rules to automate the validation of a document's content. This structure also supports users with the NOTARY role during the approval or rejection process of onboarding requests.
 
 **Acceptance Criteria**
 
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role when I** **GET /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules** **then** **I want to see all the composite rules specified for the template**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role wanting to create a COMPOSITE rule when I POST** **/onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules** **with ruleType COMPOSITE with all the required parameters (including at least two child rules) THEN I want to receive a 201 Created response and the rule is created**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role wanting to update a COMPOSITE rule when I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId}** **with all the required parameters** (including at least two child rules){} THEN I want to receive a 200 OK response and the rule is updated{}
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role,** **wanting to update a** **COMPOSITE** **rule when I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId}** **with invalid parameters** **THEN I want to receive a 400 BAD REQUEST and the update is rejected**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role,** **wanting to update or create a** **COMPOSITE** **rule when I create (POST) or update (PUT) a COMPOSITE rule** **with less than two rules** **THEN I want to receive a 400** **BAD REQUEST** **and the update is rejected**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role,** **wanting to update a** **COMPOSITE** **rule when I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId}** **with a new rule type different from COMPOSITE** THEN I want to receive a 400 bad request and the update is rejected{}
-1. **Given that I am a dataspace governance user WITHOUT the T2IAA_M role, WHEN I call any of the GET, POST, PUT** **/onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules** **APIs THEN I want to receive a 403 Forbidden and the operation is rejected**
+1. **Given** that I am a dataspace governance authority user with the T2IAA_M role **when** I GET /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules **then** I want to see all the composite rules specified for the template
+
+2. **Given** that I am a dataspace governance authority user with the T2IAA_M role wanting to create a COMPOSITE rule **when** I POST /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules with ruleType COMPOSITE with all the required parameters (including at least two child rules) **then** I want to receive a 201 Created response and the rule is created
+
+3. **Given** that I am a dataspace governance authority user with the T2IAA_M role wanting to update a COMPOSITE rule **when** I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId} with all the required parameters (including at least two child rules){} **then** I want to receive a 200 OK response and the rule is updated{}
+
+4. **Given** that I am a dataspace governance authority user with the T2IAA_M role, wanting to update a COMPOSITE rule **when** I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId} with invalid parameters **then** I want to receive a 400 BAD REQUEST and the update is rejected
+
+5. **Given** that I am a dataspace governance authority user with the T2IAA_M role, wanting to update or create a COMPOSITE rule **when** I create (POST) or update (PUT) a COMPOSITE rule with less than two rules **then** I want to receive a 400 BAD REQUEST and the update is rejected
+
+6. **Given** that I am a dataspace governance authority user with the T2IAA_M role, wanting to update a COMPOSITE rule **when** I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId} with a new rule type different from COMPOSITE **then** I want to receive a 400 bad request and the update is rejected{}
+
+7. **Given** that I am a dataspace governance user WITHOUT the T2IAA_M role, **when** I call any of the GET, POST, PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules APIs **then** I want to receive a 403 Forbidden and the operation is rejected
 
 APIs for onboarding validation rules are defined in (internal page).
 

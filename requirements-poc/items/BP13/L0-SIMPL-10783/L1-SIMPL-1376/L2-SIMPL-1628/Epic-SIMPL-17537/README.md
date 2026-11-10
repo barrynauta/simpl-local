@@ -11,16 +11,16 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 ## Text
 
 **As a** Product Owner of SIMPL-Open\
-**I want** to provide deployment scripts (e.g. Terraform) for the SIMPL-Open Governance Authority Agent image\
+**I want to** provide deployment scripts (e.g. Terraform) for the SIMPL-Open Governance Authority Agent image\
 **So that** Data Space Governance Authorities can deploy the Governance Authority Agent on supported cloud and orchestration platforms
 
 ---
 
 **Acceptance Criterion**
 
-**Given** that Data Space Governance Authorities require automated deployment of the SIMPL-Open Governance Authority Agent\
-**When** deployment scripts are made available for supported orchestration platforms\
-**Then** Governance Authorities can deploy SIMPL Governance Authority Agent image more efficiently and consistently across cloud environments
+1. **Given** that Data Space Governance Authorities require automated deployment of the SIMPL-Open Governance Authority Agent\
+   **When** deployment scripts are made available for supported orchestration platforms\
+   **Then** Governance Authorities can deploy SIMPL Governance Authority Agent image more efficiently and consistently across cloud environments
 
 ## Where it fits
 

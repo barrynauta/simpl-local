@@ -11,17 +11,17 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 ## Text
 
 **As a** Provider\
-**I want** to indicate in a data resource description if the transfer should use a secured VPN tunnel\
+**I want to** indicate in a data resource description if the transfer should use a secured VPN tunnel\
 **So that** I can ensure that my data resource is configured with a secured VPN tunnel that is created automatically at the moment of transfer.
 
 **Acceptance criteria**
 
-**Given** I am authenticated as a Provider\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new data resource description\
-**and** the transfer method is data transfer\
-**when** I reach the step "Resource type specific metadata" in the wizard\
-**then** I can indicate whether the resource will be transferred through a secured VPN tunnel.
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new data resource description\
+   **And** the transfer method is data transfer\
+   **When** I reach the step "Resource type specific metadata" in the wizard\
+   **Then** I can indicate whether the resource will be transferred through a secured VPN tunnel.
 
 ## Where it fits
 

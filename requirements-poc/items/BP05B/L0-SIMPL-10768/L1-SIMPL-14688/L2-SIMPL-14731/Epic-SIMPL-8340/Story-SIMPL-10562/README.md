@@ -10,20 +10,22 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-**As** a provider user authorised to manage resource descriptions,\
+**As a** provider user authorised to manage resource descriptions,\
 **I want to** retrieve via an API a list of available resource sharing methods and their associated templates,\
-**so that** I can provide a source address compliant with the requested sharing method when completing a resource description.
+**So that** I can provide a source address compliant with the requested sharing method when completing a resource description.
 
 **Acceptance Criteria:**
 
-- **Positive case**\
-   **Given** I am authorised to manage resource descriptions,\
-   **When** I request available **resource sharing methods** via the API,\
+- **Positive case**
+
+1. **Given** I am authorised to manage resource descriptions,\
+   **When** I request available resource sharing methods via the API,\
    **Then** I receive a list of supported resource sharing methods, each including its associated template and metadata needed for the resource description.
 
-- **Negative case - unauthorised user**\
-   **Given** I am not authorised to manage resource descriptions,\
-   **When** I attempt to retrieve available **resource sharing methods** via the API,\
+   - Negative case - unauthorised user
+
+2. **Given** I am not authorised to manage resource descriptions,\
+   **When** I attempt to retrieve available resource sharing methods via the API,\
    **Then** I receive an appropriate error response (e.g., 403 Forbidden).
 
 ## Where it fits

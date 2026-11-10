@@ -10,17 +10,9 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-dataspace governance authority user with the T2IAA_M role
-
-**I want to**
-
-access the administration dashboard of the Public Dataspace Onboarding Site through keycloak configured into my agent (Tier 1)
-
-**So that**
-
-I access the administration panel
+**As a** dataspace governance authority user with the T2IAA_M role\
+**I want to** access the administration dashboard of the Public Dataspace Onboarding Site through keycloak configured into my agent (Tier 1)\
+**So that** I access the administration panel
 
 **Linked Sovereign X US ID:** ARU_US_001
 

@@ -10,9 +10,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-As a Governance Authority agent\
-I want integrate a validation engine that is able to validate the syntax of self-descriptions.\
-So that I can verify if a self-description adheres to the rules and structure defined by the JSON and JSON-LD specifications
+**As a** Governance Authority agent\
+**I want** integrate a validation engine that is able to validate the syntax of self-descriptions.\
+**So that** I can verify if a self-description adheres to the rules and structure defined by the JSON and JSON-LD specifications
 
 **Technical Description:**
 

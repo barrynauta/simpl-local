@@ -96,8 +96,8 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 - Usage-policy validation: SIMPL-31454 (internal page)
 - Resource Description API: SIMPL-25712 (internal page)
-- [Policies|an internal page]
-- [Resource Description UI|an internal page]
+- Policies (internal page)
+- Resource Description UI (internal page)
 - [UX/UI design](https://www.figma.com/design/YZZ6QWqLcVHlNhjnI81Wzm/Catalogue--negotiation-and-transfer-UX-UI)
 
 ## Where it fits

@@ -12,9 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 Disclaimer: This story is to support the future billing schema link and is not implementing billing in any way. The requirements related to billing need to be defined.
 
-As a Provider User\
-I want to calculate the hash of the billing schema document referenced in the self-description\
-So that I can check if the document was modified
+**As a** Provider User\
+**I want to** calculate the hash of the billing schema document referenced in the self-description\
+**So that** I can check if the document was modified
 
 **Technical Specification**
 

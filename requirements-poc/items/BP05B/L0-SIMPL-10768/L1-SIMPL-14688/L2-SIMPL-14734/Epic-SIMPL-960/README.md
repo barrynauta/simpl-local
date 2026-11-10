@@ -10,13 +10,13 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 ## Text
 
-**As a** Provider\
-**I want to** be supported in defining a usage policy through policy templates, by retrieving via API
+**As a** Provider\
+**I want to** be supported in defining a usage policy through policy templates, by retrieving via API
 
 - the list of usage policy templates;
 - the details of a usage policy template.
 
-**so that** I can correctly and easily define usage policies.
+**So that** I can correctly and easily define usage policies.
 
 **Acceptance Criterion 1: Retrieve the list of predefined policy templates**
 

@@ -10,17 +10,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-**As A**
-
-Dataspace participant agent,
-
-**I want**
-
-verify the credentials of the agent with whom communication is being initiated
-
-**So that**
-
-the communication between agents will be trusted.
+**As a** Dataspace participant agent,\
+**I want** verify the credentials of the agent with whom communication is being initiated\
+**So that** the communication between agents will be trusted.
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

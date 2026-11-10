@@ -10,31 +10,29 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As a**\
-user responsible for managing data space identity attributes (`{}IATTR_M{`} role)
-
-**I want**\
-to be prevented from editing built-in identity attributes,
-
-**So that**\
-I ensure that built-in identity attributes remain unchanged and the data space remains compliant with the SIMPL-Open standard.
+**As a** user responsible for managing data space identity attributes (`{}IATTR_M{`} role)\
+**I want** to be prevented from editing built-in identity attributes,\
+**So that** I ensure that built-in identity attributes remain unchanged and the data space remains compliant with the SIMPL-Open standard.
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am a user with the `IATTR_M` role, wanting to delete an identity attribute\
-   **AND** the identity attribute corresponds to a built-in attribute\
-   **WHEN** I DELETE `{}/identityAttributes/{identityAttributeId{`}}\
-   **THEN** I want to receive a 400 Bad Request error stating "A built-in identity attribute cannot be deleted"
-1. **GIVEN** that I am a user with the `IATTR_M` role, wanting to update an identity attribute\
-   **AND** the identity attribute corresponds to a built-in attribute\
-   **WHEN** I PUT `{}/identityAttributes/{identityAttributeId{`}}\
-   **THEN** I want to receive a 400 Bad Request error stating "A built-in identity attribute cannot be updated"
-1. **GIVEN** that I am a user with the `IATTR_M` role, wanting to create an identity attribute\
-   **WHEN** I POST to `/identityAttributes`\
-   **THEN** the the built-in flag is not part of the allowed input parameters and is ignored
-1. **GIVEN** that I am a user with the `IATTR_M` role, wanting to import a list of identity attributes\
-   **WHEN** I POST to `/identityAttributes/import`\
-   **THEN** the the built-in flag is not part of the allowed input parameters and is ignored
+1. **Given** that I am a user with the `IATTR_M` role, wanting to delete an identity attribute\
+   **And** the identity attribute corresponds to a built-in attribute\
+   **When** I DELETE `{}/identityAttributes/{identityAttributeId{`}}\
+   **Then** I want to receive a 400 Bad Request error stating "A built-in identity attribute cannot be deleted"
+
+2. **Given** that I am a user with the `IATTR_M` role, wanting to update an identity attribute\
+   **And** the identity attribute corresponds to a built-in attribute\
+   **When** I PUT `{}/identityAttributes/{identityAttributeId{`}}\
+   **Then** I want to receive a 400 Bad Request error stating "A built-in identity attribute cannot be updated"
+
+3. **Given** that I am a user with the `IATTR_M` role, wanting to create an identity attribute\
+   **When** I POST to `/identityAttributes`\
+   **Then** the the built-in flag is not part of the allowed input parameters and is ignored
+
+4. **Given** that I am a user with the `IATTR_M` role, wanting to import a list of identity attributes\
+   **When** I POST to `/identityAttributes/import`\
+   **Then** the the built-in flag is not part of the allowed input parameters and is ignored
 
 ## Where it fits
 

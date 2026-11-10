@@ -14,22 +14,17 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 *This story is an improvement of SIMPL-7923 and has been created to solve SIMPL-16360.*
 
-**As a**\
-Dataspace Governance Authority end user with the T2IAA_M (Tier 2 authorization manager) role
-
-**I want to**\
-via API, save invalid CONTENT CHECK onboarding validation rules in a disabled state
-
-**So that**\
-I can draft validation rules without being blocked, while ensuring only valid rules can be enabled
+**As a** Dataspace Governance Authority end user with the T2IAA_M (Tier 2 authorization manager) role\
+**I want to** via API, save invalid CONTENT CHECK onboarding validation rules in a disabled state\
+**So that** I can draft validation rules without being blocked, while ensuring only valid rules can be enabled
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am a dataspace governance authority user with the T2IAA_M role, wanting to update a CONTENT CHECK rule\
-   **WHEN** I POST /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/ with invalid parameters\
-   **AND** the rule is marked as disabled\
-   **THEN** I want to receive a 200 Ok response\
-   **AND** the draft disabled rule is saved
+1. **Given** that I am a dataspace governance authority user with the T2IAA_M role, wanting to update a CONTENT CHECK rule\
+   **When** I POST /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/ with invalid parameters\
+   **And** the rule is marked as disabled\
+   **Then** I want to receive a 200 Ok response\
+   **And** the draft disabled rule is saved
 
 ## Where it fits
 

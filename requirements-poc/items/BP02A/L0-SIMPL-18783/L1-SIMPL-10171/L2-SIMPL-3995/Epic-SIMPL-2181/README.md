@@ -12,17 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As a**
-
-Dataspace Governance Authority,
-
-**I want to**
-
-via an API, define the resources/documentation that are mandatory to be provided during the onboarding procedure,
-
-**So that**
-
-during the onboarding procedure, it is clear what the Applicant Data Space Participant must prepare and what the Data Space Governance Authority must check.
+**As a** Dataspace Governance Authority,\
+**I want to** via an API, define the resources/documentation that are mandatory to be provided during the onboarding procedure,\
+**So that** during the onboarding procedure, it is clear what the Applicant Data Space Participant must prepare and what the Data Space Governance Authority must check.
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

@@ -10,27 +10,25 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing the onboarding procedures summary page, selecting a specific participant type with no onboarding procedure defined
-
-**I want to**
-
-create an onboarding procedure template ([Onboarding procedure template|an internal page]), defining all the documents needed to onboard that participant type
-
-**So** **that**
-
-there is an onboarding procedure defined for that specific participant type
+**As a** dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing the onboarding procedures summary page, selecting a specific participant type with no onboarding procedure defined\
+**I want to** create an onboarding procedure template (Onboarding procedure template (internal page)), defining all the documents needed to onboard that participant type\
+**So that** there is an onboarding procedure defined for that specific participant type
 
 **Acceptance Criteria:**
 
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, when I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, the page should provide a creation interface, allowing me to create a new onboarding procedure for the selected participant type.**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, when I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, the creation interface should allow me to define one or more documents that are required for onboarding the selected participant type.**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, when I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, for each document, I should be able to enter a description that explains what the document must contain (e.g., "Business License", "Proof of Identity", etc.).**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, when I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, for each document, I should be able to select a MIME type as defined in RFC2046 (e.g., "application/pdf", "image/jpeg", etc.).**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, when I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, after defining the mandatory documents, the system should save the onboarding procedure successfully, associating it with the selected participant type.**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, when I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, after creating the onboarding procedure, the system should display it on the onboarding procedures summary page, under the corresponding participant type tab.**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, when I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, for each document, the summary page should display the document description and MIME type.**
+1. **Given** that I am a dataspace governance authority user with the T2IAA_M role, **when** I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, the page should provide a creation interface, allowing me to create a new onboarding procedure for the selected participant type.
+
+2. **Given** that I am a dataspace governance authority user with the T2IAA_M role, **when** I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, the creation interface should allow me to define one or more documents that are required for onboarding the selected participant type.
+
+3. **Given** that I am a dataspace governance authority user with the T2IAA_M role, **when** I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, for each document, I should be able to enter a description that explains what the document must contain (e.g., "Business License", "Proof of Identity", etc.).
+
+4. **Given** that I am a dataspace governance authority user with the T2IAA_M role, **when** I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, for each document, I should be able to select a MIME type as defined in RFC2046 (e.g., "application/pdf", "image/jpeg", etc.).
+
+5. **Given** that I am a dataspace governance authority user with the T2IAA_M role, **when** I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, after defining the mandatory documents, the system should save the onboarding procedure successfully, associating it with the selected participant type.
+
+6. **Given** that I am a dataspace governance authority user with the T2IAA_M role, **when** I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, after creating the onboarding procedure, the system should display it on the onboarding procedures summary page, under the corresponding participant type tab.
+
+7. **Given** that I am a dataspace governance authority user with the T2IAA_M role, **when** I view the onboarding procedures summary page and select a specific participant type with no onboarding procedure defined, for each document, the summary page should display the document description and MIME type.
 
 ## Where it fits
 

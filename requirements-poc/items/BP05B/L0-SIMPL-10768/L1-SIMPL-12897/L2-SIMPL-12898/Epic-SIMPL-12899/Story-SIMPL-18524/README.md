@@ -40,7 +40,7 @@ The tier 2 identity attributes authorising the management of Resource descriptio
 
 #### Additional notes
 
-For more explanations regarding tier 2 identification, authentication and authorisation see [an internal page].
+For more explanations regarding tier 2 identification, authentication and authorisation see (internal page).
 
 ## Where it fits
 

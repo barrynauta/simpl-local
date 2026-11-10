@@ -12,7 +12,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 **As a** Provider end user,\
 **I want to** update the link to the deployment script in a new version of an infrastructure resource description via UI,\
-**so that** I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type.
+**So that** I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type.
 
 **Acceptance criteria:**
 

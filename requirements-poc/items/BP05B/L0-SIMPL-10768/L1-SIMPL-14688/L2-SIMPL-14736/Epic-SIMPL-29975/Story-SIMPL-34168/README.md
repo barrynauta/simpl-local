@@ -13,7 +13,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 ###### User Story
 
 **As a** Provider\
-**I want** to add a Resource Consent Contract Clause to a Resource Description\
+**I want to** add a Resource Consent Contract Clause to a Resource Description\
 **So that** Consumers explicitly agree that access to the resource may be revoked if a Data Subject withdraws consent.
 
 ###### Description
@@ -30,19 +30,19 @@ When a **Resource Consent Access Policy** is configured within the **Service Pol
 
 **AC1 - Resource Consent Contract Clause Availability and Mandatory Upload**
 
-**Given** I am authenticated as a Provider\
-**And** I am creating or editing a Resource Description\
-**And** a Resource Consent Access Policy has been configured in the Service Policy section\
-**When** I access the Contract Clauses step of the wizard\
-**Then** the Resource Consent Contract Clause is available and mandatory\
-**And** the Provider must upload a document associated with the Resource Consent Contract Clause
+1. **Given** I am authenticated as a Provider\
+   **And** I am creating or editing a Resource Description\
+   **And** a Resource Consent Access Policy has been configured in the Service Policy section\
+   **When** I access the Contract Clauses step of the wizard\
+   **Then** the Resource Consent Contract Clause is available and mandatory\
+   **And** the Provider must upload a document associated with the Resource Consent Contract Clause
 
 **AC2 - Upload Resource Consent Contract Clause Document**
 
-**Given** a Resource Consent Access Policy has been configured\
-**When** I upload a document for the Resource Consent Contract Clause\
-**Then** the document is stored in provider storage\
-**And** the Contract Clause is associated with the Resource Description
+2. **Given** a Resource Consent Access Policy has been configured\
+   **When** I upload a document for the Resource Consent Contract Clause\
+   **Then** the document is stored in provider storage\
+   **And** the Contract Clause is associated with the Resource Description
 
 ## Where it fits
 

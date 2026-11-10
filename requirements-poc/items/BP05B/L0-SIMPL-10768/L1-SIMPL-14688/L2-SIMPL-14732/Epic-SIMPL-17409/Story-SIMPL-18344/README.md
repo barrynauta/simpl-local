@@ -63,15 +63,16 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 | then|I can navigate to the next step in the wizard. |
 | --- |
 
-**Invalid data metadata prevents submission of the Resource Description**\
-**Given** I am authenticated as a Provider end user\
-**And** I have a role authorising the management of Resource Descriptions\
-**And** I am creating a new resource description\
-**When** I enter a value in a data metadata field that does not comply with the field validation rules\
-**Then** the invalid field is visually highlighted\
-**And** an error message is displayed next to the field indicating that the value is not valid\
-**And** the Sign & Submit action is disabled\
-**And** I cannot proceed with the publication of the resource description until all invalid values are corrected
+**Invalid data metadata prevents submission of the Resource Description**
+
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new resource description\
+   **When** I enter a value in a data metadata field that does not comply with the field validation rules\
+   **Then** the invalid field is visually highlighted\
+   **And** an error message is displayed next to the field indicating that the value is not valid\
+   **And** the Sign & Submit action is disabled\
+   **And** I cannot proceed with the publication of the resource description until all invalid values are corrected
 
 ## Where it fits
 

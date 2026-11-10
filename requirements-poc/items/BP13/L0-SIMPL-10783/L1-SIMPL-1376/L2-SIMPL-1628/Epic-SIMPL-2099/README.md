@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As an Infrastructure Provider, I want to provide configurable capabilities for the agent, so that users can tailor SIMPL's functionalities to their specific requirements and use cases.
+**As an** Infrastructure Provider,\
+**I want to** provide configurable capabilities for the agent,\
+**So that** users can tailor SIMPL's functionalities to their specific requirements and use cases.
 
 AC: Given that flexibility is important to Infrastructure Provider , When configurable capabilities are made available for SIMPL users, Then those users can tailor SIMPL Agent functionalities to their specific requirements and use cases.
 

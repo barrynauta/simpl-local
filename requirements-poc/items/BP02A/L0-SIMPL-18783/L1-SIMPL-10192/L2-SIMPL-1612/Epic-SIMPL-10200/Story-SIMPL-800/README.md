@@ -10,13 +10,8 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority
-
-**I want to**
-
-via an API, use a CRUD interface ([CRUD Interface|an internal page]) for managing the connection between Identity Attributes ([Identity Attribute|an internal page]) and Participant Types ([Participant Type|an internal page]).
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority\
+**I want to** via an API, use a CRUD interface (CRUD Interface (internal page)) for managing the connection between Identity Attributes (Identity Attribute (internal page)) and Participant Types (Participant Type (internal page)).
 
 Each Identity Attribute can be related to more than one Participant Type and vice versa.
 
@@ -26,12 +21,17 @@ I can manage the entity connections
 
 **Acceptance Criteria:**
 
-1. **Given that the user is logged in with the IATTR_M role, and the API endpoint for creating an Identity Attribute is available, when the user sends a POST request to /attribute with the required parameters, including a list of Participant Types to assign, then the response status code is 201 Created, and the response body contains the newly created Identity Attribute's details, including the assigned Participant Types.**
-1. **Given that the user is logged in with the IATTR_M role, and the API endpoint for reading an Identity Attribute is available, when the user sends a GET request to /attribute/{id}, then the response status code is 200 OK, and the response body contains the requested Identity Attribute's details, including the assigned Participant Types.**
-1. **Given that the user is logged in with the IATTR_M role, and the API endpoint for updating an Identity Attribute is available, when the user sends a PUT request to /attribute/{id} with the required parameters, including a list of Participant Types to assign, then the response status code is 200 OK, and the response body contains the updated Identity Attribute's details, including the assigned Participant Types.**
-1. **Given that the user is logged in with the IATTR_M role, and the API endpoint for deleting an Identity Attribute is available, when the user sends a DELETE request to /attribute/{id}, then the response status code is 204 No Content.**
-1. **Given that the user is logged in with the IATTR_M role, and the API endpoint for listing all Identity Attributes is available, when the user sends a GET request to /attribute, then the response status code is 200 OK, and the response body contains a list of all Identity Attributes, including their assigned Participant Types.**
-1. **Given that the user is logged in with the IATTR_M role, and the API endpoint for searching Identity Attributes is available, when the user sends a GET request to /attribute/search with the required parameters, then the response status code is 200 OK, and the response body contains a list of Identity Attributes matching the search criteria, including their assigned Participant Types.**
+1. **Given** that the user is logged in with the IATTR_M role, and the API endpoint for creating an Identity Attribute is available, **when** the user sends a POST request to /attribute with the required parameters, including a list of Participant Types to assign, **then** the response status code is 201 Created, and the response body contains the newly created Identity Attribute's details, including the assigned Participant Types.
+
+2. **Given** that the user is logged in with the IATTR_M role, and the API endpoint for reading an Identity Attribute is available, **when** the user sends a GET request to /attribute/{id}, **then** the response status code is 200 OK, and the response body contains the requested Identity Attribute's details, including the assigned Participant Types.
+
+3. **Given** that the user is logged in with the IATTR_M role, and the API endpoint for updating an Identity Attribute is available, **when** the user sends a PUT request to /attribute/{id} with the required parameters, including a list of Participant Types to assign, **then** the response status code is 200 OK, and the response body contains the updated Identity Attribute's details, including the assigned Participant Types.
+
+4. **Given** that the user is logged in with the IATTR_M role, and the API endpoint for deleting an Identity Attribute is available, **when** the user sends a DELETE request to /attribute/{id}, **then** the response status code is 204 No Content.
+
+5. **Given** that the user is logged in with the IATTR_M role, and the API endpoint for listing all Identity Attributes is available, **when** the user sends a GET request to /attribute, **then** the response status code is 200 OK, and the response body contains a list of all Identity Attributes, including their assigned Participant Types.
+
+6. **Given** that the user is logged in with the IATTR_M role, and the API endpoint for searching Identity Attributes is available, **when** the user sends a GET request to /attribute/search with the required parameters, **then** the response status code is 200 OK, and the response body contains a list of Identity Attributes matching the search criteria, including their assigned Participant Types.
 
 ## Where it fits
 

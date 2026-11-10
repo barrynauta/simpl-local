@@ -10,30 +10,24 @@ Folder: [items](../../../../../README.md) / [SA09](../../../../README.md) / [L0-
 
 ## Text
 
-**As a**
-
-Data Provider
-
-**I want to**
-
-search, list, and view the details of existing consent assertions, and update their attributes and metadata
-
-**So that**
-
-I can maintain an accurate and up-to-date representation of my consent assertions within the platform.
+**As a** Data Provider\
+**I want to** search, list, and view the details of existing consent assertions, and update their attributes and metadata\
+**So that** I can maintain an accurate and up-to-date representation of my consent assertions within the platform.
 
 **Acceptance Criteria:**
 
-1. **GIVEN** I am a Data Provider user with the appropriate roles\
-   **WHEN** I request the list of consent assertions, optionally filtering by type, status, or metadata\
-   **THEN** the platform returns a paginated list of consent assertions matching the specified criteria
-1. **GIVEN** I am a Data Provider user with the appropriate roles\
-   **WHEN** I request the details of a specific consent assertion\
-   **THEN** the platform returns the full details of the assertion, including its attributes and metadata
-1. **GIVEN** I am a Data Provider user with the appropriate roles\
-   **WHEN** I update the attributes or metadata of an existing consent assertion\
-   **THEN** the assertion is updated with the provided values\
-   **AND** the updated representation is immediately available within the platform
+1. **Given** I am a Data Provider user with the appropriate roles\
+   **When** I request the list of consent assertions, optionally filtering by type, status, or metadata\
+   **Then** the platform returns a paginated list of consent assertions matching the specified criteria
+
+2. **Given** I am a Data Provider user with the appropriate roles\
+   **When** I request the details of a specific consent assertion\
+   **Then** the platform returns the full details of the assertion, including its attributes and metadata
+
+3. **Given** I am a Data Provider user with the appropriate roles\
+   **When** I update the attributes or metadata of an existing consent assertion\
+   **Then** the assertion is updated with the provided values\
+   **And** the updated representation is immediately available within the platform
 
 ## Where it fits
 

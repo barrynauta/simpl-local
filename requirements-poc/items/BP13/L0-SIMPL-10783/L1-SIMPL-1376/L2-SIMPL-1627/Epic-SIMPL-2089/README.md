@@ -10,17 +10,17 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-**As** a Data Space Governance Authority\
-**I want** to provide a lightweight, minimal version of the SIMPL-Open Consumer Agent packaged as a virtualisation-ready Linux image\
+**As a** Data Space Governance Authority\
+**I want to** provide a lightweight, minimal version of the SIMPL-Open Consumer Agent packaged as a virtualisation-ready Linux image\
 **So that** App, Data, and Infrastructure Consumers can deploy SIMPL-Open easily on a VM without requiring complex DevOps pipelines
 
 ---
 
 **Acceptance Criterion:**
 
-**Given** that some Consumers cannot set up complex DevOps pipelines\
-**When** they need to deploy SIMPL-Open Consumer Agent\
-**Then** a lightweight, minimal Linux image of the Consumer Agent must be available for direct deployment on supported virtualisation platforms, ensuring easy and consistent setup
+1. **Given** that some Consumers cannot set up complex DevOps pipelines\
+   **When** they need to deploy SIMPL-Open Consumer Agent\
+   **Then** a lightweight, minimal Linux image of the Consumer Agent must be available for direct deployment on supported virtualisation platforms, ensuring easy and consistent setup
 
 ## Where it fits
 

@@ -10,24 +10,16 @@ Folder: [items](../../../../../README.md) / [SA09](../../../../README.md) / [L0-
 
 ## Text
 
-**As a**
-
-Data Provider
-
-**I want to**
-
-create a resource consent assertion providing its name, description, and metadata
-
-**So that**
-
-the assertion can be linked to a data resource description and its status can be used to enforce access control decisions for all Consumers
+**As a** Data Provider\
+**I want to** create a resource consent assertion providing its name, description, and metadata\
+**So that** the assertion can be linked to a data resource description and its status can be used to enforce access control decisions for all Consumers
 
 **Acceptance Criteria:**
 
-1. **GIVEN** I am a Data Provider user with the appropriate roles\
-   **WHEN** I create a consent assertion of type RESOURCE\
-   **THEN** the assertion is saved with the provided attributes and metadata\
-   **AND** its status is set to ACTIVE
+1. **Given** I am a Data Provider user with the appropriate roles\
+   **When** I create a consent assertion of type RESOURCE\
+   **Then** the assertion is saved with the provided attributes and metadata\
+   **And** its status is set to ACTIVE
 
 ## Where it fits
 

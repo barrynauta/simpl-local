@@ -12,7 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-As a Provider authorised to manage resource descriptions, I want to select a usage-policy template while creating a new resource-description version, so that I can add a usage policy from a reviewed template.
+**As a** Provider authorised to manage resource descriptions,\
+**I want to** select a usage-policy template while creating a new resource-description version,\
+**So that** I can add a usage policy from a reviewed template.
 
 #### Acceptance criteria
 
@@ -97,12 +99,12 @@ This story covers selection. The field-entry story covers rendering. Policy conf
 
 #### Additional notes
 
-- [an internal page]
-- [an internal page]
+- (internal page)
+- (internal page)
 
 - Shared policy-template API definition, SIMPL-31345 (internal page)
-- [R08 ODRL template technical description|an internal page]
-- [ODRL template architecture rationale|an internal page]
+- R08 ODRL template technical description (internal page)
+- ODRL template architecture rationale (internal page)
 
 ## Where it fits
 

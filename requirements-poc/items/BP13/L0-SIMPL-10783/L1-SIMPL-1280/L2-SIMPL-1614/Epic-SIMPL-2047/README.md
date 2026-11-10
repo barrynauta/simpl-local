@@ -10,17 +10,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-**As A**
-
-Dataspace participant
-
-**I want to**
-
-enable communication from/to dataspace participants only if mTLS authentication and ephemeral proof exchange are performed,
-
-**So that**
-
-I can block untrusted connections.
+**As a** Dataspace participant\
+**I want to** enable communication from/to dataspace participants only if mTLS authentication and ephemeral proof exchange are performed,\
+**So that** I can block untrusted connections.
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

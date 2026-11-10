@@ -10,22 +10,22 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-As a Provider User\
-I want use an UI to support the formulation of the access policies in a machine-readable format\
-So that I can define the access policies to my dataset/application/infrastructure, i.e. define the condition that a consumer can access these resources.
+**As a** Provider User\
+**I want** use an UI to support the formulation of the access policies in a machine-readable format\
+**So that** I can define the access policies to my dataset/application/infrastructure, i.e. define the condition that a consumer can access these resources.
 
 -----------------------
 
 **Technical Detail**
 
-Editor to set the parameters for the minimal access policy defined in [an internal page]
+Editor to set the parameters for the minimal access policy defined in (internal page)
 
 (image not shown)(image not shown)
 
 The UI should allow to write one or multiple access policies. For each Policy it is possible to set 4 parameters
 
 - action: Can be either be search, consume, restrictedConsume
-- attribute: select one of the available security attributes. The list of attributes are from an API of Aruba ([an internal page|an internal page]: _*GET /identity-attribute/* retrieve all identity attributes defined by Dataspace Governance Authority, marking the attributes assigned to the caller participant agent with assigned_to = caller participantID). For the dev cluster this API needs to be replaced by a mock with a fixed list of attributes and for integration replaced by the real API_
+- attribute: select one of the available security attributes. The list of attributes are from an API of Aruba (an internal page: _*GET /identity-attribute/* retrieve all identity attributes defined by Dataspace Governance Authority, marking the attributes assigned to the caller participant agent with assigned_to = caller participantID). For the dev cluster this API needs to be replaced by a mock with a fixed list of attributes and for integration replaced by the real API_
 - *valid from: date time picker to select the from value (can optionally not be set)*
 - *valid until: date time picker to select the until value (can optionally not be set)*
 

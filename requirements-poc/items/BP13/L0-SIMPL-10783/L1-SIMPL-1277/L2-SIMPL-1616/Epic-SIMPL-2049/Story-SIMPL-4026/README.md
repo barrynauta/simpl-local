@@ -10,23 +10,17 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As A**
-
-dataspace participant agent wanting to test the connectivity to other dataspace agents
-
-**I want to**
-
-send a *ping* request to another identified dataspace participant. The response contains the identity attributes sent during the ephemeral proof exchange.
-
-**So that**
-
-I can verify if the connectivity between the two agents is in place
+**As a** dataspace participant agent wanting to test the connectivity to other dataspace agents\
+**I want to** send a *ping* request to another identified dataspace participant. The response contains the identity attributes sent during the ephemeral proof exchange.\
+**So that** I can verify if the connectivity between the two agents is in place
 
 **Acceptance Criteria:**
 
-- **Given that I am a dataspace participant agent, when I send a ping request to another identified dataspace participant agent, then the API returns a 200 OK status code.**
-- **Given that I am a dataspace participant agent, when I send a ping request to another identified dataspace participant agent, then the API returns a pong response containing the identity attributes sent during the ephemeral proof exchange.**
-- Given that I am a dataspace participant agent, when I send multiple ping requests to the same or different dataspace participant agents, then the API returns a response each time, with the identity attributes based on the most recent ephemeral proof exchanged.
+1. **Given** that I am a dataspace participant agent, **when** I send a ping request to another identified dataspace participant agent, **then** the API returns a 200 OK status code.
+
+2. **Given** that I am a dataspace participant agent, **when** I send a ping request to another identified dataspace participant agent, **then** the API returns a pong response containing the identity attributes sent during the ephemeral proof exchange.
+
+3. **Given** that I am a dataspace participant agent, **when** I send multiple ping requests to the same or different dataspace participant agents, **then** the API returns a response each time, with the identity attributes based on the most recent ephemeral proof exchanged.
 
 ## Where it fits
 

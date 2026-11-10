@@ -10,17 +10,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-**As A**
-
-A dataspace participant agent
-
-**I want to**
-
-use a reverse proxy that will handle the incoming mTLS connection from any agent
-
-**So that**
-
-the incoming communications are secure
+**As a** A dataspace participant agent\
+**I want to** use a reverse proxy that will handle the incoming mTLS connection from any agent\
+**So that** the incoming communications are secure
 
 Full US ID: ITADM-FUNC-005-FUNC-001/US_1128
 

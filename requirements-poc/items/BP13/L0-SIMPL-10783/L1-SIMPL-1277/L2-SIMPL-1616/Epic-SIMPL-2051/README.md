@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As A dataspace participant agent , I want use a reverse proxy  that will handle the incoming mTLS connection from any agent, so that the communication incoming will be secured.
+**As a** dataspace participant agent ,\
+**I want** use a reverse proxy that will handle the incoming mTLS connection from any agent,\
+**So that** the communication incoming will be secured.
 
 ## Where it fits
 

@@ -10,17 +10,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-**As A**
-
-Dataspace participant
-
-**I want to**
-
-allow the exclusion of mTLS enforcement for specific tier 2 resources (e.g. web API endpoints),
-
-**So that**
-
-I can enable a list of resources(whitelist) making them available publicly (not only to dataspace agents) via standard TLS protocol.
+**As a** Dataspace participant\
+**I want to** allow the exclusion of mTLS enforcement for specific tier 2 resources (e.g. web API endpoints),\
+**So that** I can enable a list of resources(whitelist) making them available publicly (not only to dataspace agents) via standard TLS protocol.
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

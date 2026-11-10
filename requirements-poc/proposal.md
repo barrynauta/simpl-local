@@ -13,6 +13,7 @@ A reader who opens a page in the first attempt sees a requirement item without c
 - **No trace to the business process.** The process is named only in the two L0 items, as the title of an internal page without a link or as "SA09: [[REDACTED]]". Lower items do not show their process at all.
 - **Content hidden behind metadata.** Each page opens with timeline and classification tables. The requirement comes last.
 - **Broken formatting.** Acceptance criteria lose their Given / When / Then structure in two items, and raw HTML (`<strong>`, `<br>`) shows in the text.
+- **No common layout.** Each team writes user stories and acceptance criteria in its own way: all in capitals, all in bold, as bullets or as numbers, one sentence or one line per step.
 - **Lost links.** Six of the ten items show no parent, so they look like orphans. All six have a parent in the source. The export also leaves out most children: SIMPL-10171 shows none of its three L2 items.
 - **Wrong status.** SIMPL-31429 is shown as Cancelled under "Out of scope". The source never cancelled it.
 - **Long file names.** Files are named after the full title, so links turn into `SIMPL-30641%20-%20A%20Provider%20removes...`.
@@ -28,7 +29,8 @@ A reader who opens a page in the first attempt sees a requirement item without c
 | Links to the public process pages and requirements site | Traceability works without a login. |
 | A short "What this item is" paragraph | The reader knows what the item is about before reading the formal text. |
 | Content first, and only the level and status as metadata | The requirement is what readers come for. Workflow fields mean nothing to a reader. |
-| Acceptance criteria as Given / When / Then lists | Criteria are readable and testable. |
+| One layout for all user stories and acceptance criteria: **As a**, **I want to**, **So that** on three lines; one numbered scenario per **Given**, with **When**, **Then**, **And**, **But** on their own lines | Every item reads the same way, whoever wrote it. Criteria are readable and testable. |
+| A fuller text on each business process page: overview, who takes part, what must be in place, the steps, and the high-level requirements in the folder | A reader understands the process before opening its items. |
 | The full tree of each business process, from L0 down to user story | The reader sees an item with all its context, not a sample. |
 | A [trace gaps](trace-gaps.md) page that checks every item against the linking rules | Missing links would be visible, not hidden. In this tree there are none. |
 | Only published items show their text; the others show key, level, title and status | The tree is complete, and nothing unpublished leaks. |
@@ -44,7 +46,7 @@ A list of requirements for the generator that PSO will build.
 2. Give every item page a context line, a level, a trace line and a short description.
 3. Link each item to its public business process page and requirements site page.
 4. Put each item in a folder named after its level and key, for example `L1-SIMPL-10171`, inside the folder of its parent, from the business process down. Items without a parent would go in a `no-business-process` folder, tagged as a trace gap.
-5. Render user stories and acceptance criteria as markdown, with the Given / When / Then structure kept.
+5. Render user stories and acceptance criteria in one layout, whatever the source looks like: the keywords in bold with a capital first letter (not in capitals), the rest of the text plain, one numbered scenario per Given. Do not change the words.
 6. Put the content first. Show the level and status only, and leave out workflow fields such as priority, version and completion rate.
 7. Check every item against the handbook linking rules, and tag and list the items that fail.
 8. Publish a complete tree: keep every parent and child link from the source. When an item is not published, still show its key, level, title and status, marked "not published".

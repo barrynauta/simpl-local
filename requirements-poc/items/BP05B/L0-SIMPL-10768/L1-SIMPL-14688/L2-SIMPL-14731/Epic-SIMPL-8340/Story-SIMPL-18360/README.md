@@ -12,15 +12,15 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **As a** system or application integrating with SIMPL,\
 **I want to** use standardized templates for eDelivery resource addresses during both creation (as Resource Source) and consumption (as Resource Destination),\
-**so that** resource transfers via the eDelivery channel are validated and executed correctly in the SD creation (BP5) and consumption (BP9A) processes.\
+**So that** resource transfers via the eDelivery channel are validated and executed correctly in the SD creation (BP5) and consumption (BP9A) processes.\
 ----
 
 ###### **Acceptance Criteria**
 
-**Given** I am defining a resource address as part of SD creation (BP5) or initiating transfer (BP9A)\
-**And** I use the template structure for type `eDelivery`\
-**Then** the system validates that the address includes the required fields based on the context (Source or Destination)\
-----
+1. **Given** I am defining a resource address as part of SD creation (BP5) or initiating transfer (BP9A)\
+   **And** I use the template structure for type `eDelivery`\
+   **Then** the system validates that the address includes the required fields based on the context (Source or Destination)\
+   ----
 
 ###### **Examples**
 
@@ -69,13 +69,13 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 Useful Documentation:
 
-[an internal page]
+(internal page)
 
-[an internal page]
+(internal page)
 
-[an internal page]
+(internal page)
 
-[an internal page]
+(internal page)
 
 ## Where it fits
 

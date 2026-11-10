@@ -10,20 +10,15 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As a**\
-Dataspace Governance authority,
-
-**I want**\
-the Simpl-Open built-in identity attributes related to searching and consumption to be marked as public
-
-**So that**\
-I can ensure that these attributes are always visible to external Governance Authorities and therefore available for federation mapping.
+**As a** Dataspace Governance authority,\
+**I want** the Simpl-Open built-in identity attributes related to searching and consumption to be marked as public\
+**So that** I can ensure that these attributes are always visible to external Governance Authorities and therefore available for federation mapping.
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I install or update a Simpl-Open authority agent\
-   **WHEN** I fetch the list of the identity attributes\
-   **THEN** the built-in attributes related to searching and consumption are marked as federable (1)
+1. **Given** that I install or update a Simpl-Open authority agent\
+   **When** I fetch the list of the identity attributes\
+   **Then** the built-in attributes related to searching and consumption are marked as federable (1)
 
 (1) The built-in identity attributes affected by this change are CATALOGUE_SEARCHER (to be added to the list of built-in attributes) and CONSUMER (already present).
 

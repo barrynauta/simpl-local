@@ -12,9 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 Disclaimer: This story is to support the future SLA link and is not implementing SLA's in any way. The requirements related to SLA's need to be defined.
 
-As a Provider User\
-I want to calculate the hash of the SLA Agreements document referenced in the self-description\
-So that I can check if the document was modified
+**As a** Provider User\
+**I want to** calculate the hash of the SLA Agreements document referenced in the self-description\
+**So that** I can check if the document was modified
 
 **Technical Specification**
 

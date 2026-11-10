@@ -10,23 +10,17 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attributes table list
-
-**I want to**
-
-see a button on top of the attributes table list
-
-**So that**
-
-clicking on it I can navigate to the Identity Attribute creation page
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attributes table list\
+**I want to** see a button on top of the attributes table list\
+**So that** clicking on it I can navigate to the Identity Attribute creation page
 
 Acceptance Criteria:
 
-- **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page, then a "Create Identity Attribute" button is displayed above the Identity Attributes table list.**
-- **Given that the user is logged in with the** **IATTR_M role** \in the Dataspace Governance Authority, when the user clicks on the "Create Identity Attribute" button, then the user is redirected to the Identity Attribute creation page.
-- **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page, then the "Create Identity Attribute" button is enabled and clickable, allowing the user to initiate the creation of a new Identity Attribute.**
+1. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attributes Management page, **then** a "Create Identity Attribute" button is displayed above the Identity Attributes table list.
+
+2. **Given** that the user is logged in with the IATTR_M role \in the Dataspace Governance Authority, **when** the user clicks on the "Create Identity Attribute" button, **then** the user is redirected to the Identity Attribute creation page.
+
+3. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attributes Management page, **then** the "Create Identity Attribute" button is enabled and clickable, allowing the user to initiate the creation of a new Identity Attribute.
 
 ## Where it fits
 

@@ -10,23 +10,28 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-**As** a provider user creating a resource description,\
+**As a** provider user creating a resource description,\
 **I want** the resource source that is submitted as part of the resource description to be syntactically validated and validated against the resource source template of the previously selected resource sharing method\
-**so that** I can ensure that the provided resource source address is syntactically correct and complies with the selected resource sharing method and the associated template.
+**So that** I can ensure that the provided resource source address is syntactically correct and complies with the selected resource sharing method and the associated template.
 
 ###### **Acceptance Criteria**
 
 - authorised user
    - valid resource source
-      - **Given** I am authorised to manage resource descriptions,\
+
+1. **Given** I am authorised to manage resource descriptions,\
    **When** I submit a valid resource description including a resource source address, valid for the selected resource sharing method,\
    **Then** I will receive a positive validation message and I am able to publish the resource description to the dataspace catalogue.
+
    - syntactic invalid resource source
-      - **Given** I am authorised to manage resource descriptions,\
+
+2. **Given** I am authorised to manage resource descriptions,\
    **When** I submit a resource description including a syntactically incorrect resource source address\
    **Then** the resource description must be rejected and I receive an error message.
+
    - resource source not compliant with the template of the selected resource sharing method
-      - **Given** I am authorised to manage resource descriptions,\
+
+3. **Given** I am authorised to manage resource descriptions,\
    **When** I submit a resource description including a resource source address, not compliant with the resource address template for the resource sharing method selected\
    **Then** the resource description must be rejected and I receive an error message.
 

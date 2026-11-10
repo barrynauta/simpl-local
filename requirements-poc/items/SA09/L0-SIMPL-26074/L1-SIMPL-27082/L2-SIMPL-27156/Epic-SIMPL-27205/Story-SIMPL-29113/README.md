@@ -13,24 +13,17 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 ## Text
 
 *SIMPL-28602 describes how the detail page is rendered. The status update is described in SIMPL-28599.*\
-----\
-**As a**
+----
 
-Simpl-Open End User responsible with the Consent Manager (CONSENT_M) role, responsible for managing consent assertions
-
-**I want to**
-
-via UI, view the details of a consent assertion
-
-**So that**
-
-I can have a clear overview of the assertion data, parties and status
+**As a** Simpl-Open End User responsible with the Consent Manager (CONSENT_M) role, responsible for managing consent assertions\
+**I want to** via UI, view the details of a consent assertion\
+**So that** I can have a clear overview of the assertion data, parties and status
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am logged in with CONSENT_M role\
-   **WHEN** I open the detail page of a consent assertion\
-   **THEN** I see\
+1. **Given** that I am logged in with CONSENT_M role\
+   **When** I open the detail page of a consent assertion\
+   **Then** I see\
    the assertion name\
    the assertion description\
    the list of metadata key-value pairs\
@@ -40,25 +33,29 @@ I can have a clear overview of the assertion data, parties and status
    the status of the assertion\
    a button to change the status of the assertion (see SIMPL-28599)\
    a table containing the list of the parties involved in the assertion
-1. **GIVEN** that I am logged in with CONSENT_M role\
-   **AND** updated the consent assertion with valid data\
-   **WHEN** I click on the Save button\
-   **THEN** a success message appears that says that the consent assertion has been updated
-1. **GIVEN** that I am logged in with the CONSENT_M role\
-   **AND** I open the page to update a consent assertion\
-   **WHEN** I fill name and description with invalid values\
-   **THEN** the save button is disabled\
-   **AND** an error messages are shown on the respective fields{}
-1. **GIVEN** that I am logged in with the CONSENT_M role\
-   **AND** I open the page to update a consent assertion\
-   **WHEN** I fill two or more metadata key-value pairs with the same key\
-   **THEN** the submit button becomes or remains disabled\
-   **AND** an error is shown saying that the metadata keys should be unique
-1. **GIVEN** that I am logged in with the CONSENT_M role\
-   **AND** the participant agent is not fully onboarded (note. GET tier1/v2/participant API of the authentication provider component returns an empty participant ID)\
-   **WHEN** I open the page to create a consent assertion\
-   **THEN** I am redirected to a new error page\
-   **AND** I see a message stating *"The Simpl-Open agent is not fully onboarded. Complete the onboarding of the agent to create the consent assertions"*
+
+2. **Given** that I am logged in with CONSENT_M role\
+   **And** updated the consent assertion with valid data\
+   **When** I click on the Save button\
+   **Then** a success message appears that says that the consent assertion has been updated
+
+3. **Given** that I am logged in with the CONSENT_M role\
+   **And** I open the page to update a consent assertion\
+   **When** I fill name and description with invalid values\
+   **Then** the save button is disabled\
+   **And** an error messages are shown on the respective fields{}
+
+4. **Given** that I am logged in with the CONSENT_M role\
+   **And** I open the page to update a consent assertion\
+   **When** I fill two or more metadata key-value pairs with the same key\
+   **Then** the submit button becomes or remains disabled\
+   **And** an error is shown saying that the metadata keys should be unique
+
+5. **Given** that I am logged in with the CONSENT_M role\
+   **And** the participant agent is not fully onboarded (note. GET tier1/v2/participant API of the authentication provider component returns an empty participant ID)\
+   **When** I open the page to create a consent assertion\
+   **Then** I am redirected to a new error page\
+   **And** I see a message stating *"The Simpl-Open agent is not fully onboarded. Complete the onboarding of the agent to create the consent assertions"*
 
 ## Where it fits
 

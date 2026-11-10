@@ -11,34 +11,30 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 ## Text
 
 _This story extends SIMPL-28599, SIMPL-28602 to allow the SD_PUBLISHER user to view and update the status of a consent assertion._\
-----\
-**As a**
+----
 
-Data Provider End User who is responsible for creating and publishing the resource descriptions on the catalogue (SD_PUBLISHER)
-
-**I want**
-
-via UI, view the details of a resource consent assertion and update its status
-
-**So that**
-
-I can manage consent assertions linked to my resource descriptions
+**As a** Data Provider End User who is responsible for creating and publishing the resource descriptions on the catalogue (SD_PUBLISHER)\
+**I want** via UI, view the details of a resource consent assertion and update its status\
+**So that** I can manage consent assertions linked to my resource descriptions
 
 **Acceptance Criteria**
 
 1. [ALL ACs of SIMPL-28599 must extend also to the SD_PUBLISHER role]
 1. [ALL ACs of SIMPL-28602 must extend also to the SD_PUBLISHER role, with an exception below]
-1. [IMPROVES AC4 of SIMPL-28602]\
-   **GIVEN** that I am an authenticated user without the CONSENT_M role and without the SD_PUBLISHER role\
-   **WHEN** I open the detail page for a resource consent assertion\
-   **THEN** I see the "Role Restricted Access" page\
-   **AND** a message stating "Access denied. Your role does not grant permission to view this content."
-1. **GIVEN** that I am an authenticated user with the SD_PUBLISHER role (and not CONSENT_M role)\
-   **WHEN** I open the detail page for a resource consent assertion\
-   **THEN** the button to edit the consent assertion is not visible
-1. **GIVEN** that I am an authenticated user with the SD_PUBLISHER role (and not CONSENT_M role)\
-   **WHEN** I open the detail page for a contract consent assertion\
-   **THEN** I see an error stating "You don't have the permissions to see this consent assertion"
+1. [IMPROVES AC4 of SIMPL-28602]
+
+1. **Given** that I am an authenticated user without the CONSENT_M role and without the SD_PUBLISHER role\
+   **When** I open the detail page for a resource consent assertion\
+   **Then** I see the "Role Restricted Access" page\
+   **And** a message stating "Access denied. Your role does not grant permission to view this content."
+
+2. **Given** that I am an authenticated user with the SD_PUBLISHER role (and not CONSENT_M role)\
+   **When** I open the detail page for a resource consent assertion\
+   **Then** the button to edit the consent assertion is not visible
+
+3. **Given** that I am an authenticated user with the SD_PUBLISHER role (and not CONSENT_M role)\
+   **When** I open the detail page for a contract consent assertion\
+   **Then** I see an error stating "You don't have the permissions to see this consent assertion"
 
 ## Where it fits
 

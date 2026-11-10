@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As A dataspace participant agent , I want via an API, enforce deployed agent policies based on the attached attributes attached the credentials of the calling participant, if any, so that the communication between agents will be trusted.
+**As a** dataspace participant agent ,\
+**I want** via an API, enforce deployed agent policies based on the attached attributes attached the credentials of the calling participant, if any,\
+**So that** the communication between agents will be trusted.
 
 ## Where it fits
 

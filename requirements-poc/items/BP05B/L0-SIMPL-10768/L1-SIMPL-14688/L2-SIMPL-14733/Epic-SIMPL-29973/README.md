@@ -11,20 +11,20 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 ## Text
 
 **As a** Provider\
-**I want** to assign access policies related to resource consent to a new resource description via UI\
+**I want to** assign access policies related to resource consent to a new resource description via UI\
 **So that** I can ensure that the access to the new resource description and the underlying resource is aligned the resource consent status.
 
 **Acceptance criteria**
 
-**Given** I am authenticated as a Provider\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new resource description\
-**When** I reach the step "Access policies - resource consent" in the wizard\
-**and** I retrieve the list of resource consent assertions\
-**and** I select one of the resource consent assertions to use in the access policy\
-**Then** Simpl-Open creates an access policy related to resource consent\
-**and** links the selected resource consent assertion to the access policy\
-**and** assigns the access policy related to resource consent to the new resource description.
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step "Access policies - resource consent" in the wizard\
+   **And** I retrieve the list of resource consent assertions\
+   **And** I select one of the resource consent assertions to use in the access policy\
+   **Then** Simpl-Open creates an access policy related to resource consent\
+   **And** links the selected resource consent assertion to the access policy\
+   **And** assigns the access policy related to resource consent to the new resource description.
 
 ## Where it fits
 

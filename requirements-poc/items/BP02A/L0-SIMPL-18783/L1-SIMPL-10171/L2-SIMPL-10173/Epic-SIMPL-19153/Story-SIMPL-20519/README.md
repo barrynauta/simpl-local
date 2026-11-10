@@ -11,53 +11,54 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 ## Text
 
 *This User Story covers only the management of the eIDAS document template type. Document templates do not have a dedicated API, but they are created or updated along with the creation and update of the onboarding template they are linked to. More generic ACs related to document types are covered in SIMPL-20532.*\
-----\
-**As a**\
-dataspace governance authority user with the _Tier 2 Authorization Manager (T2IAA_M)_ role, viewing the details of an onboarding procedure template
+----
 
-**I want to**\
-via an API, to be able to specify a document template of type *eIDAS* when creating a document template, ensuring that only one such template can exist per onboarding procedure template
-
-**So that**\
-I can enable the submission and validation of eIDAS attributes during a participant’s onboarding process
+**As a** dataspace governance authority user with the _Tier 2 Authorization Manager (T2IAA_M)_ role, viewing the details of an onboarding procedure template\
+**I want to** via an API, to be able to specify a document template of type *eIDAS* when creating a document template, ensuring that only one such template can exist per onboarding procedure template\
+**So that** I can enable the submission and validation of eIDAS attributes during a participant’s onboarding process
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
-   **WHEN** I call *POST /onboardingProcedureTemplates* to create an onboarding procedure template\
-   **AND** the request contains a list of documentTemplates\
-   **AND** for one document template in the list, I specify a type attribute with value EIDAS\
-   **THEN** I receive a 201 OK response, and the document template is created with the EIDAS type
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
-   **WHEN** I call *POST /onboardingProcedureTemplates* to create an onboarding procedure template\
-   **AND** the request contains a list of document templates\
-   **AND** for more than one documentTemplate in the *documentTemplates* list, I specify a type attribute with value EIDAS\
-   **THEN** I receive a 409 Conflict response, and the error message is "There can be only one document template of type eIDAS for each onboarding template"
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
-   **WHEN** I call PUT */onboardingProcedureTemplates/{onboardingProcedureTemplateID}* to update an onboarding procedure template\
-   **AND** the request contains a list of both existing and new documentTemplates\
-   **AND** a document template of type eIDAS has already been created for this onboarding template\
-   **AND** for a new document template in the list, I specify a type attribute with value EIDAS\
-   **THEN** I receive a 409 Conflict response, and the error message is "There can be only one document template of type eIDAS for each onboarding template"
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** eIDAS login is disabled in the deployment configurations of the onboarding backend component ^(1)^\
-   **WHEN** I call *POST /onboardingProcedureTemplates* to create an onboarding procedure template\
-   **AND** the request contains a list of both existing and new documentTemplates\
-   **AND** for a new document template in the list, I specify a type attribute with value EIDAS\
-   **THEN** I receive a 403 Forbidden response with the message "eIDAS Login feature disabled"
-1. **GIVEN** that I am authenticated with the T2IAA_M role\
-   **AND** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
-   **WHEN** I call *PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateID}* to update an onboarding procedure template\
-   **AND** the request contains a list of both existing and new documentTemplates\
-   **AND** for a new document template in the list, I specify a type attribute with value EIDAS\
-   **THEN** I receive a 403 Forbidden response with the message "eIDAS Login feature disabled"{}
-1. **GIVEN** that I am an IT system administrator, responsible for installing the onboarding backend component ^(1)^\
-   **WHEN** I read the deployment documentation of the component\
-   **THEN** I see the property to use to enable or disable the eIDAS login feature\
-   **AND** I see that by default the feature is disabled
+1. **Given** that I am authenticated with the T2IAA_M role\
+   **And** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
+   **When** I call *POST /onboardingProcedureTemplates* to create an onboarding procedure template\
+   **And** the request contains a list of documentTemplates\
+   **And** for one document template in the list, I specify a type attribute with value EIDAS\
+   **Then** I receive a 201 OK response, and the document template is created with the EIDAS type
+
+2. **Given** that I am authenticated with the T2IAA_M role\
+   **And** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
+   **When** I call *POST /onboardingProcedureTemplates* to create an onboarding procedure template\
+   **And** the request contains a list of document templates\
+   **And** for more than one documentTemplate in the *documentTemplates* list, I specify a type attribute with value EIDAS\
+   **Then** I receive a 409 Conflict response, and the error message is "There can be only one document template of type eIDAS for each onboarding template"
+
+3. **Given** that I am authenticated with the T2IAA_M role\
+   **And** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
+   **When** I call PUT */onboardingProcedureTemplates/{onboardingProcedureTemplateID}* to update an onboarding procedure template\
+   **And** the request contains a list of both existing and new documentTemplates\
+   **And** a document template of type eIDAS has already been created for this onboarding template\
+   **And** for a new document template in the list, I specify a type attribute with value EIDAS\
+   **Then** I receive a 409 Conflict response, and the error message is "There can be only one document template of type eIDAS for each onboarding template"
+
+4. **Given** that I am authenticated with the T2IAA_M role\
+   **And** eIDAS login is disabled in the deployment configurations of the onboarding backend component ^(1)^\
+   **When** I call *POST /onboardingProcedureTemplates* to create an onboarding procedure template\
+   **And** the request contains a list of both existing and new documentTemplates\
+   **And** for a new document template in the list, I specify a type attribute with value EIDAS\
+   **Then** I receive a 403 Forbidden response with the message "eIDAS Login feature disabled"
+
+5. **Given** that I am authenticated with the T2IAA_M role\
+   **And** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
+   **When** I call *PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateID}* to update an onboarding procedure template\
+   **And** the request contains a list of both existing and new documentTemplates\
+   **And** for a new document template in the list, I specify a type attribute with value EIDAS\
+   **Then** I receive a 403 Forbidden response with the message "eIDAS Login feature disabled"{}
+
+6. **Given** that I am an IT system administrator, responsible for installing the onboarding backend component ^(1)^\
+   **When** I read the deployment documentation of the component\
+   **Then** I see the property to use to enable or disable the eIDAS login feature\
+   **And** I see that by default the feature is disabled
 
 *(1) By default, this feature is disabled on the component, and should be enabled at deployment time by the IT Administrators installing the component into the agent (see last AC).*
 

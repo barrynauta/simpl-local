@@ -10,31 +10,25 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As a**
-
-Participant user of the Tier 1 user and role manager role (T1UAR_M)
-
-**I want to**
-
-via UI, trigger the update of the local copy of identity attributes
-
-**So that**
-
-I can manage my participant's agent with up-to-date identity attributes provided by the Governance Authority.
+**As a** Participant user of the Tier 1 user and role manager role (T1UAR_M)\
+**I want to** via UI, trigger the update of the local copy of identity attributes\
+**So that** I can manage my participant's agent with up-to-date identity attributes provided by the Governance Authority.
 
 **Acceptance Criteria:**
 
-1. **GIVEN** I am an authenticated user with T1UAR_M role\
-   **WHEN** I navigate to the identity attributes info page,\
-   **THEN** a button with the "Synchronise Identity Attribute" label is displayed
-1. **GIVEN** I am an authenticated user with T1UAR_M role, navigating to the identity attributes info page\
-   **WHEN** I click the "Synchronise Identity Attribute" button\
-   **THEN** the page calls POST /tier1/v2/identityAttributes/synchronize\
-   **AND** an information message is displayed to confirm that the local copy of identity attributes has been updated
-1. **GIVEN** I am an authenticated user with T1UAR_M role, updating the local copy of identity attributes,\
-   **WHEN** the backend operation fails\
-   **THEN** an error message is displayed\
-   **AND** the local copy is not updated until the action is retried successfully.
+1. **Given** I am an authenticated user with T1UAR_M role\
+   **When** I navigate to the identity attributes info page,\
+   **Then** a button with the "Synchronise Identity Attribute" label is displayed
+
+2. **Given** I am an authenticated user with T1UAR_M role, navigating to the identity attributes info page\
+   **When** I click the "Synchronise Identity Attribute" button\
+   **Then** the page calls POST /tier1/v2/identityAttributes/synchronize\
+   **And** an information message is displayed to confirm that the local copy of identity attributes has been updated
+
+3. **Given** I am an authenticated user with T1UAR_M role, updating the local copy of identity attributes,\
+   **When** the backend operation fails\
+   **Then** an error message is displayed\
+   **And** the local copy is not updated until the action is retried successfully.
 
 ## Where it fits
 

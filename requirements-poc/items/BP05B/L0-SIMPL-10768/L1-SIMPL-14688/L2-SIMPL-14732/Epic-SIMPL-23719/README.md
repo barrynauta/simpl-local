@@ -12,8 +12,9 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 Format: As an infrastructure provider, I want to be able to view a deployment scripts metadata so that important information is visible to decision makers, such as script type.
 
-Acceptance criteria:\
-1. **Given a deployment script has been created with a ScriptType when the metadata endpoint is accessed via the API, then the scripttype is described**
+Acceptance criteria:
+
+1. **Given** a deployment script has been created with a ScriptType **when** the metadata endpoint is accessed via the API, **then** the scripttype is described
 
 ## Where it fits
 

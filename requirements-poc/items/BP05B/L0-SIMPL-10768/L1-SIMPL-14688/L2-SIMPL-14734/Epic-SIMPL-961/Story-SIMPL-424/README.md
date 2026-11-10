@@ -10,17 +10,15 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-As a Provider, creating a Self-Description through a UI,
-
-I want to have an extension of the Self-description UI for creating a Usage Policy that will be assigned to the Self-Description
-
-So that I can define the usage policy for the Self-Description being created, i.e. define the constraints under which a consumer can use my resource
+**As a** Provider, creating a Self-Description through a UI,\
+**I want to** have an extension of the Self-description UI for creating a Usage Policy that will be assigned to the Self-Description\
+**So that** I can define the usage policy for the Self-Description being created, i.e. define the constraints under which a consumer can use my resource
 
 -----------------------
 
 **Technical Detail**
 
-The new sd-creator-frontend (SIMPL-1083 (internal page)) should be extended with the capabilities to set the parameters for the usage policies. The supported usage policies are described in [an internal page]
+The new sd-creator-frontend (SIMPL-1083 (internal page)) should be extended with the capabilities to set the parameters for the usage policies. The supported usage policies are described in (internal page)
 
 It should be possible in the UI to describe one or more constraints for the usage of the data. The supported types of constraints are:
 

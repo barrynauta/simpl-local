@@ -12,17 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As the**
-
-data space governance authority,
-
-**I want to**
-
-through a UI, define which resources/documentation are mandatory to enable the automated onboarding procedure,
-
-**so that**
-
-during the onboarding procedure, the presence of those resources/documentation can enable the automatic onboarding procedure.
+**As the** data space governance authority,\
+**I want to** through a UI, define which resources/documentation are mandatory to enable the automated onboarding procedure,\
+**So that** during the onboarding procedure, the presence of those resources/documentation can enable the automatic onboarding procedure.
 
 ## Where it fits
 

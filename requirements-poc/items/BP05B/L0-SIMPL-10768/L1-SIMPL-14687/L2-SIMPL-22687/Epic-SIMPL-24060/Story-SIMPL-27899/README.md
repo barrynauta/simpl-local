@@ -12,7 +12,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **As a** Governance Authority\
 **I want to** Simpl-Open to automatically evaluate a submitted resource description against the active Metadata Quality Profile\
-**so that** metadata quality is measured consistently and objectively.
+**So that** metadata quality is measured consistently and objectively.
 
 ##### **Technical Details:**
 
@@ -34,12 +34,12 @@ arq --data vocabulary/examples.ttl --data vocabulary/generated_shapes_from_examp
 - Generate one validation graph per profile version and cache it for reuse; invalidate cache on profile version change.
 - Produce rule-level outputs with at least rule identifier, rule type, and binary result (`1` or `0`).
 
-!an internal page
+(image not shown)
 
 - Add explicit validation/error handling for malformed or missing rule definitions; any processing or validation error fails the evaluation with a clear error message.
 - Compute weighted dimension and overall scores from rule outputs with deterministic precision and rounding behavior.
 
-!an internal page
+(image not shown)
 
 (image not shown)
 
@@ -50,46 +50,46 @@ arq --data vocabulary/examples.ttl --data vocabulary/generated_shapes_from_examp
 
 ###### AC1
 
-**Given** a resource description is submitted for publication\
-**And** structural and schema validation succeeded\
-**When** the quality evaluation pipeline starts\
-**Then** Simpl-Open retrieves exactly one active Metadata Quality Profile linked to the RD schema from the Schema Manager
+1. **Given** a resource description is submitted for publication\
+   **And** structural and schema validation succeeded\
+   **When** the quality evaluation pipeline starts\
+   **Then** Simpl-Open retrieves exactly one active Metadata Quality Profile linked to the RD schema from the Schema Manager
 
 ###### AC2
 
-**Given** a validation graph is available\
-**And** a given Resource Description is validated against its metadata quality rules\
-**When** a rule condition is met for a property of that Resource Description\
-**Then** the rule result is set to 1.
+2. **Given** a validation graph is available\
+   **And** a given Resource Description is validated against its metadata quality rules\
+   **When** a rule condition is met for a property of that Resource Description\
+   **Then** the rule result is set to 1.
 
 ###### AC3
 
-**Given** a validation graph is available\
-**And** a given Resource Description is validated against its metadata quality rules\
-**When** a rule condition is not met for a property of that Resource Description\
-**Then** the rule result is set to 0.
+3. **Given** a validation graph is available\
+   **And** a given Resource Description is validated against its metadata quality rules\
+   **When** a rule condition is not met for a property of that Resource Description\
+   **Then** the rule result is set to 0.
 
 ###### AC4
 
-**Given** a Resource Description for which metadata quality is evaluated\
-**And** the weight of each rule per dimension is available in the Metadata Quality Profile\
-**When** the quality rules have been evaluated for that Resource Description, providing a rule result for each rule\
-**Then** for each dimension, the dimension score is calculated as the weighted sum of the rule results for that dimension.
+4. **Given** a Resource Description for which metadata quality is evaluated\
+   **And** the weight of each rule per dimension is available in the Metadata Quality Profile\
+   **When** the quality rules have been evaluated for that Resource Description, providing a rule result for each rule\
+   **Then** for each dimension, the dimension score is calculated as the weighted sum of the rule results for that dimension.
 
 ###### AC5
 
-**Given** a Resource Description for which metadata quality is evaluated\
-**And** the dimension scores are available\
-**And** the weight of each dimension is available in the Metadata Quality Profile\
-**When** the overall metadata quality score is calculated\
-**Then** the overall metadata quality score is calculated as the weighted sum of the dimension scores.
+5. **Given** a Resource Description for which metadata quality is evaluated\
+   **And** the dimension scores are available\
+   **And** the weight of each dimension is available in the Metadata Quality Profile\
+   **When** the overall metadata quality score is calculated\
+   **Then** the overall metadata quality score is calculated as the weighted sum of the dimension scores.
 
 ###### AC6
 
-**Given** no Metadata Quality Profile exists for the submitted resource description schema\
-**When** the validation step is reached\
-**Then** Simpl-Open skips validation execution\
-**And** emits a warning indicating that no MQP exists for that schema.
+6. **Given** no Metadata Quality Profile exists for the submitted resource description schema\
+   **When** the validation step is reached\
+   **Then** Simpl-Open skips validation execution\
+   **And** emits a warning indicating that no MQP exists for that schema.
 
 **Remark:** In alignment with API First and the modularity in testing, the current implementation will use a mock/stub of the endpoint to retrieve the MQP. The implementation test is here SIMPL-30617 to test the integration without mocks
 

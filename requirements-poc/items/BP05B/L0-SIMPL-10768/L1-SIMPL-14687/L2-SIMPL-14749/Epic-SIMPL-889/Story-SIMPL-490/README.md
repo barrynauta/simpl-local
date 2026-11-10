@@ -10,9 +10,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-As a Governance Authority agent\
-I want integrate a validation engine that is able the validate the semantic of the self-description.\
-So that I can be sure that the SD complies to the specified ontology or schema, which guarantees consistency in the meaning and interpretation of the data.
+**As a** Governance Authority agent\
+**I want** integrate a validation engine that is able the validate the semantic of the self-description.\
+**So that** I can be sure that the SD complies to the specified ontology or schema, which guarantees consistency in the meaning and interpretation of the data.
 
 ------------------
 

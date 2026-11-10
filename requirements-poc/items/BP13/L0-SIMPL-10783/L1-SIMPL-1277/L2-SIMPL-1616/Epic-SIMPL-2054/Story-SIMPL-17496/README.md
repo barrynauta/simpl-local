@@ -10,42 +10,40 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As a**\
-participant agent inquiring the Dataspace Identity Provider
-
-**I want to**\
-via an API, request information about a participant identified by a given identifier
-
-**So that**\
-I can obtain the participant's organization, identifiers, and tier 1 public key to validate their identity and be sure of the peer identity
+**As a** participant agent inquiring the Dataspace Identity Provider\
+**I want to** via an API, request information about a participant identified by a given identifier\
+**So that** I can obtain the participant's organization, identifiers, and tier 1 public key to validate their identity and be sure of the peer identity
 
 **Acceptance Criteria:**
 
-1. **GIVEN** I am a participant agent\
-   **AND** I am authenticated via mTLS using a valid certificate issued by the Dataspace Governance Authority\
-   **WHEN** I send a GET /participants/{participantId} request\
-   **AND** I provide a valid UUID participantId\
-   **THEN** the API returns HTTP 200 OK\
-   **AND** the response body contains a JSON object with at least the following fields:\
+1. **Given** I am a participant agent\
+   **And** I am authenticated via mTLS using a valid certificate issued by the Dataspace Governance Authority\
+   **When** I send a GET /participants/{participantId} request\
+   **And** I provide a valid UUID participantId\
+   **Then** the API returns HTTP 200 OK\
+   **And** the response body contains a JSON object with at least the following fields:\
    *id:* the unique UUID of the participant\
    *organization:* the name of the organization represented by the participant\
    *tierOnePublicKey:* the participant's Tier 1 public key in PEM format\
    *creationTimestamp:* the timestamp of participant creation\
    *updateTimestamp:* the timestamp of last update
-1. **GIVEN** I am a participant agent\
-   **AND** I am not properly authenticated via mTLS\
-   **WHEN** I send a GET /participants/{participantId} request\
-   **THEN** the API returns HTTP 401 Unauthorized
-1. **GIVEN** I am a participant agent\
-   **AND** I am authenticated via mTLS using a valid certificate issued by the Dataspace Governance Authority\
-   **AND** the participantId path parameter is not a valid UUID\
-   **WHEN** I send a GET /participants/{participantId} request\
-   **THEN** the API returns HTTP 400 Bad Request
-1. **GIVEN** I am a participant agent\
-   **AND** I am authenticated via mTLS using a valid certificate issued by the Dataspace Governance Authority\
-   **AND** I provide a valid UUID participantId that is not associated to any participant\
-   **WHEN** I send a GET /participants/{participantId} request\
-   **THEN** the API returns HTTP 404 Not Found
+
+2. **Given** I am a participant agent\
+   **And** I am not properly authenticated via mTLS\
+   **When** I send a GET /participants/{participantId} request\
+   **Then** the API returns HTTP 401 Unauthorized
+
+3. **Given** I am a participant agent\
+   **And** I am authenticated via mTLS using a valid certificate issued by the Dataspace Governance Authority\
+   **And** the participantId path parameter is not a valid UUID\
+   **When** I send a GET /participants/{participantId} request\
+   **Then** the API returns HTTP 400 Bad Request
+
+4. **Given** I am a participant agent\
+   **And** I am authenticated via mTLS using a valid certificate issued by the Dataspace Governance Authority\
+   **And** I provide a valid UUID participantId that is not associated to any participant\
+   **When** I send a GET /participants/{participantId} request\
+   **Then** the API returns HTTP 404 Not Found
 
 ## Where it fits
 

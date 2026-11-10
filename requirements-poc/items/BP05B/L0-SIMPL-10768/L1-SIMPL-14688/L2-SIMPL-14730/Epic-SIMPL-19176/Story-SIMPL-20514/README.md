@@ -10,40 +10,40 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-**As a** Simpl-Open Participant\
-**I want** to receive a notification via an API (exposed by schema-sync-adapter component) when a new schema version is created or revoked and synchronise my local schema storage\
-**so that** I am having the latest and correct schema versions available to my applications and consistency and integrity with the resource descriptions is ensured.
+**As a** Simpl-Open Participant\
+**I want to** receive a notification via an API (exposed by schema-sync-adapter component) when a new schema version is created or revoked and synchronise my local schema storage\
+**So that** I am having the latest and correct schema versions available to my applications and consistency and integrity with the resource descriptions is ensured.
 
 **Acceptance criteria:**
 
 **Subscription registration**
 
-Given I am a participant (provider or consumer)\
-And I have an endpoint for receiving schema notifications\
-When the endpoint is submitted via API for registration at the Governance Authority\
-And the API validates the registration details\
-Then the subscription is registered at the Governance Authority
+1. **Given** I am a participant (provider or consumer)\
+   **And** I have an endpoint for receiving schema notifications\
+   **When** the endpoint is submitted via API for registration at the Governance Authority\
+   **And** the API validates the registration details\
+   **Then** the subscription is registered at the Governance Authority
 
-Given I am a participant (provider or consumer)\
-And I have an endpoint for receiving schema notifications\
-When the endpoint registration request is submitted with invalid or unreachable details\
-Then the Governance Authority rejects the registration request\
-And I receive an error response explaining why the registration failed
+2. **Given** I am a participant (provider or consumer)\
+   **And** I have an endpoint for receiving schema notifications\
+   **When** the endpoint registration request is submitted with invalid or unreachable details\
+   **Then** the Governance Authority rejects the registration request\
+   **And** I receive an error response explaining why the registration failed
 
 **Notification reception and validation**
 
-Given I am a participant subscribed to schema notifications from the Governance Authority\
-When the Governance Authority publishes a new schema version\
-Then I receive a schema creation notification including references to the created schema
+3. **Given** I am a participant subscribed to schema notifications from the Governance Authority\
+   **When** the Governance Authority publishes a new schema version\
+   **Then** I receive a schema creation notification including references to the created schema
 
-Given I am a participant subscribed to schema notifications from the Governance Authority\
-When the Governance Authority revokes a schema version\
-Then I receive a schema revocation notification including a references to the revoked schema
+4. **Given** I am a participant subscribed to schema notifications from the Governance Authority\
+   **When** the Governance Authority revokes a schema version\
+   **Then** I receive a schema revocation notification including a references to the revoked schema
 
-Given I am a participant subscribed to schema notifications from the Governance Authority\
-When I receive a schema notification with missing or invalid information\
-Then the notification is rejected\
-And I report a clear error message describing the error
+5. **Given** I am a participant subscribed to schema notifications from the Governance Authority\
+   **When** I receive a schema notification with missing or invalid information\
+   **Then** the notification is rejected\
+   **And** I report a clear error message describing the error
 
 ## Where it fits
 

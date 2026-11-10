@@ -25,17 +25,17 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ###### AC1 - Provider notifies Consumers about a new version of a Resource Description
 
-**Given** I, as a Provider, have requested the publication of a new version of a Resource Description\
-**When** the publication of the new version of the Resource Description is successful\
-**Then** the system retrieves the Consumers having an active contract associated with previous version of the Resource Description\
-**And** a notification is sent to those Consumers informing them that a new version of the Resource Description has been published.
+1. **Given** I, as a Provider, have requested the publication of a new version of a Resource Description\
+   **When** the publication of the new version of the Resource Description is successful\
+   **Then** the system retrieves the Consumers having an active contract associated with previous version of the Resource Description\
+   **And** a notification is sent to those Consumers informing them that a new version of the Resource Description has been published.
 
 ###### AC2 - Publication of a new version is not successful
 
-**Given** I, as a Provider, have requested the publication of a new version of a Resource Description\
-**When** the publication of the new version of the Resource Description fails\
-**Then** no notification is sent to any Consumer\
-**And** the notification process is not triggered.
+2. **Given** I, as a Provider, have requested the publication of a new version of a Resource Description\
+   **When** the publication of the new version of the Resource Description fails\
+   **Then** no notification is sent to any Consumer\
+   **And** the notification process is not triggered.
 
 ##### Technical Details
 

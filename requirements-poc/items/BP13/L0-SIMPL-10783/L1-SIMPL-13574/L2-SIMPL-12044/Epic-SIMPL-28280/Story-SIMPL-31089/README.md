@@ -12,27 +12,25 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As a** Simpl-Open administrator\
+**As a** Simpl-Open administrator\
 **I want** all Simpl-Open participant types within the specific user roles to access the Logging & Monitoring services,\
-**so that** they can monitor their Simpl-Agent, visualise and report their data, and perform activities related to their logs and metrics.
+**So that** they can monitor their Simpl-Agent, visualise and report their data, and perform activities related to their logs and metrics.
 
 **Acceptance Criteria**
 
 **AC1 The Logging & Monitoring** **services are accessed by authorised users across all Participant Types**
 
-**Given** a user is authenticated within any Participant Type,
-
-**When** the user role is assigned to the role KIBANA_BUSINESS_USER, KIBANA_ADMIN, VIS_USER, VIS_DEV, or **VIS_ADMIN**\
-**Then** the Logging & Monitoring service is displayed on their Simpl-Open landing page,\
-**and** this user can access the Logging & Monitoring services.
+1. **Given** a user is authenticated within any Participant Type,\
+   **When** the user role is assigned to the role KIBANA_BUSINESS_USER, KIBANA_ADMIN, VIS_USER, VIS_DEV, or VIS_ADMIN\
+   **Then** the Logging & Monitoring service is displayed on their Simpl-Open landing page,\
+   **And** this user can access the Logging & Monitoring services.
 
 **AC2 The Logging & Monitoring services are restricted for unauthorised user roles**
 
-**Given** a user is authenticated within any Participant Type,
-
-**When** the user role does not have any role in KIBANA_BUSINESS_USER, KIBANA_ADMIN, VIS_USER, VIS_DEV, or **VIS_ADMIN**\
-**Then** the Logging & Monitoring service is not displayed on their Simpl-Open landing page,\
-**and** this user can not access the Logging & Monitoring services.
+2. **Given** a user is authenticated within any Participant Type,\
+   **When** the user role does not have any role in KIBANA_BUSINESS_USER, KIBANA_ADMIN, VIS_USER, VIS_DEV, or VIS_ADMIN\
+   **Then** the Logging & Monitoring service is not displayed on their Simpl-Open landing page,\
+   **And** this user can not access the Logging & Monitoring services.
 
 ## Where it fits
 

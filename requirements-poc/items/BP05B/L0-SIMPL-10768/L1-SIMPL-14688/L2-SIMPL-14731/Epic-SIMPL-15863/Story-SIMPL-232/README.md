@@ -10,7 +10,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-**As a** service provider **I want** to see the fields I need to specify for the self-description **so that** I can understand the mandatory and optional structure required for self-descriptions
+**As a** service provider\
+**I want to** see the fields I need to specify for the self-description\
+**So that** I can understand the mandatory and optional structure required for self-descriptions
 
 **Linked Sovereign X US ID:** TAE_US_027, TAE_US_029
 
@@ -19,7 +21,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 The UI Frontend for the SD-Tool should show the required fields for the self-description of the Service and if they are mandatory or have constraints. Which fields and their properties should be defined by a schema in YAML that can change and automatically leads to different UI.
 
 **UI-Wireframe:**\
-[mock up docu|an internal page]\
+mock up docu (internal page)\
 (image not shown)
 
 **Acceptance Criteria:**

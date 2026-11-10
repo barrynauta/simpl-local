@@ -8,6 +8,14 @@ Folder: [items](../../README.md) / [BP13](../README.md) / **L0-SIMPL-10783**
 
 **Trace:** [BP13](../README.md) › **SIMPL-10783** (L0)
 
+## What this item is
+
+This is the L0 item for business process [BP13](../README.md). It stands for the whole business process, so that its requirements can hang under it: 18 high-level requirements (L1), with their detailed requirements, Epics and user stories below them.
+
+BP13 groups the IT administration of a Simpl-Open agent. These are the technical tasks that make an agent run safely in a data space: the network and VPN settings, firewall integration, interoperability with the infrastructure underneath, business continuity and disaster recovery, encryption of data in transit, authentication, setting up and starting the agent, and the landing page that participants use to reach their services.
+
+The [BP13 page](../README.md) says more about it.
+
 ## Text
 
 *No text in the source.*

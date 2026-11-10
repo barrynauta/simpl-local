@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As A dataspace participant agent , I want via an API, verify if the counterpart agent credentials are trusted by the dataspace governance authority identity provider, so that the communication between agents will be trusted.
+**As a** dataspace participant agent ,\
+**I want** via an API, verify if the counterpart agent credentials are trusted by the dataspace governance authority identity provider,\
+**So that** the communication between agents will be trusted.
 
 ## Where it fits
 

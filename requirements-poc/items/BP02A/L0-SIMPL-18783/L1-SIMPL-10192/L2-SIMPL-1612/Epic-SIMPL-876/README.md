@@ -12,16 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**\
-data space authority
-
-**I want to**
-
-via an API, enable the assignability of an existing identity on participant Tier1 user credentials
-
-**So that**
-
-dataspace participants can assign identity attributes to their end users via roles.
+**As a** data space authority\
+**I want to** via an API, enable the assignability of an existing identity on participant Tier1 user credentials\
+**So that** dataspace participants can assign identity attributes to their end users via roles.
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

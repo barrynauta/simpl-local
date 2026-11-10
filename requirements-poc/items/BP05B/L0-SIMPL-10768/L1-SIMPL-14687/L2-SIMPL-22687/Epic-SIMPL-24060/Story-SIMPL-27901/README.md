@@ -12,7 +12,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **As a** Governance Authority\
 **I want to** Simpl-Open to assign classifications for overall and per-dimension scores\
-**so that** Participants can understand quality levels in a standardized way.
+**So that** Participants can understand quality levels in a standardized way.
 
 ##### Context
 
@@ -22,7 +22,7 @@ Classification derives from the
 
 The *Governance Authority* can define a **metadata quality classification** (e.g. Poor, Medium, Good) to label the level of quality for a specific metadata quality dimension. The metadata quality classification is determine based on **quality score ranges** (e.g. Poor: 0-40, Medium: 40-60, Good: 60-100). The *Governance Authority* can configure the score ranges per metadata quality classification.
 
-[an internal page]
+(internal page)
 
 The **metadata quality classification** and **quality score ranges** are defined in the Metadata Quality Profile see the attached example file.
 
@@ -42,24 +42,24 @@ The **metadata quality classification** and **quality score ranges** are define
 
 ###### AC1
 
-**Given** overall and dimension scores are available\
-**And** score ranges are defined in the active profile\
-**When** classification mapping is applied\
-**Then** one classification is assigned for the overall score\
-**And** one classification is assigned for each dimension score.
+1. **Given** overall and dimension scores are available\
+   **And** score ranges are defined in the active profile\
+   **When** classification mapping is applied\
+   **Then** one classification is assigned for the overall score\
+   **And** one classification is assigned for each dimension score.
 
 ###### AC2
 
-**Given** a score falls exactly on a range boundary (edge of the defined range so for 0-40, 0 and 40 are the boundary)\
-**When** classification mapping is applied\
-**Then** Simpl-Open applies the boundary rule defined in the profile without ambiguity\
-**And** boundary handling is consistent with configured range convention for that scope.
+2. **Given** a score falls exactly on a range boundary (edge of the defined range so for 0-40, 0 and 40 are the boundary)\
+   **When** classification mapping is applied\
+   **Then** Simpl-Open applies the boundary rule defined in the profile without ambiguity\
+   **And** boundary handling is consistent with configured range convention for that scope.
 
 ###### AC3
 
-**Given** no metadata quality profile can be resolved for the provided self-description\
-**When** scoring of the self-description is attempted\
-**Then** Simpl-Open fails the scoring attempt and returns a error message
+3. **Given** no metadata quality profile can be resolved for the provided self-description\
+   **When** scoring of the self-description is attempted\
+   **Then** Simpl-Open fails the scoring attempt and returns a error message
 
 **OpenAPI Spec Link:**
 

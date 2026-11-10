@@ -162,8 +162,8 @@ Validation uses the reviewed R08 vocabulary and structures, including the Simpl 
 #### Additional notes
 
 - Policy-validation API definition, SIMPL-31639 (internal page)
-- [HLF2, assign policies to resource descriptions|an internal page]
-- [R08 ODRL template technical description|an internal page]
+- HLF2, assign policies to resource descriptions (internal page)
+- R08 ODRL template technical description (internal page)
 
 ## Where it fits
 

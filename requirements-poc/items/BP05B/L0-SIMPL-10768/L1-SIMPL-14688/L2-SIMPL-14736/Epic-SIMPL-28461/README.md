@@ -12,7 +12,8 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 **As a** Provider\
 **I want to** define a billing information point based on the consumption logs of my resources and any other relevant logs\
-**so that** I can include the billing information point in the billing schema\
+**So that** I can include the billing information point in the billing schema
+
 and generate the billing data that needs to be made available to my billing system to create an invoice
 
 **Acceptance criteria:**

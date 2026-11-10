@@ -10,19 +10,17 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-**As a** Participant\
-**I want to** define the service distribution model of a data orchestration workflow\
-**so that** workflow services can be executed in a way that supports the processing needs of my business logic.
+**As a** Participant\
+**I want to** define the service distribution model of a data orchestration workflow\
+**So that** workflow services can be executed in a way that supports the processing needs of my business logic.
 
 **Acceptance Criteria**
 
-**Given** I am authenticated as a Participant, with a role authorising the definition of data orchestration workflows
-
-**When** I define the distribution model for a data orchestration workflow
-
-**And** I choose the service distribution model\
-**Then** I am able to define the service distribution model using code through an integrated workflow tooling\
-**And** the selected service distribution model is saved as part of the workflow configuration
+1. **Given** I am authenticated as a Participant, with a role authorising the definition of data orchestration workflows\
+   **When** I define the distribution model for a data orchestration workflow\
+   **And** I choose the service distribution model\
+   **Then** I am able to define the service distribution model using code through an integrated workflow tooling\
+   **And** the selected service distribution model is saved as part of the workflow configuration
 
 ## Where it fits
 

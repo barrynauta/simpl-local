@@ -21,22 +21,19 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
    1. *The current implementation mixes Onboarding Domain concepts (Onboarding Procedure Templates, Participant Types) with Identity Domain concepts (Identity Attributes, Participant).*
    1. *The participant type is merely a logical grouping of identity attributes for onboarding purposes. Once onboarding is complete, the participant is identified solely by their identity attributes, making the participant type unnecessary in the security model.*
 
-*For more details and modeling information refer to: [an internal page]*\
-----\
-**As a**\
-dataspace governance authority managing the onboarding procedure templates, which are linked to participant types,
+*For more details and modeling information refer to: (internal page)*\
+----
 
-**I want**
+**As a** dataspace governance authority managing the onboarding procedure templates, which are linked to participant types,\
+**I want** for each onboarding procedure template, to select identity attributes relevant to the type of participant
 
-for each onboarding procedure template, to select identity attributes relevant to the type of participant
-
-**So that**\
 when a participant applies by selecting a participant type, the corresponding identity attributes are suggested to the onboarding request approvers.
 
 **Acceptance Criteria**
 
-1. **GIVEN that I am defining an onboarding procedure template for a participant type WHEN I open the Identity Attributes section THEN I should see the list of all the identity attributes of the data space**
-1. **GIVEN that I am defining an onboarding procedure template WHEN I open the Identity Attributes section THEN I should be able to select one or more identity attributes and mark them as default for all the onboarding requests referencing the template**
+1. **Given** that I am defining an onboarding procedure template for a participant type **when** I open the Identity Attributes section **then** I should see the list of all the identity attributes of the data space
+
+2. **Given** that I am defining an onboarding procedure template **when** I open the Identity Attributes section **then** I should be able to select one or more identity attributes and mark them as default for all the onboarding requests referencing the template
 
 ## Where it fits
 

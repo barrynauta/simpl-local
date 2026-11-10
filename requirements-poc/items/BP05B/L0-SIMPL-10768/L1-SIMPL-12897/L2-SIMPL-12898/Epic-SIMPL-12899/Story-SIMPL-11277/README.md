@@ -13,32 +13,32 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 #### Storycard
 
 **As a** Provider\
-**I want** to receive via an API a sorted (descendingly by publication date or alphabetically by Resource type) list  of the resource descriptions summaries  which I have published\
-**so that** I can locate a specific resource description that I want to update.
+**I want to** receive via an API a sorted (descendingly by publication date or alphabetically by Resource type) list of the resource descriptions summaries which I have published\
+**So that** I can locate a specific resource description that I want to update.
 
 #### Acceptance criteria
 
-**Given** I am authenticated as Provider\
-**and** I have a role authorising the management of Resource Descriptions\
-**and** there are resource descriptions published by a provider\
-**when** the provider requests the own resource descriptions via API\
-**then** a list of own resource descriptions published by the provider is returned.
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** there are resource descriptions published by a provider\
+   **When** the provider requests the own resource descriptions via API\
+   **Then** a list of own resource descriptions published by the provider is returned.
 
-**Given** I am authenticated as Provider\
-**and** I have a role authorising the management of Resource Descriptions\
-**and** there are no resource descriptions published by a provider\
-**when** the provider requests the own resource descriptions via API\
-**then** an empty list of own resource descriptions published by the provider is returned.
+2. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** there are no resource descriptions published by a provider\
+   **When** the provider requests the own resource descriptions via API\
+   **Then** an empty list of own resource descriptions published by the provider is returned.
 
-**Given** I am authenticated as Provider\
-**and** I do not have a role authorising the management of Resource Descriptions\
-**when** the provider requests the own resource descriptions via API\
-**then** message is returned that the user is not authorised.
+3. **Given** I am authenticated as Provider\
+   **And** I do not have a role authorising the management of Resource Descriptions\
+   **When** the provider requests the own resource descriptions via API\
+   **Then** message is returned that the user is not authorised.
 
-**Given** I am authenticated as Provider\
-**and** there is an internal error\
-**when** the provider requests the own resource descriptions via API\
-**then** message is returned that the request cannot be fulfilled.
+4. **Given** I am authenticated as Provider\
+   **And** there is an internal error\
+   **When** the provider requests the own resource descriptions via API\
+   **Then** message is returned that the request cannot be fulfilled.
 
 ## Where it fits
 

@@ -14,26 +14,19 @@ This Epic lets a participant change its contact email after onboarding, and pass
 
 ## Text
 
-**As a**
-
-Participant
-
-**I want to**
-
-update my contact email address once I have completed the onboarding procedure
-
-**so that**
-
-my organisation's point of contact stays updated, and other participants and the Governance Authority can keep reaching me via an up-to-date email address
+**As a** Participant\
+**I want to** update my contact email address once I have completed the onboarding procedure\
+**So that** my organisation's point of contact stays updated, and other participants and the Governance Authority can keep reaching me via an up-to-date email address
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am an onboarded Participant\
-   **WHEN** I update my contact email address\
-   **THEN** the new contact email address is saved to my participant profile
-1. **GIVEN** I have updated my contact email address\
-   **WHEN** the update is completed\
-   **THEN** the new contact email is propagated to the Governance Authority
+1. **Given** I am an onboarded Participant\
+   **When** I update my contact email address\
+   **Then** the new contact email address is saved to my participant profile
+
+2. **Given** I have updated my contact email address\
+   **When** the update is completed\
+   **Then** the new contact email is propagated to the Governance Authority
 
 ## Where it fits
 

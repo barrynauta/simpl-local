@@ -11,31 +11,25 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 ## Text
 
 **Description**\
-_When creating a document validation rule (see (internal page)) the user must select the document associated with the rule (see the foreign key between the validation_rule and the document_template table in the [Data Model)|an internal page]._
+_When creating a document validation rule (see (internal page)) the user must select the document associated with the rule (see the foreign key between the validation_rule and the document_template table in the Data Model) (internal page)._
 
-_Currently, the only readable attribute of a document template is the "Description" (see the document_template table in the [Physical Data Model|an internal page] of Onboarding Microservice), which may be too long to be rendered in a dropdown menu for the document selection during the creation of an onboarding rule. Additionally, while the description is useful for a user with the APPLICANT role to understand precisely which document has to be uploaded, the governance authority representative needs a short name to identify the document templates and reference them in other sections of the onboarding request template (i.e. rule templates as explained below)._
+_Currently, the only readable attribute of a document template is the "Description" (see the document_template table in the Physical Data Model (internal page) of Onboarding Microservice), which may be too long to be rendered in a dropdown menu for the document selection during the creation of an onboarding rule. Additionally, while the description is useful for a user with the APPLICANT role to understand precisely which document has to be uploaded, the governance authority representative needs a short name to identify the document templates and reference them in other sections of the onboarding request template (i.e. rule templates as explained below)._
 
 *To help the* *governance authority representative* *read a short meaningful name in the dropdown menu of a rule creation section, add the required "name" attribute to the Document Template entity so that the document template name is shown to the user instead of the document template description.*
 
 (image not shown)
 
-**As A**
-
-Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing details of an onboarding template for a given participant type.
-
-**I want to**
-
-via a UI, be able to add a document name to a document template
-
-**So that**
-
-a short descriptive name can be read and used whenever a pointer to a document must be shown
+**As a** Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing details of an onboarding template for a given participant type.\
+**I want to** via a UI, be able to add a document name to a document template\
+**So that** a short descriptive name can be read and used whenever a pointer to a document must be shown
 
 **Acceptance Criteria**
 
-1. **Given that I am logged in as Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ when navigating to the Documents tab of an onboarding procedure template I want to create one or more document templates and see a mandatory input field where I can insert a name for each template**
-1. Given that I am logged in as Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ when navigating to the Documents tab of an onboarding procedure template I want to update a document template and modify the mandatory input field where I can modify the name for each template{}
-1. **Given that I am logged in as Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ when navigating to the Documents tab of an onboarding procedure template I want to see the list of document templates and for each document template I should see the name attribute**
+1. **Given** that I am logged in as Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ **when** navigating to the Documents tab of an onboarding procedure template I want to create one or more document templates and see a mandatory input field where I can insert a name for each template
+
+2. **Given** that I am logged in as Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ **when** navigating to the Documents tab of an onboarding procedure template I want to update a document template and modify the mandatory input field where I can modify the name for each template{}
+
+3. **Given** that I am logged in as Dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ **when** navigating to the Documents tab of an onboarding procedure template I want to see the list of document templates and for each document template I should see the name attribute
 
 ## Where it fits
 

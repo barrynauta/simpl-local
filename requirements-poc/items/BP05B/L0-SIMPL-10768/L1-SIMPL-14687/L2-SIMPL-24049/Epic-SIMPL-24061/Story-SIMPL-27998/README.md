@@ -12,7 +12,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **As a** Governance Authority,\
 **I want to** automatically approve or reject a resource description based on overall and per-dimension thresholds,\
-**so that** compliant metadata is published and non-compliant metadata is prevented from publication.
+**So that** compliant metadata is published and non-compliant metadata is prevented from publication.
 
 ###### Technical Details:
 
@@ -28,31 +28,31 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ###### AC1
 
-**Given** a submitted resource description is valid\
-**And** a QAR is generated for this resource description\
-**When** the overall score in this QAR is greater or equal than the overall threshold defined in the metadata quality definition\
-**And** each dimension score in the QAR is greater or equal than its dimension threshold in the metadata quality definition\
-**Then** the resource description is published in the catalogue\
-**And** the QAR is stored as metadata of the published resource description
+1. **Given** a submitted resource description is valid\
+   **And** a QAR is generated for this resource description\
+   **When** the overall score in this QAR is greater or equal than the overall threshold defined in the metadata quality definition\
+   **And** each dimension score in the QAR is greater or equal than its dimension threshold in the metadata quality definition\
+   **Then** the resource description is published in the catalogue\
+   **And** the QAR is stored as metadata of the published resource description
 
 ###### AC2
 
-**Given** a submitted resource description is valid\
-**And** a QAR is generated for this resource description\
-**When** the overall score in this QAR is lower than the overall threshold defined in the metadata quality definition (MQP)\
-**Or** at least one dimension score in the QAR is lower than its dimension threshold in the metadata quality definition\
-**Then** the resource description is not published in the catalogue\
-**And** the resource description is not stored\
-**And** an explicit error is returned explaining the reason (reached score value and threshold)
+2. **Given** a submitted resource description is valid\
+   **And** a QAR is generated for this resource description\
+   **When** the overall score in this QAR is lower than the overall threshold defined in the metadata quality definition (MQP)\
+   Or at least one dimension score in the QAR is lower than its dimension threshold in the metadata quality definition\
+   **Then** the resource description is not published in the catalogue\
+   **And** the resource description is not stored\
+   **And** an explicit error is returned explaining the reason (reached score value and threshold)
 
 ###### AC3
 
-**Given** a submitted resource description is valid\
-**And** a metadata quality assessment for this resource description cannot be completed due to a technical failure (for instance missing threshold definition)\
-**When** the publication decision is requested\
-**Then** the resource description is not published in the catalogue\
-**And** an explicit technical error is returned\
-**And** the failure reason is logged.
+3. **Given** a submitted resource description is valid\
+   **And** a metadata quality assessment for this resource description cannot be completed due to a technical failure (for instance missing threshold definition)\
+   **When** the publication decision is requested\
+   **Then** the resource description is not published in the catalogue\
+   **And** an explicit technical error is returned\
+   **And** the failure reason is logged.
 
 **Remark:** In alignment with API First and the modularity in testing, the current implementation will use a mock/stub of the endpoint to retrieve the Scoring. The implementation test is here to test the integration without mocks SIMPL-30617
 

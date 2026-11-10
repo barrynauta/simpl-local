@@ -14,30 +14,30 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 **As a** Simpl-Open administrator\
 **I want** authorised users of a Provider to have access to the Resource Description Management service,\
-**so that** they can manage the resource descriptions in the data space catalogue.
+**So that** they can manage the resource descriptions in the data space catalogue.
 
 **Acceptance Criteria**
 
 **AC1 A Provider access to the Resource Description Management service**
 
-**Given** a user is authenticated within the Provider Participant Type,\
-**When** the user role is assigned to SD_PUBLISHER, Ro-MU-A,or Ro-Pa-A,\
-**Then** the Resource Description Management service is displayed on their Simpl-Open landing page,\
-**and** this user can access the Resource Description Management service.
+1. **Given** a user is authenticated within the Provider Participant Type,\
+   **When** the user role is assigned to SD_PUBLISHER, Ro-MU-A,or Ro-Pa-A,\
+   **Then** the Resource Description Management service is displayed on their Simpl-Open landing page,\
+   **And** this user can access the Resource Description Management service.
 
 **AC2 The Resource Description Management service access is restricted for unauthorised user roles of a Provider**
 
-**Given** a user is authenticated within the Provider Participant Type,\
-**When** they are not assigned to one of the roles authorised to access the Resource Description Management service,\
-**Then** this service is not displayed on their Simpl-Open landing page,\
-**and** access to this service is denied.
+2. **Given** a user is authenticated within the Provider Participant Type,\
+   **When** they are not assigned to one of the roles authorised to access the Resource Description Management service,\
+   **Then** this service is not displayed on their Simpl-Open landing page,\
+   **And** access to this service is denied.
 
 **AC3The Resource Description Management service access is restricted for the users authorised other than a Provider**
 
-**Given** a user is authenticated as a Consumer Participant Type,\
-**When** they access to their Simpl-Open landing page,\
-**Then** the Resource Description Management service is not displayed on their Simpl-Open landing page,\
-**and** access to this service is denied.
+3. **Given** a user is authenticated as a Consumer Participant Type,\
+   **When** they access to their Simpl-Open landing page,\
+   **Then** the Resource Description Management service is not displayed on their Simpl-Open landing page,\
+   **And** access to this service is denied.
 
 ## Where it fits
 

@@ -12,17 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**
-
-data space authority
-
-**I want to**
-
-via an API, remove an existing unused identity attribute
-
-**So that**
-
-I remove an unused identity attribute.
+**As a** data space authority\
+**I want to** via an API, remove an existing unused identity attribute\
+**So that** I remove an unused identity attribute.
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

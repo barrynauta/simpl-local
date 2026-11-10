@@ -10,25 +10,17 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 
 ## Text
 
-**As a**
-
-Simpl-Open End User responsible with the Consent Manager (CONSENT_M) role, responsible for managing consent assertions
-
-**I want to**
-
-via API, view the details of a consent assertion
-
-**so that**
-
-I can have a complete overview of the assertion, including parties involved and its status
+**As a** Simpl-Open End User responsible with the Consent Manager (CONSENT_M) role, responsible for managing consent assertions\
+**I want to** via API, view the details of a consent assertion\
+**So that** I can have a complete overview of the assertion, including parties involved and its status
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am an authenticated user with the Consent Manager role (CONSENT_M)\
-   **AND** a consent assertion has been created in the past\
-   **WHEN** I GET /tier1/v1/consentAssertions/{consentAssertionId} on that assertion\
-   **THEN** I receive a 200 Ok response\
-   **AND** the body of the response contains\
+1. **Given** I am an authenticated user with the Consent Manager role (CONSENT_M)\
+   **And** a consent assertion has been created in the past\
+   **When** I GET /tier1/v1/consentAssertions/{consentAssertionId} on that assertion\
+   **Then** I receive a 200 Ok response\
+   **And** the body of the response contains\
    the assertion ID (UUID)\
    the assertion name (String)\
    the assertion description (String)\
@@ -44,16 +36,19 @@ I can have a complete overview of the assertion, including parties involved and 
    the acknowledgementStatus (NOT_REQUIRED, ACTIVE, WITHDRAWN)\
    the creation timestamp\
    the update timestamp
-1. **GIVEN** I am an authenticated user with the Consent Manager role (CONSENT_M)\
-   **WHEN** I invoke the GET /tier1/v1/consentAssertions/{consentAssertionId} API\
-   **AND** the consentAssertionId does not map to an existing assertion\
-   **THEN** I obtain a 404 Not Found
-1. **GIVEN** I am an unauthenticated user\
-   **WHEN** I invoke a GET /tier1/v1/consentAssertions/{consentAssertionId}\
-   **THEN** I receive a 401 Unauthorized response
-1. **GIVEN** I am an authenticated user without CONSENT_M role\
-   **WHEN** I send a GET /tier1/v1/consentAssertions/{consentAssertionId}\
-   **THEN** I receive a 403 Forbidden response
+
+2. **Given** I am an authenticated user with the Consent Manager role (CONSENT_M)\
+   **When** I invoke the GET /tier1/v1/consentAssertions/{consentAssertionId} API\
+   **And** the consentAssertionId does not map to an existing assertion\
+   **Then** I obtain a 404 Not Found
+
+3. **Given** I am an unauthenticated user\
+   **When** I invoke a GET /tier1/v1/consentAssertions/{consentAssertionId}\
+   **Then** I receive a 401 Unauthorized response
+
+4. **Given** I am an authenticated user without CONSENT_M role\
+   **When** I send a GET /tier1/v1/consentAssertions/{consentAssertionId}\
+   **Then** I receive a 403 Forbidden response
 
 ## Where it fits
 

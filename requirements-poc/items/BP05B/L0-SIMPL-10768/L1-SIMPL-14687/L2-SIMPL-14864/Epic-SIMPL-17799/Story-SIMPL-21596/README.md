@@ -146,7 +146,7 @@ The version validation mechanism shall be implemented in a configurable and exte
 
 Approach is described here:
 
-[an internal page]
+(internal page)
 
 A http response with a suitable error code and a meaningful error description is sufficient.
 

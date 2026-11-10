@@ -10,18 +10,18 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-As a Participant (Data Provider or Data Consumer),\
+**As a** Participant (Data Provider or Data Consumer),\
 **I want** dataset lineage to be automatically captured when I process datasets using Simpl-Open workflows,\
-**so that** I can understand dataset origins, applied transformations, and derivation relationships, ensuring transparency and traceability of data processing activities.
+**So that** I can understand dataset origins, applied transformations, and derivation relationships, ensuring transparency and traceability of data processing activities.
 
 **Acceptance Criteria:**\
 **Scenario:** Dataset lineage is captured during workflow execution
 
-- **Given** a data orchestration or processing workflow exists in Simpl-Open,\
-   **and** the workflow processes one or more datasets,
-- **When** the workflow execution completes,
-- **Then** Simpl-Open must automatically capture lineage metadata describing source datasets, processing steps, and resulting datasets\
-   **and** the lineage metadata must be linked with the corresponding resource description of dataset.
+1. **Given** a data orchestration or processing workflow exists in Simpl-Open,\
+   **And** the workflow processes one or more datasets,\
+   **When** the workflow execution completes,\
+   **Then** Simpl-Open must automatically capture lineage metadata describing source datasets, processing steps, and resulting datasets\
+   **And** the lineage metadata must be linked with the corresponding resource description of dataset.
 
 ## Where it fits
 

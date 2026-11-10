@@ -41,25 +41,18 @@ Following list of response code:
 
 **Retrieval of a specific schema version**
 
-**Given** a participant requests to view a resource description through sd-tooling or catalogue UI
-
-**When** the backend component (sd-tooling-be or xfsc-advsearch-be) invokes the sync-schema-adapter API specifying the schema identifier and version
-
-**Then** the sync-schema-adapter shall return the requested schema version
-
-**And** the schema version shall be fetched from the schema-management-service.
+1. **Given** a participant requests to view a resource description through sd-tooling or catalogue UI\
+   **When** the backend component (sd-tooling-be or xfsc-advsearch-be) invokes the sync-schema-adapter API specifying the schema identifier and version\
+   **Then** the sync-schema-adapter shall return the requested schema version\
+   **And** the schema version shall be fetched from the schema-management-service.
 
 **Schema version not available**
 
-**Given** a participant requests to view a resource description through sd-tooling or catalogue UI
-
-**When** the backend component (sd-tooling-be or xfsc-advsearch-be) invokes the sync-schema-adapter API requesting a schema version that is not available locally
-
-**And** the schema version cannot be retrieved from the schema-management-service
-
-**Then** the sync-schema-adapter shall return an explicit error indicating that the requested schema version is not available
-
-**And** the error response shall allow the calling backend to handle the failure without attempting to render the resource description with an incorrect or incompatible schema.
+2. **Given** a participant requests to view a resource description through sd-tooling or catalogue UI\
+   **When** the backend component (sd-tooling-be or xfsc-advsearch-be) invokes the sync-schema-adapter API requesting a schema version that is not available locally\
+   **And** the schema version cannot be retrieved from the schema-management-service\
+   **Then** the sync-schema-adapter shall return an explicit error indicating that the requested schema version is not available\
+   **And** the error response shall allow the calling backend to handle the failure without attempting to render the resource description with an incorrect or incompatible schema.
 
 ## Where it fits
 

@@ -10,30 +10,24 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As a**
-
-Dataspace Governance Authority
-
-**I want to**
-
-Have a startup procedure that populates the list of built-in identity attributes for Simpl-Open data spaces
-
-**So that**
-
-I can assign these identity attributes to onboarding procedures and participants, but I cannot change these identity attributes in any way.
+**As a** Dataspace Governance Authority\
+**I want to** Have a startup procedure that populates the list of built-in identity attributes for Simpl-Open data spaces\
+**So that** I can assign these identity attributes to onboarding procedures and participants, but I cannot change these identity attributes in any way.
 
 **Acceptance Criteria:**
 
-1. **GIVEN** that I am a Dataspace Governance authority\
-   **WHEN** I install my agent\
-   **THEN** I want the Simpl-Open built-in identity attributes to be automatically uploaded\
-   **AND** I want these built-in identity attributes to have the properties (a code, a name, a description and an assignable flag) and a flag indicating they are built-in
-1. **GIVEN** that I am a Dataspace Governance authority and I have installed my agent without further actions on the identity attributes\
-   **WHEN** I retrieve the list of identity attributes\
-   **THEN** the list contains the built-in identity attributes with their predefined properties and a flag indicating that they are built in
-1. **GIVEN** that I am a Dataspace Governance authority\
-   **WHEN** I attempt to update or delete a built-in identity attribute\
-   **THEN**  I get an error message stating built-in identity attributes cannot be modified
+1. **Given** that I am a Dataspace Governance authority\
+   **When** I install my agent\
+   **Then** I want the Simpl-Open built-in identity attributes to be automatically uploaded\
+   **And** I want these built-in identity attributes to have the properties (a code, a name, a description and an assignable flag) and a flag indicating they are built-in
+
+2. **Given** that I am a Dataspace Governance authority and I have installed my agent without further actions on the identity attributes\
+   **When** I retrieve the list of identity attributes\
+   **Then** the list contains the built-in identity attributes with their predefined properties and a flag indicating that they are built in
+
+3. **Given** that I am a Dataspace Governance authority\
+   **When** I attempt to update or delete a built-in identity attribute\
+   **Then** I get an error message stating built-in identity attributes cannot be modified
 
 ## Where it fits
 

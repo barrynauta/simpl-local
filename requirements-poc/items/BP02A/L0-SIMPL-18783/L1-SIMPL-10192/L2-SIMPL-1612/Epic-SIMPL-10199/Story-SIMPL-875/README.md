@@ -10,27 +10,19 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, via API deleting an Identity Attribute assigned to a dataspace participant
-
-**I want to**
-
-not delete the Identity Attribute
-
-**So that**
-
-I receive an unauthorized error and the deletion is prohibited
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, via API deleting an Identity Attribute assigned to a dataspace participant\
+**I want to** not delete the Identity Attribute\
+**So that** I receive an unauthorized error and the deletion is prohibited
 
 **Acceptance Criteria:**
 
-1. **Given that the user is logged in with the IATTR_M role, and the API endpoint for deleting an Identity Attribute is available, when the user sends a DELETE request to the API endpoint with the specific Identity Attribute ID that is assigned to a dataspace participant, then the response status code is 403 Forbidden, and the response body contains an error message indicating that the deletion of an assigned Identity Attribute is not allowed.**
+1. **Given** that the user is logged in with the IATTR_M role, and the API endpoint for deleting an Identity Attribute is available, **when** the user sends a DELETE request to the API endpoint with the specific Identity Attribute ID that is assigned to a dataspace participant, **then** the response status code is 403 Forbidden, and the response body contains an error message indicating that the deletion of an assigned Identity Attribute is not allowed.
 
-1. **Given that the user is logged in with the** **IATTR_M** **role, and the API endpoint for deleting an Identity Attribute is available, when the user sends a DELETE request to the API endpoint with the specific Identity Attribute ID that is assigned to a dataspace participant, then the Identity Attribute remains assigned to the dataspace participant.**
+2. **Given** that the user is logged in with the IATTR_M role, and the API endpoint for deleting an Identity Attribute is available, **when** the user sends a DELETE request to the API endpoint with the specific Identity Attribute ID that is assigned to a dataspace participant, **then** the Identity Attribute remains assigned to the dataspace participant.
 
-1. **Given that the user is logged in with the** **IATTR_M** **role, and the API endpoint for retrieving the Identity Attributes list is available, when the user sends a GET request to the API endpoint, then the response status code is 200 OK, and the response body contains the Identity Attribute that was attempted to be deleted, still assigned to the dataspace participant.**
+3. **Given** that the user is logged in with the IATTR_M role, and the API endpoint for retrieving the Identity Attributes list is available, **when** the user sends a GET request to the API endpoint, **then** the response status code is 200 OK, and the response body contains the Identity Attribute that was attempted to be deleted, still assigned to the dataspace participant.
 
-1. **Given that the user is logged in with the** **IATTR_M** **role, and the API endpoint for deleting an Identity Attribute is available, when the user sends a DELETE request to the API endpoint with an invalid Identity Attribute ID, then the response status code is 404 Not Found, and the response body contains an error message indicating that the Identity Attribute does not exist.**
+4. **Given** that the user is logged in with the IATTR_M role, and the API endpoint for deleting an Identity Attribute is available, **when** the user sends a DELETE request to the API endpoint with an invalid Identity Attribute ID, **then** the response status code is 404 Not Found, and the response body contains an error message indicating that the Identity Attribute does not exist.
 
 ## Where it fits
 

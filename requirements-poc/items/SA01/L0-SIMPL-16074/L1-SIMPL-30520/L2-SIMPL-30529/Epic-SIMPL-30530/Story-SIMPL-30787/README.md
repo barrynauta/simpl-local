@@ -12,8 +12,8 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 **As a** Participant with a role authorising the definition of data orchestration workflows,\
 **I want to** consult user-guide documentation that explains how to document and prepare container-cluster settings per pattern,\
-**so that** I can align workflow distribution choices with my operational environment.\
-**Documentation context:** The container cluster is where run-worker pods or external execution pods are spawned. In a tightly coupled setup, cluster runtime connectivity to orchestration dependencies is required for native runtime-state handling. In a loosely coupled setup, external pods are launched through cluster APIs and return runtime information through a decoupled reporting channel, so direct metadata database connectivity is not required from execution pods.
+**So that** I can align workflow distribution choices with my operational environment.\
+Documentation context: The container cluster is where run-worker pods or external execution pods are spawned. In a tightly coupled setup, cluster runtime connectivity to orchestration dependencies is required for native runtime-state handling. In a loosely coupled setup, external pods are launched through cluster APIs and return runtime information through a decoupled reporting channel, so direct metadata database connectivity is not required from execution pods.\
 
 **Acceptance Criteria**
 

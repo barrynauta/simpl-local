@@ -10,51 +10,51 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As** a Participant,\
-**I** **want** to configure my landing page,\
-**So** **that** I can personalise the displayed functionalities.
+**As a** Participant,\
+**I want to** configure my landing page,\
+**So that** I can personalise the displayed functionalities.
 
 ###### **Acceptance Criteria**
 
 **AC1 - Hide a landing page tile**
 
-- **Given** that I am authenticated as a Participant
-- **And** I access my landing page configuration
-- **When** I choose to hide a tile
-- **Then** the selected tile is hidden from the landing page
+1. **Given** that I am authenticated as a Participant\
+   **And** I access my landing page configuration\
+   **When** I choose to hide a tile\
+   **Then** the selected tile is hidden from the landing page
 
 **AC2 - Show a landing page tile**
 
-- **Given** that I am authenticated as a Participant
-- **And** I access my landing page configuration
-- **When** I choose to show a tile
-- **Then** the selected tile is displayed on the landing page
+2. **Given** that I am authenticated as a Participant\
+   **And** I access my landing page configuration\
+   **When** I choose to show a tile\
+   **Then** the selected tile is displayed on the landing page
 
 **AC3 - Reorder landing page tiles**
 
-- **Given** that I am authenticated as a Participant
-- **And** I access my landing page configuration
-- **When** I reorder the tiles using drag and drop
-- **Then** the new tile order is displayed on the landing page
+3. **Given** that I am authenticated as a Participant\
+   **And** I access my landing page configuration\
+   **When** I reorder the tiles using drag and drop\
+   **Then** the new tile order is displayed on the landing page
 
 **AC4 - Restore default landing page configuration**
 
-- **Given** that I modified my landing page configuration
-- **When** I click on the reset or restore default configuration action
-- **Then** the default landing page configuration is restored
-- **And** all tiles are displayed in the default order.
+4. **Given** that I modified my landing page configuration\
+   **When** I click on the reset or restore default configuration action\
+   **Then** the default landing page configuration is restored\
+   **And** all tiles are displayed in the default order.
 
 **AC5 - Persist landing page configuration locally**
 
-- **Given** that I customized my landing page configuration
-- **When** I leave the Simpl-Open UI
-- **Then** my landing page preferences are stored locally.
+5. **Given** that I customized my landing page configuration\
+   **When** I leave the Simpl-Open UI\
+   **Then** my landing page preferences are stored locally.
 
 **AC6 - Restore saved landing page configuration**
 
-- **Given** that my landing page preferences were previously stored locally
-- **When** I reopen the Simpl-Open UI
-- **Then** my saved landing page configuration is restored.
+6. **Given** that my landing page preferences were previously stored locally\
+   **When** I reopen the Simpl-Open UI\
+   **Then** my saved landing page configuration is restored.
 
 **Technical Info:**
 

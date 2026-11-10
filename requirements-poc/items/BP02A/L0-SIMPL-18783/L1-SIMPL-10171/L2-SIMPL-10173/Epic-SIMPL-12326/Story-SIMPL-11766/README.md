@@ -10,23 +10,19 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing the rule sections of an onboarding procedure template
-
-**I want**
-
-via UI, to delete or disable document validation rules
-
-**So** **that**\
-I can delete unused rules or disable those that are no longer relevant for future onboarding procedures
+**As a** dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing the rule sections of an onboarding procedure template\
+**I want** via UI, to delete or disable document validation rules\
+**So that** I can delete unused rules or disable those that are no longer relevant for future onboarding procedures
 
 **Acceptance Criteria**
 
-1. **GIVEN I am logged in as Tier 2 authorization Manager (T2IAA_M) AND I navigate to the read-only screen of an onboarding procedure template WHEN the Rules tab is opened, THEN I should see a toggle button that allows me to hide or show the disabled rules, along with a count of the disabled rules**
-1. **GIVEN I am logged in as Tier 2 authorization Manager (T2IAA_M) WHEN I navigate to the Rules tab of an onboarding procedure template AND I click on the "Edit Rules" button, THEN I should see a trash icon next to each validation rule**
-1. **GIVEN I am logged in as Tier 2 authorization Manager (T2IAA_M) WHEN I navigate to the Rules tab of an onboarding procedure template in edit mode AND a rule has already been linked to an existing onboarding request WHEN I hover or click over the trash icon for that rule, THEN a message is displayed stating that the rule cannot be deleted because it is linked to an existing onboarding request AND the trash icon is shown as disabled AND the user is invited to disable the rule if needed**
-1. **GIVEN I am logged in as Tier 2 authorization Manager (T2IAA_M) WHEN I navigate to the Rules tab of an onboarding procedure template in edit mode AND a rule has never been linked to an onboarding request linked to the template AND I click on the trash icon for that rule, THEN a confirmation popup appears asking to confirm the deletion operation**
+1. **Given** I am logged in as Tier 2 authorization Manager (T2IAA_M) **and** I navigate to the read-only screen of an onboarding procedure template **when** the Rules tab is opened, **then** I should see a toggle button that allows me to hide or show the disabled rules, along with a count of the disabled rules
+
+2. **Given** I am logged in as Tier 2 authorization Manager (T2IAA_M) **when** I navigate to the Rules tab of an onboarding procedure template **and** I click on the "Edit Rules" button, **then** I should see a trash icon next to each validation rule
+
+3. **Given** I am logged in as Tier 2 authorization Manager (T2IAA_M) **when** I navigate to the Rules tab of an onboarding procedure template in edit mode **and** a rule has already been linked to an existing onboarding request **when** I hover or click over the trash icon for that rule, **then** a message is displayed stating that the rule cannot be deleted because it is linked to an existing onboarding request **and** the trash icon is shown as disabled **and** the user is invited to disable the rule if needed
+
+4. **Given** I am logged in as Tier 2 authorization Manager (T2IAA_M) **when** I navigate to the Rules tab of an onboarding procedure template in edit mode **and** a rule has never been linked to an onboarding request linked to the template **and** I click on the trash icon for that rule, **then** a confirmation popup appears asking to confirm the deletion operation
 
 ## Where it fits
 

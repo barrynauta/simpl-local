@@ -10,25 +10,21 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attributes table list
-
-**I want to**
-
-have for each element in the table list a button to delete the Identity Attribute that after accepting a confirmation dialog on removal, removes the Identity Attribute
-
-**So that**
-
-The Identity Attribute can no longer be assigned
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attributes table list\
+**I want to** have for each element in the table list a button to delete the Identity Attribute that after accepting a confirmation dialog on removal, removes the Identity Attribute\
+**So that** The Identity Attribute can no longer be assigned
 
 **Acceptance Criteria:**
 
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user navigates to the Identity Attributes Management page, then each row in the Identity Attributes table list displays a "Delete" button.**
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user clicks on the "Delete" button for an Identity Attribute, then a confirmation dialog is displayed, asking the user to confirm the removal of the Identity Attribute.**
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user confirms the removal of an Identity Attribute, then the system removes the Identity Attribute from the list and updates the table list accordingly.**
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user cancels the removal of an Identity Attribute from the confirmation dialog, then the system does not remove the Identity Attribute and the table list remains unchanged.**
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the system removes an Identity Attribute, then a success message is displayed indicating that the Identity Attribute was removed successfully.**
+1. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attributes Management page, **then** each row in the Identity Attributes table list displays a "Delete" button.
+
+2. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user clicks on the "Delete" button for an Identity Attribute, **then** a confirmation dialog is displayed, asking the user to confirm the removal of the Identity Attribute.
+
+3. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user confirms the removal of an Identity Attribute, **then** the system removes the Identity Attribute from the list and updates the table list accordingly.
+
+4. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user cancels the removal of an Identity Attribute from the confirmation dialog, **then** the system does not remove the Identity Attribute and the table list remains unchanged.
+
+5. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the system removes an Identity Attribute, **then** a success message is displayed indicating that the Identity Attribute was removed successfully.
 
 ## Where it fits
 

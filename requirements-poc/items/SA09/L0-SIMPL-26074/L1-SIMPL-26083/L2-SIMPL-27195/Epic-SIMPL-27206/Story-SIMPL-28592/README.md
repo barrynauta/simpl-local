@@ -10,27 +10,22 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 
 ## Text
 
-**As a**
-
-Simpl-Open component\
-**I want to**
-
-via API, retrieve the status of a consent assertion by its identifier
-
-**So that**\
-access control decisions can be enforced based on the current assertion status
+**As a** Simpl-Open component\
+**I want to** via API, retrieve the status of a consent assertion by its identifier\
+**So that** access control decisions can be enforced based on the current assertion status
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am any caller\
-   **WHEN** I invoke the GET /tier1/v1/consentAssertions/{consentAssertionId}/status API\
-   **AND** the consentAssertionId corresponds to an existing assertion\
-   **THEN** I obtain a 200 OK response\
-   **AND** the body of the response contains the overall status of the assertion.
-1. **GIVEN** I am any caller\
-   **WHEN** I invoke the GET /tier1/v1/consentAssertions/{consentAssertionId}/status API\
-   **AND** the consentAssertionId does not correspond to an existing assertion\
-   **THEN** I obtain a 404 Not Found response
+1. **Given** I am any caller\
+   **When** I invoke the GET /tier1/v1/consentAssertions/{consentAssertionId}/status API\
+   **And** the consentAssertionId corresponds to an existing assertion\
+   **Then** I obtain a 200 OK response\
+   **And** the body of the response contains the overall status of the assertion.
+
+2. **Given** I am any caller\
+   **When** I invoke the GET /tier1/v1/consentAssertions/{consentAssertionId}/status API\
+   **And** the consentAssertionId does not correspond to an existing assertion\
+   **Then** I obtain a 404 Not Found response
 
 ## Where it fits
 

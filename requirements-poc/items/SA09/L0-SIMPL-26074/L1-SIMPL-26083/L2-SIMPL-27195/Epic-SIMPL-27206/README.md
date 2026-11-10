@@ -10,26 +10,19 @@ Folder: [items](../../../../../README.md) / [SA09](../../../../README.md) / [L0-
 
 ## Text
 
-**As a**
-
-Data Provider
-
-**I want to**
-
-withdraw or reactivate a consent assertion
-
-**So that**
-
-the consent status of assertions accurately reflects the current consent basis for the linked data resources and governs access control decisions for bound Consumers accordingly.
+**As a** Data Provider\
+**I want to** withdraw or reactivate a consent assertion\
+**So that** the consent status of assertions accurately reflects the current consent basis for the linked data resources and governs access control decisions for bound Consumers accordingly.
 
 **Acceptance Criteria:**
 
-1. **GIVEN** I am a Data Provider user with the appropriate roles\
-   **WHEN** I withdraw a consent assertion\
-   **THEN** the assertion status is set to WITHDRAWN
-1. **GIVEN** I am a Data Provider user with the appropriate roles\
-   **WHEN** I reactivate a previously withdrawn consent\
-   **THEN** the assertion status is set to ACTIVE
+1. **Given** I am a Data Provider user with the appropriate roles\
+   **When** I withdraw a consent assertion\
+   **Then** the assertion status is set to WITHDRAWN
+
+2. **Given** I am a Data Provider user with the appropriate roles\
+   **When** I reactivate a previously withdrawn consent\
+   **Then** the assertion status is set to ACTIVE
 
 ## Where it fits
 

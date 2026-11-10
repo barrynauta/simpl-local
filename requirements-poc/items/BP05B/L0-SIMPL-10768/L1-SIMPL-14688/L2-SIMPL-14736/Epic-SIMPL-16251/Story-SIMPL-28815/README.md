@@ -10,100 +10,100 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-**As a** Provider end user\
+**As a** Provider end user\
 **I want to** to add the data of the contract clause 'Billing Schema' to a new resource description via UI\
-**so that** I can ensure that the new resource description includes all relevant information to be compliant with the schema of the contract clause 'Billing Schema'
+**So that** I can ensure that the new resource description includes all relevant information to be compliant with the schema of the contract clause 'Billing Schema'
 
 **Acceptance Criteria**
 
 **AC1 - A Provider adds a contract clause of type 'Billing Schema' to a new resource description via UI**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new resource description\
-**When** I reach the step 'Contract Clauses' in the wizard\
-**And** I choose to add a new contract clause of type 'Billing Schema' in the UI wizard,\
-**Then** the UI shows the properties of the contract clause of type 'Billing Schema':
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step 'Contract Clauses' in the wizard\
+   **And** I choose to add a new contract clause of type 'Billing Schema' in the UI wizard,\
+   **Then** the UI shows the properties of the contract clause of type 'Billing Schema':
 
-- Title;
-- Billing model;
-- Source;
-- Billing unit;
-- Billing unit price;
-- Billing schedule.
+   - Title;
+   - Billing model;
+   - Source;
+   - Billing unit;
+   - Billing unit price;
+   - Billing schedule.
 
 **AC2 - A Provider finishes adding a contract clause of type 'Billing Schema' to a new resource description via UI**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new resource description\
-**and** I reach the step 'Contract Clauses' in the wizard\
-**and** I choose to add a new contract clause of type 'Billing Schema' in the UI wizard,\
-**When** I provide the values of the properties of the contract clause of type 'Billing Schema':
+2. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **And** I reach the step 'Contract Clauses' in the wizard\
+   **And** I choose to add a new contract clause of type 'Billing Schema' in the UI wizard,\
+   **When** I provide the values of the properties of the contract clause of type 'Billing Schema':
 
-- Title (Text);
-- Billing model (Subscription, Pay-per-use, One-off);
-- Source (Upload a document*);
-- Billing unit (Text);
-- Billing unit price (Decimal(10,2));
-- Billing schedule (Text).
+   - Title (Text);
+   - Billing model (Subscription, Pay-per-use, One-off);
+   - Source (Upload a document);
+   - Billing unit (Text);
+   - Billing unit price (Decimal(10,2));
+   - Billing schedule (Text).
 
-**Then** a contract clause of type 'Billing Schema' is associated with the current resource description being created\
-**And** the uploaded document (if any) is stored and the document metadata is generated (documentId, hash, hashAlgorithm) and linked to the contract clause\
-**And** I can navigate to the next step in the wizard
+   **Then** a contract clause of type 'Billing Schema' is associated with the current resource description being created\
+   **And** the uploaded document (if any) is stored and the document metadata is generated (documentId, hash, hashAlgorithm) and linked to the contract clause\
+   **And** I can navigate to the next step in the wizard
 
 *Note: The upload of the document is covered in (internal page)
 
 **AC3 - Syntactically invalid data metadata prevents submission of the resource description via UI**
 
-**Given** I am authenticated as a Provider end user\
-**And** I have a role authorising the management of resource descriptions\
-**And** I am creating a new resource description\
-**When** I enter a value in a data metadata field that does not comply with the field validation rules of the contract clause\
-**Then** the invalid field is visually highlighted\
-**And** an error message is displayed next to the field indicating that the value is not valid\
-**And** the Sign & Submit action is disabled\
-**And** I cannot proceed with the publication of the resource description until all invalid values are corrected
+3. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **When** I enter a value in a data metadata field that does not comply with the field validation rules of the contract clause\
+   **Then** the invalid field is visually highlighted\
+   **And** an error message is displayed next to the field indicating that the value is not valid\
+   **And** the Sign & Submit action is disabled\
+   **And** I cannot proceed with the publication of the resource description until all invalid values are corrected
 
 **AC4 - A Provider is only allowed to assign one billing schema to a resource description**
 
-**Given** I am authenticated as a Provider end user\
-**And** I have a role authorising the management of resource descriptions\
-**And** I am creating a new resource description\
-**And** I am on the step 'Contract Clauses' in the wizard\
-**And** I have already added a contract clause of type 'Billing Schema' in the UI wizard\
-**When** I add another Contract Clause\
-**Then** the UI does not show the option to select the type 'Billing Schema' for this contract clause
+4. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **And** I am on the step 'Contract Clauses' in the wizard\
+   **And** I have already added a contract clause of type 'Billing Schema' in the UI wizard\
+   **When** I add another Contract Clause\
+   **Then** the UI does not show the option to select the type 'Billing Schema' for this contract clause
 
 **AC5 - A Provider uploads a document when creating a new resource description via UI, but decides to replace it before submission**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new resource description\
-**and** I am on the step 'Contract Clauses' in the wizard\
-**and** I have chosen to add a new contract clause in the UI wizard,\
-**and** I have provided the values of the properties of the contract clause\
-**and** I have uploaded a document\
-**When** I want to change the document before submission\
-**Then** I can click on the button to select another document\
-**And** the new uploaded document is stored and the document metadata is generated (documentId, hash, hashAlgorithm) and linked to the contract clause (overwriting the previously linked metadata)\
-**And** I can navigate to the next step in the wizard
+5. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **And** I am on the step 'Contract Clauses' in the wizard\
+   **And** I have chosen to add a new contract clause in the UI wizard,\
+   **And** I have provided the values of the properties of the contract clause\
+   **And** I have uploaded a document\
+   **When** I want to change the document before submission\
+   **Then** I can click on the button to select another document\
+   **And** the new uploaded document is stored and the document metadata is generated (documentId, hash, hashAlgorithm) and linked to the contract clause (overwriting the previously linked metadata)\
+   **And** I can navigate to the next step in the wizard
 
 **AC6 - A Provider uploads a document when creating a new resource description via UI, but decides to remove it before submission**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new resource description\
-**and** I am on the step 'Contract Clauses' in the wizard\
-**and** I have chosen to add a new contract clause in the UI wizard,\
-**and** I have provided the values of the properties of the contract clause\
-**and** I have uploaded a document\
-**When** I want to change the document before submission\
-**Then** I can click on the button to remove the current document\
-**And** the previously linked document metadata is unlinked from the contract clause (overwriting the previously linked metadata)\
-**And** I can navigate to the next step in the wizard
+6. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **And** I am on the step 'Contract Clauses' in the wizard\
+   **And** I have chosen to add a new contract clause in the UI wizard,\
+   **And** I have provided the values of the properties of the contract clause\
+   **And** I have uploaded a document\
+   **When** I want to change the document before submission\
+   **Then** I can click on the button to remove the current document\
+   **And** the previously linked document metadata is unlinked from the contract clause (overwriting the previously linked metadata)\
+   **And** I can navigate to the next step in the wizard
 
-**References / Supporting Material / Documentation / Validation rules:** [Contract Clauses management|an internal page]
+**References / Supporting Material / Documentation / Validation rules:** Contract Clauses management (internal page)
 
 ## Where it fits
 

@@ -10,21 +10,16 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As a**\
-Dataspace Governance Authority end user with the T2IAA_M (Tier 2 authorization manager) role, viewing the documents tab of an onboarding procedure template
-
-**I want**\
-the UI to prevent me from deleting a document template if it is used by an onboarding validation rule
-
-**So that**\
-I can make an informed decision by first deleting or modifying the rules before deleting the linked document
+**As a** Dataspace Governance Authority end user with the T2IAA_M (Tier 2 authorization manager) role, viewing the documents tab of an onboarding procedure template\
+**I want** the UI to prevent me from deleting a document template if it is used by an onboarding validation rule\
+**So that** I can make an informed decision by first deleting or modifying the rules before deleting the linked document
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am authenticated with the T2IAA_M (Tier 2 authorization manager) role\
-   **AND** a document template of an onboarding procedure template is linked to a validation rule\
-   **WHEN** I try to delete a document template from the onboarding procedure\
-   **THEN** I see a message stating that the document cannot be deleted because it is linked to one or more validation rules
+1. **Given** that I am authenticated with the T2IAA_M (Tier 2 authorization manager) role\
+   **And** a document template of an onboarding procedure template is linked to a validation rule\
+   **When** I try to delete a document template from the onboarding procedure\
+   **Then** I see a message stating that the document cannot be deleted because it is linked to one or more validation rules
 
 ## Where it fits
 

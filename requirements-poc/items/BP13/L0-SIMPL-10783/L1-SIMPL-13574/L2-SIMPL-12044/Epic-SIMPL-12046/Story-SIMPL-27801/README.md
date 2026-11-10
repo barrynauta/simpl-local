@@ -10,41 +10,41 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As** a Participant,\
-**I want** to use a landing page adapted to my Participant type,\
+**As a** Participant,\
+**I want to** use a landing page adapted to my Participant type,\
 **So that** I can easily access the relevant Simpl-Open functionalities.
 
 ###### **Acceptance Criteria**
 
 **AC1.1 - Participant access Landing Page UI**
 
-**Given** I am authenticated as a Participant user\
-**When** I access the landing page of my Simpl-Open agent\
-**Then** the landing page is displayed\
-**and** the landing page shows all the functionalities adapted to my Participant type
+1. **Given** I am authenticated as a Participant user\
+   **When** I access the landing page of my Simpl-Open agent\
+   **Then** the landing page is displayed\
+   **And** the landing page shows all the functionalities adapted to my Participant type
 
 **AC1.2 Negative case: Participant access denied**
 
-**Given** a Participant's authentication token is not valid\
-**When** a Participant attempts to access the landing page of their Simpl-Open agent\
-**Then** the landing page is not displayed\
-**and** Simpl-Open responds with a message including information about the access denied
+2. **Given** a Participant's authentication token is not valid\
+   **When** a Participant attempts to access the landing page of their Simpl-Open agent\
+   **Then** the landing page is not displayed\
+   **And** Simpl-Open responds with a message including information about the access denied
 
 **AC2.1 Participant is redirected to the selected functionality UI**
 
-**Given** I am authenticated as a Participant user\
-**and** I have successfully opened the landing page\
-**When** I select a functionality from the landing page\
-**Then** I am redirected to the UI of the selected functionality
+3. **Given** I am authenticated as a Participant user\
+   **And** I have successfully opened the landing page\
+   **When** I select a functionality from the landing page\
+   **Then** I am redirected to the UI of the selected functionality
 
 **AC2.2 Negative scenario: Redirection to a functionality fails**
 
-**Given** I am authenticated as a Participant user\
-**and** I have successfully opened the landing page\
-**and** I have selected a functionality from the landing page UI\
-**When** the request to access the corresponding functionality UI fails\
-**Then** Simpl-Open responds with a message including information about the failed access\
-**and** I am redirected towards the landing page
+4. **Given** I am authenticated as a Participant user\
+   **And** I have successfully opened the landing page\
+   **And** I have selected a functionality from the landing page UI\
+   **When** the request to access the corresponding functionality UI fails\
+   **Then** Simpl-Open responds with a message including information about the failed access\
+   **And** I am redirected towards the landing page
 
 **Technical Info:**
 

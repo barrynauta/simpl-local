@@ -20,7 +20,7 @@ Create UI frontend for XFSC catalogue to store and publish a SD in a catalogue.\
 The UI should be able to import an sign JSON-LD document and with a button publish it to the catalog. The result of the publication (either success or in case of failure a message with the reason) should be shown to the provider. The front end also contains the feature to log in which is required to get the token to use the catalog backend.
 
 +**Mock Up:**+\
-[mock up docu|an internal page]\
+mock up docu (internal page)\
 (image not shown)
 
 +**Acceptance Criteria:**+

@@ -14,23 +14,18 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 *This story is an improvement of SIMPL-10511 and has been created to solve SIMPL-16360.*
 
-**As a**\
-Dataspace Governance Authority end user with the T2IAA_M (Tier 2 authorization manager) role, viewing the rules tab of an onboarding procedure template
-
-**I want to**\
-via UI, save invalid PRESENCE CHECK onboarding validation rules in a disabled state
-
-**So that**\
-I can draft validation rules without being blocked, while ensuring only valid rules can be enabled
+**As a** Dataspace Governance Authority end user with the T2IAA_M (Tier 2 authorization manager) role, viewing the rules tab of an onboarding procedure template\
+**I want to** via UI, save invalid PRESENCE CHECK onboarding validation rules in a disabled state\
+**So that** I can draft validation rules without being blocked, while ensuring only valid rules can be enabled
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am logged in as Tier 2 authorization Manager (T2IAA_M)\
-   **AND** I am editing a presence check rule\
-   **WHEN** any validation error is detected in the rule\
-   **THEN** the error should be highlighted\
-   **AND** the enabled flag remains disabled\
-   **AND** the rule can be saved as disabled
+1. **Given** I am logged in as Tier 2 authorization Manager (T2IAA_M)\
+   **And** I am editing a presence check rule\
+   **When** any validation error is detected in the rule\
+   **Then** the error should be highlighted\
+   **And** the enabled flag remains disabled\
+   **And** the rule can be saved as disabled
 
 ## Where it fits
 

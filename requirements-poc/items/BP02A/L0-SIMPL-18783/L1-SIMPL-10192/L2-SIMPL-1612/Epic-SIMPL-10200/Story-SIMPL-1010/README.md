@@ -10,24 +10,19 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attribute detail information page
-
-**I want to**
-
-enable or disable the assignable flag for the specific attribute
-
-**So that**
-
-the Identity Attribute is assignable to Tier 1 local roles by each dataspace participant
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attributes Management page, viewing the Identity Attribute detail information page\
+**I want to** enable or disable the assignable flag for the specific attribute\
+**So that** the Identity Attribute is assignable to Tier 1 local roles by each dataspace participant
 
 **Acceptance Criteria:**
 
-1. **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user views the Identity Attribute detail information page, then the system displays the current assignable flag status for the selected Identity Attribute.**
-1. **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user toggles the assignable flag status for the selected Identity Attribute, then the system updates the assignable flag status for the selected Identity Attribute.**
-1. **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user saves the changes to the assignable flag status, then the system reflects the updated assignable flag status for the selected Identity Attribute.**
-1. **Given that the user is logged in with the** **IATTR_M** **role in the Dataspace Governance Authority, when the user views the Identity Attribute detail information page after updating the assignable flag status, then the system displays the updated assignable flag status for the selected Identity Attribute.**
+1. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user views the Identity Attribute detail information page, **then** the system displays the current assignable flag status for the selected Identity Attribute.
+
+2. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user toggles the assignable flag status for the selected Identity Attribute, **then** the system updates the assignable flag status for the selected Identity Attribute.
+
+3. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user saves the changes to the assignable flag status, **then** the system reflects the updated assignable flag status for the selected Identity Attribute.
+
+4. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user views the Identity Attribute detail information page after updating the assignable flag status, **then** the system displays the updated assignable flag status for the selected Identity Attribute.
 
 ## Where it fits
 

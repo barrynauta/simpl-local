@@ -12,7 +12,7 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 **As a** Participant with permission to configure workflows,\
 **I want to** consult user-guide documentation that explains how execution target and integration pattern must be selected and documented for each workflow,\
-**so that** I can choose the right runtime model and configuration approach without ambiguity.
+**So that** I can choose the right runtime model and configuration approach without ambiguity.
 
 bq. **Documentation context:** The execution target binds the workflow to infrastructure and defines how runtime information is shared with the control plane. In a tightly coupled setup, runtime workers require direct connectivity to orchestration runtime dependencies. In the loosely coupled setup, execution is dispatched to an external cluster and runtime information returns through a decoupled reporting channel, without direct metadata database connectivity from execution pods.
 

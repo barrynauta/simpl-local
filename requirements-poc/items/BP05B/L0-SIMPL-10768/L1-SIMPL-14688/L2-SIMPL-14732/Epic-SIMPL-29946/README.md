@@ -11,8 +11,8 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 ## Text
 
 **As a** Provider end user,\
-**I want the** Provisioner API URL to be managed through deployment configuration instead of manual UI input,\
-**so that** provisioning is more reliable and less error-prone.
+**I want** the Provisioner API URL to be managed through deployment configuration instead of manual UI input,\
+**So that** provisioning is more reliable and less error-prone.
 
 ##### Description
 
@@ -40,26 +40,26 @@ Moving this configuration to environment variables:
 
 ###### AC1 - UI no longer exposes Provisioner API URL field
 
-Given I am an authenticated Provider end user with permission to manage Resource Descriptions\
-And I am creating or editing an infrastructure offering in RD Manager\
-When I reach the step where infrastructure properties are configured\
-Then the Provisioner API URL field is not displayed\
-And I cannot manually enter or modify the Provisioner API URL in the UI
+1. **Given** I am an authenticated Provider end user with permission to manage Resource Descriptions\
+   **And** I am creating or editing an infrastructure offering in RD Manager\
+   **When** I reach the step where infrastructure properties are configured\
+   **Then** the Provisioner API URL field is not displayed\
+   **And** I cannot manually enter or modify the Provisioner API URL in the UI
 
 ###### AC2 - Backend reads Provisioner API URL from deployment configuration
 
-Given the Infrastructure Provider Agent is deployed with a configured Provisioner API URL environment variable\
-When the backend prepares a provisioning request for an infrastructure resource description\
-Then the Provisioner API URL is retrieved from environment configuration\
-And no Provisioner API URL value is required from the user payload
+2. **Given** the Infrastructure Provider Agent is deployed with a configured Provisioner API URL environment variable\
+   **When** the backend prepares a provisioning request for an infrastructure resource description\
+   **Then** the Provisioner API URL is retrieved from environment configuration\
+   **And** no Provisioner API URL value is required from the user payload
 
 ###### AC3 - Provisioning succeeds with valid environment configuration
 
-Given the Provisioner API URL environment variable is configured with a valid endpoint\
-And a Provider end user submits a valid infrastructure resource description with a linked deployment script\
-When provisioning is triggered\
-Then provisioning succeeds\
-And the provisioning call is executed against the configured environment-based Provisioner API URL
+3. **Given** the Provisioner API URL environment variable is configured with a valid endpoint\
+   **And** a Provider end user submits a valid infrastructure resource description with a linked deployment script\
+   **When** provisioning is triggered\
+   **Then** provisioning succeeds\
+   **And** the provisioning call is executed against the configured environment-based Provisioner API URL
 
 ## Where it fits
 

@@ -10,23 +10,17 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-**As A**
-
-dataspace participant
-
-**I want to**
-
-have a synchronisation process for identity attributes that will compare the local copy of identity attributes
-
-**So that**
-
-I have an updated list of assignable identity attributes
+**As a** dataspace participant\
+**I want to** have a synchronisation process for identity attributes that will compare the local copy of identity attributes\
+**So that** I have an updated list of assignable identity attributes
 
 **Acceptance Criteria**
 
-- **Given a dataspace participant agent with a local role-to-attribute mapping, when the synchronisation process runs, then it updates the role assignments based on the latest identity attribute definitions from the Dataspace Governance Authority**
-- **Given an identity attribute that was removed from the Dataspace Governance Authority, when the synchronisation process runs, then the system removes the attribute from all local role assignments**
-- **Given a newly introduced identity attribute, when the synchronisation process runs, then the system makes it available for role assignment according to the defined rules**
+1. **Given** a dataspace participant agent with a local role-to-attribute mapping, **when** the synchronisation process runs, **then** it updates the role assignments based on the latest identity attribute definitions from the Dataspace Governance Authority
+
+2. **Given** an identity attribute that was removed from the Dataspace Governance Authority, **when** the synchronisation process runs, **then** the system removes the attribute from all local role assignments
+
+3. **Given** a newly introduced identity attribute, **when** the synchronisation process runs, **then** the system makes it available for role assignment according to the defined rules
 
 ## Where it fits
 

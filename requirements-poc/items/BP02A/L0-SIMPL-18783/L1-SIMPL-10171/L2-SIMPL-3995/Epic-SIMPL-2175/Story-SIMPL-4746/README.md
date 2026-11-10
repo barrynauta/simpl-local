@@ -10,25 +10,21 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing the onboarding procedures summary page
-
-**I want to**
-
-see a summary page where I view the onboarding procedure templates definition categorized by the participant type.
-
-**So that**
-
-I will review, edit and create the onboarding procedures for each participant type
+**As a** dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, viewing the onboarding procedures summary page\
+**I want to** see a summary page where I view the onboarding procedure templates definition categorized by the participant type.\
+**So that** I will review, edit and create the onboarding procedures for each participant type
 
 **Acceptance Criteria:**
 
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, when I view the onboarding procedures summary page, the page should have a tabular structure, with each tab representing a participant type.**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, when I view the onboarding procedures summary page, when I click on a tab, the corresponding onboarding procedure for that participant type should be displayed.**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, when I view the onboarding procedures summary page, the page should provide an editing interface, enabling me to make changes to the procedures as needed.**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, when I view the onboarding procedures summary page, the page should provide a creation interface, allowing me to create new procedures from scratch.**
-1. **Given that I am a dataspace governance authority user with the T2IAA_M role, each tab should display the participant type name, and the corresponding onboarding procedure details, such as the needed documents to submit.**
+1. **Given** that I am a dataspace governance authority user with the T2IAA_M role, **when** I view the onboarding procedures summary page, the page should have a tabular structure, with each tab representing a participant type.
+
+2. **Given** that I am a dataspace governance authority user with the T2IAA_M role, **when** I view the onboarding procedures summary page, when I click on a tab, the corresponding onboarding procedure for that participant type should be displayed.
+
+3. **Given** that I am a dataspace governance authority user with the T2IAA_M role, **when** I view the onboarding procedures summary page, the page should provide an editing interface, enabling me to make changes to the procedures as needed.
+
+4. **Given** that I am a dataspace governance authority user with the T2IAA_M role, **when** I view the onboarding procedures summary page, the page should provide a creation interface, allowing me to create new procedures from scratch.
+
+5. **Given** that I am a dataspace governance authority user with the T2IAA_M role, each tab should display the participant type name, and the corresponding onboarding procedure details, such as the needed documents to submit.
 
 ## Where it fits
 

@@ -12,7 +12,7 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 **As a** Data Provider,\
 **I want to** generate machine-readable lineage for each processed dataset,\
-**so that** provenance can be exchanged and interpreted consistently.
+**So that** provenance can be exchanged and interpreted consistently.
 
 ###### Technical Details:
 
@@ -33,56 +33,56 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 ###### **AC1**
 
-**Given** a lineage-enabled successful run with valid prerequisites\
-**When** lineage output is generated\
-**Then** a JSON-LD PROV-O report is created\
-**And** it contains dataset, workflow activity, service activities, and participant agent
+1. **Given** a lineage-enabled successful run with valid prerequisites\
+   **When** lineage output is generated\
+   **Then** a JSON-LD PROV-O report is created\
+   **And** it contains dataset, workflow activity, service activities, and participant agent
 
 ###### **AC2**
 
-**Given** upstream dataset references are available\
-**When** the report is generated\
-**Then** upstream links are represented with valid absolute URIs\
-**And** semantic stitching across runs is supported through those URIs
+2. **Given** upstream dataset references are available\
+   **When** the report is generated\
+   **Then** upstream links are represented with valid absolute URIs\
+   **And** semantic stitching across runs is supported through those URIs
 
 ###### **AC3**
 
-**Given** service-specific lineage label fields are not provided\
-**When** the report is generated\
-**Then** the service op name is used as fallback activity label\
-**And** report generation remains valid
+3. **Given** service-specific lineage label fields are not provided\
+   **When** the report is generated\
+   **Then** the service op name is used as fallback activity label\
+   **And** report generation remains valid
 
 ###### **AC4**
 
-**Given** required graph inputs cannot be resolved (for example invalid URI or missing required env)\
-**When** report generation is attempted\
-**Then** generation is skipped or fails deterministically with stable reason codes\
-**And** operators receive non-sensitive diagnostic feedback in logs/skip messages
+4. **Given** required graph inputs cannot be resolved (for example invalid URI or missing required env)\
+   **When** report generation is attempted\
+   **Then** generation is skipped or fails deterministically with stable reason codes\
+   **And** operators receive non-sensitive diagnostic feedback in logs/skip messages
 
 ###### **AC5**
 
-**Given** multiple upstream inputs are defined across service configs\
-**When** the lineage report is generated\
-**Then** each upstream input is represented as a separate prov:used entry\
--**And** qualified usage nodes are emitted per input in non-minimal mode-
+5. **Given** multiple upstream inputs are defined across service configs\
+   **When** the lineage report is generated\
+   **Then** each upstream input is represented as a separate prov:used entry\
+   -And qualified usage nodes are emitted per input in non-minimal mode-
 
 ###### **AC6**
 
-**Given** generate_dataset is not set\
-**When** the lineage report is generated\
-**Then** dataset URI is constructed using URI_PREFIX + run_id\
-**And** the resulting URI is unique per run
+6. **Given** generate_dataset is not set\
+   **When** the lineage report is generated\
+   **Then** dataset URI is constructed using URI_PREFIX + run_id\
+   **And** the resulting URI is unique per run
 
 ###### **AC7**
 
-**Given** lineage report persistence is executed in current implementation\
-**When** local lineage config is used\
-**Then** the report is written to the configured local file_path\
-**And** S3 persistence remains a follow-up until S3LineageConfig.write_lineage_report is implemented
+7. **Given** lineage report persistence is executed in current implementation\
+   **When** local lineage config is used\
+   **Then** the report is written to the configured local file_path\
+   **And** S3 persistence remains a follow-up until S3LineageConfig.write_lineage_report is implemented
 
 ###### Context:
 
-- Technical Description: [an internal page]
+- Technical Description: (internal page)
 
 - Relation to SIMPL-25747: business side logic overlapps between those two tickets. The main difference is the technical part\
    -- SIMPL-25747 is about the sensor to catch it\

@@ -11,8 +11,8 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 ## Text
 
 **As a** Provider end user,\
-**I want to** link a deployment script to a new infrastructure resource description via UI,\
-**so that** I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type.
+**I want to** link a deployment script to a new infrastructure resource description via UI,\
+**So that** I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type.
 
 **Acceptance criteria:**
 

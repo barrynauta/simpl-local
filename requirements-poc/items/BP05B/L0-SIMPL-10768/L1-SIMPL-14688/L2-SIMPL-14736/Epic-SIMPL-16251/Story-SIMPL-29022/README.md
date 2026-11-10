@@ -12,43 +12,47 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **As a** Provider\
 **I want to** store a contract clause document\
-**so that** I can publish a resource description that informs potential Consumers about the contractual terms and obligations for the resource.
+**So that** I can publish a resource description that informs potential Consumers about the contractual terms and obligations for the resource.
 
 **Acceptance Criteria**
 
-**AC1: A Provider stores a contract clause document - positive case**\
-**Given** I am authenticated as a Provider, with a role authorising contract clauses management\
-**When** I request to store a contract clause document\
-**And** I invoke POST /contractClauses/sourceDocument\
-**And** the body of the request contains\
-the documentName (string)\
-the sourceDocument\
-**Then** I receive a 201 Created response\
-**And** the contract clause document is stored and document hash is generated\
-**And** the body of the response contains\
-the documentId (UUID)\
-the documentHash (string)\
-the hashAlgorithm (string)\
-the documentName (string)
+**AC1: A Provider stores a contract clause document - positive case**
 
-**AC2: A Provider stores a contract clause document - error case (authenticated)**\
-**Given** I am authenticated as a Provider, with a role authorising contract clauses management\
-**When** I request to store a contract clause document\
-**And** I invoke POST /contractClauses/sourceDocument\
-**And** the request cannot be properly fulfilled\
-**Then** an appropriate error response is returned (e.g. 400, 406, 415, 500)
+1. **Given** I am authenticated as a Provider, with a role authorising contract clauses management\
+   **When** I request to store a contract clause document\
+   **And** I invoke POST /contractClauses/sourceDocument\
+   **And** the body of the request contains\
+   the documentName (string)\
+   the sourceDocument\
+   **Then** I receive a 201 Created response\
+   **And** the contract clause document is stored and document hash is generated\
+   **And** the body of the response contains\
+   the documentId (UUID)\
+   the documentHash (string)\
+   the hashAlgorithm (string)\
+   the documentName (string)
 
-**AC3: A Provider stores a contract clause document - unauthenticated case**\
-**Given** I am not authenticated\
-**When** I request to store a contract clause document\
-**And** I invoke POST /contractClauses/sourceDocument\
-**Then** the request is rejected with a 401 Unauthorized error
+**AC2: A Provider stores a contract clause document - error case (authenticated)**
 
-**AC4: A Provider stores a contract clause document - error case (authenticated with unauthorised role)**\
-**Given** I am authenticated as a Provider, without a role authorising contract clauses management\
-**When** I request to store a contract clause document\
-**And** I invoke POST /contractClauses/sourceDocument\
-**Then** the request is rejected with a 403 Forbidden
+2. **Given** I am authenticated as a Provider, with a role authorising contract clauses management\
+   **When** I request to store a contract clause document\
+   **And** I invoke POST /contractClauses/sourceDocument\
+   **And** the request cannot be properly fulfilled\
+   **Then** an appropriate error response is returned (e.g. 400, 406, 415, 500)
+
+**AC3: A Provider stores a contract clause document - unauthenticated case**
+
+3. **Given** I am not authenticated\
+   **When** I request to store a contract clause document\
+   **And** I invoke POST /contractClauses/sourceDocument\
+   **Then** the request is rejected with a 401 Unauthorized error
+
+**AC4: A Provider stores a contract clause document - error case (authenticated with unauthorised role)**
+
+4. **Given** I am authenticated as a Provider, without a role authorising contract clauses management\
+   **When** I request to store a contract clause document\
+   **And** I invoke POST /contractClauses/sourceDocument\
+   **Then** the request is rejected with a 403 Forbidden
 
 ## Where it fits
 

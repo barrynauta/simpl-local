@@ -12,34 +12,34 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-As a **Participant** (Data Provider or Data Consumer),\
+**As a** Participant (Data Provider or Data Consumer),\
 **I want to** visualise dataset lineage through graphical representations,\
-**so that** I can inspect how datasets flow through processing steps, understand dependencies, and analyse dataset derivation.
+**So that** I can inspect how datasets flow through processing steps, understand dependencies, and analyse dataset derivation.
 
 **Acceptance Criteria**
 
 **Scenario 1:** Dataset lineage is visualised for a processed dataset with available lineage metadata
 
-- **Given** lineage metadata exists for a processed dataset,\
-   **and** the Data Consumer has read access to the dataset,
-- **When** the Participant requests to view dataset lineage via the Simpl-Open UI,
-- **Then** Simpl-Open must present a visual representation of dataset sources, transformations, and outputs in an intuitive manner.
+1. **Given** lineage metadata exists for a processed dataset,\
+   **And** the Data Consumer has read access to the dataset,\
+   **When** the Participant requests to view dataset lineage via the Simpl-Open UI,\
+   **Then** Simpl-Open must present a visual representation of dataset sources, transformations, and outputs in an intuitive manner.
 
 Scenario 2: Lineage metadata does not exist for the dataset
 
-- **Given** lineage metadata does not exist for the dataset,\
-   **and** the Participant has read access to the dataset,
-- **When** the Participant requests to view dataset lineage via the Simpl-Open UI,
-- **Then** Simpl-Open must return an error indicating that lineage metadata is not available for the dataset,\
-   **and** the UI must indicate that dataset lineage cannot be visualised.
+2. **Given** lineage metadata does not exist for the dataset,\
+   **And** the Participant has read access to the dataset,\
+   **When** the Participant requests to view dataset lineage via the Simpl-Open UI,\
+   **Then** Simpl-Open must return an error indicating that lineage metadata is not available for the dataset,\
+   **And** the UI must indicate that dataset lineage cannot be visualised.
 
 Scenario 3: Access to dataset lineage is denied
 
-- **Given** lineage metadata exists for the dataset,\
-   **and** the Participant does not have read access to the dataset,
-- **When** the Participant requests to view dataset lineage via the Simpl-Open UI,
-- Then Simpl-Open must reject the request due to insufficient permissions,\
-   **and** the UI must display an access denied message indicating that the Participant is not authorised to view dataset lineage.
+3. **Given** lineage metadata exists for the dataset,\
+   **And** the Participant does not have read access to the dataset,\
+   **When** the Participant requests to view dataset lineage via the Simpl-Open UI,\
+   **Then** Simpl-Open must reject the request due to insufficient permissions,\
+   **And** the UI must display an access denied message indicating that the Participant is not authorised to view dataset lineage.
 
 ---------------------------------------------
 

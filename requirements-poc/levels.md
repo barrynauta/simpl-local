@@ -48,6 +48,25 @@ The handbook sets these rules. The [trace gaps](trace-gaps.md) page checks the i
 
 An item that does not meet its rule is tagged **⚠ Trace gap** on its page.
 
+## How user stories and acceptance criteria are written
+
+The source writes them in many ways. This folder shows them all in the same layout. The words are kept, only the layout changes.
+
+A user story has three lines:
+
+**As a** Provider end user\
+**I want to** remove contract clauses from a resource description via UI\
+**So that** the new version of the resource description has the updated set of contract clauses
+
+Acceptance criteria are a numbered list, one number per scenario. A scenario starts with **Given**. Each next step is on its own line:
+
+1. **Given** I am authenticated as a Provider end user\
+   **And** I am creating a new version of a resource description\
+   **When** I reach the step 'Contract Clauses' in the wizard\
+   **Then** the UI shows the contract clauses of the previous version
+
+The keywords Given, When, Then, And and But are in bold, with a capital first letter. When the source writes a scenario as one sentence, it stays one sentence, with the keywords in bold.
+
 ## Status
 
 Status shows where an item is in its life cycle. Some of the statuses you see in this folder:

@@ -52,27 +52,21 @@ Following list of response code:
 
 ###### **AC1 Successful enrichment and signature**
 
-**Given** a valid `resourceDescription` requiring update or versioning, submitted by a Participant Provider through the SD‑Tooling UI
-
-**When** SD‑Tooling processes the request via the enrichment and signature operation
-
-**Then** SD‑Tooling returns a fully enriched, syntactically validated, digitally signed, immutable `resourceDescription` that is ready for catalog publication.
+1. **Given** a valid `resourceDescription` requiring update or versioning, submitted by a Participant Provider through the SD‑Tooling UI\
+   **When** SD‑Tooling processes the request via the enrichment and signature operation\
+   **Then** SD‑Tooling returns a fully enriched, syntactically validated, digitally signed, immutable `resourceDescription` that is ready for catalog publication.
 
 ###### **AC2 Invalid or incomplete input**
 
-**Given** a malformed or incomplete `resourceDescription`
-
-**When** SD‑Tooling attempts to process the request
-
-**Then** the API returns an appropriate error and no enrichment or digital signature is applied.
+2. **Given** a malformed or incomplete `resourceDescription`\
+   **When** SD‑Tooling attempts to process the request\
+   **Then** the API returns an appropriate error and no enrichment or digital signature is applied.
 
 ###### **AC3 Enrichment or signature failure**
 
-**Given** a valid `resourceDescription` request
-
-**When** an internal error occurs during enrichment, validation, versioning, or digital signing
-
-**Then** SD‑Tooling returns the appropriate error (`{}500 Internal Server Error{`}) and no partial, unsigned, or intermediate `resourceDescription` is returned.
+3. **Given** a valid `resourceDescription` request\
+   **When** an internal error occurs during enrichment, validation, versioning, or digital signing\
+   **Then** SD‑Tooling returns the appropriate error (`{}500 Internal Server Error{`}) and no partial, unsigned, or intermediate `resourceDescription` is returned.
 
 ## Where it fits
 

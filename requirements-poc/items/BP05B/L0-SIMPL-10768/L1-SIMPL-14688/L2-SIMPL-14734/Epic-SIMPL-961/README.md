@@ -11,8 +11,8 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 ## Text
 
 **As a** Provider\
-**I want to** use, via UI, an usage policy template to assign an usage policy  to a new resource description\
-**so that** I can ensure that the usage of the underlying resource is aligned with my internal rules and obligations
+**I want to** use, via UI, an usage policy template to assign an usage policy to a new resource description\
+**So that** I can ensure that the usage of the underlying resource is aligned with my internal rules and obligations
 
 **Acceptance Criteria**
 

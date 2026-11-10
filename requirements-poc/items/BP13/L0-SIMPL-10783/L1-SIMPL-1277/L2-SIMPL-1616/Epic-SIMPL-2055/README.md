@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As A dataspace participant agent , I want via an API, block the communication if the credentials of the counterpart agent is not valid, so that the communication will be established only with  agents with active credentials.
+**As a** dataspace participant agent ,\
+**I want** via an API, block the communication if the credentials of the counterpart agent is not valid,\
+**So that** the communication will be established only with agents with active credentials.
 
 ## Where it fits
 

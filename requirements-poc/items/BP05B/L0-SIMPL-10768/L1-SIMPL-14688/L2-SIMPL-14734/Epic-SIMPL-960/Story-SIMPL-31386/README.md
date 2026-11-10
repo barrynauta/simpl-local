@@ -92,7 +92,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 - Shared API definition: SIMPL-31345 (internal page)
 - Usage-template list: SIMPL-31385 (internal page)
 - AI implementation approach: SIMPL-32078 (internal page)
-- [Policy Definition|an internal page]
+- Policy Definition (internal page)
 - [W3C ODRL Information Model](https://www.w3.org/TR/odrl-model/)
 
 ## Where it fits

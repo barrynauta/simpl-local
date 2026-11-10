@@ -12,30 +12,29 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **As a** Provider end user,\
 **I want to** link a deployment script to a new infrastructure resource description via UI,\
-**so that** I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type.
+**So that** I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type.
 
 **Acceptance criteria:**
 
 **AC1 - A Provider adds a link to the infrastructure deployment script to a new resource description via UI**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of Resource Descriptions\
-**and** I am creating a new infrastructure resource description\
-**When** I reach the step "Asset Properties" in the wizard\
-**Then** the list of active deployment scripts is retrieved\
-**And** this list is presented in a dropdown\
-**And** I can select one of the available deployments scripts
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new infrastructure resource description\
+   **When** I reach the step "Asset Properties" in the wizard\
+   **Then** the list of active deployment scripts is retrieved\
+   **And** this list is presented in a dropdown\
+   **And** I can select one of the available deployments scripts
 
 **AC2 - A Provider finishes adding a link to the infrastructure deployment script to a new resource description via UI**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of Resource Descriptions\
-**and** I am creating a new infrastructure resource description\
-**When** I reach the step "Asset Properties" in the wizard
-
-**and** I select an infrastructure deployment script\
-**Then** the selected deployment script is associated with the current resource description being created\
-**and** I can navigate to the next step in the wizard
+2. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new infrastructure resource description\
+   **When** I reach the step "Asset Properties" in the wizard\
+   **And** I select an infrastructure deployment script\
+   **Then** the selected deployment script is associated with the current resource description being created\
+   **And** I can navigate to the next step in the wizard
 
 ## Where it fits
 

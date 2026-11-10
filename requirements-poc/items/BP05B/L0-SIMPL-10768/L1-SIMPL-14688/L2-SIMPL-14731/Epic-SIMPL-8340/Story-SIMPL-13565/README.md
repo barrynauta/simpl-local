@@ -12,23 +12,28 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **As a** provider,\
 **I want to** select a resource source template associated with a sharing method, fill in the required details, and submit it as part of the resource description,\
-**so that** I can configure and provide the necessary source address and metadata for resource sharing.
+**So that** I can configure and provide the necessary source address and metadata for resource sharing.
 
 **Acceptance Criteria:**
 
-- **AC1 - Template Selection**\
-   **Given** I have selected a resource sharing method,\
+- **AC1 - Template Selection**
+
+1. **Given** I have selected a resource sharing method,\
    **When** I view the associated resource source templates,\
    **Then** I should be able to select one template from the list.
-- **AC2 - Display of Template Fields**\
-   **Given** a resource source template is selected,\
+
+   - AC2 - Display of Template Fields
+
+2. **Given** a resource source template is selected,\
    **When** the UI loads,\
    **Then** I should see all fields defined by the selected template, including required and optional fields.
-- **AC3 - Submission Action**\
-   **Given** the template fields are displayed,\
-   **When** I fill in the form\
-   **And** I click the "Submit" button,\
-   **Then** the data should be submitted for validation.
+
+   - AC3 - Submission Action
+
+3. **Given** the template fields are displayed,\
+   **When** I fill in the form\
+   **And** I click the "Submit" button,\
+   **Then** the data should be submitted for validation.
 
 **Link to Figma mockup:**
 
@@ -38,7 +43,7 @@ https://www.figma.com/design/YZZ6QWqLcVHlNhjnI81Wzm/Catalogue--negotiation-and-t
 
 **Internal page (including conceptual Data Model):**
 
-[an internal page]
+(internal page)
 
 ## Where it fits
 

@@ -10,9 +10,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-**As** a provider creating a resource description for an infrastructure resource,\
-**I want** to be able to upload a deployment script and related information while filling out the infrastructure resource description form,\
-**so that** I have a seamless experience creating the infrastructure resource description along with its deployment script.\
+**As a** provider creating a resource description for an infrastructure resource,\
+**I want to** be able to upload a deployment script and related information while filling out the infrastructure resource description form,\
+**So that** I have a seamless experience creating the infrastructure resource description along with its deployment script.\
 ----
 
 ###### **Steps**
@@ -38,18 +38,20 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ###### **Acceptance Criteria**
 
-**Scenario 1: Deployment Script ID Field and Button**\
-**Given** I am filling in the form for an infrastructure resource description,\
-**When** I view the deployment script id field,\
-**Then** the field is disabled for manual input,\
-**And** the **"Add deployment script +"** button is visible and clickable.
+**Scenario 1: Deployment Script ID Field and Button**
 
-**Scenario 2: Open Deployment Script Upload Popup**\
-**Given** I click the **"Add deployment script +"** button,\
-**When** the popup opens,\
-**Then** the resource description form becomes non-interactive,\
-**And** the popup displays upload fields and behaviors as described in SIMPL-13605.\
-----
+1. **Given** I am filling in the form for an infrastructure resource description,\
+   **When** I view the deployment script id field,\
+   **Then** the field is disabled for manual input,\
+   **And** the "Add deployment script +" button is visible and clickable.
+
+**Scenario 2: Open Deployment Script Upload Popup**
+
+2. **Given** I click the "Add deployment script +" button,\
+   **When** the popup opens,\
+   **Then** the resource description form becomes non-interactive,\
+   **And** the popup displays upload fields and behaviors as described in SIMPL-13605.\
+   ----
 
 ###### Technical description:
 

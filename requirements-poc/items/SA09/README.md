@@ -4,13 +4,45 @@ Folder: [items](../README.md) / **SA09**
 
 # SA09 - Data Provider manages consent assertions
 
-A Data Provider creates, withdraws and reactivates consent assertions on its data resources. Consumers are notified when the status changes.
+SA09 is a supporting activity for data that contains personal data. A consent assertion records whether the consent of the data subjects is still valid for a data set. Its status decides whether Consumers may use the data.
 
-Public pages: [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa09-data-provider-manages-consent-assertions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/sa09-data-provider-manages-consent-assertions)
+There are two types. A resource assertion applies to all Consumers of a resource description. A contract assertion is created during the contract negotiation and applies to the Consumer of that one contract. Both start as active.
 
-**39 items:** 1 L0, 2 L1, 4 L2, 6 Epic, 26 User story.
+When a data subject withdraws consent, the Data Provider withdraws the assertion, and the Consumers are told that the data set is no longer available. The withdrawal can be temporary, for example while the Provider removes the personal data. When the consent basis is back, the Provider reactivates the assertion and the Consumers are told that a new version is available. Every change needs a reason and is audited. The Provider can do this in the user interface or through an API from its own consent platform.
+
+SA09 is used in BP05B (a resource description can be linked to a consent assertion), BP07 (a contract assertion is created when the contract is established) and BP09A (the status is checked before consumption).
+
+Read more on the [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa09-data-provider-manages-consent-assertions/README.md) and the [requirements site](https://simpl-programme.ec.europa.eu/book-page/sa09-data-provider-manages-consent-assertions).
+
+## Who takes part
+
+- Data Provider, through users with the role to manage consent assertions
+
+## Before it starts
+
+- The Data Provider is onboarded (BP03A).
+
+## Steps
+
+The steps as the public process page names them. The items in this folder have no field for the step, so the tree below is ordered by item, not by step.
+
+- **SA09.01 Create resource consent assertion**
+- **SA09.02 Withdraw consent assertion**: the status becomes WITHDRAWN.
+- **SA09.03 Reactivate consent assertion**: back to ACTIVE, with a reason.
+- **SA09.04 Notify consent assertion status change**: all Consumers bound to the assertion are informed.
+
+## What this folder holds
+
+The L0 item [SIMPL-26074](L0-SIMPL-26074/README.md) stands for the supporting activity. Under it are 2 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **39 items:** 1 L0, 2 L1, 4 L2, 6 Epic, 26 User story.
+
+| L1 | High-level requirement | Status | Items under it |
+| --- | --- | --- | --- |
+| [SIMPL-26083](L0-SIMPL-26074/L1-SIMPL-26083/README.md) | Data Provider manages consent assertion status changes | In Progress | 8 |
+| [SIMPL-27082](L0-SIMPL-26074/L1-SIMPL-27082/README.md) | Data Provider manages consent assertions for shared data resources | Defined | 28 |
 
 ## Tree
+
+Every item, with its level, title and status.
 
 - [SIMPL-26074](L0-SIMPL-26074/README.md) L0 · SA09 - Data Provider manages consent assertions · In Progress
   - [SIMPL-26083](L0-SIMPL-26074/L1-SIMPL-26083/README.md) L1 · Data Provider manages consent assertion status changes · In Progress

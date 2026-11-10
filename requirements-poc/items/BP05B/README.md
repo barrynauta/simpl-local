@@ -4,13 +4,64 @@ Folder: [items](../README.md) / **BP05B**
 
 # BP05B - Provider manages resource descriptions
 
-A Provider creates resource descriptions, new versions of them and revocation requests. The Governance Authority validates, publishes and revokes them in the data space catalogue.
+In BP05B a Provider manages the descriptions of its resources in the data space catalogue, and the Governance Authority checks and publishes them. A resource description tells Consumers what a data set, an application or an infrastructure service is, and under which policies and contract terms they can use it.
 
-Public pages: [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp05b-provider-manages-resource-descriptions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp05b-provider-manages-resource-descriptions)
+The Provider chooses the resource type and fills in the common metadata, the metadata for that type, and the access and usage policies. It signs the description with its own credentials and submits it. The Governance Authority validates it: the syntax, the schema and vocabulary, and the quality rules. If the description is valid, it is published. If not, the Provider fixes it and submits it again.
 
-**258 items:** 1 L0, 9 L1, 32 L2, 69 Epic, 147 User story.
+A published description cannot be changed in place. To update it, the Provider creates a new version, and the Governance Authority revokes the old one. A Provider can also ask to revoke a description. In both cases the Consumers of the resource are informed. Usage contracts that are based on an old or a revoked description stay valid; only new contracts are no longer possible.
+
+Read more on the [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp05b-provider-manages-resource-descriptions/README.md) and the [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp05b-provider-manages-resource-descriptions).
+
+## Who takes part
+
+- Provider
+- Governance Authority
+
+## Before it starts
+
+- The Governance Authority has configured the catalogue with its vocabulary and schemas (BP02).
+- The Provider is onboarded (BP03A).
+- The Provider has stored at least one set of contract clauses (BP05A).
+
+## Steps
+
+The steps as the public process page names them. The items in this folder have no field for the step, so the tree below is ordered by item, not by step.
+
+- **BP05B.01 Create a new resource description**: choose the resource type and enter the common metadata.
+- **BP05B.02 Add resource type specific metadata**
+- **BP05B.03 Add policy and contract related metadata**: access and usage policies, and the contract terms.
+- **BP05B.04 Sign and submit the resource description**: with the Provider's credentials, to the Governance Authority.
+- **BP05B.05 Validate the resource description**: syntax, schema and vocabulary, quality rules.
+- **BP05B.06 Remediate validation issues**: the Provider fixes the description and submits it again.
+- **BP05B.07 Publish the resource description**
+- **BP05B.08 Create a new version of a resource description**
+- **BP05B.09 Update resource type specific metadata**
+- **BP05B.10 Update policies and contract related metadata**
+- **BP05B.11 Revoke the previous version of the resource description**
+- **BP05B.12 Inform about new version**: Consumers of the old version are informed.
+- **BP05B.13 Request resource description revocation**
+- **BP05B.14 Revoke a resource description**
+- **BP05B.15 Inform about revocation**: Consumers of the resource are informed.
+
+## What this folder holds
+
+The L0 item [SIMPL-10768](L0-SIMPL-10768/README.md) stands for the business process. Under it are 9 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **258 items:** 1 L0, 9 L1, 32 L2, 69 Epic, 147 User story.
+
+| L1 | High-level requirement | Status | Items under it |
+| --- | --- | --- | --- |
+| [SIMPL-12897](L0-SIMPL-10768/L1-SIMPL-12897/README.md) | A Provider consults its own Resource descriptions | Defined | 20 |
+| [SIMPL-14640](L0-SIMPL-10768/L1-SIMPL-14640/README.md) | The Governance Authority revokes a resource description | Defined | 4 |
+| [SIMPL-14687](L0-SIMPL-10768/L1-SIMPL-14687/README.md) | The Governance Authority publishes a Resource description | In Progress | 48 |
+| [SIMPL-14688](L0-SIMPL-10768/L1-SIMPL-14688/README.md) | A Provider creates a new Resource description | In Progress | 108 |
+| [SIMPL-14699](L0-SIMPL-10768/L1-SIMPL-14699/README.md) | A Provider requests the revocation of a Resource description | Defined | 4 |
+| [SIMPL-14728](L0-SIMPL-10768/L1-SIMPL-14728/README.md) | A Provider creates a new version of a Resource description | In Progress | 40 |
+| [SIMPL-14729](L0-SIMPL-10768/L1-SIMPL-14729/README.md) | A Provider signs and submits a new Resource description or a new version of a Resource description | Defined | 17 |
+| [SIMPL-21117](L0-SIMPL-10768/L1-SIMPL-21117/README.md) | The Provider notifies Consumers about the revocation of a resource description | In Progress | 4 |
+| [SIMPL-21118](L0-SIMPL-10768/L1-SIMPL-21118/README.md) | A Provider notifies Consumers about a new version of a Resource description | In Progress | 3 |
 
 ## Tree
+
+Every item, with its level, title and status.
 
 - [SIMPL-10768](L0-SIMPL-10768/README.md) L0 · BP05B - Provider manages resource descriptions · In Progress
   - [SIMPL-12897](L0-SIMPL-10768/L1-SIMPL-12897/README.md) L1 · A Provider consults its own Resource descriptions · Defined

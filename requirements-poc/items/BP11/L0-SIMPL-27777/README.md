@@ -10,6 +10,14 @@ Folder: [items](../../README.md) / [BP11](../README.md) / **L0-SIMPL-27777**
 
 **Trace:** [BP11](../README.md) › **SIMPL-27777** (L0)
 
+## What this item is
+
+This is the L0 item for business process [BP11](../README.md). It stands for the whole business process, so that its requirements can hang under it: 6 high-level requirements (L1), with their detailed requirements, Epics and user stories below them.
+
+BP11 covers what a Consumer and a Provider do with a usage contract once they have agreed it: they consult it, follow up on its terms, and suspend, revoke or terminate it when needed.
+
+The [BP11 page](../README.md) says more about it.
+
 ## Where it fits
 
 | | |

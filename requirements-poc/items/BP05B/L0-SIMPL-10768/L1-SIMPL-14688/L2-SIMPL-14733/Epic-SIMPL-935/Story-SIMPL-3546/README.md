@@ -12,7 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-As an authorised Provider using the resource-description API, I want to submit an access policy with one or more required identity attributes, so that a Consumer must have all the attributes I selected to access my resource.
+**As an** authorised Provider using the resource-description API,\
+**I want to** submit an access policy with one or more required identity attributes,\
+**So that** a Consumer must have all the attributes I selected to access my resource.
 
 #### Acceptance criteria
 
@@ -101,11 +103,11 @@ The submission API preserves and validates the requirement. The connector decide
 
 #### Supporting documentation
 
-- [R08 ODRL template technical description|an internal page]
-- [R08 policy assignment and validation requirements|an internal page]
+- R08 ODRL template technical description (internal page)
+- R08 policy assignment and validation requirements (internal page)
 - Shared policy-template API definition, SIMPL-31345 (internal page)
 - Policy validation response contract, SIMPL-31639 (internal page)
-- [an internal page]
+- (internal page)
 
 ## Where it fits
 

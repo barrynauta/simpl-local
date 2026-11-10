@@ -10,63 +10,63 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-**As a** Provider\
-**I want to** trigger the update of the resource consent assertion related to a selected resource description via UI\
-**So that** I can ensure that the access to the resource is aligned the resource consent status.
+**As a** Provider\
+**I want to** trigger the update of the resource consent assertion related to a selected resource description via UI\
+**So that** I can ensure that the access to the resource is aligned the resource consent status.
 
 **Acceptance criteria**
 
 **AC1 - Select a resource from the catalogue for which I possibly want to update the resource consent status**
 
-**Given** I am authenticated as a Provider user\
-**and** I have a role authorising the management of resource descriptions and consent\
-**and** one of my own resource descriptions has a linked resource consent assertion\
-**When** I retrieve the details of this resource description from the catalogue\
-**Then** the resource consent status is displayed\
-**And** a button to update the resource consent status is available
+1. **Given** I am authenticated as a Provider user\
+   **And** I have a role authorising the management of resource descriptions and consent\
+   **And** one of my own resource descriptions has a linked resource consent assertion\
+   **When** I retrieve the details of this resource description from the catalogue\
+   **Then** the resource consent status is displayed\
+   **And** a button to update the resource consent status is available
 
 **AC2 - I decide to update the resource consent status**
 
-**Given** I am authenticated as a Provider user\
-**and** I have a role authorising the management of resource descriptions and consent\
-**and** a resource description along with a resource consent status is displayed\
-**When** I choose to update the resource consent status\
-**Then** I am redirected to the consent manager to perform the change
+2. **Given** I am authenticated as a Provider user\
+   **And** I have a role authorising the management of resource descriptions and consent\
+   **And** a resource description along with a resource consent status is displayed\
+   **When** I choose to update the resource consent status\
+   **Then** I am redirected to the consent manager to perform the change
 
 **AC3 - Observe the result of the consent change in the catalogue**
 
-**Given** I am authenticated as a Provider\
-**and** I have a role authorising the management of resource descriptions and consent\
-**When** I have updated the status of a resource consent assertion\
-**Then** I am redirected to the catalogue\
-**and** the resource descriptions affected by the resource consent assertion are shown
+3. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions and consent\
+   **When** I have updated the status of a resource consent assertion\
+   **Then** I am redirected to the catalogue\
+   **And** the resource descriptions affected by the resource consent assertion are shown
 
 **AC4 - Select a resource from the catalogue for which I want to update the resource consent status (Negative scenario: Resource consent not defined)**
 
-**Given** I am authenticated as a Provider user\
-**and** I have a role authorising the management of resource descriptions and consent\
-**and** a selected resource for which resource consent is not defined\
-**When** I retrieve the details of this resource description from the catalogue\
-**Then** the resource consent status is not displayed\
-**And** a button to update the resource consent status is not shown
+4. **Given** I am authenticated as a Provider user\
+   **And** I have a role authorising the management of resource descriptions and consent\
+   **And** a selected resource for which resource consent is not defined\
+   **When** I retrieve the details of this resource description from the catalogue\
+   **Then** the resource consent status is not displayed\
+   **And** a button to update the resource consent status is not shown
 
 **AC5 -** **I decide to update the resource consent status** **(Negative scenario: Consent manager not available)**
 
-**Given** I am authenticated as a Provider user\
-**and** I have a role authorising the management of resource descriptions and consent\
-**and** a resource description along with a resource consent status is displayed\
-**and** the consent manager is currently not available\
-**When** I choose to update the resource consent status\
-**Then** I receive an error message that shows that the consent manager is not available
+5. **Given** I am authenticated as a Provider user\
+   **And** I have a role authorising the management of resource descriptions and consent\
+   **And** a resource description along with a resource consent status is displayed\
+   **And** the consent manager is currently not available\
+   **When** I choose to update the resource consent status\
+   **Then** I receive an error message that shows that the consent manager is not available
 
 **AC6 - Observe the result of the consent change in the catalogue (Negative scenario: Catalogue not available)**
 
-**Given** I am authenticated as a Provider\
-**and** I have a role authorising the management of resource descriptions and consent\
-**and** the catalogue is not available\
-**When** I have updated the status of a resource consent assertion\
-**Then** I am redirected to the catalogue\
-**And** I receive an error message that shows that the catalogue is not available
+6. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions and consent\
+   **And** the catalogue is not available\
+   **When** I have updated the status of a resource consent assertion\
+   **Then** I am redirected to the catalogue\
+   **And** I receive an error message that shows that the catalogue is not available
 
 ## Where it fits
 

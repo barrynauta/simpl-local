@@ -12,17 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**
-
-Dataspace participant (including the Dataspace Governance Authority)
-
-**I want to**
-
-via an API, access the list of available identity attributes
-
-**So that**
-
-I use and manage them during dataspace lifecycle
+**As a** Dataspace participant (including the Dataspace Governance Authority)\
+**I want to** via an API, access the list of available identity attributes\
+**So that** I use and manage them during dataspace lifecycle
 
 **FULL US ID:** ITADM-FUNC-001-FUNC-005/US_1184
 

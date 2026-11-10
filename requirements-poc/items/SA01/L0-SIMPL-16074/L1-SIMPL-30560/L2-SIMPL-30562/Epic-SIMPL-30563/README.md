@@ -10,23 +10,19 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-**As a** Participant
-
-**I want to** execute my workflows using the configured distribution model and execution cluster\
-**so that** execution remains regular, predictable, and aligned with the selected processing strategy.
+**As a** Participant\
+**I want to** execute my workflows using the configured distribution model and execution cluster\
+**So that** execution remains regular, predictable, and aligned with the selected processing strategy.
 
 **Acceptance Criteria**
 
-**Given** a workflow configured with a distribution model and execution cluster\
-**When** the workflow starts\
-**Then** Simpl-Open automatically loads the workflow’s saved distribution model and execution cluster
-
-**And** validates the connectivity and authorisation for that cluster\
-**And** dispatches execution only if validation succeeds.
-
-**And** a workflow run is created using the resolved distribution model and the validated execution cluster from the saved workflow configuration.
-
-**And** workflow run metadata is logged, including the distribution model and execution cluster used for dispatch.
+1. **Given** a workflow configured with a distribution model and execution cluster\
+   **When** the workflow starts\
+   **Then** Simpl-Open automatically loads the workflow’s saved distribution model and execution cluster\
+   **And** validates the connectivity and authorisation for that cluster\
+   **And** dispatches execution only if validation succeeds.\
+   **And** a workflow run is created using the resolved distribution model and the validated execution cluster from the saved workflow configuration.\
+   **And** workflow run metadata is logged, including the distribution model and execution cluster used for dispatch.
 
 ## Where it fits
 

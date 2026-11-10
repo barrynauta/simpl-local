@@ -10,21 +10,16 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As a**\
-dataspace agent
-
-**I want to**\
-retrieve my participant information from the Dataspace Governance Authority
-
-**So that**\
-I can review my participant details
+**As a** dataspace agent\
+**I want to** retrieve my participant information from the Dataspace Governance Authority\
+**So that** I can review my participant details
 
 **Acceptance Criteria:**
 
-1. **GIVEN** the caller is a participant agent authenticated over mTLS with a valid Tier-2 credential\
-   **WHEN** it sends a GET /participant request to the Dataspace Governance Agent\
-   **THEN** the API returns HTTP 200 OK\
-   **AND** the response body is a JSON object containing at least:\
+1. **Given** the caller is a participant agent authenticated over mTLS with a valid Tier-2 credential\
+   **When** it sends a GET /participant request to the Dataspace Governance Agent\
+   **Then** the API returns HTTP 200 OK\
+   **And** the response body is a JSON object containing at least:\
    *id:* the participant UUID\
    *organization:* the participant's organization name\
    *creationTimestamp:* ISO 8601 timestamp of participant creation\

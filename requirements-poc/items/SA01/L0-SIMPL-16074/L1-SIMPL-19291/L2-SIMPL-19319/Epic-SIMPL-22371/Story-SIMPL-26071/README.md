@@ -48,19 +48,15 @@ This ensures that every Processing Workflow template is initialized with a valid
 
 ###### **AC1 Default configuration is displayed**
 
-**Given** the Participant Provider selects a template of type *ProcessingWorkflow*
-
-**When** default configuration associated with that template is retrieved
-
-**Then** the configuration is shown to the Participant Provider in a clear and readable form.
+1. **Given** the Participant Provider selects a template of type *ProcessingWorkflow*\
+   **When** default configuration associated with that template is retrieved\
+   **Then** the configuration is shown to the Participant Provider in a clear and readable form.
 
 ###### **AC2 Configuration not available**
 
-**Given** the Participant Provider selects a template of type *ProcessingWorkflow*
-
-**When** default configuration associated with that template cannot be retrieved
-
-**Then** the Participant Provider is informed that the configuration cannot be displayed.
+2. **Given** the Participant Provider selects a template of type *ProcessingWorkflow*\
+   **When** default configuration associated with that template cannot be retrieved\
+   **Then** the Participant Provider is informed that the configuration cannot be displayed.
 
 ## Where it fits
 

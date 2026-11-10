@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As A dataspace participant agent , I want via an API, enforce the request with authentication details, so that the target agent can verify and accept the incoming request.
+**As a** dataspace participant agent ,\
+**I want** via an API, enforce the request with authentication details,\
+**So that** the target agent can verify and accept the incoming request.
 
 ## Where it fits
 

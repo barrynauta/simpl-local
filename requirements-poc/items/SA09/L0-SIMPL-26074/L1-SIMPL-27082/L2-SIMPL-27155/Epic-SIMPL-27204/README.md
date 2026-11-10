@@ -10,25 +10,17 @@ Folder: [items](../../../../../README.md) / [SA09](../../../../README.md) / [L0-
 
 ## Text
 
-**As a**
-
-Data Provider
-
-**I want to**
-
-create a contract consent assertion providing its name, description, metadata, and the Consumer party bound by that contract
-
-**So that**
-
-the assertion can be linked to a specific contract and its status can be used to enforce access control decisions exclusively for the bound Consumer
+**As a** Data Provider\
+**I want to** create a contract consent assertion providing its name, description, metadata, and the Consumer party bound by that contract\
+**So that** the assertion can be linked to a specific contract and its status can be used to enforce access control decisions exclusively for the bound Consumer
 
 **Acceptance Criteria:**
 
-1. **GIVEN** I am a Data Provider, wanting to create contract consent assertion during contract establishment\
-   **WHEN** I create a consent assertion of type CONTRACT\
-   **AND** specify the Consumer party bound by the contract\
-   **THEN** the assertion is saved with the provided attributes, metadata, and party information\
-   **AND** its status is set to ACTIVE
+1. **Given** I am a Data Provider, wanting to create contract consent assertion during contract establishment\
+   **When** I create a consent assertion of type CONTRACT\
+   **And** specify the Consumer party bound by the contract\
+   **Then** the assertion is saved with the provided attributes, metadata, and party information\
+   **And** its status is set to ACTIVE
 
 ## Where it fits
 

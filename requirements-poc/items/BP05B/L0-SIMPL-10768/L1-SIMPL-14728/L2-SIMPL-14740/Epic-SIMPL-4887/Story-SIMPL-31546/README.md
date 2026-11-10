@@ -12,7 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-As a Provider authorised to manage resource descriptions, I want to remove an access policy while preparing a new resource-description version, so that the new version contains only the policies I choose to keep.
+**As a** Provider authorised to manage resource descriptions,\
+**I want to** remove an access policy while preparing a new resource-description version,\
+**So that** the new version contains only the policies I choose to keep.
 
 #### Acceptance criteria
 
@@ -70,11 +72,11 @@ As a Provider authorised to manage resource descriptions, I want to remove an ac
 
 #### Additional notes
 
-- [an internal page]
-- [an internal page]
+- (internal page)
+- (internal page)
 
 - Shared policy-template API definition, SIMPL-31345 (internal page)
-- [R08 technical description|an internal page]
+- R08 technical description (internal page)
 
 ## Where it fits
 

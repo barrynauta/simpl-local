@@ -10,21 +10,16 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-**As a** Participant
-
-**I want to** use only clusters I am authorized to access
-
-**so that** I can avoid invalid targets and comply with access rules.
+**As a** Participant\
+**I want to** use only clusters I am authorized to access\
+**So that** I can avoid invalid targets and comply with access rules.
 
 **Acceptance Criteria**
 
-**Given** a workflow is configured with a target cluster
-
-**When** the workflow run starts
-
-**Then** Simpl-Open validates that the participant is authorized to use the target cluster
-
-**And** only dispatches the workflow if authorization and connectivity checks succeed.
+1. **Given** a workflow is configured with a target cluster\
+   **When** the workflow run starts\
+   **Then** Simpl-Open validates that the participant is authorized to use the target cluster\
+   **And** only dispatches the workflow if authorization and connectivity checks succeed.
 
 ## Where it fits
 

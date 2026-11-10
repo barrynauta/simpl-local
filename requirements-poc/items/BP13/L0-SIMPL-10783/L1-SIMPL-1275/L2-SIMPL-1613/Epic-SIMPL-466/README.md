@@ -10,17 +10,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-**As A**
-
-dataspace participant
-
-**I want to**
-
-have a monitoring service that detects any change in the returned generated ephemeral proof during any mTLS communication
-
-**So that**
-
-a synchronization process for changed identity attributes starts
+**As a** dataspace participant\
+**I want to** have a monitoring service that detects any change in the returned generated ephemeral proof during any mTLS communication\
+**So that** a synchronization process for changed identity attributes starts
 
 FULL US ID: ITADM-FUNC-001-FUNC-006/US_1191
 

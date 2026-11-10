@@ -12,23 +12,26 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **As a** provider,\
 **I want to** validate a resource source address submitted as part of the resource description,\
-**so that** I can ensure the resource source address is valid before completing the submission process.
+**So that** I can ensure the resource source address is valid before completing the submission process.
 
 **Acceptance Criteria:**
 
-- **AC1 - Successful Validation**\
-   **Given** I am a provider filling in a resource source address based on a resource source template\
-   **And** all fields are valid with respect to the template (correct types, formats, and values),\
-   **When**   I submit the resource source address\
-   **Then** the submitted resource source address is successfully validated against resource source template,\
-   **And** a success message is shown, and the resource source address is stored.
-- **AC2 - Failed Validation**\
-   **Given** I am a provider filling in a resource source address based on a resource source template\
+- **AC1 - Successful Validation**
+
+1. **Given** I am a provider filling in a resource source address based on a resource source template\
+   **And** all fields are valid with respect to the template (correct types, formats, and values),\
+   **When** I submit the resource source address\
+   **Then** the submitted resource source address is successfully validated against resource source template,\
+   **And** a success message is shown, and the resource source address is stored.
+
+   - AC2 - Failed Validation
+
+2. **Given** I am a provider filling in a resource source address based on a resource source template\
    **And** some provided input is not valid for the selected template\
-   **When**  I submit the resource source address\
-   **Then** validation against the selected template fails\
-   **And** the validation errors are displayed\
-   **And** the submission is blocked until all validation issues are resolved.
+   **When** I submit the resource source address\
+   **Then** validation against the selected template fails\
+   **And** the validation errors are displayed\
+   **And** the submission is blocked until all validation issues are resolved.
 
 **Link to Figma mockup:**
 
@@ -36,7 +39,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 **Internal page (including conceptual Data Model):**
 
-[an internal page]
+(internal page)
 
 ## Where it fits
 

@@ -14,26 +14,19 @@ This Epic makes the onboarding request ask the Applicant for a contact email of 
 
 ## Text
 
-**As an**
-
-Applicant
-
-**I want to**
-
-provide a dedicated contact email for the participant, separate from my own email address, as part of the onboarding request
-
-**so that**
-
-the participant has a persistent point of contact that remains available to other participants in the dataspace regardless of what happens to my own account.
+**As an** Applicant\
+**I want to** provide a dedicated contact email for the participant, separate from my own email address, as part of the onboarding request\
+**So that** the participant has a persistent point of contact that remains available to other participants in the dataspace regardless of what happens to my own account.
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am an Applicant, completing an onboarding request\
-   **WHEN** I submit the onboarding request\
-   **THEN** I am required to provide a contact email address for the participant
-1. **GIVEN** an onboarding request containing a participant contact email is approved\
-   **WHEN** the participant profile is created\
-   **THEN** the contact email is associated with the participant profile
+1. **Given** I am an Applicant, completing an onboarding request\
+   **When** I submit the onboarding request\
+   **Then** I am required to provide a contact email address for the participant
+
+2. **Given** an onboarding request containing a participant contact email is approved\
+   **When** the participant profile is created\
+   **Then** the contact email is associated with the participant profile
 
 ## Where it fits
 

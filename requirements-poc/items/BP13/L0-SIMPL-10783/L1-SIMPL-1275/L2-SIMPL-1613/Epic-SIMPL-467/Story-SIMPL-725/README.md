@@ -10,23 +10,17 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As A**
-
-Dataspace participant agent, after saving the Identity Attribute ([Identity Attribute|an internal page]) local copy
-
-**I want to**
-
-Update the status of assignments between Identity Attributes and local roles in the following way: each Identity Attribute present in the saved local copy will enable any existing assignments. The remaining assignments with Identity Attributes not present in the local copy will be disabled.
-
-**So that**
-
-the assignments between local roles and participant identity attributes remain in sync.
+**As a** Dataspace participant agent, after saving the Identity Attribute (Identity Attribute (internal page)) local copy\
+**I want to** Update the status of assignments between Identity Attributes and local roles in the following way: each Identity Attribute present in the saved local copy will enable any existing assignments. The remaining assignments with Identity Attributes not present in the local copy will be disabled.\
+**So that** the assignments between local roles and participant identity attributes remain in sync.
 
 **Acceptance Criteria:**
 
-- **Given that I am a Dataspace participant agent, when I save the Identity Attribute** **local copy, then I can update the status of assignments between attributes and local roles.**
-- **Given that I am a Dataspace participant agent, when an identity attribute is present in the saved local copy, then the corresponding assignment is enabled.**
-- Given that I am a Dataspace participant agent, when an identity attribute is not present in the saved local copy, then the corresponding assignment is disabled.{}
+1. **Given** that I am a Dataspace participant agent, **when** I save the Identity Attribute local copy, **then** I can update the status of assignments between attributes and local roles.
+
+2. **Given** that I am a Dataspace participant agent, **when** an identity attribute is present in the saved local copy, **then** the corresponding assignment is enabled.
+
+3. **Given** that I am a Dataspace participant agent, **when** an identity attribute is not present in the saved local copy, **then** the corresponding assignment is disabled.{}
 
 ## Where it fits
 

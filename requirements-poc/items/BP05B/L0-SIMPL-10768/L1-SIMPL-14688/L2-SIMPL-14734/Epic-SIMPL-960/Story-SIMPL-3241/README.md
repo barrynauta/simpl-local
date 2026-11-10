@@ -10,9 +10,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-As a Provider User\
-I want to use an API to assign the previously formulated machine-readable usage policies to the self-description and thus to the dataset/application/infrastructure\
-so that the usage to the dataset/application/infrastructure can be evaluated and enforced as defined in the policy.
+**As a** Provider User\
+**I want to** use an API to assign the previously formulated machine-readable usage policies to the self-description and thus to the dataset/application/infrastructure\
+**So that** the usage to the dataset/application/infrastructure can be evaluated and enforced as defined in the policy.
 
 +**Technical Description**+
 
@@ -20,7 +20,7 @@ The API must retrieve the parameters for the usage policies, create a valid ODRL
 
 Definition of the policies is described as follows:
 
-[an internal page]
+(internal page)
 
 Should written in the form of ODRL Policies
 
@@ -30,7 +30,7 @@ can be embedded in the JSON-LD document of the self-description.
 
 Example can be found here:
 
-[an internal page]
+(internal page)
 
 ```
 {

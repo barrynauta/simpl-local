@@ -10,24 +10,16 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role
-
-**I want to**
-
-via API, manage the list of eIDAS validation rules for each onboarding procedure template
-
-**So** **that**
-
-I can automate the evaluation of eIDAS attributes during the onboarding of a participant, and support the users with NOTARY role during the approval or rejection process of onboarding requests
+**As a** dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role\
+**I want to** via API, manage the list of eIDAS validation rules for each onboarding procedure template\
+**So that** I can automate the evaluation of eIDAS attributes during the onboarding of a participant, and support the users with NOTARY role during the approval or rejection process of onboarding requests
 
 Acceptance Criteria{}
 
-1. **GIVEN** that I am a Dataspace Governance Authority user with the T2IAA_M role wanting to create an eIDAS rule\
-   **AND** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
-   **WHEN** I call POST /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules with ruleType EIDAS\
-   **AND** the request body contains (new rule parameters linked only to eIDAS rules are underlined):\
+1. **Given** that I am a Dataspace Governance Authority user with the T2IAA_M role wanting to create an eIDAS rule\
+   **And** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
+   **When** I call POST /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules with ruleType EIDAS\
+   **And** the request body contains (new rule parameters linked only to eIDAS rules are underlined):\
    +personType (required, either NATURAL_PERSON or LEGAL_PERSON)+\
    +eIDASAttribute (required, code of the eIDAS attribute)+\
    +condition (required, either IS_PRESENT or CONTAINS)+\
@@ -41,36 +33,42 @@ Acceptance Criteria{}
    required (required, boolean indicating if the rule evaluation must complete with SUCCESS to be submitted for manual or auto approval)\
    forApproval (required, boolean indicating that if the rule evaluation completes with SUCCESS, the onboarding request is automatically approved)\
    active(boolean indicating if the rule is active)\
-   **THEN** I receive a 201 Created response\
-   **AND** the response body contains the details of the created rule\
-   **AND** the rule is added to the template
-1. **GIVEN** that I am a Dataspace Governance Authority user with the T2IAA_M role wanting to update an eIDAS rule\
-   **WHEN** I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId}\
-   **AND** the rule with the given id (validationRuleId) exists with type eIDAS\
-   **AND** the request body contains valid eIDAS rule parameters (see AC1)\
-   **AND** the rule type in the request body is eIDAS\
-   **THEN** I want to receive a 200 OK response, and the rule is updated
-1. **GIVEN** that I am a Dataspace Governance Authority user with the T2IAA_M role wanting to update an eIDAS rule\
-   **WHEN** I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId}\
-   **AND** the request contains valid eIDAS rule parameters (see AC1)\
-   **AND** the rule with the given id (validationRuleId) exists with type eIDAS\
-   **AND** the request body contains a rule type different from eIDAS\
-   **THEN** I receive a 400 Bad Request\
-   **AND** the error contains the message "The rule type cannot be modified"
-1. **GIVEN** that I am a dataspace governance user WITHOUT the T2IAA_M role,\
-   **WHEN** I call any of the GET, POST, PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules APIs\
-   **THEN** I receive a 403 Forbidden error
-1. **GIVEN** that I am not authenticated\
-   **WHEN** I call any of the GET, POST, PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules* APIs\
-   **THEN** I receive a 401 Unauthorized
-1. **GIVEN** that I am a Dataspace Governance Authority user with the T2IAA_M role wanting to create an eIDAS rule\
-   **AND** eIDAS login is disabled in the deployment configurations of the onboarding backend component ^(1)^\
-   **WHEN** I call POST /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules with ruleType EIDAS\
-   **THEN** I receive a 403 Forbidden response with the message "eIDAS Login feature disabled"
-1. **GIVEN** that I am an IT system administrator, responsible for installing the onboarding backend component ^(1)^\
-   **WHEN** I read the deployment documentation of the component\
-   **THEN** I see the property to use to enable or disable the eIDAS login feature\
-   **AND** I see that by default the feature is disabled
+   **Then** I receive a 201 Created response\
+   **And** the response body contains the details of the created rule\
+   **And** the rule is added to the template
+
+2. **Given** that I am a Dataspace Governance Authority user with the T2IAA_M role wanting to update an eIDAS rule\
+   **When** I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId}\
+   **And** the rule with the given id (validationRuleId) exists with type eIDAS\
+   **And** the request body contains valid eIDAS rule parameters (see AC1)\
+   **And** the rule type in the request body is eIDAS\
+   **Then** I want to receive a 200 OK response, and the rule is updated
+
+3. **Given** that I am a Dataspace Governance Authority user with the T2IAA_M role wanting to update an eIDAS rule\
+   **When** I PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId}\
+   **And** the request contains valid eIDAS rule parameters (see AC1)\
+   **And** the rule with the given id (validationRuleId) exists with type eIDAS\
+   **And** the request body contains a rule type different from eIDAS\
+   **Then** I receive a 400 Bad Request\
+   **And** the error contains the message "The rule type cannot be modified"
+
+4. **Given** that I am a dataspace governance user WITHOUT the T2IAA_M role,\
+   **When** I call any of the GET, POST, PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules APIs\
+   **Then** I receive a 403 Forbidden error
+
+5. **Given** that I am not authenticated\
+   **When** I call any of the GET, POST, PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules APIs\
+   **Then** I receive a 401 Unauthorized
+
+6. **Given** that I am a Dataspace Governance Authority user with the T2IAA_M role wanting to create an eIDAS rule\
+   **And** eIDAS login is disabled in the deployment configurations of the onboarding backend component ^(1)^\
+   **When** I call POST /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules with ruleType EIDAS\
+   **Then** I receive a 403 Forbidden response with the message "eIDAS Login feature disabled"
+
+7. **Given** that I am an IT system administrator, responsible for installing the onboarding backend component ^(1)^\
+   **When** I read the deployment documentation of the component\
+   **Then** I see the property to use to enable or disable the eIDAS login feature\
+   **And** I see that by default the feature is disabled
 
 *(1) By default, this feature is disabled on the component, and should be enabled at deployment time by the IT Administrators installing the component into the agent (see the last AC).*
 

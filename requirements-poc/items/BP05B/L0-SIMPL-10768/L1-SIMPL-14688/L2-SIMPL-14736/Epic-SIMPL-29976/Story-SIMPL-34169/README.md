@@ -13,7 +13,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 ###### User Story
 
 **As a** Provider\
-**I want** to add an Intended Purpose Contract Clause to a Resource Description\
+**I want to** add an Intended Purpose Contract Clause to a Resource Description\
 **So that** Consumers explicitly agree to use the data resource only for its intended purpose.
 
 ###### Description
@@ -30,22 +30,22 @@ The **Intended Purpose Contract Clause** is optionally available within the **Co
 
 ###### AC1 - Enable Intended Purpose Contract Clause
 
-**Given** I am authenticated as a Provider\
-**And** I have permissions to manage Resource Descriptions\
-**And** I am creating or editing a Resource Description\
-**And** a Resource Consent Access Policy has been configured in the Service Policy section\
-**When** I access the Contract Clauses step of the wizard\
-**Then** the Intended Purpose Contract Clause option is available for configuration\
-**And** the Provider may optionally upload a document associated with the Intended Purpose Contract Clause
+1. **Given** I am authenticated as a Provider\
+   **And** I have permissions to manage Resource Descriptions\
+   **And** I am creating or editing a Resource Description\
+   **And** a Resource Consent Access Policy has been configured in the Service Policy section\
+   **When** I access the Contract Clauses step of the wizard\
+   **Then** the Intended Purpose Contract Clause option is available for configuration\
+   **And** the Provider may optionally upload a document associated with the Intended Purpose Contract Clause
 
 ###### AC2 - Upload Intended Purpose Contract Clause Document
 
-**Given** a Resource Consent Access Policy has been configured\
-**And** I am in the Contract Clauses step of the wizard\
-**When** I upload a document for the Intended Purpose Contract Clause\
-**Then** the document is validated and stored inside provider storage\
-**And** an Intended Purpose Contract Clause is associated with the Resource Description\
-**And** the uploaded document is linked to the created Contract Clause
+2. **Given** a Resource Consent Access Policy has been configured\
+   **And** I am in the Contract Clauses step of the wizard\
+   **When** I upload a document for the Intended Purpose Contract Clause\
+   **Then** the document is validated and stored inside provider storage\
+   **And** an Intended Purpose Contract Clause is associated with the Resource Description\
+   **And** the uploaded document is linked to the created Contract Clause
 
 ## Where it fits
 

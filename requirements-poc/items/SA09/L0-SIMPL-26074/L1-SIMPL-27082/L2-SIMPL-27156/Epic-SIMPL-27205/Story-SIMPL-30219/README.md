@@ -10,29 +10,22 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 
 ## Text
 
-**As a**
-
-Simpl-Open End User responsible with the Consent Manager (CONSENT_M) role, responsible for managing consent assertions
-
-**I want to**
-
-via UI, view the creation and update date of consent assertions in the list
-
-**so that**
-
-I can quickly identify the most recently created or modified assertions and keep an accurate overview of consent activity
+**As a** Simpl-Open End User responsible with the Consent Manager (CONSENT_M) role, responsible for managing consent assertions\
+**I want to** via UI, view the creation and update date of consent assertions in the list\
+**So that** I can quickly identify the most recently created or modified assertions and keep an accurate overview of consent activity
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am logged in with the CONSENT_M role\
-   **AND** consent assertions have been created in the past\
-   **WHEN** I open the page to list consent assertions\
-   **THEN** the page displays a paginated table with these additional column headers Creation Timestamp and Last Update Timestamp\
-   **AND** the columns shows the date and time of the creation or update of the assertion
-1. **GIVEN** I am an authenticated user with CONSENT_M role\
-   **WHEN** I open the page to list consent assertions\
-   **AND** I specify the sort criterion (Creation Date, Last Update Timestamp)\
-   **THEN** the system sorts the consent assertions table to display items reflecting the sorting criterion (both ascending and descending).
+1. **Given** that I am logged in with the CONSENT_M role\
+   **And** consent assertions have been created in the past\
+   **When** I open the page to list consent assertions\
+   **Then** the page displays a paginated table with these additional column headers Creation Timestamp and Last Update Timestamp\
+   **And** the columns shows the date and time of the creation or update of the assertion
+
+2. **Given** I am an authenticated user with CONSENT_M role\
+   **When** I open the page to list consent assertions\
+   **And** I specify the sort criterion (Creation Date, Last Update Timestamp)\
+   **Then** the system sorts the consent assertions table to display items reflecting the sorting criterion (both ascending and descending).
 
 ## Where it fits
 

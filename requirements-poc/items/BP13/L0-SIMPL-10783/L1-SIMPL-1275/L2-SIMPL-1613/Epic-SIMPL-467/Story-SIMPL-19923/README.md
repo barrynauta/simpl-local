@@ -11,35 +11,31 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 ## Text
 
 *The endpoint covered with this user story has been managed with API Definition Task SIMPL-20533*\
-----\
-**As a**
+----
 
-authenticated user with one one of the
-
-**I want to**
-
-via an API, update my local copy of identity attributes
-
-**So that**
-
-I can manage my participant's agent with up-to-date identity attributes provided by the Governance Authority.
+**As a** authenticated user with one one of the\
+**I want to** via an API, update my local copy of identity attributes\
+**So that** I can manage my participant's agent with up-to-date identity attributes provided by the Governance Authority.
 
 **Acceptance Criteria:**
 
-1. **GIVEN** I am an authenticated user with T1UAR_M role\
-   **WHEN** I send a POST /tier1/v2/identityAttributes/synchronize\
-   **THEN** the local copy of identity attributes is updated by retrieving the list from the Governance Authority\
-   **AND** I receive a 204 No Content response
-1. **GIVEN** I am an authenticated user with T1UAR_M role\
-   **WHEN** I send a POST /tier1/v2/identityAttributes/synchronize\
-   **AND** the request is invalid\
-   **THEN** I receive a 400 Bad Request
-1. **GIVEN** I am an unauthenticated user\
-   **WHEN** I send a POST /tier1/v2/identityAttributes/synchronize\
-   **THEN** I receive a 401 Unauthorized response
-1. **GIVEN** I am an authenticated without T1UAR_M role\
-   **WHEN** I send a POST /tier1/v2/identityAttributes/synchronize\
-   **THEN** I receive a 403 Forbidden response
+1. **Given** I am an authenticated user with T1UAR_M role\
+   **When** I send a POST /tier1/v2/identityAttributes/synchronize\
+   **Then** the local copy of identity attributes is updated by retrieving the list from the Governance Authority\
+   **And** I receive a 204 No Content response
+
+2. **Given** I am an authenticated user with T1UAR_M role\
+   **When** I send a POST /tier1/v2/identityAttributes/synchronize\
+   **And** the request is invalid\
+   **Then** I receive a 400 Bad Request
+
+3. **Given** I am an unauthenticated user\
+   **When** I send a POST /tier1/v2/identityAttributes/synchronize\
+   **Then** I receive a 401 Unauthorized response
+
+4. **Given** I am an authenticated without T1UAR_M role\
+   **When** I send a POST /tier1/v2/identityAttributes/synchronize\
+   **Then** I receive a 403 Forbidden response
 
 ## Where it fits
 

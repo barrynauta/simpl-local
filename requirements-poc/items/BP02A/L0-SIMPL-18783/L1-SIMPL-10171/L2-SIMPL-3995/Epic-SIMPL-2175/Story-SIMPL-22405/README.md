@@ -15,102 +15,110 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 *This user story extends the existing onboarding update API previously exposed as PATCH /onboardingRequests/{onboardingRequestId}/expirationTimeframe. The API is now consolidated into PATCH /onboardingRequests/{onboardingRequestId} to support partial updates of additional onboarding request data, specifically the association of a credentialId.*\
 *The new endpoint enables updating the expiration timeframe and the bound credential independently or together, while preserving backward compatibility and allowing a smooth deprecation of the previous endpoint without disrupting ongoing onboarding processes.*
 
-**As a**\
-Dataspace Governance Authority user with the Tier2 authorisation operator (NOTARY) or as a user responsible for onboarding a dataspace participant
-
-**I want to**\
-via an API, update the expirationTimeframe and the credentialId stored on an onboarding request
-
-**So that**\
-I can store and update the onboarding requests data
+**As a** Dataspace Governance Authority user with the Tier2 authorisation operator (NOTARY) or as a user responsible for onboarding a dataspace participant\
+**I want to** via an API, update the expirationTimeframe and the credentialId stored on an onboarding request\
+**So that** I can store and update the onboarding requests data
 
 **Acceptance Criteria**
 
-1. **GIVEN** I am an authenticated user with the role NOTARY\
-   **AND** an onboarding request with the specified onboardingRequestId exists\
-   **AND** the request contains a JSON body at least one of the fields\
+1. **Given** I am an authenticated user with the role NOTARY\
+   **And** an onboarding request with the specified onboardingRequestId exists\
+   **And** the request contains a JSON body at least one of the fields\
    *expirationTimeframe* (positive integer number, min 0, max 1000) time frame for automatic rejection of the onboarding request\
    *expirationTimeframeTimeUnit* (enum with possible values equal to HOUR, DAY and YEAR) timeframe unit of measure\
    *credentialId* (Base58BTC of the SHA-384 of the certificate) the unique identifier of the credential bound to the onboarding request\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 200 OK\
-   **AND** the response body contains the full onboarding request representation\
-   **AND** the expirationTimeframe, expirationTimeframeTimeUnit or credentialId fields are updated with the values provided in the request body\
-   **AND** any field not provided in the request body remains unchanged
-1. **GIVEN** I am an authenticated user with the role APPLICANT\
-   **AND** an onboarding request with the specified onboardingRequestId exists\
-   **AND** the onboarding request is created by me\
-   **AND** the request contains a JSON body with the field\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 200 OK\
+   **And** the response body contains the full onboarding request representation\
+   **And** the expirationTimeframe, expirationTimeframeTimeUnit or credentialId fields are updated with the values provided in the request body\
+   **And** any field not provided in the request body remains unchanged
+
+2. **Given** I am an authenticated user with the role APPLICANT\
+   **And** an onboarding request with the specified onboardingRequestId exists\
+   **And** the onboarding request is created by me\
+   **And** the request contains a JSON body with the field\
    *credentialId* (Base58BTC of the SHA-384 of the certificate) the unique identifier of the credential to bound to the onboarding request\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 200 OK\
-   **AND** the response body contains the full onboarding request representation\
-   **AND** the credentialId field is updated with the value provided in the request body
-1. **GIVEN** I am an authenticated user with the role NOTARY\
-   **AND** an onboarding request with the specified onboardingRequestId exists\
-   **AND** the request contains a JSON body with invalid expirationTimeframe (e.g. negative number, string values), expirationTimeframeTimeUnit (e.g. value not in the possible enumeration values), or credentialId (e.g. string not representing a valid Base58BTC)\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 400 Bad Request\
-   **AND** the system doesn't change the data stored in the onboarding request
-1. **GIVEN** I am an authenticated user with the role NOTARY\
-   **AND** an onboarding request with the specified onboardingRequestId exists\
-   **AND** the request contains a JSON body that does not contain any of the supported fields (expirationTimeframe, expirationTimeframeTimeUnit, credentialId)\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 400 Bad Request\
-   **AND** the system doesn't change the data stored in the onboarding request
-1. **GIVEN** I am an authenticated user with the role NOTARY\
-   **AND** the specified onboardingRequestId is not a valid UUID\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 400 Bad Request\
-   **AND** the system doesn't change the data stored in the onboarding request
-1. **GIVEN** I am an authenticated user with the role APPLICANT\
-   **AND** an onboarding request with the specified onboardingRequestId exists\
-   **AND** the onboarding request is created by me\
-   **AND** the request contains a JSON body with an invalid credentialId (e.g. string not representing a valid Base58BTC)\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 400 Bad Request\
-   **AND** the system doesn't change the data stored in the onboarding request
-1. **GIVEN** I am an authenticated user with the role APPLICANT\
-   **AND** an onboarding request with the specified onboardingRequestId exists\
-   **AND** the onboarding request is created by me\
-   **AND** the request contains a JSON body at least one of the fields expirationTimeframe or expirationTimeframeTimeUnit\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 400 Bad Request\
-   **AND** the system doesn't change the data stored in the onboarding request
-1. **GIVEN** I am an authenticated user with the role APPLICANT\
-   **AND** an onboarding request with the specified onboardingRequestId exists\
-   **AND** the onboarding request is created by me\
-   **AND** the request contains a JSON body that does not contain any of the supported fields (credentialId)\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 400 Bad Request\
-   **AND** the system doesn't change the data stored in the onboarding request
-1. **GIVEN** I am an authenticated user with the role APPLICANT\
-   **AND** the specified onboardingRequestId is not a valid UUID\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 400 Bad Request\
-   **AND** the system doesn't change the data stored in the onboarding request
-1. **GIVEN** I am an authenticated user with the role APPLICANT\
-   **AND** an onboarding request with the specified onboardingRequestId exists\
-   **AND** the onboarding request is not created by me\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 400 Bad Request\
-   **AND** the system doesn't change the data stored in the onboarding request
-1. **GIVEN** I am an authenticated user with the role APPLICANT\
-   **AND** the specified onboardingRequestId is a valid UUID\
-   **AND** no onboarding request exists with that identifier\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 400 Bad Request *(note to the testers this prevents enumeration from APPLICANTs of the existing onboarding requests)*
-1. **GIVEN** I am an authenticated user with the role NOTARY\
-   **AND** the specified onboardingRequestId is a valid UUID\
-   **AND** no onboarding request exists with that identifier\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 404 Not Found
-1. **GIVEN** that I am not authenticated\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 401 Unauthorised
-1. **GIVEN** I am an authenticated user without the NOTARY or APPLICANT role\
-   **WHEN** I send PATCH /onboardingRequests/{onboardingRequestId}\
-   **THEN** the API returns 403 Forbidden
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 200 OK\
+   **And** the response body contains the full onboarding request representation\
+   **And** the credentialId field is updated with the value provided in the request body
+
+3. **Given** I am an authenticated user with the role NOTARY\
+   **And** an onboarding request with the specified onboardingRequestId exists\
+   **And** the request contains a JSON body with invalid expirationTimeframe (e.g. negative number, string values), expirationTimeframeTimeUnit (e.g. value not in the possible enumeration values), or credentialId (e.g. string not representing a valid Base58BTC)\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 400 Bad Request\
+   **And** the system doesn't change the data stored in the onboarding request
+
+4. **Given** I am an authenticated user with the role NOTARY\
+   **And** an onboarding request with the specified onboardingRequestId exists\
+   **And** the request contains a JSON body that does not contain any of the supported fields (expirationTimeframe, expirationTimeframeTimeUnit, credentialId)\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 400 Bad Request\
+   **And** the system doesn't change the data stored in the onboarding request
+
+5. **Given** I am an authenticated user with the role NOTARY\
+   **And** the specified onboardingRequestId is not a valid UUID\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 400 Bad Request\
+   **And** the system doesn't change the data stored in the onboarding request
+
+6. **Given** I am an authenticated user with the role APPLICANT\
+   **And** an onboarding request with the specified onboardingRequestId exists\
+   **And** the onboarding request is created by me\
+   **And** the request contains a JSON body with an invalid credentialId (e.g. string not representing a valid Base58BTC)\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 400 Bad Request\
+   **And** the system doesn't change the data stored in the onboarding request
+
+7. **Given** I am an authenticated user with the role APPLICANT\
+   **And** an onboarding request with the specified onboardingRequestId exists\
+   **And** the onboarding request is created by me\
+   **And** the request contains a JSON body at least one of the fields expirationTimeframe or expirationTimeframeTimeUnit\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 400 Bad Request\
+   **And** the system doesn't change the data stored in the onboarding request
+
+8. **Given** I am an authenticated user with the role APPLICANT\
+   **And** an onboarding request with the specified onboardingRequestId exists\
+   **And** the onboarding request is created by me\
+   **And** the request contains a JSON body that does not contain any of the supported fields (credentialId)\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 400 Bad Request\
+   **And** the system doesn't change the data stored in the onboarding request
+
+9. **Given** I am an authenticated user with the role APPLICANT\
+   **And** the specified onboardingRequestId is not a valid UUID\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 400 Bad Request\
+   **And** the system doesn't change the data stored in the onboarding request
+
+10. **Given** I am an authenticated user with the role APPLICANT\
+   **And** an onboarding request with the specified onboardingRequestId exists\
+   **And** the onboarding request is not created by me\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 400 Bad Request\
+   **And** the system doesn't change the data stored in the onboarding request
+
+11. **Given** I am an authenticated user with the role APPLICANT\
+   **And** the specified onboardingRequestId is a valid UUID\
+   **And** no onboarding request exists with that identifier\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 400 Bad Request *(note to the testers this prevents enumeration from APPLICANTs of the existing onboarding requests)*
+
+12. **Given** I am an authenticated user with the role NOTARY\
+   **And** the specified onboardingRequestId is a valid UUID\
+   **And** no onboarding request exists with that identifier\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 404 Not Found
+
+13. **Given** that I am not authenticated\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 401 Unauthorised
+
+14. **Given** I am an authenticated user without the NOTARY or APPLICANT role\
+   **When** I send PATCH /onboardingRequests/{onboardingRequestId}\
+   **Then** the API returns 403 Forbidden
 
 ## Where it fits
 

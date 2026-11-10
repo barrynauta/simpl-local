@@ -10,9 +10,9 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 ## Text
 
-**As** a Provider,\
+**As a** Provider,\
 **I want to** provide via API or UI, as part of a resource description, the Resource Source based on the resource address template that is valid for the resource sharing method, which I use for sharing my resources,\
-**so that** the Resource Source is published with the resource description and provides information about the Resource Source required to support the automated resource sharing.\
+**So that** the Resource Source is published with the resource description and provides information about the Resource Source required to support the automated resource sharing.\
 ----
 
 ###### Acceptance Criteria:
@@ -20,35 +20,35 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 **1. Submission of Resource Address with Resource Description**\
 *
 
-   - **Given** I am a provider user with permission to manage resource descriptions\
+1. **Given** I am a provider user with permission to manage resource descriptions\
    **When** I include a resource address based on the resource sharing method in the resource description and submit it\
    **Then** the resource address is validated, and feedback is provided indicating whether it is valid
 
 **2. Submission with Invalid Resource Address**\
 *
 
-   - **Given** I am a provider user with permission to manage resource descriptions\
+2. **Given** I am a provider user with permission to manage resource descriptions\
    **When** I include an invalid resource address in the resource description and submit it\
    **Then** the submission is rejected, and a validation error message is displayed
 
 **3. Publication of Resource with Resource Address**\
 *
 
-   - **Given** a resource description with a valid resource address has been submitted\
+3. **Given** a resource description with a valid resource address has been submitted\
    **When** the submission is accepted\
    **Then** the resource description, including the resource address, becomes available in the catalogue
 
 **4. Accessing the Resource Address of a Published Resource**\
 *
 
-   - **Given** I have access to retrieve published resource descriptions\
+4. **Given** I have access to retrieve published resource descriptions\
    **When** I retrieve a specific published resource\
    **Then** I can view the resource address details included in that resource description
 
 **5. Template Use Based on Resource Sharing Method**\
 *
 
-   - **Given** I am creating a resource description\
+5. **Given** I am creating a resource description\
    **When** I select a resource sharing method\
    **Then** I should be able to retrieve the corresponding resource address template that is valid for that method
 

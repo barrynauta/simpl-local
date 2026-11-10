@@ -108,8 +108,8 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 - Usage-template details: SIMPL-31386 (internal page)
 - Template fields: SIMPL-31453 (internal page)
 - Resource Description submission: SIMPL-31455 (internal page)
-- [Policies|an internal page]
-- [Resource Description UI|an internal page]
+- Policies (internal page)
+- Resource Description UI (internal page)
 
 ## Where it fits
 

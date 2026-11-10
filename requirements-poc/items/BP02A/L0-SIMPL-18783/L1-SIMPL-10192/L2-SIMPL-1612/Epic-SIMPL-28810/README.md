@@ -11,24 +11,17 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 ## Text
 
 This epic improves SIMPL-10199 by enabling the Governance Authority to manage the description of identity attributes via UI.\
-----\
-**As a**
+----
 
-Dataspace Governance Authority
-
-**I want to**
-
-specify a description for each identity attribute of the dataspace,
-
-**So that**
-
-I can provide a meaningful explanation of the purpose of each identity attribute defined in the dataspace.
+**As a** Dataspace Governance Authority\
+**I want to** specify a description for each identity attribute of the dataspace,\
+**So that** I can provide a meaningful explanation of the purpose of each identity attribute defined in the dataspace.
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am a user with the Tier 2 identity attributes manager role\
-   **WHEN** I manage an identity attribute of the data space\
-   **THEN** Simpl-Open shall allow me to add the description for that identity attribute
+1. **Given** that I am a user with the Tier 2 identity attributes manager role\
+   **When** I manage an identity attribute of the data space\
+   **Then** Simpl-Open shall allow me to add the description for that identity attribute
 
 ## Where it fits
 

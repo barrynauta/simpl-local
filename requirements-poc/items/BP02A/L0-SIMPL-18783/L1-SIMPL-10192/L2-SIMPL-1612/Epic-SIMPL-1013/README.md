@@ -12,12 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**\
-data space authority\
-**I want**\
-a UI to create a new identity attribute\
-**So that**\
-I define new identity attributes
+**As a** data space authority\
+**I want** a UI to create a new identity attribute\
+**So that** I define new identity attributes
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

@@ -12,7 +12,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As A dataspace participant agent , I want via an API, verify the credential of counterpart agent according to the selected IAA Tier 2 option, so that the communication between agents will be trusted.
+**As a** dataspace participant agent ,\
+**I want** via an API, verify the credential of counterpart agent according to the selected IAA Tier 2 option,\
+**So that** the communication between agents will be trusted.
 
 ## Where it fits
 

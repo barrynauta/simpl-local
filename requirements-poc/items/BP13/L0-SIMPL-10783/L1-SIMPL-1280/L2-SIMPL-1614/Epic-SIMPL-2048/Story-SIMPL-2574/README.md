@@ -10,26 +10,23 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As A**
-
-any participant user with the Tier 2 authorization manager, in the Tier2 resources exclusion management page, viewing the list of Tier2 gateway resources exclusions table list
-
-**I want to**
-
-select the list sort order by "URL" or "exclusion date" columns in ascending/descending direction
-
-**So that**
-
-I view an ordered paginated list of resources exclusions based on the selected filter
+**As a** any participant user with the Tier 2 authorization manager, in the Tier2 resources exclusion management page, viewing the list of Tier2 gateway resources exclusions table list\
+**I want to** select the list sort order by "URL" or "exclusion date" columns in ascending/descending direction\
+**So that** I view an ordered paginated list of resources exclusions based on the selected filter
 
 **Acceptance Criteria:**
 
-1. **Given that I am a user logged in with the** **T2IAA_M** **role, when I access the Tier2 resources exclusion management page and view the Tier2 gateway resources exclusions table list, I should see options to select the sort order by "URL" or "Exclusion Date" columns in ascending or descending direction.**
-1. **Given that I have selected "URL" as the sort criterion, when I choose the ascending direction, the Tier2 gateway resources exclusions table list should be sorted in alphabetical order by URL in ascending order.**
-1. **Given that I have selected "URL" as the sort criterion, when I choose the descending direction, the Tier2 gateway resources exclusions table list should be sorted in reverse alphabetical order by URL in descending order.**
-1. **Given that I have selected "Exclusion Date" as the sort criterion, when I choose the ascending direction, the Tier2 gateway resources exclusions table list should be sorted in chronological order by Exclusion Date in ascending order.**
-1. **Given that I have selected "Exclusion Date" as the sort criterion, when I choose the descending direction, the Tier2 gateway resources exclusions table list should be sorted in reverse chronological order by Exclusion Date in descending order.**
-1. **Given that I have sorted the Tier2 gateway resources exclusions table list based on the selected column and direction, when I navigate through the paginated list, the sorting order should be maintained consistently across all pages, ensuring that the selected sort criterion applies uniformly to all displayed resource exclusions.**
+1. **Given** that I am a user logged in with the T2IAA_M role, **when** I access the Tier2 resources exclusion management page and view the Tier2 gateway resources exclusions table list, I should see options to select the sort order by "URL" or "Exclusion Date" columns in ascending or descending direction.
+
+2. **Given** that I have selected "URL" as the sort criterion, **when** I choose the ascending direction, the Tier2 gateway resources exclusions table list should be sorted in alphabetical order by URL in ascending order.
+
+3. **Given** that I have selected "URL" as the sort criterion, **when** I choose the descending direction, the Tier2 gateway resources exclusions table list should be sorted in reverse alphabetical order by URL in descending order.
+
+4. **Given** that I have selected "Exclusion Date" as the sort criterion, **when** I choose the ascending direction, the Tier2 gateway resources exclusions table list should be sorted in chronological order by Exclusion Date in ascending order.
+
+5. **Given** that I have selected "Exclusion Date" as the sort criterion, **when** I choose the descending direction, the Tier2 gateway resources exclusions table list should be sorted in reverse chronological order by Exclusion Date in descending order.
+
+6. **Given** that I have sorted the Tier2 gateway resources exclusions table list based on the selected column and direction, **when** I navigate through the paginated list, the sorting order should be maintained consistently across all pages, ensuring that the selected sort criterion applies uniformly to all displayed resource exclusions.
 
 ## Where it fits
 

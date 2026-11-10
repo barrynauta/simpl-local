@@ -12,17 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As the**
-
-Dataspace governance authority,
-
-**I want to**
-
-through an API, define which resources/documentation are mandatory to enable the automated onboarding procedure,
-
-**So that**
-
-during the onboarding procedure, the presence of those resources/documentation can launch the automatic onboarding procedure
+**As the** Dataspace governance authority,\
+**I want to** through an API, define which resources/documentation are mandatory to enable the automated onboarding procedure,\
+**So that** during the onboarding procedure, the presence of those resources/documentation can launch the automatic onboarding procedure
 
 **Acceptance Criteria**\
 This Epic will be considered as done once all the child US will be closed/marked as done.

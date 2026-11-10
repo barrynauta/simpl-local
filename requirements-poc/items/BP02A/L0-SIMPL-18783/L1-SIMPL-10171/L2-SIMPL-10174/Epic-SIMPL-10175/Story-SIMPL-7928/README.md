@@ -10,43 +10,42 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As a**\
-dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, managing the onboarding procedure templates, which are linked to participant types
+**As a** dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role, managing the onboarding procedure templates, which are linked to participant types\
+**I want** via API, for each onboarding procedure template, to select identity attributes relevant to the type of participant
 
-**I want**
-
-via API, for each onboarding procedure template, to select identity attributes relevant to the type of participant
-
-**So that**\
 when a participant applies by selecting a participant type, the corresponding identity attributes are suggested to the onboarding request approvers  with NOTARY role.
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am a dataspace governance authority user with the Tier 2 authorization manager (T2IAA_M) role\
-   **AND** the onboarding procedure template has just been created\
-   **WHEN** I send a GET request to /onboardingProcedureTemplates/{id}/identityAttributes\
-   **THEN** I receive a 200 OK response\
-   **AND** the response body contains an empty list.
-1. **GIVEN** that I am a dataspace governance authority user with the Tier 2 authorization manager (T2IAA_M) role\
-   **AND** the onboarding procedure template exists and is already linked to some identity attributes\
-   **WHEN** I send a non-empty list of identity attributes via PUT /onboardingProcedureTemplates/{id}/identityAttributes\
-   **THEN** I receive a 204 No Content response confirming the operation has completed successfully\
-   **AND** only the identity attributes provided in the request are now linked to the onboarding procedure template\
-   **AND** any previously linked identity attributes not included in the request are unlinked.
-1. **GIVEN** that I am a dataspace governance authority user with the Tier 2 authorisation manager (T2IAA_M) role\
-   **AND** the onboarding procedure template exists\
-   **WHEN** I send a PUT /onboardingProcedureTemplates/{id}/identityAttributes request containing one or more invalid or non-existing identity attribute codes\
-   **THEN** I receive a 400 Bad Request response\
-   **AND** the response body follows the problem-details structure, clearly describing which invalid parameter or value caused the error.
-1. **GIVEN** that I am a dataspace governance authority user with the Tier 2 authorization manager (T2IAA_M) role\
-   **WHEN** I send a PUT /onboardingProcedureTemplates/{id}/identityAttributes request\
-   **AND** the request body structure or format is invalid (e.g., missing required fields, wrong data types, or malformed JSON)\
-   **THEN** I receive a 400 Bad Request response\
-   **AND** the response body follows the problem-details structure, indicating the invalid parameter and describing the issue in detail.
-1. **GIVEN** that I am a dataspace governance authority user without the Tier 2 authorization manager (T2IAA_M) role\
-   **WHEN** I send a PUT /onboardingProcedureTemplates/{id}/identityAttributes request\
-   **THEN** I receive a 403 Forbidden response\
-   **AND** the problem-details response indicates that I do not have the required permissions to perform this operation.
+1. **Given** that I am a dataspace governance authority user with the Tier 2 authorization manager (T2IAA_M) role\
+   **And** the onboarding procedure template has just been created\
+   **When** I send a GET request to /onboardingProcedureTemplates/{id}/identityAttributes\
+   **Then** I receive a 200 OK response\
+   **And** the response body contains an empty list.
+
+2. **Given** that I am a dataspace governance authority user with the Tier 2 authorization manager (T2IAA_M) role\
+   **And** the onboarding procedure template exists and is already linked to some identity attributes\
+   **When** I send a non-empty list of identity attributes via PUT /onboardingProcedureTemplates/{id}/identityAttributes\
+   **Then** I receive a 204 No Content response confirming the operation has completed successfully\
+   **And** only the identity attributes provided in the request are now linked to the onboarding procedure template\
+   **And** any previously linked identity attributes not included in the request are unlinked.
+
+3. **Given** that I am a dataspace governance authority user with the Tier 2 authorisation manager (T2IAA_M) role\
+   **And** the onboarding procedure template exists\
+   **When** I send a PUT /onboardingProcedureTemplates/{id}/identityAttributes request containing one or more invalid or non-existing identity attribute codes\
+   **Then** I receive a 400 Bad Request response\
+   **And** the response body follows the problem-details structure, clearly describing which invalid parameter or value caused the error.
+
+4. **Given** that I am a dataspace governance authority user with the Tier 2 authorization manager (T2IAA_M) role\
+   **When** I send a PUT /onboardingProcedureTemplates/{id}/identityAttributes request\
+   **And** the request body structure or format is invalid (e.g., missing required fields, wrong data types, or malformed JSON)\
+   **Then** I receive a 400 Bad Request response\
+   **And** the response body follows the problem-details structure, indicating the invalid parameter and describing the issue in detail.
+
+5. **Given** that I am a dataspace governance authority user without the Tier 2 authorization manager (T2IAA_M) role\
+   **When** I send a PUT /onboardingProcedureTemplates/{id}/identityAttributes request\
+   **Then** I receive a 403 Forbidden response\
+   **And** the problem-details response indicates that I do not have the required permissions to perform this operation.
 
 See the linked [API DEFINITION] task for a detailed description of the mentioned APIs.
 

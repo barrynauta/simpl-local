@@ -11,16 +11,16 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 ## Text
 
 **As a** Data Space Governance Authority\
-**I want** to provide a trusted central container registry for the Simpl Consumer Agent\
+**I want to** provide a trusted central container registry for the Simpl Consumer Agent\
 **So that** Consumers can easily deploy the Consumer Agent on a supported container orchestration platform without manual setup.
 
 -
 
 **Acceptance Criterion**
 
-**Given** a trusted registry\
-**When** install scripts are executed by the Simpl Consumer\
-**Then** Consumers can deploy the container image more efficiently and consistently on their orchestration platform.
+1. **Given** a trusted registry\
+   **When** install scripts are executed by the Simpl Consumer\
+   **Then** Consumers can deploy the container image more efficiently and consistently on their orchestration platform.
 
 ## Where it fits
 

@@ -10,11 +10,15 @@ Folder: [items](../../README.md) / [BP02A](../README.md) / **L0-SIMPL-18783**
 
 ## What this item is
 
-This is the L0 item for business process [BP02A Configure ID/Trust security solution](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md). In BP02A the Governance Authority sets up identification and trust for its data space: identity attributes, onboarding procedure templates and security settings. Requirements for BP02A hang under this item.
+This is the L0 item for business process [BP02A](../README.md). It stands for the whole business process, so that its requirements can hang under it: 4 high-level requirements (L1), with their detailed requirements, Epics and user stories below them.
+
+In BP02A the Governance Authority prepares its data space for identification and trust. It does this before the first participants join, and it can change the settings later.
+
+The business process has 3 steps. The [BP02A page](../README.md) describes them, with the actors and what must be in place before it starts.
 
 ## Text
 
-Link BP02A: [BP02A - Configure ID/Trust security solution|an internal page]
+*In the source, the text of this item is only a link to an internal page about the process.* The public version of that page is the [BP02A process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md).
 
 ## Where it fits
 

@@ -4,13 +4,46 @@ Folder: [items](../README.md) / **BP13**
 
 # BP13 - IT Administration
 
-IT administration of a Simpl-Open agent: network and security services, infrastructure interoperability, business continuity, encryption, authentication and agent setup. The public page lists the high-level requirements only.
+BP13 groups the IT administration of a Simpl-Open agent. These are the technical tasks that make an agent run safely in a data space: the network and VPN settings, firewall integration, interoperability with the infrastructure underneath, business continuity and disaster recovery, encryption of data in transit, authentication, setting up and starting the agent, and the landing page that participants use to reach their services.
 
-Public pages: [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp13-it-administration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp13-it-administration)
+BP13 is not a sequence of steps like the other processes. Each high-level requirement stands on its own. The public process page only lists these requirements: it has no overview, actors or steps.
 
-**191 items:** 1 L0, 18 L1, 39 L2, 58 Epic, 75 User story.
+This folder holds more high-level requirements than the public page, because it also lists the items that are not published, for example the participant contact email and the public profiles.
+
+Read more on the [public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp13-it-administration/README.md) and the [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp13-it-administration).
+
+## Who takes part
+
+- Participants and the Governance Authority, as IT administrators of their own agent. The public page names no actors.
+
+## What this folder holds
+
+The L0 item [SIMPL-10783](L0-SIMPL-10783/README.md) stands for the business process. Under it are 18 high-level requirements (L1). Each has its detailed requirements (L2), the Epics that deliver them and the user stories that build them. In total **191 items:** 1 L0, 18 L1, 39 L2, 58 Epic, 75 User story.
+
+| L1 | High-level requirement | Status | Items under it |
+| --- | --- | --- | --- |
+| [SIMPL-1273](L0-SIMPL-10783/L1-SIMPL-1273/README.md) | Access control policies - agent to agent *(not published)* | In Progress | 16 |
+| [SIMPL-1275](L0-SIMPL-10783/L1-SIMPL-1275/README.md) | Agent setup and initialisation | Defined | 11 |
+| [SIMPL-1277](L0-SIMPL-10783/L1-SIMPL-1277/README.md) | Authentication process - IAA | In Progress | 27 |
+| [SIMPL-1278](L0-SIMPL-10783/L1-SIMPL-1278/README.md) | Business continuity and disaster recovery *(not published)* | Blocked | 5 |
+| [SIMPL-1279](L0-SIMPL-10783/L1-SIMPL-1279/README.md) | Encryption mechanisms - data at rest *(not published)* | Blocked | 1 |
+| [SIMPL-1280](L0-SIMPL-10783/L1-SIMPL-1280/README.md) | Encryption mechanisms - data in motion | In Progress | 7 |
+| [SIMPL-1283](L0-SIMPL-10783/L1-SIMPL-1283/README.md) | Inheritance mechanisms *(not published)* | Blocked | 1 |
+| [SIMPL-1294](L0-SIMPL-10783/L1-SIMPL-1294/README.md) | SIMPL Agent standard Cross Cutting Concern to handle cross capabilities/agents communication *(not published)* | Blocked | 5 |
+| [SIMPL-1295](L0-SIMPL-10783/L1-SIMPL-1295/README.md) | SIMPL Agent standard Cross Cutting Concern to handle cross capabilities/agents communication - Configurability *(not published)* | Blocked | 5 |
+| [SIMPL-1301](L0-SIMPL-10783/L1-SIMPL-1301/README.md) | Business continuity and disaster recovery | Defined | 2 |
+| [SIMPL-1376](L0-SIMPL-10783/L1-SIMPL-1376/README.md) | Infrastructure interoperability | Defined | 17 |
+| [SIMPL-1378](L0-SIMPL-10783/L1-SIMPL-1378/README.md) | Additional Network and Security Services - Firewall integration - software | Defined | 6 |
+| [SIMPL-1379](L0-SIMPL-10783/L1-SIMPL-1379/README.md) | A Participants set the VPN configuration for secure data transfer and secure access to Simpl-Open resources | Defined | 3 |
+| [SIMPL-1386](L0-SIMPL-10783/L1-SIMPL-1386/README.md) | Using infrastructure from a provider - IAM | Defined | 3 |
+| [SIMPL-13574](L0-SIMPL-10783/L1-SIMPL-13574/README.md) | A Participant uses the Simpl-Open landing page | In Progress | 17 |
+| [SIMPL-23891](L0-SIMPL-10783/L1-SIMPL-23891/README.md) | Governance Authority publishes its public profile *(not published)* | In Progress | 23 |
+| [SIMPL-31424](L0-SIMPL-10783/L1-SIMPL-31424/README.md) | Governance Authority maintains a contact email for each participant | In Progress | 19 |
+| [SIMPL-32447](L0-SIMPL-10783/L1-SIMPL-32447/README.md) | Participant publishes its public profile *(not published)* | In Progress | 4 |
 
 ## Tree
+
+Every item, with its level, title and status.
 
 - [SIMPL-10783](L0-SIMPL-10783/README.md) L0 · BP13 - IT Administration · New
   - [SIMPL-1273](L0-SIMPL-10783/L1-SIMPL-1273/README.md) L1 · Access control policies - agent to agent · In Progress · *not published*

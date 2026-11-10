@@ -12,9 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-As a Provider User, I want to use the API to define negative rules on the access policy, i.e., prohibit specific user with the attributes from actions.
-
-So that I can define the access policy that restrict the access for specific attributes.
+**As a** Provider User,\
+**I want to** use the API to define negative rules on the access policy, i.e., prohibit specific user with the attributes from actions.\
+**So that** I can define the access policy that restrict the access for specific attributes.
 
 -----------------------------------
 

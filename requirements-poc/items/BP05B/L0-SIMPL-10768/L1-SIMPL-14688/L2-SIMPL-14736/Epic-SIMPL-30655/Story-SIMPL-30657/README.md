@@ -10,33 +10,33 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ## Text
 
-**As a** Provider end user\
-**I want** to remove previously added contract clauses via UI before the submission of the resource description\
-**so that** I can ensure that the resource description includes the updated set of contract clauses
+**As a** Provider end user\
+**I want to** remove previously added contract clauses via UI before the submission of the resource description\
+**So that** I can ensure that the resource description includes the updated set of contract clauses
 
 **Acceptance Criteria**
 
 **AC1 - A Provider removes contract clauses from a resource description via UI**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new resource description\
-**and** I have reached the step 'Contract Clauses' in the wizard\
-**When** I have created one or more contract clauses\
-**Then** I can remove one or more of the previously defined contract clauses
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **And** I have reached the step 'Contract Clauses' in the wizard\
+   **When** I have created one or more contract clauses\
+   **Then** I can remove one or more of the previously defined contract clauses
 
 **AC2 - A Provider finishes removing contract clauses via UI**
 
-**Given** I am authenticated as a Provider end user\
-**and** I have a role authorising the management of resource descriptions\
-**and** I am creating a new version of a resource description\
-**And** I have reached the step 'Contract Clauses' in the wizard\
-**And** I have created one or more contract clauses\
-**When** I choose to remove one or more of the previously defined contract clauses in the UI wizard,\
-**Then** those contract clauses are not part of the set of contract clauses that will be associated with the resource description anymore\
-**And** I can navigate to the next step in the wizard
+2. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new version of a resource description\
+   **And** I have reached the step 'Contract Clauses' in the wizard\
+   **And** I have created one or more contract clauses\
+   **When** I choose to remove one or more of the previously defined contract clauses in the UI wizard,\
+   **Then** those contract clauses are not part of the set of contract clauses that will be associated with the resource description anymore\
+   **And** I can navigate to the next step in the wizard
 
-**References / Supporting Material / Documentation / Validation rules:** [Contract Clauses management|an internal page]
+**References / Supporting Material / Documentation / Validation rules:** Contract Clauses management (internal page)
 
 ## Where it fits
 

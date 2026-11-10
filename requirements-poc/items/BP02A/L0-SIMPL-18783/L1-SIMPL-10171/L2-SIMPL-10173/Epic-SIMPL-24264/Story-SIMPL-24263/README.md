@@ -11,34 +11,32 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 ## Text
 
 This story improves SIMPL-11767 by allowing the deletion of validation rules\
-----\
-**As A**
+----
 
-dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role
-
-**I want**
-
-via API, to delete a document validation rule
-
-**So** **that**\
-I can delete all the rules from an onboarding procedure template.
+**As a** dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role\
+**I want** via API, to delete a document validation rule\
+**So that** I can delete all the rules from an onboarding procedure template.
 
 **Acceptance Criteria**
 
-1. [DEPRECATES AC2 OF SIMPL-11767]\
-   **GIVEN** that I am a Dataspace Governance Authority user with the T2IAA_M role **\
-   **AND** a validation rule is used in at least one onboarding request **\
-   **WHEN** I DELETE /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId} (See [OpenAPI Spec](https://code.europa.eu/simpl/simpl-open/development/iaa/common/-/blob/v2.11.0/simpl-api-iaa/src/main/resources/static/openapi/onboarding-v1.yaml?ref_type=tags#L742))\
-   **THEN** the rule is physically deleted\
-   **AND** existing onboarding requests continue to use a snapshot of the rule at the time it was applied
-1. [DEPRECATES AC4 OF SIMPL-11767]{}\
-   **GIVEN** that I am a Dataspace Governance Authority user with the T2IAA_M role **\
-   **AND** a validation rule in the current list of rules is used in at least one onboarding request **\
-   **WHEN** I update the list of rules via PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules (See [OpenAPI Spec](https://code.europa.eu/simpl/simpl-open/development/iaa/common/-/blob/v2.11.0/simpl-api-iaa/src/main/resources/static/openapi/onboarding-v1.yaml?ref_type=tags#L133))\
-   **AND** not include such rule in the updated list\
-   **THEN** the rule is physically deleted\
-   **AND** existing onboarding requests continue to use a snapshot of the rule at the time it was applied
-1.  [DOCUMENTATION] The OpenAPI endpoint documentation and error codes of the above endpoints is updated according to the new behaviour (e.g. remove "If a rule already associated with the template is not provided, an error is returned)
+1. [DEPRECATES AC2 OF SIMPL-11767]
+
+1. **Given** that I am a Dataspace Governance Authority user with the T2IAA_M role\
+   **And** a validation rule is used in at least one onboarding request\
+   **When** I DELETE /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules/{validationRuleId} (See [OpenAPI Spec](https://code.europa.eu/simpl/simpl-open/development/iaa/common/-/blob/v2.11.0/simpl-api-iaa/src/main/resources/static/openapi/onboarding-v1.yaml?ref_type=tags#L742))\
+   **Then** the rule is physically deleted\
+   **And** existing onboarding requests continue to use a snapshot of the rule at the time it was applied
+
+   - [DEPRECATES AC4 OF SIMPL-11767]{}
+
+2. **Given** that I am a Dataspace Governance Authority user with the T2IAA_M role\
+   **And** a validation rule in the current list of rules is used in at least one onboarding request\
+   **When** I update the list of rules via PUT /onboardingProcedureTemplates/{onboardingProcedureTemplateId}/validationRules (See [OpenAPI Spec](https://code.europa.eu/simpl/simpl-open/development/iaa/common/-/blob/v2.11.0/simpl-api-iaa/src/main/resources/static/openapi/onboarding-v1.yaml?ref_type=tags#L133))\
+   **And** not include such rule in the updated list\
+   **Then** the rule is physically deleted\
+   **And** existing onboarding requests continue to use a snapshot of the rule at the time it was applied
+
+   - [DOCUMENTATION] The OpenAPI endpoint documentation and error codes of the above endpoints is updated according to the new behaviour (e.g. remove "If a rule already associated with the template is not provided, an error is returned)
 
 ## Where it fits
 

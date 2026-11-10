@@ -10,9 +10,9 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 ## Text
 
-**As a** Provider\
+**As a** Provider\
 **I want to** add a new access policy template\
-**so that** I can use that when I assign an access policy in a resource description.
+**So that** I can use that when I assign an access policy in a resource description.
 
 **Acceptance Criterion: Create a new access policy template through configuration**
 

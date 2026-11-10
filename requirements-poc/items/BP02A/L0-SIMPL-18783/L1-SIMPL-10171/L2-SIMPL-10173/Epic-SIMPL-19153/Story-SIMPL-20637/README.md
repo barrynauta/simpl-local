@@ -11,46 +11,44 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 ## Text
 
 *Returns a list of all the eIDAS attributes. See eIDAS Attributes Overview*\
-*section of [an internal page] .*\
-----\
-**As A**
+*section of (internal page) .*\
+----
 
-dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role
-
-**I want to**
-
-via API, get the list of all the available eIDAS identity attributes that are part of the [eIDAS attribute profile](https://ec.europa.eu/digital-building-blocks/sites/download/attachments/467109280/eIDAS%20SAML%20Attribute%20Profile%20v1.4.1_final.pdf?version=1&modificationDate=1729176514404&api=v2) (see also the [eIDAS dashboard](https://eidas.ec.europa.eu/efda/browse/notification/eid-chapter-contacts/IT))
-
-**So** **that**
-
-I can use them to create onboarding validation rules of type eIDAS
+**As a** dataspace governance authority user with the _Tier 2 authorization manager (T2IAA_M)_ role\
+**I want to** via API, get the list of all the available eIDAS identity attributes that are part of the [eIDAS attribute profile](https://ec.europa.eu/digital-building-blocks/sites/download/attachments/467109280/eIDAS%20SAML%20Attribute%20Profile%20v1.4.1_final.pdf?version=1&modificationDate=1729176514404&api=v2) (see also the [eIDAS dashboard](https://eidas.ec.europa.eu/efda/browse/notification/eid-chapter-contacts/IT))\
+**So that** I can use them to create onboarding validation rules of type eIDAS
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am logged with the T2IAA_M role\
-   **AND** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
-   **WHEN** I call GET /eidasAttributes\
-   **THEN** I obtain a list of all the eidas attributes available\
-   **AND** each item in the list contains\
+1. **Given** that I am logged with the T2IAA_M role\
+   **And** eIDAS login is enabled in the deployment configurations of the onboarding backend component ^(1)^\
+   **When** I call GET /eidasAttributes\
+   **Then** I obtain a list of all the eidas attributes available\
+   **And** each item in the list contains\
    the eIDAS URI of the attribute\
    the eIDAS URI friendly name of the attribute\
    the human readable name of the attribute\
    the personType of the attribute (NATURAL_PERSON or LEGAL_PERSON)\
    the category of the attribute (MANDATORY_MDS, OPTIONAL_MDS, COMMON, SECTOR_SPECIFIC)
-1. **GIVEN** that I am logged without the T2IAA_M role\
-   **WHEN** I call GET /eidasAttributes\
-   **THEN** I receive a 403 Forbidden error
-1. **GIVEN** that I am not authenticated\
-   **WHEN** I call GET /eidasAttributes\
-   **THEN** I receive a 401 Unauthorized error{}
-1. -**GIVEN** that I am logged with the T2IAA_M role-\
-   -**AND** eIDAS login is disabled in the deployment configurations of the onboarding backend component ^(1)^-\
-   -**WHEN** I call GET /eidasAttributes-\
-   -**THEN** I receive a 403 forbidden response with the message "eIDAS Login feature disabled"-
-1. **GIVEN** that I am an IT system administrator, responsible for installing the onboarding backend component ^(1)^\
-   **WHEN** I read the deployment documentation of the component\
-   **THEN** I see the property to use to enable or disable the eIDAS login feature\
-   **AND** I see that by default the feature is disabled
+
+2. **Given** that I am logged without the T2IAA_M role\
+   **When** I call GET /eidasAttributes\
+   **Then** I receive a 403 Forbidden error
+
+3. **Given** that I am not authenticated\
+   **When** I call GET /eidasAttributes\
+   **Then** I receive a 401 Unauthorized error{}
+
+   - -GIVEN that I am logged with the T2IAA_M role-
+
+   -AND eIDAS login is disabled in the deployment configurations of the onboarding backend component ^(1)^-\
+   -WHEN I call GET /eidasAttributes-\
+   -THEN I receive a 403 forbidden response with the message "eIDAS Login feature disabled"-
+
+4. **Given** that I am an IT system administrator, responsible for installing the onboarding backend component ^(1)^\
+   **When** I read the deployment documentation of the component\
+   **Then** I see the property to use to enable or disable the eIDAS login feature\
+   **And** I see that by default the feature is disabled
 
 *(1) By default, this feature is disabled on the component, and should be enabled at deployment time by the IT Administrators installing the component into the agent (see last AC).*
 

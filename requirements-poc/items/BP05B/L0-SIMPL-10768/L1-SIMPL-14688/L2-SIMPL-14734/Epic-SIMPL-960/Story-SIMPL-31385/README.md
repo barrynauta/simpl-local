@@ -98,7 +98,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 - Shared policy-template API - SIMPL-31345 (internal page)
 - Usage-policy template details - SIMPL-31386 (internal page)
 - AI-supported implementation expedite - SIMPL-32078 (internal page)
-- [Policy Definition|an internal page]
+- Policy Definition (internal page)
 - [W3C ODRL Information Model](https://www.w3.org/TR/odrl-model/)
 
 ## Where it fits

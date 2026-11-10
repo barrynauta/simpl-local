@@ -10,32 +10,25 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 ## Text
 
-**As A**
-
-user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attribute edit page
-
-**I want to**
-
-see a submission form where I have to specify the mandatory fields of an Identity Attribute prepopulated with the current values. These fields are:
+**As a** user with *Tier 2 identity attributes manager* role in the Dataspace Governance Authority, in the Identity Attribute edit page\
+**I want to** see a submission form where I have to specify the mandatory fields of an Identity Attribute prepopulated with the current values. These fields are:
 
 - identifier: a string value representing the identity attribute identifier;
-
 - name: a string value representing a human-readable identity attribute description;
-
 - assignable to roles: a boolean value indicating whether the identity attribute can be assigned to a participant's local role (true) or not (false).
-
 - enabled: a boolean value, default is true, will be set to false if the attribute has to be hidden from the usable identity attributes (without removing it).
 
-**So that**
-
-I can edit the existing Identity Attribute
+**So that** I can edit the existing Identity Attribute
 
 **Acceptance Criteria:**
 
-1. **Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user navigates to the Identity Attribute edit page, then the page displays a submission form with input fields for "Identifier", "Name", "Assignable to Roles", and "Enabled" prepopulated with the current values of the Identity Attribute.**
-1. Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user navigates to the Identity Attribute edit page, then the "Enabled" field is a boolean input field (e.g. checkbox) that accepts a true or false value, and the field is prepopulated with the current enabled value of the Identity Attribute, with a default value of true.{}
-1. Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user submits the form with valid changes, then the system updates the existing Identity Attribute with the new values, and redirects the user to the Identity Attribute detail information page, displaying a success message indicating that the Identity Attribute was updated successfully.
-1. Given that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, when the user navigates to the Identity Attribute edit page, then the form includes a "Cancel" button that allows the user to cancel the editing process and return to the Identity Attribute detail information page, and a "Save" button that submits the form when clicked.
+1. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attribute edit page, **then** the page displays a submission form with input fields for "Identifier", "Name", "Assignable to Roles", and "Enabled" prepopulated with the current values of the Identity Attribute.
+
+2. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attribute edit page, **then** the "Enabled" field is a boolean input field (e.g. checkbox) that accepts a true or false value, and the field is prepopulated with the current enabled value of the Identity Attribute, with a default value of true.{}
+
+3. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user submits the form with valid changes, **then** the system updates the existing Identity Attribute with the new values, and redirects the user to the Identity Attribute detail information page, displaying a success message indicating that the Identity Attribute was updated successfully.
+
+4. **Given** that the user is logged in with the IATTR_M role in the Dataspace Governance Authority, **when** the user navigates to the Identity Attribute edit page, **then** the form includes a "Cancel" button that allows the user to cancel the editing process and return to the Identity Attribute detail information page, and a "Save" button that submits the form when clicked.
 
 ## Where it fits
 

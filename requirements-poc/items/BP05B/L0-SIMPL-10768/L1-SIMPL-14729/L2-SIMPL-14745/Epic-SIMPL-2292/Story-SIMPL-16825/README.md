@@ -38,11 +38,11 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 | Then|Simpl-open assigns the initial version number, based on the applicable versioning algorithm for resouce desciptions. |
 | --- |
 
-**Given** a developer wants to define or configure a versioning algorithm\
-**When** they access the Simpl-open documentation\
-**Then** the documentation contains instructions describing how to define a versioning algorithm\
-**And** the documentation includes the default versioning algorithm used by Simpl-open\
-**And** the documentation is accessible through the official Simpl-open documentation in the code repository
+1. **Given** a developer wants to define or configure a versioning algorithm\
+   **When** they access the Simpl-open documentation\
+   **Then** the documentation contains instructions describing how to define a versioning algorithm\
+   **And** the documentation includes the default versioning algorithm used by Simpl-open\
+   **And** the documentation is accessible through the official Simpl-open documentation in the code repository
 
 **Note on negative AC:**\
 The scope of this story is merely to set the initial version number. Thus negative AC should only cover issues with the versioning algorithm itself, not general scenarios, such as not authorised or a general internal server error.

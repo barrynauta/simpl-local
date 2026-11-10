@@ -12,12 +12,9 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 ## Text
 
-**As A**\
-data space authority\
-**I want**\
-a UI\
-**So that**\
-I remove an unused identity attribute
+**As a** data space authority\
+**I want** a UI\
+**So that** I remove an unused identity attribute
 
 ## Where it fits
 

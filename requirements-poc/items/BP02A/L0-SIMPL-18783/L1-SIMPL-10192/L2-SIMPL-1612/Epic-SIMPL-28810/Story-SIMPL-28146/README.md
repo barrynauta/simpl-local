@@ -11,24 +11,18 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 ## Text
 
 *This user story improves the UI related to the creation of an identity attribute. Refer to SIMPL-1052 for an overview of the initial implementation.*\
-----\
-**As a**
+----
 
-user with Tier 2 identity attributes manager (T2IAA_M) role in the Dataspace Governance Authority, creating a new identity attribute of my dataspace
-
-**I want to**
-
-specify the description of the identity attribute I'm creating
-
-**So that**\
-each identity attribute can include a human-readable description, making it easier to understand the purpose and usage of every attribute
+**As a** user with Tier 2 identity attributes manager (T2IAA_M) role in the Dataspace Governance Authority, creating a new identity attribute of my dataspace\
+**I want to** specify the description of the identity attribute I'm creating\
+**So that** each identity attribute can include a human-readable description, making it easier to understand the purpose and usage of every attribute
 
 **Acceptance Criteria**
 
-1. **GIVEN** that I am logged in with the T2IAA_M\
-   **WHEN** I enter the description (maxLength: 255 - not mandatory) of the identity attribute on the identity attribute creation page\
-   **AND** I save the new identity attribute\
-   **THEN** the identity attribute is saved with the description specified
+1. **Given** that I am logged in with the T2IAA_M\
+   **When** I enter the description (maxLength: 255 - not mandatory) of the identity attribute on the identity attribute creation page\
+   **And** I save the new identity attribute\
+   **Then** the identity attribute is saved with the description specified
 
 ## Where it fits
 

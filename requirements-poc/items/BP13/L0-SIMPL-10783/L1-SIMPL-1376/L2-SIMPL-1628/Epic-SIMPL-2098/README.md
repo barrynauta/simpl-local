@@ -11,7 +11,7 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 ## Text
 
 **As a** Data Space Governance Authority\
-**I want** to provide industry standards for the Simpl Consumer Agent\
+**I want to** provide industry standards for the Simpl Consumer Agent\
 **So that** Consumers can confidently deploy the Consumer Agent on a supported container orchestration platform.
 
 AC:

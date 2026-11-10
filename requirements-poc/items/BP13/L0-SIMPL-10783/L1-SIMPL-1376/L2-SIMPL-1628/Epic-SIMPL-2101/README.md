@@ -12,12 +12,15 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 ## Text
 
-As an Infrastructure Consumer, I want to deploy SIMPL in orchestration environments using the provided container image, so that I can utilise SIMPL’s services within my orchestrated environment.
+**As an** Infrastructure Consumer,\
+**I want to** deploy SIMPL in orchestration environments using the provided container image,\
+**So that** I can utilise SIMPL’s services within my orchestrated environment.
 
-AC:\
-Given that Infrastructure Consumers need seamless integration,\
-When a container image is provided,\
-Then SIMPL can be deployed efficiently in Infrastructure Consumer's orchestration environments.
+AC:
+
+1. **Given** that Infrastructure Consumers need seamless integration,\
+   **When** a container image is provided,\
+   **Then** SIMPL can be deployed efficiently in Infrastructure Consumer's orchestration environments.
 
 ## Where it fits
 

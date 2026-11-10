@@ -14,30 +14,30 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 **As a** Simpl-Open administrator\
 **I want** authorised users of a Provider and a Consumer to have access to the Catalogue Search service,\
-**so that** they can perform only the search activity across own data catalogue.
+**So that** they can perform only the search activity across own data catalogue.
 
 **Acceptance Criteria**
 
 **AC1 The Catalogue Search service is available to authorised Consumer Participant Type**
 
-**Given** a user is authenticated within a Consumer Participant Type,\
-**When** the user role is assigned to CATALOGUE_SEARCHER, SD_CONSUMER, RESEARCHER, or Ro-MU-A,\
-**Then** the Catalogue Search service is displayed on their Simpl-Open landing page,\
-**and** this user can access the Catalogue Search service.
+1. **Given** a user is authenticated within a Consumer Participant Type,\
+   **When** the user role is assigned to CATALOGUE_SEARCHER, SD_CONSUMER, RESEARCHER, or Ro-MU-A,\
+   **Then** the Catalogue Search service is displayed on their Simpl-Open landing page,\
+   **And** this user can access the Catalogue Search service.
 
 **AC2** The Catalogue Search service is available to authorised Provider Participant Type
 
-**Given** a user is authenticated within a Provider Participant Type,\
-**When** the user role is assigned to CATALOGUE_SEARCHER, SD_PUBLISHER, RESEARCHER, or Ro-Pa-A,\
-**Then** the Catalogue Search service is displayed on their Simpl-Open landing page,\
-**and** this user can access the Catalogue Search service.
+2. **Given** a user is authenticated within a Provider Participant Type,\
+   **When** the user role is assigned to CATALOGUE_SEARCHER, SD_PUBLISHER, RESEARCHER, or Ro-Pa-A,\
+   **Then** the Catalogue Search service is displayed on their Simpl-Open landing page,\
+   **And** this user can access the Catalogue Search service.
 
 **AC3 The Catalogue Search service access is restricted for unauthorised user roles**
 
-**Given** a user is authenticated within a Consumer or a Provider Participant Type,\
-**When** they are not assigned to one of the roles authorised to access the Catalogue Search service,\
-**Then** the Catalogue Search service is not displayed on their Simpl-Open landing page,\
-**and** access to this service is denied.
+3. **Given** a user is authenticated within a Consumer or a Provider Participant Type,\
+   **When** they are not assigned to one of the roles authorised to access the Catalogue Search service,\
+   **Then** the Catalogue Search service is not displayed on their Simpl-Open landing page,\
+   **And** access to this service is denied.
 
 ## Where it fits
 

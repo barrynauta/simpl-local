@@ -10,10 +10,8 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 ## Text
 
-**As a** Provider
-
-**I want to** associate a resource processing workflow with a specific target resource
-
+**As a** Provider\
+**I want to** associate a resource processing workflow with a specific target resource\
 **So that** the target resource can be automatically processed when consumed, ensuring that the Consumer receives data in the expected form and quality.
 
 ##### Acceptance Criteria:
@@ -24,57 +22,35 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 **Positive Case:**
 
-**Given** I am an authenticated user with a resource description management role
-
-**And** I am creating a resource description
-
-**And** I have identified a previously defined workflow
-
-**And** I have provided a configuration valid for the associated configuration schema of the workflow
-
-**When** I submit the resource description with the workflow and its configuration
-
-**Then** the API validates the configuration
-
-**And** the API associates the resource with the selected workflow and the provided configuration
-
-**And** the association is stored in the asset orchestrator registry storage
-
-**And** the API responds with status code 201
+1. **Given** I am an authenticated user with a resource description management role\
+   **And** I am creating a resource description\
+   **And** I have identified a previously defined workflow\
+   **And** I have provided a configuration valid for the associated configuration schema of the workflow\
+   **When** I submit the resource description with the workflow and its configuration\
+   **Then** the API validates the configuration\
+   **And** the API associates the resource with the selected workflow and the provided configuration\
+   **And** the association is stored in the asset orchestrator registry storage\
+   **And** the API responds with status code 201
 
 **Negative Case:**
 
-**Given** I am an authenticated user with a resource description management role
+2. **Given** I am an authenticated user with a resource description management role\
+   **And** I am creating a resource description\
+   **And** I have identified a workflow that does not exist\
+   **When** I submit the resource description with the workflow and its configuration\
+   **Then** the API rejects the association due to the identified workflow not existing\
+   **And** no association is stored\
+   **And** the API responds with status code 404
 
-**And** I am creating a resource description
-
-**And** I have identified a workflow that does not exist
-
-**When** I submit the resource description with the workflow and its configuration
-
-**Then** the API rejects the association due to the identified workflow not existing
-
-**And** no association is stored
-
-**And** the API responds with status code 404
-
-**Given** I am an authenticated user with a resource description management role
-
-**And** I am creating a resource description
-
-**And** I have identified a previously defined workflow
-
-**And** I have provided a configuration not valid for the associated configuration schema of the workflow
-
-**When** I submit the resource description with the workflow and its configuration
-
-**Then** the API validates the configuration
-
-**And** the API rejects the association due to an invalid configuration
-
-**And** the API responds with status code 400
-
-**And** a clear error message describing the validation issues is presented
+3. **Given** I am an authenticated user with a resource description management role\
+   **And** I am creating a resource description\
+   **And** I have identified a previously defined workflow\
+   **And** I have provided a configuration not valid for the associated configuration schema of the workflow\
+   **When** I submit the resource description with the workflow and its configuration\
+   **Then** the API validates the configuration\
+   **And** the API rejects the association due to an invalid configuration\
+   **And** the API responds with status code 400\
+   **And** a clear error message describing the validation issues is presented
 
 **Configuration Validation**
 
@@ -82,53 +58,33 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 **Positive Case:**
 
-**Given** I am an authenticated user with a resource description management role
-
-**And** I am creating a resource description
-
-**And** I have identified a previously defined workflow
-
-**And** I have provided a configuration valid for the associated configuration schema of the workflow
-
-**And** I want to validate the configuration before submitting the resource description
-
-**When** I submit the configuration for validation via the API
-
-**Then** the API validates the provided configuration against the defined configuration schema
-
-**And** the API confirms that the configuration is valid by responding with status code 200
+4. **Given** I am an authenticated user with a resource description management role\
+   **And** I am creating a resource description\
+   **And** I have identified a previously defined workflow\
+   **And** I have provided a configuration valid for the associated configuration schema of the workflow\
+   **And** I want to validate the configuration before submitting the resource description\
+   **When** I submit the configuration for validation via the API\
+   **Then** the API validates the provided configuration against the defined configuration schema\
+   **And** the API confirms that the configuration is valid by responding with status code 200
 
 **Negative Case:**
 
-**Given** I am an authenticated user with a resource description management role
+5. **Given** I am an authenticated user with a resource description management role\
+   **And** I am creating a resource description\
+   **And** I have identified a previously defined workflow\
+   **And** I have provided a configuration not valid for the associated configuration schema of the workflow\
+   **And** I want to validate the configuration before submitting the resource description\
+   **When** I submit the configuration for validation via the API\
+   **Then** the API rejects the configuration by responding with status code 200\
+   **And** a clear error message describing the validation issues is presented
 
-**And** I am creating a resource description
-
-**And** I have identified a previously defined workflow
-
-**And** I have provided a configuration not valid for the associated configuration schema of the workflow
-
-**And** I want to validate the configuration before submitting the resource description
-
-**When** I submit the configuration for validation via the API
-
-**Then** the API rejects the configuration by responding with status code 200
-
-**And** a clear error message describing the validation issues is presented
-
-**Given** I am an authenticated user with a resource description management role
-
-**And** I am creating a resource description
-
-**And** I have identified a previously defined workflow
-
-**And** I want to validate the configuration before submitting the resource description
-
-**When** I submit the configuration for validation via the API with an invalid request parameter,
-
-**Then** the API rejects the configuration by responding with status code 400
-
-**And** a clear error message describing the validation issues is presented
+6. **Given** I am an authenticated user with a resource description management role\
+   **And** I am creating a resource description\
+   **And** I have identified a previously defined workflow\
+   **And** I want to validate the configuration before submitting the resource description\
+   **When** I submit the configuration for validation via the API with an invalid request parameter,\
+   **Then** the API rejects the configuration by responding with status code 400\
+   **And** a clear error message describing the validation issues is presented
 
 ##### Additional Notes:
 

@@ -12,32 +12,32 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 ## Text
 
-**As a** Simpl-Open administrator\
-**I want** authorised users of an Infrastructure Provider to have access to the Infrastructure Service Manager,\
-**so that** they can manage all their cloud resources.
+**As a** Simpl-Open administrator\
+**I want** authorised users of an Infrastructure Provider to have access to the Infrastructure Service Manager,\
+**So that** they can manage all their cloud resources.
 
 **Acceptance Criteria**
 
 **AC1 The Infrastructure Service Manager** **is available to authorised Infrastructure** **Provider Participant Type**
 
-**Given** a user is authenticated within an Infrastructure Provider Participant Type,\
-**When** the user role is assigned to INFRA_ADMIN, or ** **INFRA_DEPLOYER**\
-**Then** the Infrastructure Service Manager is displayed on their Simpl-Open landing page,\
-**and** this user can access the Infrastructure Service Manager.
+1. **Given** a user is authenticated within an Infrastructure Provider Participant Type,\
+   **When** the user role is assigned to INFRA_ADMIN, or INFRA_DEPLOYER\
+   **Then** the Infrastructure Service Manager is displayed on their Simpl-Open landing page,\
+   **And** this user can access the Infrastructure Service Manager.
 
 **AC2 The Infrastructure Service Manager access is restricted for unauthorised user roles of an Infrastructure Provider**
 
-**Given** a user is authenticated within an Infrastructure Provider Participant Type,\
-**When** they are not assigned to one of the roles authorised to access the Infrastructure Service Manager,\
-**Then** this service is not displayed on their Simpl-Open landing page,\
-**and** access to this service is denied.
+2. **Given** a user is authenticated within an Infrastructure Provider Participant Type,\
+   **When** they are not assigned to one of the roles authorised to access the Infrastructure Service Manager,\
+   **Then** this service is not displayed on their Simpl-Open landing page,\
+   **And** access to this service is denied.
 
 **AC3 The Infrastructure Service Manager access is restricted for the users authorised other than an Infrastructure Provider**
 
-**Given** a user is not authenticated as an Infrastructure Provider Participant Type,\
-**When** they access to their Simpl-Open landing page,\
-**Then** the Infrastructure Service Manager is not displayed on their Simpl-Open landing page,\
-**and** access to this service is denied.
+3. **Given** a user is not authenticated as an Infrastructure Provider Participant Type,\
+   **When** they access to their Simpl-Open landing page,\
+   **Then** the Infrastructure Service Manager is not displayed on their Simpl-Open landing page,\
+   **And** access to this service is denied.
 
 ## Where it fits
 
