@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP05B](../../../README.md) / [L0-SIMPL
 
 # SIMPL-14740: A Provider updates the access policies of a new version of a Resource description
 
-**L2 requirement (detailed functionality)** · Status **In Progress**
+**L2 requirement (detailed requirement)** · Status **In Progress**
 
 **Trace:** [BP05B](../../../README.md) › [SIMPL-10768](../../README.md) (L0) › [SIMPL-14728](../README.md) (L1) › **SIMPL-14740** (L2)
 

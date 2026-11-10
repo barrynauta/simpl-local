@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP02A](../../../README.md) / [L0-SIMPL
 
 # SIMPL-10177: Configure Ephemeral Proof creation and renewal settings
 
-**L2 requirement (detailed functionality)** · Status **New**
+**L2 requirement (detailed requirement)** · Status **New**
 
 > **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
 

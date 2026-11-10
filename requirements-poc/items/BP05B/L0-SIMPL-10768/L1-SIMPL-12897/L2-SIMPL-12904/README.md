@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP05B](../../../README.md) / [L0-SIMPL
 
 # SIMPL-12904: A Provider consults the version history of one of its own resource descriptions
 
-**L2 requirement (detailed functionality)** · Status **Defined**
+**L2 requirement (detailed requirement)** · Status **Defined**
 
 **Trace:** [BP05B](../../../README.md) › [SIMPL-10768](../../README.md) (L0) › [SIMPL-12897](../README.md) (L1) › **SIMPL-12904** (L2)
 

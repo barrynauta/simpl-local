@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP11](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-29137: A Participant performs the contract expiration actions
 
-**L2 requirement (detailed functionality)** · Status **Defined**
+**L2 requirement (detailed requirement)** · Status **Defined**
 
 > **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
 

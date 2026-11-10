@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP11](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-27782: A Provider and Consumer consult the details of a usage contract
 
-**L2 requirement (detailed functionality)** · Status **Defined**
+**L2 requirement (detailed requirement)** · Status **Defined**
 
 > **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
 

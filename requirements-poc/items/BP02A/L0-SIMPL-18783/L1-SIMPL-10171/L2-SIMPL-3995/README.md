@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP02A](../../../README.md) / [L0-SIMPL
 
 # SIMPL-3995: Define the onboarding process documentation
 
-**L2 requirement (detailed functionality)** · Status **In Progress**
+**L2 requirement (detailed requirement)** · Status **In Progress**
 
 **Trace:** [BP02A](../../../README.md) › [SIMPL-18783](../../README.md) (L0) › [SIMPL-10171](../README.md) (L1) › **SIMPL-3995** (L2)
 

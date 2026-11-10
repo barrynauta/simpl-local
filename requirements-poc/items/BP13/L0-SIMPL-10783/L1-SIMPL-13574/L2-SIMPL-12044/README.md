@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-12044: A Participant uses the Simpl-Open landing page adapted to their Participant type
 
-**L2 requirement (detailed functionality)** · Status **In Progress**
+**L2 requirement (detailed requirement)** · Status **In Progress**
 
 **Trace:** [BP13](../../../README.md) › [SIMPL-10783](../../README.md) (L0) › [SIMPL-13574](../README.md) (L1) › **SIMPL-12044** (L2)
 

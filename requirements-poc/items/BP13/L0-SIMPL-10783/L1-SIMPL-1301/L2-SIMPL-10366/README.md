@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-10366: Simpl-Open should have scheduled tests to validate Business Continuity
 
-**L2 requirement (detailed functionality)** · Status **On Hold**
+**L2 requirement (detailed requirement)** · Status **On Hold**
 
 > **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
 

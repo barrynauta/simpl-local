@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP02A](../../../README.md) / [L0-SIMPL
 
 # SIMPL-1612: Tier 2 identity attributes configuration
 
-**L2 requirement (detailed functionality)** · Status **Defined**
+**L2 requirement (detailed requirement)** · Status **Defined**
 
 **Trace:** [BP02A](../../../README.md) › [SIMPL-18783](../../README.md) (L0) › [SIMPL-10192](../README.md) (L1) › **SIMPL-1612** (L2)
 

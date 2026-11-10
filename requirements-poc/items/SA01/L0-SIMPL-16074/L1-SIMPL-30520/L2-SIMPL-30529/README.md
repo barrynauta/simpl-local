@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [SA01](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-30529: Participant defines used execution container cluster
 
-**L2 requirement (detailed functionality)** · Status **Defined**
+**L2 requirement (detailed requirement)** · Status **Defined**
 
 **Trace:** [SA01](../../../README.md) › [SIMPL-16074](../../README.md) (L0) › [SIMPL-30520](../README.md) (L1) › **SIMPL-30529** (L2)
 

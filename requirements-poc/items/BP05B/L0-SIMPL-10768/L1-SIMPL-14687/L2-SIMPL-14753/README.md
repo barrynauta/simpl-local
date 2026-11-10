@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP05B](../../../README.md) / [L0-SIMPL
 
 # SIMPL-14753: The Governance Authority publishes a new Resource description or a new version of a Resource description
 
-**L2 requirement (detailed functionality)** · Status **Defined**
+**L2 requirement (detailed requirement)** · Status **Defined**
 
 **Trace:** [BP05B](../../../README.md) › [SIMPL-10768](../../README.md) (L0) › [SIMPL-14687](../README.md) (L1) › **SIMPL-14753** (L2)
 

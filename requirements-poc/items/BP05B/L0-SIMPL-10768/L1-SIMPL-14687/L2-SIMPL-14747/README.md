@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP05B](../../../README.md) / [L0-SIMPL
 
 # SIMPL-14747: The Governance Authority validates the syntax of a new Resource description or a new version of a Resource Description
 
-**L2 requirement (detailed functionality)** · Status **In Progress**
+**L2 requirement (detailed requirement)** · Status **In Progress**
 
 **Trace:** [BP05B](../../../README.md) › [SIMPL-10768](../../README.md) (L0) › [SIMPL-14687](../README.md) (L1) › **SIMPL-14747** (L2)
 

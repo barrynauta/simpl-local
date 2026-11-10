@@ -20,7 +20,7 @@ The items sit in folders that follow the levels, from business process down to u
 graph LR
     BP["Business process<br/>(BP or SA)"] --> L0["L0<br/>the process as a requirement"]
     L0 --> L1["L1<br/>high-level requirement"]
-    L1 --> L2["L2<br/>detailed functionality"]
+    L1 --> L2["L2<br/>detailed requirement"]
     L2 --> E["Epic<br/>testable feature"]
     E --> US["User story<br/>implementable work"]
 ```

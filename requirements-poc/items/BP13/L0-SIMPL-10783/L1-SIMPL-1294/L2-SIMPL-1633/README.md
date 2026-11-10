@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-1633: Load mitigation strategies on identity provider federation
 
-**L2 requirement (detailed functionality)** · Status **Blocked**
+**L2 requirement (detailed requirement)** · Status **Blocked**
 
 > **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
 

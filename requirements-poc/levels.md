@@ -9,7 +9,7 @@ graph TD
     BP["Business process or supporting activity<br/>e.g. BP02A, SA09"] --> L0
     L0["L0 requirement<br/>the business process as a requirement"] --> L1
     L1["L1 requirement<br/>high-level requirement: WHAT"] --> L2
-    L2["L2 requirement<br/>detailed functionality: WHAT"] --> EP
+    L2["L2 requirement<br/>detailed requirement: WHAT"] --> EP
     EP["Epic<br/>deliverable, testable feature: WHAT"] --> US
     US["User story<br/>implementable work: HOW"]
 ```
@@ -21,7 +21,7 @@ graph TD
 | **Business process (BP) or supporting activity (SA)** | A business process | What the actors of a data space do, step by step, for example BP02A "Configure ID/Trust security solution". | A process page with steps such as BP02A.02. |
 | **L0** | The business process as a requirement | The item that stands for one BP or SA, so lower levels can hang under it. | The BP name, for example "BP02A - Configure ID/Trust security solution". |
 | **L1** | A high-level requirement | What Simpl-Open must allow an actor to do in one step, or a few related steps, of a business process. The public requirements site uses the same term, for example high-level requirement 2A.1. | Title: actor, verb, object. Text: "Simpl-Open shall allow ...". |
-| **L2** | A detailed functionality | A concrete and testable function that makes part of an L1 real. | "Simpl-Open shall ..." for one actor and one function. |
+| **L2** | A detailed requirement | A concrete and testable function that makes part of an L1 real. The public requirements site uses the same term, for example detailed requirement 2A.1.1. | "Simpl-Open shall ..." for one actor and one function. |
 | **Epic** | A deliverable feature | A testable feature seen from a business actor. It bridges the requirements (L2) and the implementation work (stories). | "As a ... I want ... so that ...", with acceptance criteria in Given / When / Then. |
 | **User story** | Implementable work | A piece of work a team can build and test in a sprint, often split into a UI story and an API story. | "As a ... I want ... so that ...", with acceptance criteria. |
 

@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-1616: Authentication between participant agents
 
-**L2 requirement (detailed functionality)** · Status **In Progress**
+**L2 requirement (detailed requirement)** · Status **In Progress**
 
 **Trace:** [BP13](../../../README.md) › [SIMPL-10783](../../README.md) (L0) › [SIMPL-1277](../README.md) (L1) › **SIMPL-1616** (L2)
 

@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-1645: A Participant integrates their Simpl-Open agent with software firewall solutions
 
-**L2 requirement (detailed functionality)** · Status **Defined**
+**L2 requirement (detailed requirement)** · Status **Defined**
 
 **Trace:** [BP13](../../../README.md) › [SIMPL-10783](../../README.md) (L0) › [SIMPL-1378](../README.md) (L1) › **SIMPL-1645** (L2)
 

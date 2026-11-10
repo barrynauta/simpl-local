@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP05B](../../../README.md) / [L0-SIMPL
 
 # SIMPL-14865: The Governance Authority notifies a Provider about wrong versioning of new versions of a Resource description
 
-**L2 requirement (detailed functionality)** · Status **Defined**
+**L2 requirement (detailed requirement)** · Status **Defined**
 
 **Trace:** [BP05B](../../../README.md) › [SIMPL-10768](../../README.md) (L0) › [SIMPL-14687](../README.md) (L1) › **SIMPL-14865** (L2)
 

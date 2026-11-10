@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [SA01](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-19317: Participant deletes a data orchestration workflow
 
-**L2 requirement (detailed functionality)** · Status **Defined**
+**L2 requirement (detailed requirement)** · Status **Defined**
 
 **Trace:** [SA01](../../../README.md) › [SIMPL-16074](../../README.md) (L0) › [SIMPL-19290](../README.md) (L1) › **SIMPL-19317** (L2)
 

@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-1609: Loading preconfigured roles
 
-**L2 requirement (detailed functionality)** · Status **New**
+**L2 requirement (detailed requirement)** · Status **New**
 
 > **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
 

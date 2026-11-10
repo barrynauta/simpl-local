@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [SA09](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-27155: Data Provider creates contract consent assertions for shared data resources
 
-**L2 requirement (detailed functionality)** · Status **Defined**
+**L2 requirement (detailed requirement)** · Status **Defined**
 
 **Trace:** [SA09](../../../README.md) › [SIMPL-26074](../../README.md) (L0) › [SIMPL-27082](../README.md) (L1) › **SIMPL-27155** (L2)
 

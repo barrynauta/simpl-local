@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP02A](../../../README.md) / [L0-SIMPL
 
 # SIMPL-10178: Configure tier 2 communication mode
 
-**L2 requirement (detailed functionality)** · Status **New**
+**L2 requirement (detailed requirement)** · Status **New**
 
 > **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
 

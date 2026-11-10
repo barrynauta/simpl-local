@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-1670: Integration with Infrastructure Identity and Access Management (IAM)
 
-**L2 requirement (detailed functionality)** · Status **In Preparation**
+**L2 requirement (detailed requirement)** · Status **In Preparation**
 
 > **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
 

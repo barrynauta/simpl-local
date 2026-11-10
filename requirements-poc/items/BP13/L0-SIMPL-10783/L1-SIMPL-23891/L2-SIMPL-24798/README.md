@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-24798: Governance Authority exposes general dataspace information in its public profile
 
-**L2 requirement (detailed functionality)** · Status **In Progress**
+**L2 requirement (detailed requirement)** · Status **In Progress**
 
 > **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
 
