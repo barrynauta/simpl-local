@@ -6,7 +6,7 @@ This folder shows a small set of Simpl-Open requirements and backlog items as pa
 
 Simpl-Open is the open-source software of the Simpl programme: the software that lets organisations set up and run a data space. What Simpl-Open must do is written down at several levels, from business process down to user story. Each level has its own purpose and its own way of writing, and each item has a key such as `SIMPL-31425`.
 
-Every item in this folder has one page, named after its key: [`items/SIMPL-31425.md`](items/SIMPL-31425.md). Each page tells you:
+The items sit in folders that follow the levels, from business process down to user story: a child item is a folder inside its parent. Each folder is named after the item key, and the item page is the `README.md` inside, for example [`items/no-business-process/SIMPL-31424/SIMPL-31425/`](items/no-business-process/SIMPL-31424/SIMPL-31425/README.md). Each page tells you:
 
 - **what kind of item it is** and what that level means,
 - **where it sits**: the business process it serves and its parent and children,
@@ -35,6 +35,7 @@ You can start anywhere. Pick the view that matches your question.
 | --- | --- |
 | What does this business process require from Simpl-Open? | [By business process](processes.md) |
 | Which items are there, and what is their status? | [All items](all-items.md) |
+| How are the items nested, level by level? | [Items by folder](items/README.md) |
 | What do L0, L1, L2, Epic and Story mean? | [What the levels mean](levels.md) |
 | Which items do not trace back to a business process? | [Trace gaps](trace-gaps.md) |
 | What does this proof of concept change compared with the first attempt? | [The proposal](proposal.md) |

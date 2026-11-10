@@ -1,12 +1,14 @@
-> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../README.md) · [What the levels mean](../levels.md) · [All items](../all-items.md) · [By business process](../processes.md)
+> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../../../README.md) · [What the levels mean](../../../../../levels.md) · [All items](../../../../../all-items.md) · [By business process](../../../../../processes.md)
+
+Folder: [items](../../../../README.md) / [no-business-process](../../../README.md) / [SIMPL-31424](../../README.md) / [SIMPL-31425](../README.md) / **SIMPL-31426**
 
 # SIMPL-31426: Applicant provides participant contact email during onboarding
 
 **Epic (deliverable, testable feature)** · Status **In Progress**
 
-> ⚠ **Trace gap.** This Epic has a parent chain, but it ends at SIMPL-31424, which has no business process. See [trace gaps](../trace-gaps.md).
+> ⚠ **Trace gap.** This Epic has a parent chain, but it ends at SIMPL-31424, which has no business process. See [trace gaps](../../../../../trace-gaps.md).
 
-**Trace:** ⚠ no business process › [SIMPL-31424](SIMPL-31424.md) (L1) › [SIMPL-31425](SIMPL-31425.md) (L2) › **SIMPL-31426** (Epic)
+**Trace:** ⚠ no business process › [SIMPL-31424](../../../../../README.md) (L1) › [SIMPL-31425](../../../../../README.md) (L2) › **SIMPL-31426** (Epic)
 
 ## What this item is
 
@@ -35,7 +37,7 @@ This Epic makes the onboarding request ask the Applicant for a contact email of 
 | | |
 | --- | --- |
 | **Business process** | None, see trace gap. |
-| **Parent** | [SIMPL-31425](SIMPL-31425.md) (L2) |
+| **Parent** | [SIMPL-31425](../../../../../README.md) (L2) |
 | **Children in this folder** | None. No user stories are in the export. |
 
 ## Item details

@@ -1,10 +1,12 @@
-> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../README.md) · [What the levels mean](../levels.md) · [All items](../all-items.md) · [By business process](../processes.md)
+> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../README.md) · [What the levels mean](../../../levels.md) · [All items](../../../all-items.md) · [By business process](../../../processes.md)
+
+Folder: [items](../../README.md) / [no-business-process](../README.md) / **SIMPL-31853**
 
 # SIMPL-31853: A Provider triggers the decommissioning of an infrastructure resource when revocation request is accepted
 
 **Epic (deliverable, testable feature)** · Status **Defined**
 
-> ⚠ **Trace gap.** This Epic has no parent L2. The handbook says an Epic must be linked to at least one L2. It has no business process either. See [trace gaps](../trace-gaps.md).
+> ⚠ **Trace gap.** This Epic has no parent L2. The handbook says an Epic must be linked to at least one L2. It has no business process either. See [trace gaps](../../../trace-gaps.md).
 
 **Trace:** ⚠ no parent › **SIMPL-31853** (Epic)
 

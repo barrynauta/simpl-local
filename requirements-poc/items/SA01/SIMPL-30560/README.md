@@ -1,10 +1,12 @@
-> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../README.md) · [What the levels mean](../levels.md) · [All items](../all-items.md) · [By business process](../processes.md)
+> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../README.md) · [What the levels mean](../../../levels.md) · [All items](../../../all-items.md) · [By business process](../../../processes.md)
+
+Folder: [items](../../README.md) / [SA01](../README.md) / **SIMPL-30560**
 
 # SIMPL-30560: Participant executes workflow on saved distribution configuration
 
 **L1 requirement (high-level requirement)** · Status **Defined**
 
-> ⚠ **Trace gap.** This L1 has no recorded link to a business process. The handbook says an L1 must be linked to exactly one. The public SA01 page does list it, as high-level requirement 1.6, so the link exists on the process side only. See [trace gaps](../trace-gaps.md).
+> ⚠ **Trace gap.** This L1 has no recorded link to a business process. The handbook says an L1 must be linked to exactly one. The public SA01 page does list it, as high-level requirement 1.6, so the link exists on the process side only. See [trace gaps](../../../trace-gaps.md).
 
 **Trace:** ⚠ no recorded parent › **SIMPL-30560** (L1)
 

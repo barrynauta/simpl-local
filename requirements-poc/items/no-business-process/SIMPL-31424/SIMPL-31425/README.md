@@ -1,12 +1,14 @@
-> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../README.md) · [What the levels mean](../levels.md) · [All items](../all-items.md) · [By business process](../processes.md)
+> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../../README.md) · [What the levels mean](../../../../levels.md) · [All items](../../../../all-items.md) · [By business process](../../../../processes.md)
+
+Folder: [items](../../../README.md) / [no-business-process](../../README.md) / [SIMPL-31424](../README.md) / **SIMPL-31425**
 
 # SIMPL-31425: Governance authority registers participants' contact email
 
 **L2 requirement (detailed functionality)** · Status **In Progress**
 
-> ⚠ **Trace gap.** This L2 has a parent, but that parent (SIMPL-31424) has no business process. So this item does not trace to a process either. See [trace gaps](../trace-gaps.md).
+> ⚠ **Trace gap.** This L2 has a parent, but that parent (SIMPL-31424) has no business process. So this item does not trace to a process either. See [trace gaps](../../../../trace-gaps.md).
 
-**Trace:** ⚠ no business process › [SIMPL-31424](SIMPL-31424.md) (L1) › **SIMPL-31425** (L2) › [SIMPL-31426](SIMPL-31426.md) (Epic)
+**Trace:** ⚠ no business process › [SIMPL-31424](../../../../README.md) (L1) › **SIMPL-31425** (L2) › [SIMPL-31426](SIMPL-31426/README.md) (Epic)
 
 ## What this item is
 
@@ -21,8 +23,8 @@ This L2 details the first part of SIMPL-31424: the participant contact email is 
 | | |
 | --- | --- |
 | **Business process** | None, see trace gap. |
-| **Parent** | [SIMPL-31424](SIMPL-31424.md) (L1) |
-| **Children in this folder** | [SIMPL-31426](SIMPL-31426.md) (Epic) |
+| **Parent** | [SIMPL-31424](../../../../README.md) (L1) |
+| **Children in this folder** | [SIMPL-31426](SIMPL-31426/README.md) (Epic) |
 
 ## Item details
 

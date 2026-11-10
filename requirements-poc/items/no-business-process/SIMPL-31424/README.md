@@ -1,12 +1,14 @@
-> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../README.md) · [What the levels mean](../levels.md) · [All items](../all-items.md) · [By business process](../processes.md)
+> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../README.md) · [What the levels mean](../../../levels.md) · [All items](../../../all-items.md) · [By business process](../../../processes.md)
+
+Folder: [items](../../README.md) / [no-business-process](../README.md) / **SIMPL-31424**
 
 # SIMPL-31424: Governance Authority maintains a contact email for each participant
 
 **L1 requirement (high-level requirement)** · Status **Internal QA check**
 
-> ⚠ **Trace gap.** This L1 has no recorded link to a business process. The handbook says an L1 must be linked to exactly one. No public business process page lists it (checked 10 November 2026). See [trace gaps](../trace-gaps.md).
+> ⚠ **Trace gap.** This L1 has no recorded link to a business process. The handbook says an L1 must be linked to exactly one. No public business process page lists it (checked 10 November 2026). See [trace gaps](../../../trace-gaps.md).
 
-**Trace:** ⚠ no parent › **SIMPL-31424** (L1) › [SIMPL-31425](SIMPL-31425.md) (L2) › [SIMPL-31426](SIMPL-31426.md) (Epic)
+**Trace:** ⚠ no parent › **SIMPL-31424** (L1) › [SIMPL-31425](SIMPL-31425/README.md) (L2) › [SIMPL-31426](SIMPL-31425/SIMPL-31426/README.md) (Epic)
 
 ## What this item is
 
@@ -22,8 +24,8 @@ This L1 requirement makes the Governance Authority keep a contact email for ever
 | --- | --- |
 | **Business process** | None recorded and none on the public pages. |
 | **Parent** | None. |
-| **Children in this folder** | [SIMPL-31425](SIMPL-31425.md) (L2) |
-| **Related** | [SIMPL-31429](SIMPL-31429.md) (Epic, cancelled). By its content it matches the second sentence of this requirement. No link is recorded. |
+| **Children in this folder** | [SIMPL-31425](SIMPL-31425/README.md) (L2) |
+| **Related** | [SIMPL-31429](../SIMPL-31429/README.md) (Epic, cancelled). By its content it matches the second sentence of this requirement. No link is recorded. |
 
 ## Item details
 

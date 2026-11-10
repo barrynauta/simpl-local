@@ -1,10 +1,12 @@
-> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../README.md) · [What the levels mean](../levels.md) · [All items](../all-items.md) · [By business process](../processes.md)
+> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../README.md) · [What the levels mean](../../../levels.md) · [All items](../../../all-items.md) · [By business process](../../../processes.md)
+
+Folder: [items](../../README.md) / [no-business-process](../README.md) / **SIMPL-30641**
 
 # SIMPL-30641: A Provider removes contract clauses from a resource description via UI, resulting in a new version of the resource description
 
 **User story (implementable work)** · Status **PBI Defined**
 
-> ⚠ **Trace gap.** This user story has no parent Epic and no business process. See [trace gaps](../trace-gaps.md).
+> ⚠ **Trace gap.** This user story has no parent Epic and no business process. See [trace gaps](../../../trace-gaps.md).
 
 **Trace:** ⚠ no parent › **SIMPL-30641** (User story)
 

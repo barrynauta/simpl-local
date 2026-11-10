@@ -30,7 +30,7 @@ A reader who opens a page in the first attempt sees a requirement item without c
 | **⚠ Trace gap** tags and a [trace gaps](trace-gaps.md) page | Missing links are visible, not hidden. |
 | "Not in this folder" entries on the [process view](processes.md) | The reader sees what the export left out. |
 | "Notes on the source" on each page | Problems in the source are listed without changing the text. |
-| File names are the item key, for example `SIMPL-31425.md` | Short, stable links that match the item key. |
+| Folders follow the levels: business process › L0 › L1 › L2 › Epic › user story, one folder per item, named after the item key | The structure shows the trace by itself, also when there are hundreds of items. Names stay short and stable. |
 | Cancelled items stay, marked as cancelled | History is kept and the reader is not misled. |
 
 ## What the final publication should do
@@ -40,7 +40,7 @@ A list of requirements for the generator that PSO will build.
 1. Generate the start page, the levels page and the process view, not only item pages.
 2. Give every item page a context line, a level, a trace line and a short description.
 3. Link each item to its public business process page and requirements site page.
-4. Name files after the item key.
+4. Put each item in a folder named after its key, inside the folder of its parent, from the business process down. Items without a parent go in the folder of their business process, or in a `no-business-process` folder.
 5. Render user stories and acceptance criteria as markdown, with the Given / When / Then structure kept.
 6. Put the content first and the item fields last. Leave out fields that mean nothing to a reader.
 7. Check every item against the handbook linking rules, and tag and list the items that fail.

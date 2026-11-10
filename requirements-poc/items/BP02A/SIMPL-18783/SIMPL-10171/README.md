@@ -1,10 +1,12 @@
-> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../README.md) · [What the levels mean](../levels.md) · [All items](../all-items.md) · [By business process](../processes.md)
+> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../../README.md) · [What the levels mean](../../../../levels.md) · [All items](../../../../all-items.md) · [By business process](../../../../processes.md)
+
+Folder: [items](../../../README.md) / [BP02A](../../README.md) / [SIMPL-18783](../README.md) / **SIMPL-10171**
 
 # SIMPL-10171: Configure Onboarding Procedure Templates
 
 **L1 requirement (high-level requirement)** · Status **In Progress**
 
-**Trace:** [BP02A Configure ID/Trust security solution](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) › [SIMPL-18783](SIMPL-18783.md) (L0) › **SIMPL-10171** (L1)
+**Trace:** [BP02A Configure ID/Trust security solution](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) › [SIMPL-18783](../../../../README.md) (L0) › **SIMPL-10171** (L1)
 
 ## What this item is
 
@@ -21,7 +23,7 @@ Public page: [2A.1 Configure Onboarding Procedure Templates](https://simpl-progr
 | | |
 | --- | --- |
 | **Business process** | [BP02A Configure ID/Trust security solution](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md), step BP02A.02 by title match |
-| **Parent** | [SIMPL-18783](SIMPL-18783.md) (L0) |
+| **Parent** | [SIMPL-18783](../../../../README.md) (L0) |
 | **Children in this folder** | None. |
 | **Children not in this folder** | Listed on the public BP02A page: 2A.1.1 Define the onboarding process documentation, 2A.1.2 Define identity attributes for an Onboarding Procedure Template, 2A.1.3 Configure a ruleset for the automatic validation of onboarding request documents. |
 

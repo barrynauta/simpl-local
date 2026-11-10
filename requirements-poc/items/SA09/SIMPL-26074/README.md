@@ -1,4 +1,6 @@
-> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../README.md) · [What the levels mean](../levels.md) · [All items](../all-items.md) · [By business process](../processes.md)
+> **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../README.md) · [What the levels mean](../../../levels.md) · [All items](../../../all-items.md) · [By business process](../../../processes.md)
+
+Folder: [items](../../README.md) / [SA09](../README.md) / **SIMPL-26074**
 
 # SIMPL-26074: SA09 - Data Provider manages consent assertions
 
