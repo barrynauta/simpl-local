@@ -1,6 +1,6 @@
 > **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../README.md) · [What the levels mean](../../../levels.md) · [All items](../../../all-items.md) · [By business process](../../../processes.md)
 
-Folder: [items](../../README.md) / [no-business-process](../README.md) / **SIMPL-31853**
+Folder: [items](../../README.md) / [no-business-process](../README.md) / **Epic-SIMPL-31853**
 
 # SIMPL-31853: A Provider triggers the decommissioning of an infrastructure resource when revocation request is accepted
 
@@ -37,20 +37,6 @@ Note from the source: the decommissioning of the infrastructure resource will be
 | **Business process** | None recorded. |
 | **Parent** | None. |
 | **Children in this folder** | None. |
-
-## Item details
-
-As exported on 10 November 2026. Not kept up to date.
-
-| | |
-| --- | --- |
-| **Status** | Defined |
-| **Epic status** | To Do |
-| **Priority** | Low |
-| **Requirement type** | Functional |
-| **Completion rate** | 10 (unit not given) |
-| **Created** | 2026-08-18 |
-| **Updated** | 2026-11-09 |
 
 ## Notes on the source
 

@@ -1,6 +1,6 @@
 > **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../README.md) · [What the levels mean](../../../levels.md) · [All items](../../../all-items.md) · [By business process](../../../processes.md)
 
-Folder: [items](../../README.md) / [SA09](../README.md) / **SIMPL-26074**
+Folder: [items](../../README.md) / [SA09](../README.md) / **L0-SIMPL-26074**
 
 # SIMPL-26074: SA09 - Data Provider manages consent assertions
 
@@ -36,21 +36,6 @@ Process steps, from the public page:
 | **Parent** | None. L0 is the top level. |
 | **Children in this folder** | None. |
 | **Children not in this folder** | SIMPL-26083 Data Provider manages consent assertion status changes (L1, HLR 9.1) and SIMPL-27082 Data Provider manages consent assertions for shared data resources (L1, HLR 9.2). Both are listed on the public SA09 page. |
-
-## Item details
-
-As exported on 10 November 2026. Not kept up to date.
-
-| | |
-| --- | --- |
-| **Status** | Defined |
-| **Priority** | Low |
-| **Requirement type** | Functional |
-| **Requirement version** | 1.0 |
-| **Completion rate** | 10 (unit not given) |
-| **Published on website** | Yes |
-| **Created** | 2026-04-08 |
-| **Updated** | 2026-11-09 |
 
 ## Notes on the source
 

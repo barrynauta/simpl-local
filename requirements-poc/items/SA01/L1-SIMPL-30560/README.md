@@ -1,6 +1,6 @@
 > **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../README.md) · [What the levels mean](../../../levels.md) · [All items](../../../all-items.md) · [By business process](../../../processes.md)
 
-Folder: [items](../../README.md) / [SA01](../README.md) / **SIMPL-30560**
+Folder: [items](../../README.md) / [SA01](../README.md) / **L1-SIMPL-30560**
 
 # SIMPL-30560: Participant executes workflow on saved distribution configuration
 
@@ -28,19 +28,6 @@ Public pages: [1.6 in the business-processes repository](https://code.europa.eu/
 | **Parent** | None recorded. |
 | **Children in this folder** | None. |
 | **Children not in this folder** | 1.6.1 Participant executes workflow on saved distribution configuration with pre-dispatch validation. Listed on the public page. |
-
-## Item details
-
-As exported on 10 November 2026. Not kept up to date.
-
-| | |
-| --- | --- |
-| **Status** | Defined |
-| **Priority** | Low |
-| **Requirement type** | Functional |
-| **Published on website** | Yes |
-| **Created** | 2026-07-22 |
-| **Updated** | 2026-11-09 |
 
 ## Notes on the source
 

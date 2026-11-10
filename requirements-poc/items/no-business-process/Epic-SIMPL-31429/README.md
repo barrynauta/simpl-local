@@ -1,6 +1,6 @@
 > **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../README.md) · [What the levels mean](../../../levels.md) · [All items](../../../all-items.md) · [By business process](../../../processes.md)
 
-Folder: [items](../../README.md) / [no-business-process](../README.md) / **SIMPL-31429**
+Folder: [items](../../README.md) / [no-business-process](../README.md) / **Epic-SIMPL-31429**
 
 # SIMPL-31429: Participant updates contact email after onboarding
 
@@ -14,7 +14,7 @@ Folder: [items](../../README.md) / [no-business-process](../README.md) / **SIMPL
 
 ## What this item is
 
-This Epic would have let a participant change its contact email after onboarding and pass the change to the Governance Authority. By its content it matches the second sentence of L1 [SIMPL-31424](../SIMPL-31424/README.md). No link is recorded.
+This Epic would have let a participant change its contact email after onboarding and pass the change to the Governance Authority. By its content it matches the second sentence of L1 [SIMPL-31424](../L1-SIMPL-31424/README.md). No link is recorded.
 
 ## User story
 
@@ -40,21 +40,7 @@ This Epic would have let a participant change its contact email after onboarding
 | --- | --- |
 | **Business process** | None. |
 | **Parent** | None in the export. |
-| **Related** | [SIMPL-31424](../SIMPL-31424/README.md) (L1), by content only. |
-
-## Item details
-
-As exported on 10 November 2026. Not kept up to date.
-
-| | |
-| --- | --- |
-| **Status** | Cancelled |
-| **Epic status** | To Do |
-| **Priority** | Low |
-| **Requirement type** | Functional |
-| **Completion rate** | 10 (unit not given) |
-| **Created** | 2026-08-11 |
-| **Updated** | 2026-11-06 |
+| **Related** | [SIMPL-31424](../L1-SIMPL-31424/README.md) (L1), by content only. |
 
 ## Notes on the source
 

@@ -9,5 +9,5 @@ Providers and Consumers design, run and monitor repeatable data processing workf
 Public pages: [business-processes repository](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa01-data-orchestration/README.md)
 
 - *Not in this folder:* the L0 item for SA01
-  - [SIMPL-30560](SIMPL-30560/README.md) L1 · Participant executes workflow on saved distribution configuration · Defined · ⚠ linked from the public SA01 page only, no recorded parent
+  - [SIMPL-30560](L1-SIMPL-30560/README.md) L1 · Participant executes workflow on saved distribution configuration · Defined · ⚠ linked from the public SA01 page only, no recorded parent
     - *Not in this folder:* 1.6.1 (detailed requirement)

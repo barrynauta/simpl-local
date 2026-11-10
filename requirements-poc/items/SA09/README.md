@@ -8,6 +8,6 @@ A Data Provider creates, withdraws and reactivates consent assertions on its dat
 
 Public pages: [business-processes repository](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa09-data-provider-manages-consent-assertions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/sa09-data-provider-manages-consent-assertions)
 
-- [SIMPL-26074](SIMPL-26074/README.md) L0 · SA09 - Data Provider manages consent assertions · Defined
+- [SIMPL-26074](L0-SIMPL-26074/README.md) L0 · SA09 - Data Provider manages consent assertions · Defined
   - *Not in this folder:* SIMPL-26083 L1 · Data Provider manages consent assertion status changes (9.1)
   - *Not in this folder:* SIMPL-27082 L1 · Data Provider manages consent assertions for shared data resources (9.2)

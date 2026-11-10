@@ -1,6 +1,6 @@
 > **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../README.md) · [What the levels mean](../../../levels.md) · [All items](../../../all-items.md) · [By business process](../../../processes.md)
 
-Folder: [items](../../README.md) / [no-business-process](../README.md) / **SIMPL-30641**
+Folder: [items](../../README.md) / [no-business-process](../README.md) / **Story-SIMPL-30641**
 
 # SIMPL-30641: A Provider removes contract clauses from a resource description via UI, resulting in a new version of the resource description
 
@@ -48,17 +48,6 @@ Reference given in the source: an internal page, "Contract Clauses management".
 | **Business process** | None recorded. |
 | **Parent** | None. |
 | **Children in this folder** | None. |
-
-## Item details
-
-As exported on 10 November 2026. Not kept up to date.
-
-| | |
-| --- | --- |
-| **Status** | PBI Defined |
-| **Priority** | High |
-| **Created** | 2026-07-23 |
-| **Updated** | 2026-11-09 |
 
 ## Notes on the source
 

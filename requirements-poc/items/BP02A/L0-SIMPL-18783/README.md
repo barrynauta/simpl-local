@@ -1,12 +1,12 @@
 > **Simpl-Open requirements, proof of concept.** One requirement item, shown with its context. New here? [Start here](../../../README.md) · [What the levels mean](../../../levels.md) · [All items](../../../all-items.md) · [By business process](../../../processes.md)
 
-Folder: [items](../../README.md) / [BP02A](../README.md) / **SIMPL-18783**
+Folder: [items](../../README.md) / [BP02A](../README.md) / **L0-SIMPL-18783**
 
 # SIMPL-18783: BP02A - Configure ID/Trust security solution
 
 **L0 requirement (the business process as a requirement)** · Status **In Progress**
 
-**Trace:** [BP02A Configure ID/Trust security solution](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) › **SIMPL-18783** (L0) › [SIMPL-10171](SIMPL-10171/README.md) (L1)
+**Trace:** [BP02A Configure ID/Trust security solution](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) › **SIMPL-18783** (L0) › [SIMPL-10171](L1-SIMPL-10171/README.md) (L1)
 
 ## What this item is
 
@@ -33,23 +33,8 @@ Process steps, from the public page:
 | --- | --- |
 | **Business process** | [BP02A Configure ID/Trust security solution](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) |
 | **Parent** | None. L0 is the top level. |
-| **Children in this folder** | [SIMPL-10171](SIMPL-10171/README.md) (L1) |
+| **Children in this folder** | [SIMPL-10171](L1-SIMPL-10171/README.md) (L1) |
 | **Children not in this folder** | SIMPL-10192 Configure Dataspace Identity Attributes (L1, HLR 2A.2). Listed on the public BP02A page, not in the export. |
-
-## Item details
-
-As exported on 10 November 2026. Not kept up to date.
-
-| | |
-| --- | --- |
-| **Status** | In Progress |
-| **Priority** | Low |
-| **Requirement type** | Functional |
-| **Requirement version** | 1.0 |
-| **Completion rate** | 10 (unit not given) |
-| **Published on website** | Yes |
-| **Created** | 2025-09-29 |
-| **Updated** | 2026-11-09 |
 
 ## Notes on the source
 

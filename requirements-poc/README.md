@@ -6,7 +6,7 @@ This folder shows a small set of Simpl-Open requirements and backlog items as pa
 
 Simpl-Open is the open-source software of the Simpl programme: the software that lets organisations set up and run a data space. What Simpl-Open must do is written down at several levels, from business process down to user story. Each level has its own purpose and its own way of writing, and each item has a key such as `SIMPL-31425`.
 
-The items sit in folders that follow the levels, from business process down to user story: a child item is a folder inside its parent. Each folder is named after the item key, and the item page is the `README.md` inside, for example [`items/no-business-process/SIMPL-31424/SIMPL-31425/`](items/no-business-process/SIMPL-31424/SIMPL-31425/README.md). Each page tells you:
+The items sit in folders that follow the levels, from business process down to user story: a child item is a folder inside its parent. Each folder is named after the level and the item key, such as `L1-SIMPL-31424`, and the item page is the `README.md` inside, for example [`items/no-business-process/L1-SIMPL-31424/L2-SIMPL-31425/`](items/no-business-process/L1-SIMPL-31424/L2-SIMPL-31425/README.md). Each page tells you:
 
 - **what kind of item it is** and what that level means,
 - **where it sits**: the business process it serves and its parent and children,

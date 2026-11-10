@@ -16,13 +16,13 @@ The handbook says every item must trace up to a business process (see [linking r
 
 | Item | Level | Rule | Finding |
 | --- | --- | --- | --- |
-| [SIMPL-30560](items/SA01/SIMPL-30560/README.md) | L1 | Linked to exactly one business process | No recorded parent. The public SA01 page lists it as requirement 1.6. |
-| [SIMPL-31424](items/no-business-process/SIMPL-31424/README.md) | L1 | Linked to exactly one business process | No recorded parent. No public process page lists it. |
-| [SIMPL-31425](items/no-business-process/SIMPL-31424/SIMPL-31425/README.md) | L2 | Linked to exactly one parent L1 | Rule met (SIMPL-31424), but the chain ends at an L1 without a process. |
-| [SIMPL-31426](items/no-business-process/SIMPL-31424/SIMPL-31425/SIMPL-31426/README.md) | Epic | Linked to at least one L2 | Rule met (SIMPL-31425), same chain as above. |
-| [SIMPL-31853](items/no-business-process/SIMPL-31853/README.md) | Epic | Linked to at least one L2 | No parent. |
-| [SIMPL-30641](items/no-business-process/SIMPL-30641/README.md) | User story | Sits under an Epic | No parent. |
-| [SIMPL-31429](items/no-business-process/SIMPL-31429/README.md) | Epic, cancelled | Linked to at least one L2 | No parent in the export. |
+| [SIMPL-30560](items/SA01/L1-SIMPL-30560/README.md) | L1 | Linked to exactly one business process | No recorded parent. The public SA01 page lists it as requirement 1.6. |
+| [SIMPL-31424](items/no-business-process/L1-SIMPL-31424/README.md) | L1 | Linked to exactly one business process | No recorded parent. No public process page lists it. |
+| [SIMPL-31425](items/no-business-process/L1-SIMPL-31424/L2-SIMPL-31425/README.md) | L2 | Linked to exactly one parent L1 | Rule met (SIMPL-31424), but the chain ends at an L1 without a process. |
+| [SIMPL-31426](items/no-business-process/L1-SIMPL-31424/L2-SIMPL-31425/Epic-SIMPL-31426/README.md) | Epic | Linked to at least one L2 | Rule met (SIMPL-31425), same chain as above. |
+| [SIMPL-31853](items/no-business-process/Epic-SIMPL-31853/README.md) | Epic | Linked to at least one L2 | No parent. |
+| [SIMPL-30641](items/no-business-process/Story-SIMPL-30641/README.md) | User story | Sits under an Epic | No parent. |
+| [SIMPL-31429](items/no-business-process/Epic-SIMPL-31429/README.md) | Epic, cancelled | Linked to at least one L2 | No parent in the export. |
 
 ## Missing from the export
 

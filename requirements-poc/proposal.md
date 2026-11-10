@@ -25,12 +25,12 @@ A reader who opens a page in the first attempt sees a requirement item without c
 | A **trace line** on every page, from the business process down to the item | The process is visible from any level. |
 | Links to the public process pages and requirements site | Traceability works without a login. |
 | A short "What this item is" paragraph | The reader knows what the item is about before reading the formal text. |
-| Content first, item details last | The requirement is what readers come for. |
+| Content first, and only the level and status as metadata | The requirement is what readers come for. Workflow fields mean nothing to a reader. |
 | Acceptance criteria as Given / When / Then lists | Criteria are readable and testable. |
 | **⚠ Trace gap** tags and a [trace gaps](trace-gaps.md) page | Missing links are visible, not hidden. |
 | "Not in this folder" entries on the [process view](processes.md) | The reader sees what the export left out. |
 | "Notes on the source" on each page | Problems in the source are listed without changing the text. |
-| Folders follow the levels: business process › L0 › L1 › L2 › Epic › user story, one folder per item, named after the item key | The structure shows the trace by itself, also when there are hundreds of items. Names stay short and stable. |
+| Folders follow the levels: business process › L0 › L1 › L2 › Epic › user story, one folder per item, named after its level and key (for example `L1-SIMPL-10171`) | The structure shows the trace by itself, also when there are hundreds of items. Names stay short and stable. |
 | Cancelled items stay, marked as cancelled | History is kept and the reader is not misled. |
 
 ## What the final publication should do
@@ -40,9 +40,9 @@ A list of requirements for the generator that PSO will build.
 1. Generate the start page, the levels page and the process view, not only item pages.
 2. Give every item page a context line, a level, a trace line and a short description.
 3. Link each item to its public business process page and requirements site page.
-4. Put each item in a folder named after its key, inside the folder of its parent, from the business process down. Items without a parent go in the folder of their business process, or in a `no-business-process` folder.
+4. Put each item in a folder named after its level and key, for example `L1-SIMPL-10171`, inside the folder of its parent, from the business process down. Items without a parent go in the folder of their business process, or in a `no-business-process` folder.
 5. Render user stories and acceptance criteria as markdown, with the Given / When / Then structure kept.
-6. Put the content first and the item fields last. Leave out fields that mean nothing to a reader.
+6. Put the content first. Show the level and status only, and leave out workflow fields such as priority, version and completion rate.
 7. Check every item against the handbook linking rules, and tag and list the items that fail.
 8. Publish a complete tree: when an item is published, show its parent and children too, or at least list them as "not published".
 9. State the publication criteria, so readers know why an item is in or out.
