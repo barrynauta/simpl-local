@@ -8,7 +8,7 @@ Folder: [functional-requirements](../../../README.md) / [BP05B](../../README.md)
 
 **Trace:** [BP05B](../../README.md) › [SIMPL-10768](../README.md) (L0) › **SIMPL-21118** (L1)
 
-**On the requirements site:** 5B.6 · **Process steps:** [BP05B.11](../../../../business-processes/bp05b-provider-manages-resource-descriptions/README.md#bp05b11-revoke-the-previous-version-of-the-resource-description), [BP05B.12](../../../../business-processes/bp05b-provider-manages-resource-descriptions/README.md#bp05b12-inform-about-new-version)
+**On the requirements site:** 5B.6 · **Process steps:** [BP05B.12](../../../../business-processes/bp05b-provider-manages-resource-descriptions/README.md#bp05b12-inform-about-new-version)
 
 ## Text
 

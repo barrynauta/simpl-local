@@ -8,7 +8,7 @@ Folder: [functional-requirements](../../../README.md) / [BP05B](../../README.md)
 
 **Trace:** [BP05B](../../README.md) › [SIMPL-10768](../README.md) (L0) › **SIMPL-12897** (L1)
 
-**On the requirements site:** 5B.1 · **Dynamic view:** [Retrieve SD metadata](../../../../business-processes/bp05b-provider-manages-resource-descriptions/bp05b-dynamic-view.md#retrieve-sd-metadata), [Retrieve full self-description](../../../../business-processes/bp05b-provider-manages-resource-descriptions/bp05b-dynamic-view.md#retrieve-full-self-description)
+**On the requirements site:** 5B.1 · **Process steps:** [Trigger](../../../../business-processes/bp05b-provider-manages-resource-descriptions/README.md#trigger---resource-description-management) · **Dynamic view:** [Retrieve SD metadata](../../../../business-processes/bp05b-provider-manages-resource-descriptions/bp05b-dynamic-view.md#retrieve-sd-metadata), [Retrieve full self-description](../../../../business-processes/bp05b-provider-manages-resource-descriptions/bp05b-dynamic-view.md#retrieve-full-self-description)
 
 ## Text
 
