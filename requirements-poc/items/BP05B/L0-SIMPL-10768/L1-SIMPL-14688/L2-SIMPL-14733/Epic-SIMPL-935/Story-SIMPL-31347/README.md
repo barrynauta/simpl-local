@@ -12,75 +12,40 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Story card
 
-| As|an authorised Provider managing Resource Descriptions |
-| --- |
-
-| I want|to retrieve the details of an installed access-policy template |
-| --- |
-
-| So that|I can use the template to define an access policy |
-| --- |
+**As an** authorised Provider managing Resource Descriptions\
+**I want to** retrieve the details of an installed access-policy template\
+**So that** I can use the template to define an access policy
 
 #### Acceptance criteria
 
 ##### Provider retrieves an access-policy template
 
-| Given|I am authenticated as a Provider with the required role |
-| --- |
-
-| And|an installed access-policy template exists for the requested identifier |
-| --- |
-
-| When|I request that template through the detail policy-template API |
-| --- |
-
-| Then|the service responds with `200 OK` |
-| --- |
-
-| And|returns the full template descriptor |
-| --- |
-
-| And|the descriptor contains the information needed to render the form and create a valid ODRL access-policy instance |
-| --- |
+1. **Given** I am authenticated as a Provider with the required role\
+   **And** an installed access-policy template exists for the requested identifier\
+   **When** I request that template through the detail policy-template API\
+   **Then** the service responds with `200 OK`\
+   **And** returns the full template descriptor\
+   **And** the descriptor contains the information needed to render the form and create a valid ODRL access-policy instance
 
 ##### Unauthenticated client is rejected
 
-| Given|I am not authenticated |
-| --- |
-
-| When|I request an access-policy template by identifier |
-| --- |
-
-| Then|the service responds with `401 Unauthorized` |
-| --- |
-
-| And|returns no template data |
-| --- |
+2. **Given** I am not authenticated\
+   **When** I request an access-policy template by identifier\
+   **Then** the service responds with `401 Unauthorized`\
+   **And** returns no template data
 
 ##### Provider without the required role is rejected
 
-| Given|I am authenticated without a role that allows me to manage Resource Descriptions |
-| --- |
-
-| When|I request an access-policy template by identifier |
-| --- |
-
-| Then|the service responds with `403 Forbidden` |
-| --- |
-
-| And|returns no template data |
-| --- |
+3. **Given** I am authenticated without a role that allows me to manage Resource Descriptions\
+   **When** I request an access-policy template by identifier\
+   **Then** the service responds with `403 Forbidden`\
+   **And** returns no template data
 
 ##### Requested template does not exist
 
-| Given|I am authenticated as a Provider with the required role |
-| --- |
-
-| When|I request an identifier that does not match an installed access-policy template |
-| --- |
-
-| Then|the service responds with `404 Not Found` |
-| --- |
+4. **Given** I am authenticated as a Provider with the required role\
+   **When** I request an identifier that does not match an installed access-policy template\
+   **Then** the service responds with `404 Not Found`
 
 #### Technical details
 

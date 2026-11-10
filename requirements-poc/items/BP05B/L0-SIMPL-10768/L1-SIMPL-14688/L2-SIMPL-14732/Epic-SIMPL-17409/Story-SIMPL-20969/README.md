@@ -12,60 +12,32 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to add application resource type specific metadata to a new resource description via UI |
-| --- |
-
-| so that|I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type. |
-| --- |
+**As a** Provider end user\
+**I want to** add application resource type specific metadata to a new resource description via UI\
+**So that** I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type.
 
 #### Acceptance criteria
 
-| Scenario | A Provider adds application resource type specific metadata to a new Resource description via UI |
-| --- | --- |
+**Scenario:** A Provider adds application resource type specific metadata to a new Resource description via UI
 
-| Given|I am authenticated as a Provider end user |
-| --- |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step "Application metadata" in the wizard\
+   **Then** I can add data resource type specific metadata as defined in the schema of the selected resource type to the new resource description.
 
-| and |I have a role authorising the management of Resource Descriptions |
-| --- |
+**Scenario:** A Provider finishes adding application resource type specific metadata to a new Resource description via UI
 
-| and|I am creating a new resource description |
-| --- |
-
-| when|I reach the step "Application metadata" in the wizard |
-| --- |
-
-| then|I can add data resource type specific metadata as defined in the schema of the selected resource type to the new resource description. |
-| --- |
-|  |  |
-
-| Scenario | A Provider finishes adding application resource type specific metadata to a new Resource description via UI |
-| --- | --- |
-
-| Given|I am authenticated as a Provider end user |
-| --- |
-
-| and |I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|I am creating a new resource description |
-| --- |
-
-| when|I reach the step "Application metadata" in the wizard |
-| --- |
-
-| and|I have added application resource type specific metadata to the new resource description |
-| --- |
-
-| then|I can navigate to the next step in the wizard. |
-| --- |
+2. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step "Application metadata" in the wizard\
+   **And** I have added application resource type specific metadata to the new resource description\
+   **Then** I can navigate to the next step in the wizard.
 
 **Provider tries to submit a Resource Description without mandatory application metadata**
 
-1. **Given** I am authenticated as a Provider end user\
+3. **Given** I am authenticated as a Provider end user\
    **And** I have a role authorising the management of Resource Descriptions\
    **And** I am creating a new resource description\
    **When** I attempt to submit the Self Description\

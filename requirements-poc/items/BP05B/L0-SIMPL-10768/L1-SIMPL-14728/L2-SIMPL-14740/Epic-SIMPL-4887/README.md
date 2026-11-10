@@ -12,88 +12,44 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want to|to use, via UI, an access policy template to assign an access policy  to a new version of a resource description |
-| --- |
-
-| so that|I can ensure that the access to the new resource description and the underlying resource is aligned with my internal rules and obligations. |
-| --- |
+**As a** Provider end user\
+**I want to** to use, via UI, an access policy template to assign an access policy to a new version of a resource description\
+**So that** I can ensure that the access to the new resource description and the underlying resource is aligned with my internal rules and obligations.
 
 #### Acceptance criteria
 
 **Acceptance Criterion 1: Add access policies to a new version of a resource description**
 
-|   |   |
-| --- | --- |
-| **Scenario** | **Provider assigns access policies of a new version of a resource description by using a policy template** |
+**Scenario:** Provider assigns access policies of a new version of a resource description by using a policy template
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and |I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new version of a resource description |
-| --- |
-
-| When|I reach the step "Access policies" in the wizard |
-| --- |
-
-| Then |I can retrieve the access policy templates |
-| --- |
-
-| And|I can select the access policy template I want to use |
-| --- |
-
-| And|I can fill in the parameters of the access policy template |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new version of a resource description\
+   **When** I reach the step "Access policies" in the wizard\
+   **Then** I can retrieve the access policy templates\
+   **And** I can select the access policy template I want to use\
+   **And** I can fill in the parameters of the access policy template
 
 **Acceptance Criterion 2: Remove access policies from a new version of a resource description**
 
-|   |   |
-| --- | --- |
-| **Scenario** | **A Provider removes access policy from a new version of a resource description which were assigned with a policy template via UI** |
+**Scenario:** A Provider removes access policy from a new version of a resource description which were assigned with a policy template via UI
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and |I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new version of a resource description |
-| --- |
-
-| When|I reach the step "Access policies" in the wizard |
-| --- |
-
-| Then|I can remove access policies which were assigned with a policy template from the new resource description. |
-| --- |
+2. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new version of a resource description\
+   **When** I reach the step "Access policies" in the wizard\
+   **Then** I can remove access policies which were assigned with a policy template from the new resource description.
 
 **Acceptance Criterion 3: Finish updates of a new version of the resource description**
 
-|   |   |
-| --- | --- |
-| **Scenario** | **A Provider finishes updating access policies of a new version of a resource description via UI** |
+**Scenario:** A Provider finishes updating access policies of a new version of a resource description via UI
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and |I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new resource description |
-| --- |
-
-| When|I reach the step "Access policies" in the wizard |
-| --- |
-
-| and|I have assigned or removed access policies to from the new resource description |
-| --- |
-
-| Then|the updated access policies are assigned to the resource description I am updating |
-| --- |
+3. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step "Access policies" in the wizard\
+   **And** I have assigned or removed access policies to from the new resource description\
+   **Then** the updated access policies are assigned to the resource description I am updating
 
 ## Where it fits
 

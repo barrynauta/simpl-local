@@ -12,55 +12,28 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As|a Provider |
-| --- |
-
-| I want|to notify Consumers about the revocation of a resource description |
-| --- |
-
-| So that|they can react on this. |
-| --- |
+**As a** Provider\
+**I want to** notify Consumers about the revocation of a resource description\
+**So that** they can react on this.
 
 #### Acceptance criteria
 
-| Scenario | The Provider notifies Consumers - revokes a resource description - positive case |
-| --- | --- |
+**Scenario:** The Provider notifies Consumers - revokes a resource description - positive case
 
-| Given|I am a Provider |
-| --- |
+1. **Given** I am a Provider\
+   **And** I'm authorized to manage resource descriptions\
+   **When** I revoke an own resource description via API\
+   **And** the revocation of the resource description is successful\
+   **Then** Simpl-Open send an email to Consumers with an active contract of the resource description about the revocation of the resource description.
 
-| and|I'm authorized to manage resource descriptions |
-| --- |
+**Scenario:** The Provider notifies Consumers - revokes a resource description - negative case: revocation is not successful
 
-| When|I revoke an own resource description via API |
-| --- |
-
-| and|the revocation of the resource description is successful |
-| --- |
-
-| Then|Simpl-Open send an email to Consumers with an active contract of the resource description about the revocation of the resource description. |
-| --- |
-
-| Scenario | The Provider notifies Consumers - revokes a resource description - negative case: revocation is not successful |
-| --- | --- |
-
-| Given|I am a Provider |
-| --- |
-
-| and|I'm authorized to manage resource descriptions |
-| --- |
-
-| When|I revoke an own resource description via API |
-| --- |
-
-| and|the revocation of the resource description is not successful |
-| --- |
-
-| and|and an error message is returned via API |
-| --- |
-
-| Then|Simpl-Open does not send an email to Consumers with an active contract of the resource description about the revocation of the resource description. |
-| --- |
+2. **Given** I am a Provider\
+   **And** I'm authorized to manage resource descriptions\
+   **When** I revoke an own resource description via API\
+   **And** the revocation of the resource description is not successful\
+   **And** and an error message is returned via API\
+   **Then** Simpl-Open does not send an email to Consumers with an active contract of the resource description about the revocation of the resource description.
 
 ###### Technical Details
 

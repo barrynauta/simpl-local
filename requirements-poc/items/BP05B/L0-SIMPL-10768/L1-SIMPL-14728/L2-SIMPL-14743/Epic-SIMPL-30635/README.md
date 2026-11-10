@@ -10,37 +10,20 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 ## Text
 
-| As a|Provider |
-| --- |
-
-| I want|to remove contract clauses from a resource description, resulting in a new version of the resource description |
-| --- |
-
-| So that|the terms and conditions for using and providing a resource are updated |
-| --- |
+**As a** Provider\
+**I want to** remove contract clauses from a resource description, resulting in a new version of the resource description\
+**So that** the terms and conditions for using and providing a resource are updated
 
 **Acceptance criteria:**
 
-| Scenario | A Provider removes contract clauses from a resource description via UI, resulting in a new version of the resource description |
-| --- | --- |
+**Scenario:** A Provider removes contract clauses from a resource description via UI, resulting in a new version of the resource description
 
-| Given|I am authenticated as a Provider end user |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new version of a resource description |
-| --- |
-
-| when|I reach the step "Contract clauses" in the wizard |
-| --- |
-
-| then|the contract clauses attributes are prefilled with the values from the previous version |
-| --- |
-
-| and|I can remove contract clauses from the resource description |
-| --- |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new version of a resource description\
+   **When** I reach the step "Contract clauses" in the wizard\
+   **Then** the contract clauses attributes are prefilled with the values from the previous version\
+   **And** I can remove contract clauses from the resource description
 
 ## Where it fits
 

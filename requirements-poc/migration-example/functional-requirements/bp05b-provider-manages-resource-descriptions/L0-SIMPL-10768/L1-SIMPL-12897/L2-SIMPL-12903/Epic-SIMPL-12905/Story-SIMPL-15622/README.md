@@ -12,55 +12,28 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|provider |
-| --- |
-
-| I want|to receive the details of one of my self-descriptions via an API |
-| --- |
-
-| so that|I can inform myself about the details. |
-| --- |
+**As a** provider\
+**I want to** receive the details of one of my self-descriptions via an API\
+**So that** I can inform myself about the details.
 
 #### Acceptance criteria
 
-| Given|there is a resource description published by myself |
-| --- |
+1. **Given** there is a resource description published by myself\
+   **When** I request the details of an own resource description with its ID via API\
+   **Then** all details of the resource description are returned.
 
-| when|I request the details of an own resource description with its ID via API |
-| --- |
+2. **Given** I authorised as a provider\
+   **When** I requests a resource description with a syntactically valid ID\
+   **And** the ID refers to a not existing Resource description\
+   **Then** an message is returned that the resource is not found.
 
-| then|all details of the resource description are returned. |
-| --- |
+3. **Given** I am authorised as a provider\
+   **When** I request a resource description not created by myself\
+   **Then** an message is returned that I am not authorised.
 
-| Given|I authorised as a provider |
-| --- |
-
-| when|I requests a resource description with a syntactically valid ID |
-| --- |
-
-| and|the ID refers to a not existing Resource description |
-| --- |
-
-| then|an message is returned that the resource is not found. |
-| --- |
-
-| Given|I am authorised as a provider |
-| --- |
-
-| when|I request a resource description not created by myself |
-| --- |
-
-| then|an message is returned that I am not authorised. |
-| --- |
-
-| Given|I am authorised as a provider |
-| --- |
-
-| when|I requests a resource description with an incorrect UUID (e.g. too short or too many characters). |
-| --- |
-
-| then|an message is returned that the request is bad. |
-| --- |
+4. **Given** I am authorised as a provider\
+   **When** I requests a resource description with an incorrect UUID (e.g. too short or too many characters).\
+   **Then** an message is returned that the request is bad.
 
 #### Technical information
 

@@ -12,78 +12,41 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Story card
 
-| As|an authorised Provider managing Resource Descriptions |
-| --- |
-
-| I want|to retrieve the usage-policy templates |
-| --- |
-
-| So that|I can select a template when adding a usage policy to a Resource Description |
-| --- |
+**As an** authorised Provider managing Resource Descriptions\
+**I want to** retrieve the usage-policy templates\
+**So that** I can select a template when adding a usage policy to a Resource Description
 
 #### Acceptance criteria
 
 ##### Provider retrieves the usage-policy templates
 
-| Given|I am authenticated as a Provider with the required role |
-| --- |
-
-| When|I request the policy templates using the usage-policy filter |
-| --- |
-
-| Then|the service responds with `200 OK` |
-| --- |
-
-| And|returns all usage-policy templates |
-| --- |
-
-| And|each item contains a stable identifier, name, and description |
-| --- |
+1. **Given** I am authenticated as a Provider with the required role\
+   **When** I request the policy templates using the usage-policy filter\
+   **Then** the service responds with `200 OK`\
+   **And** returns all usage-policy templates\
+   **And** each item contains a stable identifier, name, and description
 
 ##### No usage-policy templates are available
 
-| Given|I am authenticated as a Provider with the required role |
-| --- |
-
-| And|no usage-policy templates are available |
-| --- |
-
-| When|I request the policy templates using the usage-policy filter |
-| --- |
-
-| Then|the service responds with `200 OK` |
-| --- |
-
-| And|returns an empty array `[]` |
-| --- |
+2. **Given** I am authenticated as a Provider with the required role\
+   **And** no usage-policy templates are available\
+   **When** I request the policy templates using the usage-policy filter\
+   **Then** the service responds with `200 OK`\
+   **And** returns an empty array `[]`
 
 ##### Unauthenticated client is rejected
 
-| Given|I am not authenticated |
-| --- |
-
-| When|I request the policy templates using the usage-policy filter |
-| --- |
-
-| Then|the service responds with `401 Unauthorized` |
-| --- |
-
-| And|returns no template data |
-| --- |
+3. **Given** I am not authenticated\
+   **When** I request the policy templates using the usage-policy filter\
+   **Then** the service responds with `401 Unauthorized`\
+   **And** returns no template data
 
 ##### Provider without the required role is rejected
 
-| Given|I am authenticated without a role that allows me to manage Resource Descriptions |
-| --- |
-
-| When|I request the policy templates using the usage-policy filter |
-| --- |
-
-| Then|the service responds with `403 Forbidden` |
-| --- |
-
-| And|returns no template data |
-| --- |
+4. **Given** I am authenticated without a role that allows me to manage Resource Descriptions\
+   **When** I request the policy templates using the usage-policy filter\
+   **Then** the service responds with `403 Forbidden`\
+   **And** returns no template data
 
 #### Technical details
 

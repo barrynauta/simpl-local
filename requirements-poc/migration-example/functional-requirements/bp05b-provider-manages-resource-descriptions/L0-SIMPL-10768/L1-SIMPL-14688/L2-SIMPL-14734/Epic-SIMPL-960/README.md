@@ -20,23 +20,21 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 **Acceptance Criterion 1: Retrieve the list of predefined policy templates**
 
-|   |   |
-| --- | --- |
-| **Scenario** | **A Provider supported in defining a usage policy, by retrieving the list of usage policy templates, via API** |
-| **Given** | h5. I am authenticated as a Provider |
-| **and** | h5. I have a role authorising the management of resource descriptions |
-| **When** | I request for the available usage policy templates via an API |
-| **Then** | Simpl-Open shall return all policy templates that can be used for defining the usage policy. |
+**Scenario:** A Provider supported in defining a usage policy, by retrieving the list of usage policy templates, via API
+
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request for the available usage policy templates via an API\
+   **Then** Simpl-Open shall return all policy templates that can be used for defining the usage policy.
 
 **Acceptance Criterion 2: Retrieve the details of a selected predefined policy template**
 
-|   |   |
-| --- | --- |
-| **Scenario** | **A Provider supported in defining a usage policy, by retrieving the details of a usage policy template, via API** |
-| **Given** | h5. I am authenticated as a Provider |
-| **and** | h5. I have a role authorising the management of resource descriptions |
-| **When** | I request the details of a usage policy template via an API |
-| **Then** | Simpl-Open shall return the details of a policy template in a structured format that can be used for defining the usage policy. |
+**Scenario:** A Provider supported in defining a usage policy, by retrieving the details of a usage policy template, via API
+
+2. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request the details of a usage policy template via an API\
+   **Then** Simpl-Open shall return the details of a policy template in a structured format that can be used for defining the usage policy.
 
 ## Where it fits
 

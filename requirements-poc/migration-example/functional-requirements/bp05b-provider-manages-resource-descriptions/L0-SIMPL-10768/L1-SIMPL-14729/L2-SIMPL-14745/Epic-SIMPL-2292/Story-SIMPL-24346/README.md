@@ -12,31 +12,18 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|Simpl to automatically assign the first version number, based on the applicable versioning algorithm, to a new resource description |
-| --- |
-
-| so that|I can uniquely identify the resource description ensuring traceability. |
-| --- |
+**As a** Provider\
+**I want** Simpl to automatically assign the first version number, based on the applicable versioning algorithm, to a new resource description\
+**So that** I can uniquely identify the resource description ensuring traceability.
 
 #### Acceptance criteria
 
-| Scenario | A Provider automatically assigns a version numnber to a new resource desciption - Positive case |
-| --- | --- |
+**Scenario:** A Provider automatically assigns a version numnber to a new resource desciption - Positive case
 
-| Given|I am authenticated as a provider |
-| --- |
-
-| and|I create a new resource description in the UI |
-| --- |
-
-| When|I submit the filled resource description to the backend to be enriched and validated |
-| --- |
-
-| Then|Simpl-open assigns the initial version number, based on the applicable versioning algorithm for resouce desciptions. |
-| --- |
+1. **Given** I am authenticated as a provider\
+   **And** I create a new resource description in the UI\
+   **When** I submit the filled resource description to the backend to be enriched and validated\
+   **Then** Simpl-open assigns the initial version number, based on the applicable versioning algorithm for resouce desciptions.
 
 **Note on negative AC:**\
 The scope of this story is merely to set the initial version number. Thus negative AC should only cover issues with the versioning algorithm itself, not general scenarios, such as not authorised or a general internal server error.

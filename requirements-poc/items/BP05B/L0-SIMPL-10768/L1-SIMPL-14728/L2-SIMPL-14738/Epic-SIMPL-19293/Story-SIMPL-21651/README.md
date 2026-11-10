@@ -12,88 +12,42 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to start the creation of a new version of a Resource description via UI |
-| --- |
-
-| so that|I can align the resource description with the latest information related to my resource. |
-| --- |
+**As a** Provider end user\
+**I want to** start the creation of a new version of a Resource description via UI\
+**So that** I can align the resource description with the latest information related to my resource.
 
 #### Acceptance criteria
 
-| Scenario | A Provider starts the creation of a new version of a resource description via UI - positive case |
-| --- | --- |
+**Scenario:** A Provider starts the creation of a new version of a resource description via UI - positive case
 
-| Given|I am authenticated as a Provider end user |
-| --- |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am consulting the full contents of a Resource description\
+   **When** I demand to create a new version of this Resource description (by pressing the "Create New Version" button on the resource description detail view)\
+   **Then** I am guided to the first step of the wizard based on the latest version of the underlying schema for this resource type (obtained via API).
 
-| and |I have a role authorising the management of resource descriptions |
-| --- |
+**Scenario:** A Provider starts the creation of a new version of a resource description via UI - API error
 
-| and|I am consulting the full contents of a Resource description |
-| --- |
+2. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am consulting the full contents of a Resource description\
+   **When** I demand to create a new version of this Resource description (by pressing the "Create New Version" button on the resource description detail view)Then\
+   **And** the API to retrieve the latest version of the schema of the updated resource description throws an error\
+   **Then** the creation of a new version of a resource description is not possible\
+   **And** a notification is shown that a new version of the resource description cannot be created.
 
-| When|I demand to create a new version of this Resource description (by pressing the "Create New Version" button on the resource description detail view) |
-| --- |
+**Scenario:** A Provider starts the creation of a new version of a resource description via UI - not authenticated
 
-| Then|I am guided to the first step of the wizard based on the latest version of the underlying schema for this resource type (obtained via API). |
-| --- |
-|  |  |
+3. **Given** I am not authenticated as Provider\
+   **When** try to open the resource description management page\
+   **Then** I cannot open the resource description management page.
 
-| Scenario | A Provider starts the creation of a new version of a resource description via UI - API error |
-| --- | --- |
+**Scenario:** A Provider starts the creation of a new version of a resource description via UI  - no role
 
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am consulting the full contents of a Resource description |
-| --- |
-
-| When|I demand to create a new version of this Resource description (by pressing the "Create New Version" button on the resource description detail view)Then |
-| --- |
-
-| and |the API to retrieve the latest version of the schema of the updated resource description throws an error |
-| --- |
-
-| Then|the creation of a new version of a resource description is not possible |
-| --- |
-
-| and|a notification is shown that a new version of the resource description cannot be created. |
-| --- |
-|  |  |
-
-| Scenario | A Provider starts the creation of a new version of a resource description via UI - not authenticated |
-| --- | --- |
-
-| Given|I am not authenticated as Provider |
-| --- |
-
-| When|try to open the resource description management page |
-| --- |
-
-| Then |I cannot open the resource description management page. |
-| --- |
-|  |  |
-
-| Scenario | A Provider starts the creation of a new version of a resource description via UI  - no role |
-| --- | --- |
-
-| Given|I am authenticated as Provider |
-| --- |
-
-| and |I do not have a role authorising the management of resource rescriptions |
-| --- |
-
-| When|try to open the resource description management page |
-| --- |
-
-| Then |I cannot open the resource description management page. |
-| --- |
+4. **Given** I am authenticated as Provider\
+   **And** I do not have a role authorising the management of resource rescriptions\
+   **When** try to open the resource description management page\
+   **Then** I cannot open the resource description management page.
 
 #### Additional notes
 

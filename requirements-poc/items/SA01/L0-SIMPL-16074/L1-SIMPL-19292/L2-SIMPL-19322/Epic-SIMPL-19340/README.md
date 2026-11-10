@@ -10,22 +10,18 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-| **I want** | to retrieve historical logs of past workflow executions, |
-| **so that** | I can audit previous runs, identify trends, and troubleshoot recurring issues. |
+**As a** Participant\
+**I want to** retrieve historical logs of past workflow executions,\
+**So that** I can audit previous runs, identify trends, and troubleshoot recurring issues.
 
 **Acceptance Criteria**
 
 **AC1. Historical Log Availability**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflows |
-| **and** | a workflow has completed in the past, |
-| **When** | I request access to its historical logs, |
-| **Then** | Simpl-Open provides the full set of stored logs for that specific execution. |
+1. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflows\
+   **And** a workflow has completed in the past,\
+   **When** I request access to its historical logs,\
+   **Then** Simpl-Open provides the full set of stored logs for that specific execution.
 
 ## Where it fits
 

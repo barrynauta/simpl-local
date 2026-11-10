@@ -12,119 +12,54 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to revoke a Resource description via UI |
-| --- |
-
-| so that|the Resource description cannot be used any more. |
-| --- |
+**As a** Provider\
+**I want to** revoke a Resource description via UI\
+**So that** the Resource description cannot be used any more.
 
 #### Acceptance criteria
 
-| Scenario | A Provider requests the revocation of a Resource description via UI - positive case |
-| --- | --- |
+**Scenario:** A Provider requests the revocation of a Resource description via UI - positive case
 
-| Given|I am authenticated as a Provider |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of Resource descriptions\
+   **And** I am consulting the full contents of a Resource description\
+   **When** I request to revoke a Resource description\
+   **Then** I am asked to confirm the revocation\
+   **And** upon confirmation a revocation request is sent to the Governance authority.
 
-| and|I have a role authorising the management of Resource descriptions |
-| --- |
+**Scenario:** A Provider requests the revocation of a Resource description via UI - declining confirmation
 
-| and|I am consulting the full contents of a Resource description |
-| --- |
+2. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of Resource descriptions\
+   **And** I am consulting the full contents of a Resource description\
+   **When** I request to revoke a Resource description\
+   **And** I am asked to confirm the revocation\
+   **And** I decline to confirm\
+   **Then** I am guided back to the details view.
 
-| when|I request to revoke a Resource description |
-| --- |
+**Scenario:** A Provider requests the revocation of a Resource description via UI - API error
 
-| then|I am asked to confirm the revocation |
-| --- |
+3. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am consulting the full contents of a Resource description\
+   **When** I demand to revoke a resource description\
+   **And** I have confirmed the revocation\
+   **And** the API to revoke the resource description throws an error\
+   **Then** the revocation of the resource description is not possible\
+   **And** a notification is shown that the resource description cannot be revoked.
 
-| and|upon confirmation a revocation request is sent to the Governance authority. |
-| --- |
-|  |  |
+**Scenario:** A Provider requests the revocation of a Resource description via UI - not authenticated
 
-| Scenario | A Provider requests the revocation of a Resource description via UI - declining confirmation |
-| --- | --- |
+4. **Given** I am not authenticated as Provider\
+   **When** try to open the resource description management page\
+   **Then** I cannot open the resource description management page.
 
-| Given|I am authenticated as a Provider |
-| --- |
+**Scenario:** A Provider requests the revocation of a Resource description via UI  - no role
 
-| and|I have a role authorising the management of Resource descriptions |
-| --- |
-
-| and|I am consulting the full contents of a Resource description |
-| --- |
-
-| when|I request to revoke a Resource description |
-| --- |
-
-| and|I am asked to confirm the revocation |
-| --- |
-
-| and|I decline to confirm |
-| --- |
-
-| then|I am guided back to the details view. |
-| --- |
-|  |  |
-
-| Scenario | A Provider requests the revocation of a Resource description via UI - API error |
-| --- | --- |
-
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am consulting the full contents of a Resource description |
-| --- |
-
-| When|I demand to revoke a resource description |
-| --- |
-
-| and|I have confirmed the revocation |
-| --- |
-
-| and |the API to revoke the resource description throws an error |
-| --- |
-
-| Then|the revocation of the resource description is not possible |
-| --- |
-
-| and|a notification is shown that  the resource description cannot be revoked. |
-| --- |
-|  |  |
-
-| Scenario | A Provider requests the revocation of a Resource description via UI - not authenticated |
-| --- | --- |
-
-| Given|I am not authenticated as Provider |
-| --- |
-
-| When|try to open the resource description management page |
-| --- |
-
-| Then |I cannot open the resource description management page. |
-| --- |
-|  |  |
-
-| Scenario | A Provider requests the revocation of a Resource description via UI  - no role |
-| --- | --- |
-
-| Given|I am authenticated as Provider |
-| --- |
-
-| and |I do not have a role authorising the management of resource rescriptions |
-| --- |
-
-| When|try to open the resource description management page |
-| --- |
-
-| Then |I cannot open the resource description management page. |
-| --- |
+5. **Given** I am authenticated as Provider\
+   **And** I do not have a role authorising the management of resource rescriptions\
+   **When** try to open the resource description management page\
+   **Then** I cannot open the resource description management page.
 
 #### Mockups:
 

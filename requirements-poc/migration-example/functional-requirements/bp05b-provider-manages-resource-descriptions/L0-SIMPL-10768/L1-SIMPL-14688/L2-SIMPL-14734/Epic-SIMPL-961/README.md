@@ -16,36 +16,17 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 **Acceptance Criteria**
 
-|   |   |
-| --- | --- |
-| **Scenario** | **A Provider assigns usage policies** **by using policy template** **to a new resource description via UI** |
+**Scenario:** **A Provider assigns usage policies** **by using policy template** **to a new resource description via UI**
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and |I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new resource description |
-| --- |
-
-| and|I reach the step "Usage policies" in the wizard |
-| --- |
-
-| When|I retrieve the usage policy templates |
-| --- |
-
-| And|I select the usage policy template I want to use |
-| --- |
-
-| And|I fill in the parameters of the usage policy template |
-| --- |
-
-| Then|a usage policy is created based on the selected usage policy template and values I provided for the parameters |
-| --- |
-
-| And|the created usage policy is assigned to the resource description I am creating |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **And** I reach the step "Usage policies" in the wizard\
+   **When** I retrieve the usage policy templates\
+   **And** I select the usage policy template I want to use\
+   **And** I fill in the parameters of the usage policy template\
+   **Then** a usage policy is created based on the selected usage policy template and values I provided for the parameters\
+   **And** the created usage policy is assigned to the resource description I am creating
 
 ## Where it fits
 

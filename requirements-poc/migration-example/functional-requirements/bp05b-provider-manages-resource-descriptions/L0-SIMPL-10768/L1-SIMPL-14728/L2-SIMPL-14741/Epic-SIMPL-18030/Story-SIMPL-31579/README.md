@@ -20,91 +20,44 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 ##### Add or save a policy in the wizard
 
-| Given|I entered the required values for a usage-policy template |
-| --- |
-
-| When|I click Add policy for a new policy or Save changes for an edited policy |
-| --- |
-
-| Then|the UI checks the values against the template's field rules |
-| --- |
-
-| And|it copies the template's ODRL policy and fills only the declared slots |
-| --- |
-
-| And|a valid completed policy is added to or replaces its entry in wizard state |
-| --- |
-
-| And|the policy stays in the current wizard until I submit the complete resource description |
-| --- |
+1. **Given** I entered the required values for a usage-policy template\
+   **When** I click Add policy for a new policy or Save changes for an edited policy\
+   **Then** the UI checks the values against the template's field rules\
+   **And** it copies the template's ODRL policy and fills only the declared slots\
+   **And** a valid completed policy is added to or replaces its entry in wizard state\
+   **And** the policy stays in the current wizard until I submit the complete resource description
 
 ##### Submit the complete version
 
-| Given|the new-version wizard contains the usage policies I intend to keep |
-| --- |
-
-| When|I submit the complete resource-description version |
-| --- |
-
-| Then|the UI includes those completed policies in the RD submission payload |
-| --- |
-
-| And|the publication component validates the final policies before publication |
-| --- |
-
-| And|only a successful submission saves those policies with the new version |
-| --- |
-
-| And|the previous published version remains unchanged |
-| --- |
+2. **Given** the new-version wizard contains the usage policies I intend to keep\
+   **When** I submit the complete resource-description version\
+   **Then** the UI includes those completed policies in the RD submission payload\
+   **And** the publication component validates the final policies before publication\
+   **And** only a successful submission saves those policies with the new version\
+   **And** the previous published version remains unchanged
 
 ##### Invalid policy values
 
-| Given|required policy values are missing or invalid |
-| --- |
-
-| When|I confirm that policy |
-| --- |
-
-| Then|the UI shows validation feedback |
-| --- |
-
-| And|it keeps the form open with the entered values |
-| --- |
-
-| And|it does not add an invalid policy to the RD |
-| --- |
+3. **Given** required policy values are missing or invalid\
+   **When** I confirm that policy\
+   **Then** the UI shows validation feedback\
+   **And** it keeps the form open with the entered values\
+   **And** it does not add an invalid policy to the RD
 
 ##### Final submission fails
 
-| Given|I submit the new resource-description version |
-| --- |
-
-| When|the submission fails |
-| --- |
-
-| Then|the UI shows the failure |
-| --- |
-
-| And|retains the wizard data and policy set for correction or retry |
-| --- |
-
-| And|it does not report the new version as published |
-| --- |
+4. **Given** I submit the new resource-description version\
+   **When** the submission fails\
+   **Then** the UI shows the failure\
+   **And** retains the wizard data and policy set for correction or retry\
+   **And** it does not report the new version as published
 
 ##### Unauthorised submission
 
-| Given|I am authenticated without a role authorising management of resource descriptions |
-| --- |
-
-| When|I submit the new resource-description version with its policies |
-| --- |
-
-| Then|the service returns 403 Forbidden |
-| --- |
-
-| And|the policies are not saved |
-| --- |
+5. **Given** I am authenticated without a role authorising management of resource descriptions\
+   **When** I submit the new resource-description version with its policies\
+   **Then** the service returns 403 Forbidden\
+   **And** the policies are not saved
 
 #### Technical details
 

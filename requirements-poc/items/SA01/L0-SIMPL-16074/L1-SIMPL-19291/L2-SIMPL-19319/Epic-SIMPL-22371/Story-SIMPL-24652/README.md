@@ -12,14 +12,9 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 #### Storycard
 
-| As a|Provider Participant (through Sd-Tooling Frontend) |
-| --- |
-
-| I want|to visualize/use a dedicated template that enables workflow configuration when creating a resource description |
-| --- |
-
-| so that|I can select and configure a data‑processing workflow associated with the resource asset, whenever the selected sharing method supports workflow‑based processing. |
-| --- |
+**As a** Provider Participant (through Sd-Tooling Frontend)\
+**I want to** visualize/use a dedicated template that enables workflow configuration when creating a resource description\
+**So that** I can select and configure a data‑processing workflow associated with the resource asset, whenever the selected sharing method supports workflow‑based processing.
 
 #### Technical details
 

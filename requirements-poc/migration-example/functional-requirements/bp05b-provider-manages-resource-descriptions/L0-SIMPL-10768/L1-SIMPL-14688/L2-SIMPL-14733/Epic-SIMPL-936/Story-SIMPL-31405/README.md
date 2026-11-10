@@ -12,93 +12,46 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Story card
 
-| As|an authorised Provider managing Resource Descriptions |
-| --- |
-
-| I want|to select an access-policy template in the Resource Description wizard |
-| --- |
-
-| So that|I can use a predefined template when adding an access policy |
-| --- |
+**As an** authorised Provider managing Resource Descriptions\
+**I want to** select an access-policy template in the Resource Description wizard\
+**So that** I can use a predefined template when adding an access policy
 
 #### Acceptance criteria
 
 ##### Provider selects an access-policy template
 
-| Given|I am authenticated as a Provider authorised to manage Resource Descriptions |
-| --- |
-
-| And|I am at the "Access policies" step while creating a Resource Description |
-| --- |
-
-| When|the UI retrieves the access-policy templates through the shared policy-template API using the access-policy filter |
-| --- |
-
-| Then|the UI displays all predefined access-policy templates |
-| --- |
-
-| And|selecting a template stores it as the chosen template |
-| --- |
-
-| And|loads its details for the parameter form |
-| --- |
+1. **Given** I am authenticated as a Provider authorised to manage Resource Descriptions\
+   **And** I am at the "Access policies" step while creating a Resource Description\
+   **When** the UI retrieves the access-policy templates through the shared policy-template API using the access-policy filter\
+   **Then** the UI displays all predefined access-policy templates\
+   **And** selecting a template stores it as the chosen template\
+   **And** loads its details for the parameter form
 
 ##### Provider continues without selecting a template
 
-| Given|one or more access-policy templates are available |
-| --- |
-
-| And|I have not selected a template |
-| --- |
-
-| When|I continue to the next step |
-| --- |
-
-| Then|the wizard allows me to continue |
-| --- |
-
-| And|no validation message is shown for the missing selection |
-| --- |
-
-| And|no access policy is added |
-| --- |
+2. **Given** one or more access-policy templates are available\
+   **And** I have not selected a template\
+   **When** I continue to the next step\
+   **Then** the wizard allows me to continue\
+   **And** no validation message is shown for the missing selection\
+   **And** no access policy is added
 
 ##### No access-policy templates are available
 
-| Given|I am authenticated as a Provider authorised to manage Resource Descriptions |
-| --- |
-
-| When|I reach the "Access policies" step |
-| --- |
-
-| And|the policy-template API returns an empty list for the access-policy filter |
-| --- |
-
-| Then|the UI shows that no templates are available |
-| --- |
-
-| And|I can continue without adding an access policy |
-| --- |
+3. **Given** I am authenticated as a Provider authorised to manage Resource Descriptions\
+   **When** I reach the "Access policies" step\
+   **And** the policy-template API returns an empty list for the access-policy filter\
+   **Then** the UI shows that no templates are available\
+   **And** I can continue without adding an access policy
 
 ##### Access-policy templates cannot be retrieved
 
-| Given|I am authenticated as a Provider authorised to manage Resource Descriptions |
-| --- |
-
-| When|I reach the "Access policies" step |
-| --- |
-
-| And|the policy-template API returns an error |
-| --- |
-
-| Then|the UI shows an error and offers a retry |
-| --- |
-
-| And|no template can be selected until retrieval succeeds |
-| --- |
-
-| And|I can continue without adding an access policy |
-| --- |
+4. **Given** I am authenticated as a Provider authorised to manage Resource Descriptions\
+   **When** I reach the "Access policies" step\
+   **And** the policy-template API returns an error\
+   **Then** the UI shows an error and offers a retry\
+   **And** no template can be selected until retrieval succeeds\
+   **And** I can continue without adding an access policy
 
 #### Technical details
 

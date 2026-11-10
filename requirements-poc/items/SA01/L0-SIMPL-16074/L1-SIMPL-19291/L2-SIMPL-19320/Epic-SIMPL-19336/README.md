@@ -10,29 +10,23 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-| **I want** | my workflow to automatically start at predefined time intervals or calendar-based schedules |
-| **so that** | I can ensure regular, predictable execution of the defined logic |
+**As a** Participant\
+**I want** my workflow to automatically start at predefined time intervals or calendar-based schedules\
+**So that** I can ensure regular, predictable execution of the defined logic
 
 **Acceptance Criteria**
 
 **AC1. Scheduled Time-based Trigger Execution**
 
-|   |   |
-| --- | --- |
-| **Given** | a workflow configured with a valid time-based, |
-| **When** | the defined time-based trigger condition is met, |
-| **Then** | Simpl-Open automatically starts the execution of the associated workflow, |
+1. **Given** a workflow configured with a valid time-based,\
+   **When** the defined time-based trigger condition is met,\
+   **Then** Simpl-Open automatically starts the execution of the associated workflow,
 
 **AC. Scheduled Calendar-based Trigger Execution**
 
-|   |   |
-| --- | --- |
-| **Given** | a workflow configured with a valid calendar-based schedule, |
-| **When** | the defined calendar-based trigger condition is met, |
-| **Then** | Simpl-Open automatically starts the execution of the associated workflow, |
+2. **Given** a workflow configured with a valid calendar-based schedule,\
+   **When** the defined calendar-based trigger condition is met,\
+   **Then** Simpl-Open automatically starts the execution of the associated workflow,
 
 ## Where it fits
 

@@ -12,114 +12,54 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to be able to revoke a Resource description via API |
-| --- |
-
-| so that|the Resource description cannot be used any more. |
-| --- |
+**As a** Provider\
+**I want to** be able to revoke a Resource description via API\
+**So that** the Resource description cannot be used any more.
 
 #### Acceptance criteria
 
-| Scenario | A Provider requests the revocation of a Resource description via API - positive case |
-| --- | --- |
+**Scenario:** A Provider requests the revocation of a Resource description via API - positive case
 
-| Given|I am authenticated as a Provider |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of Resource descriptions\
+   **When** I want to revoke a Resource description\
+   **Then** a revocation request is sent to the Governance authority.
 
-| and|I have a role authorising the management of Resource descriptions |
-| --- |
+**Scenario:** A Provider requests the revocation of a Resource description via API - not an own resource description
 
-| when|I want to revoke a Resource description |
-| --- |
+2. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of Resource descriptions\
+   **When** I want to revoke a resource description that is not published by me\
+   **Then** a message is returned that I am not authorised.
 
-| then|a revocation request is sent to the Governance authority. |
-| --- |
-|  |  |
+**Scenario:** A Provider requests the revocation of a Resource description via API - not existing resource description
 
-| Scenario | A Provider requests the revocation of a Resource description via API - not an own resource description |
-| --- | --- |
+3. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of Resource descriptions\
+   **When** I want to revoke an inexistent resource description\
+   **Then** a message is returned that the resource description cannot be found.
 
-| Given|I am authenticated as a Provider |
-| --- |
+**Scenario:** A Provider requests the revocation of a Resource description via API - bad request
 
-| and|I have a role authorising the management of Resource descriptions |
-| --- |
+4. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of Resource descriptions\
+   **When** I want to revoke a Resource description but using an invalid resource description ID\
+   **Then** a message is returned that the request is bad.
 
-| when|I want to revoke a resource description that is not published by me |
-| --- |
+**Scenario:** A Provider requests the revocation of a Resource description via API - wrong role
 
-| then|a message is returned that I am not authorised. |
-| --- |
-|  |  |
+5. **Given** I am authenticated as a Provider\
+   **And** I do not have a role authorising the management of Resource descriptions\
+   **When** I want to revoke a Resource description\
+   **Then** a message is returned that I am not authorised.
 
-| Scenario | A Provider requests the revocation of a Resource description via API - not existing resource description |
-| --- | --- |
+**Scenario:** A Provider requests the revocation of a Resource description via API - internal server error
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource descriptions |
-| --- |
-
-| when|I want to revoke an inexistent resource description |
-| --- |
-
-| then|a message is returned that the resource description cannot be found. |
-| --- |
-|  |  |
-
-| Scenario | A Provider requests the revocation of a Resource description via API - bad request |
-| --- | --- |
-
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource descriptions |
-| --- |
-
-| when|I want to revoke a Resource description but using an invalid resource description ID |
-| --- |
-
-| then|a message is returned that the request is bad. |
-| --- |
-|  |  |
-
-| Scenario | A Provider requests the revocation of a Resource description via API - wrong role |
-| --- | --- |
-
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and|I do **not** have a role authorising the management of Resource descriptions |
-| --- |
-
-| when|I want to revoke a Resource description |
-| --- |
-
-| then|a message is returned that I am not authorised. |
-| --- |
-|  |  |
-
-| Scenario | A Provider requests the revocation of a Resource description via API - internal server error |
-| --- | --- |
-
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource descriptions |
-| --- |
-
-| when|I want to revoke a Resource description |
-| --- |
-
-| and|there is an internal error |
-| --- |
-
-| then|a message is returned that the request cannot be fulfilled. |
-| --- |
+6. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of Resource descriptions\
+   **When** I want to revoke a Resource description\
+   **And** there is an internal error\
+   **Then** a message is returned that the request cannot be fulfilled.
 
 #### Technical information
 

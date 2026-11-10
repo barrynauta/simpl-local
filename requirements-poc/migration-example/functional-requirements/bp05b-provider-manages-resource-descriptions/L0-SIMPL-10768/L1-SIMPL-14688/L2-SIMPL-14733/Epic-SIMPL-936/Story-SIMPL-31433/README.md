@@ -12,75 +12,40 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Story card
 
-| As|an authorised Provider managing Resource Descriptions |
-| --- |
-
-| I want|an access policy created from a template to be added to the Resource Description I am creating |
-| --- |
-
-| So that|the policy is included when I submit the Resource Description |
-| --- |
+**As an** authorised Provider managing Resource Descriptions\
+**I want** an access policy created from a template to be added to the Resource Description I am creating\
+**So that** the policy is included when I submit the Resource Description
 
 #### Acceptance criteria
 
 ##### Provider adds an access policy to the Resource Description
 
-| Given|I selected an access-policy template |
-| --- |
-
-| And|I entered the required values |
-| --- |
-
-| When|I confirm the policy in the modal |
-| --- |
-
-| Then|the access-policy backend validates the policy |
-| --- |
-
-| And|a valid policy is added to the current Resource Description in the wizard |
-| --- |
-
-| And|the Resource Description is not submitted by this action alone |
-| --- |
+1. **Given** I selected an access-policy template\
+   **And** I entered the required values\
+   **When** I confirm the policy in the modal\
+   **Then** the access-policy backend validates the policy\
+   **And** a valid policy is added to the current Resource Description in the wizard\
+   **And** the Resource Description is not submitted by this action alone
 
 ##### Provider submits the Resource Description with an access policy
 
-| Given|a valid access policy is attached to the Resource Description in the wizard |
-| --- |
-
-| When|I submit the Resource Description |
-| --- |
-
-| Then|the access policy is included in the same Resource Description payload |
-| --- |
+2. **Given** a valid access policy is attached to the Resource Description in the wizard\
+   **When** I submit the Resource Description\
+   **Then** the access policy is included in the same Resource Description payload
 
 ##### Policy validation fails
 
-| Given|I entered invalid policy values |
-| --- |
-
-| When|I confirm the policy in the modal |
-| --- |
-
-| Then|the policy is not added to the Resource Description |
-| --- |
-
-| And|the modal remains open with validation feedback |
-| --- |
+3. **Given** I entered invalid policy values\
+   **When** I confirm the policy in the modal\
+   **Then** the policy is not added to the Resource Description\
+   **And** the modal remains open with validation feedback
 
 ##### Resource Description submission fails
 
-| Given|a valid access policy is attached to the Resource Description in the wizard |
-| --- |
-
-| When|the Resource Description submission fails |
-| --- |
-
-| Then|the UI shows the error |
-| --- |
-
-| And|keeps the wizard data and access policy so I can retry |
-| --- |
+4. **Given** a valid access policy is attached to the Resource Description in the wizard\
+   **When** the Resource Description submission fails\
+   **Then** the UI shows the error\
+   **And** keeps the wizard data and access policy so I can retry
 
 #### Technical details
 

@@ -12,31 +12,17 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to automatically publish a valid new Resource description or a valid new version of a Resource description in the catalogue |
-| --- |
-
-| so that|up-to-date information about resources is available in the catalogue. |
-| --- |
+**As** Governance Authority\
+**I want to** automatically publish a valid new Resource description or a valid new version of a Resource description in the catalogue\
+**So that** up-to-date information about resources is available in the catalogue.
 
 #### Acceptance criteria
 
-| Scenario | The Governance Authority publishes a new Resource description or a new version of a Resource description |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a new Resource description or a new version of a resource description |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| and|the Resource description or new version of a Resource description is valid |
-| --- |
-
-| then|Simpl-Open publishes the Resource description in the catalogue. |
-| --- |
+**Scenario:** The Governance Authority publishes a new Resource description or a new version of a Resource description\
+When I, the Governance Authority, receive a new Resource description or a new version of a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+and the Resource description or new version of a Resource description is valid\
+then Simpl-Open publishes the Resource description in the catalogue.
 
 ## Where it fits
 

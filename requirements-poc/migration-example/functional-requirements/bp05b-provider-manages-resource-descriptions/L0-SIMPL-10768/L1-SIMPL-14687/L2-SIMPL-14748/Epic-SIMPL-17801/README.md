@@ -12,28 +12,17 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to notify a Provider about invalid syntax of a new resource description or a new version of a resource description |
-| --- |
-
-| so that|the Provider can correct the errors. |
-| --- |
+**As** Governance Authority\
+**I want to** notify a Provider about invalid syntax of a new resource description or a new version of a resource description\
+**So that** the Provider can correct the errors.
 
 #### Acceptance criteria
 
-| Scenario | The Governance Authority notifies a Provider about syntax validation errors (Syntax validation - negative case) |
-| --- | --- |
+**Scenario:** The Governance Authority notifies a Provider about syntax validation errors (Syntax validation - negative case)
 
-| Given|I have received a new resource description or a new version of a resource description with invalid syntax |
-| --- |
-
-| When|the syntax of the content of the resource description is automatically checked |
-| --- |
-
-| Then|a notification about invalid syntax is sent to the Provider. |
-| --- |
+1. **Given** I have received a new resource description or a new version of a resource description with invalid syntax\
+   **When** the syntax of the content of the resource description is automatically checked\
+   **Then** a notification about invalid syntax is sent to the Provider.
 
 ## Where it fits
 

@@ -12,66 +12,33 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to be able to retrieve a list of resource types (list of active schemas) via the SD Tooling API from the Schema Storage |
-| --- |
-
-| so that|I can select a schema for the creation of a new Resource Description. |
-| --- |
+**As a** Provider\
+**I want to** be able to retrieve a list of resource types (list of active schemas) via the SD Tooling API from the Schema Storage\
+**So that** I can select a schema for the creation of a new Resource Description.
 
 #### Acceptance criteria
 
-| Scenario | A Provider requests a list of resource types - positive case |
-| --- | --- |
+**Scenario:** A Provider requests a list of resource types - positive case
 
-| Given|I am authenticated as a Provider |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request a list of active resource types from the API\
+   **Then** a list resource types is returned
 
-| and|I have a role authorising the management of resource descriptions |
-| --- |
+**Scenario:** A Provider requests a list of resource types - wrong role
 
-| When|I request a list of active resource types from the API |
-| --- |
+2. **Given** I am authenticated as a Provider\
+   **And** I do not have a role authorising the management of resource descriptions\
+   **When** I request a list of active resource types from the API\
+   **Then** a message is returned that I am not authorised.
 
-| Then|a list resource types is returned |
-| --- |
-|  |  |
+**Scenario:** A Provider requests a list of resource types - internal server error
 
-| Scenario | A Provider requests a list of resource types - wrong role |
-| --- | --- |
-
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and|I do not have a role authorising the management of resource descriptions |
-| --- |
-
-| When|I request a list of active resource types from the API |
-| --- |
-
-| Then|a message is returned that I am not authorised. |
-| --- |
-|  |  |
-
-| Scenario | A Provider requests a list of resource types - internal server error |
-| --- | --- |
-
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| When|I request a list of active resource types from the API |
-| --- |
-
-| and|there is an internal error |
-| --- |
-
-| Then|a message is returned that an internal error occured, including a suitable error code. |
-| --- |
+3. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request a list of active resource types from the API\
+   **And** there is an internal error\
+   **Then** a message is returned that an internal error occured, including a suitable error code.
 
 #### Technical details
 

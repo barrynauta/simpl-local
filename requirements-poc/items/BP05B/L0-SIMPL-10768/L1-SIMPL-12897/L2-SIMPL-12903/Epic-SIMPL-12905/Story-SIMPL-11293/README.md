@@ -12,46 +12,24 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|provider |
-| --- |
-
-| I want|to receive the details of one of my self-descriptions via an API |
-| --- |
-
-| so that|I can inform myself about the details. |
-| --- |
+**As a** provider\
+**I want to** receive the details of one of my self-descriptions via an API\
+**So that** I can inform myself about the details.
 
 #### Acceptance criteria
 
-| Given|there is a resource description published by a provider |
-| --- |
+1. **Given** there is a resource description published by a provider\
+   **When** the provider requests the details of an own resource description via API\
+   **Then** all details of the resource description are returned.
 
-| when|the provider requests the details of an own resource description via API |
-| --- |
+2. **Given** the provider is authorised\
+   **When** a provider requests a resource description with a syntactically valid ID\
+   **And** the ID refers to a not existing Resource description\
+   **Then** an message is returned that the resource is not found.
 
-| then|all details of the resource description are returned. |
-| --- |
-
-| Given|the provider is authorised |
-| --- |
-
-| when|a provider requests a resource description with a syntactically valid ID |
-| --- |
-
-| and|the ID refers to a not existing Resource description |
-| --- |
-
-| then|an message is returned that the resource is not found. |
-| --- |
-
-| Given|a user is a provider |
-| --- |
-
-| when|the user requests a resource description not created by themself |
-| --- |
-
-| then|an message is returned that the user is not authorised. |
-| --- |
+3. **Given** a user is a provider\
+   **When** the user requests a resource description not created by themself\
+   **Then** an message is returned that the user is not authorised.
 
 ## Where it fits
 

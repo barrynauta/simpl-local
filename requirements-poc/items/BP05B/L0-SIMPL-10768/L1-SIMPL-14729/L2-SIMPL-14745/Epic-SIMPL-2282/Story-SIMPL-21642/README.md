@@ -12,40 +12,21 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to view notifications about errors during validation on Governance Authority side |
-| --- |
-
-| so that|I can  correct the Resource description and resubmit it for publication. |
-| --- |
+**As a** Provider end user\
+**I want to** view notifications about errors during validation on Governance Authority side\
+**So that** I can correct the Resource description and resubmit it for publication.
 
 #### Acceptance criteria
 
-| Scenario | A provider views notifications about validation errors |
-| --- | --- |
+**Scenario:** A provider views notifications about validation errors
 
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource descriptions |
-| --- |
-
-| and|I have created a Resource description or a new version of a Resource description |
-| --- |
-
-| and|there are errors in the Resource description or new version of a Resource description |
-| --- |
-
-| when|I submit the new Resource description or new version of a Resource description |
-| --- |
-
-| and|the Governance Authority validates the resource description or new version of a Resource description |
-| --- |
-
-| then|the validation errors are shown in the UI |
-| --- |
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource descriptions\
+   **And** I have created a Resource description or a new version of a Resource description\
+   **And** there are errors in the Resource description or new version of a Resource description\
+   **When** I submit the new Resource description or new version of a Resource description\
+   **And** the Governance Authority validates the resource description or new version of a Resource description\
+   **Then** the validation errors are shown in the UI
 
 ## Where it fits
 

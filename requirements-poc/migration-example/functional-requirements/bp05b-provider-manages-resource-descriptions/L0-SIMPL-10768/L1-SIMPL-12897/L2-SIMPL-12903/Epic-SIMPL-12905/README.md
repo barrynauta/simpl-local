@@ -12,28 +12,16 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to retrieve the full contents of one of my own Resource descriptions via UI or API |
-| --- |
-
-| so that|I can check it and decide if any action should be taken. |
-| --- |
+**As a** Provider\
+**I want to** retrieve the full contents of one of my own Resource descriptions via UI or API\
+**So that** I can check it and decide if any action should be taken.
 
 #### Acceptance criteria
 
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| when|I request to retrieve one particular of my own Resource descriptions via UI or API |
-| --- |
-
-| then|the full contents of this Resource description is returned. |
-| --- |
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **When** I request to retrieve one particular of my own Resource descriptions via UI or API\
+   **Then** the full contents of this Resource description is returned.
 
 ## Where it fits
 

@@ -12,95 +12,41 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to revoke a resource description upon request of a provider |
-| --- |
-
-| so that|the Provider can manage their resource descriptions. |
-| --- |
+**As** Governance Authority\
+**I want to** revoke a resource description upon request of a provider\
+**So that** the Provider can manage their resource descriptions.
 
 #### Acceptance criteria
 
-| Scenario | The Governance Authority revokes a resource description - positive case |
-| --- | --- |
+**Scenario:** The Governance Authority revokes a resource description - positive case\
+When I, the Governance Authority, receive a request to revoke a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions (one of DATA_PROVIDER_PUBLISHER, APP_PROVIDER_PUBLISHER, INFRA_PROVIDER_PUBLISHER)\
+and the resource description to be revoked was published by the revoking Provider\
+and the resource description is published\
+Then the resource description is revoked.
 
-| When|I, the Governance Authority, receive a request to revoke a resource description |
-| --- |
+**Scenario:** A Provider requests the revocation of a Resource description via API - negative case: not an own resource description\
+When I, the Governance Authority, receive a request to revoke a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+and the resource description to be revoked was not published by the revoking Provider\
+Then a message is returned that the Provider is not authorised.
 
-| and|the Provider is authorised with the identity attributes to manage resource descriptions (one of DATA_PROVIDER_PUBLISHER, APP_PROVIDER_PUBLISHER, INFRA_PROVIDER_PUBLISHER) |
-| --- |
+**Scenario:** The Governance Authority revokes a resource description - negative case: resource description not existing\
+When I, the Governance Authority, receive a request to revoke a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+and the resource description does not exist\
+Then an error message is returned.
 
-| and |the resource description to be revoked was published by the revoking Provider |
-| --- |
+**Scenario:** The Governance Authority revokes a resource description - negative case: insufficient permission\
+When I, the Governance Authority, receive a request to revoke a resource description\
+and the Provider is not authorised with the identity attributes to manage resource descriptions\
+Then an error message is returned.
 
-| and |the resource description is published |
-| --- |
-
-| Then|the resource description is revoked. |
-| --- |
-|  |  |
-
-| Scenario | A Provider requests the revocation of a Resource description via API - negative case: not an own resource description |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a request to revoke a resource description |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| and |the resource description to be revoked was not published by the revoking Provider |
-| --- |
-
-| Then|a message is returned that the Provider is not authorised. |
-| --- |
-|  |  |
-
-| Scenario | The Governance Authority revokes a resource description - negative case: resource description not existing |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a request to revoke a resource description |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| and |the resource description does not exist |
-| --- |
-
-| Then|an error message is returned. |
-| --- |
-|  |  |
-
-| Scenario | The Governance Authority revokes a resource description - negative case: insufficient permission |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a request to revoke a resource description |
-| --- |
-
-| and|the Provider is not authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| Then|an error message is returned. |
-| --- |
-|  |  |
-
-| Scenario | The Governance Authority revokes a resource description - negative case: internal server error |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a request to revoke a resource description |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| and|there is an internal error |
-| --- |
-
-| Then|an error message is returned. |
-| --- |
+**Scenario:** The Governance Authority revokes a resource description - negative case: internal server error\
+When I, the Governance Authority, receive a request to revoke a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+and there is an internal error\
+Then an error message is returned.
 
 #### Technical information:
 

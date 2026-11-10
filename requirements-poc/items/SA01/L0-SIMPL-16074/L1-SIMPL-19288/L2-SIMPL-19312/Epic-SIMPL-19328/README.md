@@ -10,19 +10,15 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-| **I want** | to retrieve the list of existing workflows that belong to me |
-| **so that** | I can review my workflows and see some details about it (name, last 5 runs date and status). |
+**As a** Participant\
+**I want to** retrieve the list of existing workflows that belong to me\
+**So that** I can review my workflows and see some details about it (name, last 5 runs date and status).
 
 ###### **AC1. Workflow Inventory Retrieval**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflows |
-| **When** | I request the list of my workflows via UI or API, |
-| **Then** | Simpl-Open returns all workflows that belong to that Participant. |
+1. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflows\
+   **When** I request the list of my workflows via UI or API,\
+   **Then** Simpl-Open returns all workflows that belong to that Participant.
 
 ######
 

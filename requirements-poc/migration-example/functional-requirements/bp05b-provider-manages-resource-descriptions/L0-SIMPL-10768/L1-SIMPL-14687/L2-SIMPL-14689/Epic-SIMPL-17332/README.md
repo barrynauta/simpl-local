@@ -12,79 +12,35 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to automatically check the schema of a new resource description or new version of a resource description |
-| --- |
-
-| So that|the published resource descriptions are consistent, reliable and compliant with pre-defined standards. |
-| --- |
+**As** Governance Authority\
+**I want to** automatically check the schema of a new resource description or new version of a resource description\
+**So that** the published resource descriptions are consistent, reliable and compliant with pre-defined standards.
 
 #### Acceptance criteria
 
-| Scenario | The Governance Authority checks that the schema is active for a new resource description or a new version of a resource description with an active schema (Schema status validation - positive case) |
-| --- | --- |
+**Scenario:** The Governance Authority checks that the schema is active for a new resource description or a new version of a resource description with an active schema (Schema status validation - positive case)\
+When I receive a new resource description or a new version of a resource description with an active schema\
+and the Provider is authorised with identity attributes to manage resource descriptions\
+then it is checked that the schema of that resource description is active\
+and schema status validation for the resource description or new version of a resource description has the result "valid".
 
-| When|I receive a new resource description or a new version of a resource description with an active schema |
-| --- |
+**Scenario:** The Governance Authority checks that the schema is active for a new resource description or a new version of a resource description with an inactive schema (Schema status validation - negative case)\
+When I receive a new resource description or a new version of a resource description with an inactive schema\
+and the Provider is authorised with identity attributes to manage resource descriptions\
+then it is checked that the schema of that resource description is active\
+and schema status validation for the resource description or new version of a resource description has the result "invalid".
 
-| and|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
+**Scenario:** The Governance Authority checks that the schema of a new version of a resource description is of the same resource type as for the previous version for a new version of a resource description with the same schema as the previous version (Schema type validation - positive case)\
+When I receive a new version of a resource description with the same resource type as the previous version\
+and the Provider is authorised with identity attributes to manage resource descriptions\
+then it is checked that the schema of that resource description has the same resource type as the previous version\
+and schema type validation for the new version of the resource description has the result "valid".
 
-| then|it is checked that the schema of that resource description is active |
-| --- |
-
-| and|schema status validation for the resource description or new version of a resource description has the result "valid". |
-| --- |
-|  |  |
-
-| Scenario | The Governance Authority checks that the schema is active for a new resource description or a new version of a resource description with an inactive schema (Schema status validation - negative case) |
-| --- | --- |
-
-| When|I receive a new resource description or a new version of a resource description with an inactive schema |
-| --- |
-
-| and|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| then|it is checked that the schema of that resource description is active |
-| --- |
-
-| and|schema status validation for the resource description or new version of a resource description has the result "invalid". |
-| --- |
-|  |  |
-
-| Scenario | The Governance Authority checks that the schema of a new version of a resource description is of the same resource type as for the previous version for a new version of a resource description with the same schema as the previous version (Schema type validation - positive case) |
-| --- | --- |
-
-| When|I receive a new version of a resource description with the same resource type as the previous version |
-| --- |
-
-| and|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| then|it is checked that the schema of that resource description has the same resource type as the previous version |
-| --- |
-
-| and|schema type validation for the new version of the resource description has the result "valid". |
-| --- |
-|  |  |
-
-| Scenario | The Governance Authority checks that the schema of a new version of a resource description is of the same resource type as for the previous version for a new version of a resource description with a different schema as the previous version (Schema type validation - negative case) |
-| --- | --- |
-
-| When|I receive a new version of a resource description with a different resource type as the previous version |
-| --- |
-
-| and|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| then|it is checked that the schema of that resource description has the same resource type as the previous version |
-| --- |
-
-| and|schema type validation for the new version of the resource description has the result "invalid". |
-| --- |
+**Scenario:** The Governance Authority checks that the schema of a new version of a resource description is of the same resource type as for the previous version for a new version of a resource description with a different schema as the previous version (Schema type validation - negative case)\
+When I receive a new version of a resource description with a different resource type as the previous version\
+and the Provider is authorised with identity attributes to manage resource descriptions\
+then it is checked that the schema of that resource description has the same resource type as the previous version\
+and schema type validation for the new version of the resource description has the result "invalid".
 
 ## Where it fits
 

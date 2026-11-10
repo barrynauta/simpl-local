@@ -10,34 +10,19 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 ## Text
 
-| As a|Provider |
-| --- |
-
-| I want|to add contract clauses to a new resource description |
-| --- |
-
-| So that|the terms and conditions for using and providing a resource are defined |
-| --- |
+**As a** Provider\
+**I want to** add contract clauses to a new resource description\
+**So that** the terms and conditions for using and providing a resource are defined
 
 **Acceptance criteria:**
 
-| Scenario | A Provider adds contract clauses to a new Resource description via UI |
-| --- | --- |
+**Scenario:** A Provider adds contract clauses to a new Resource description via UI
 
-| Given|I am authenticated as a Provider end user |
-| --- |
-
-| and |I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|I am creating a new resource description |
-| --- |
-
-| when|I reach the step "Contract clauses" in the wizard |
-| --- |
-
-| then|I can add contract clauses attributes to the new resource description. |
-| --- |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step "Contract clauses" in the wizard\
+   **Then** I can add contract clauses attributes to the new resource description.
 
 ## Where it fits
 

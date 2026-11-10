@@ -12,98 +12,50 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to provide via an API a sorted (descendingly by publication date or alphabetically by Resource type) list of the resource descriptions summaries which I have published |
-| --- |
-
-| so that|so that I can see a list of my Resource Descriptions and decide on any action to take on them |
-| --- |
+**As a** Provider\
+**I want to** provide via an API a sorted (descendingly by publication date or alphabetically by Resource type) list of the resource descriptions summaries which I have published\
+**So that** so that I can see a list of my Resource Descriptions and decide on any action to take on them
 
 #### Acceptance criteria
 
 **Positive case - default sorting**
 
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|there are resource descriptions published by me |
-| --- |
-
-| when|I requests my own resource descriptions via API |
-| --- |
-
-| then|the list of my previously published resource descriptions is returned, sorted by publication date in descending order (default). |
-| --- |
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** there are resource descriptions published by me\
+   **When** I requests my own resource descriptions via API\
+   **Then** the list of my previously published resource descriptions is returned, sorted by publication date in descending order (default).
 
 **Positive case - custom sorting**
 
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|there are resource descriptions published by me |
-| --- |
-
-| when|I request my own resource descriptions via the API |
-| --- |
-
-| and|include a valid `orderBy` query parameter |
-| --- |
-
-| then|the list of my resource descriptions is returned, sorted according to the specified field. |
-| --- |
+2. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** there are resource descriptions published by me\
+   **When** I request my own resource descriptions via the API\
+   **And** include a valid `orderBy` query parameter\
+   **Then** the list of my resource descriptions is returned, sorted according to the specified field.
 
 **No resources published**
 
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|there are no resource descriptions published by me |
-| --- |
-
-| when|I request the my own resource descriptions via API |
-| --- |
-
-| then|an empty list is returned. |
-| --- |
+3. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** there are no resource descriptions published by me\
+   **When** I request the my own resource descriptions via API\
+   **Then** an empty list is returned.
 
 **Not authorised**
 
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I do not have a role authorising the management of Resource Descriptions |
-| --- |
-
-| when|I requests my own resource descriptions via API |
-| --- |
-
-| then|a message is returned that I am not authorised. |
-| --- |
+4. **Given** I am authenticated as Provider\
+   **And** I do not have a role authorising the management of Resource Descriptions\
+   **When** I requests my own resource descriptions via API\
+   **Then** a message is returned that I am not authorised.
 
 **Not acceptable**
 
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I request my own resource descriptions via API |
-| --- |
-
-| when|I specify a media type that is not supported |
-| --- |
-
-| then|a 406 Not Acceptable error is returned. |
-| --- |
+5. **Given** I am authenticated as Provider\
+   **And** I request my own resource descriptions via API\
+   **When** I specify a media type that is not supported\
+   **Then** a 406 Not Acceptable error is returned.
 
 #### Technical Information
 

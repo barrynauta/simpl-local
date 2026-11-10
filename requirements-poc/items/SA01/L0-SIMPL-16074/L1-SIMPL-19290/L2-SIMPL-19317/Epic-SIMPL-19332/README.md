@@ -10,45 +10,35 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-| **I want** | to delete an existing data orchestration workflow, |
-| **so that** | I can remove obsolete or unnecessary workflow implementations while ensuring that historical execution information remains available for traceability. |
+**As a** Participant\
+**I want to** delete an existing data orchestration workflow,\
+**So that** I can remove obsolete or unnecessary workflow implementations while ensuring that historical execution information remains available for traceability.
 
 **AC1. Provider retrieves deletion status**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflows |
-| **When** | I request the deletion eligibility status of a data orchestration workflow |
-| **and** | the system returns the list of data resource descriptions that reference the workflow |
-| **Then** | if the list is empty, the workflow is eligible for deletion |
+1. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflows\
+   **When** I request the deletion eligibility status of a data orchestration workflow\
+   **And** the system returns the list of data resource descriptions that reference the workflow\
+   **Then** if the list is empty, the workflow is eligible for deletion
 
 **AC2. Provider deletes a data orchestration workflow**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflows |
-| **and** | the data orchestration workflow I want to delete has no active dependencies |
-| **When** | I delete the workflow using the workflow management process |
-| **Then** | the workflow is deleted |
+2. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflows\
+   **And** the data orchestration workflow I want to delete has no active dependencies\
+   **When** I delete the workflow using the workflow management process\
+   **Then** the workflow is deleted
 
 **AC3. Audit Logs Retention after Deletion**
 
-|   |   |
-| --- | --- |
-| **Given** | a deleted data orchestration workflow, |
-| **When** | the deletion is completed, |
-| **Then** | all past execution logs related to that workflow are preserved |
+3. **Given** a deleted data orchestration workflow,\
+   **When** the deletion is completed,\
+   **Then** all past execution logs related to that workflow are preserved
 
 **AC4. Definition Retention after Deletion**
 
-|   |   |
-| --- | --- |
-| **Given** | a deleted data orchestration workflow, |
-| **When** | the deletion is completed, |
-| **Then** | previous versions remain in the version history |
+4. **Given** a deleted data orchestration workflow,\
+   **When** the deletion is completed,\
+   **Then** previous versions remain in the version history
 
 ## Where it fits
 

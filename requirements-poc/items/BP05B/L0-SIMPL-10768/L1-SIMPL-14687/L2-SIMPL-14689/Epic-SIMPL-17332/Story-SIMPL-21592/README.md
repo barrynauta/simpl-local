@@ -12,14 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to automatically check the schema of a new resource description or new version of a resource description |
-| --- |
-
-| So that|the published resource descriptions are consistent, reliable and compliant with pre-defined standards. |
-| --- |
+**As** Governance Authority\
+**I want to** automatically check the schema of a new resource description or new version of a resource description\
+**So that** the published resource descriptions are consistent, reliable and compliant with pre-defined standards.
 
 #### Acceptance criteria
 
@@ -40,97 +35,44 @@ scenarios to check for both - new resource description and new version of a reso
 - 403 - Unauthorized
 - 500 - Internal Server Error
 
-| Scenario | The Governance Authority checks that the schema for a new resource description or a new version of a resource description with an active schema (Schema status validation - positive case) |
-| --- | --- |
+**Scenario:** The Governance Authority checks that the schema for a new resource description or a new version of a resource description with an active schema (Schema status validation - positive case)
 
-| Given|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
+1. **Given** the Provider is authorised with identity attributes to manage resource descriptions\
+   **When** I receive a new resource description or a new version of a resource description with an active schema\
+   **And** schema validation is done\
+   **Then** Simpl-Open should return with the positive publishing result with the code "201"\
+   **And** the new resource description or the new version of the resource description is created
 
-| When|I receive a new resource description or a new version of a resource description with an active schema |
-| --- |
+**Scenario:** The Governance Authority checks that the schema for a new resource description or a new version of a resource description with an inactive schema (Schema status validation - negative case)
 
-| and|schema validation is done |
-| --- |
+2. **Given** the Provider is authorised with identity attributes to manage resource descriptions\
+   **When** I receive a new resource description or a new version of a resource description with an inactive schema\
+   **And** schema validation is done\
+   **Then** Simpl-Open should return the verification results and the details together with error code "422"\
+   **And** no new resource description or new version of the resource description is created
 
-| Then|Simpl-Open should return with the positive publishing result with the code "201" |
-| --- |
+**Scenario:** The Governance Authority checks that the schema for a new resource description or a new version of a resource description but the Provider is unauthorised (Schema status validation - negative case)
 
-| and|the new resource description or the new version of the resource description is created |
-| --- |
-|  |  |
+3. **Given** the Provider is not authorised with identity attributes to manage resource descriptions\
+   **When** I receive a new resource description or a new version of a resource description\
+   **Then** Simpl-Open should return with error code 403 to indicate the operation is not authorized\
+   **And** no new resource description or new version of the resource description is created
 
-| Scenario | The Governance Authority checks that the schema for a new resource description or a new version of a resource description with an inactive schema (Schema status validation - negative case) |
-| --- | --- |
+**Scenario:** The Governance Authority checks the schema for a new resource description or a new version of a resource description with an invalid JSON syntax (Schema status validation - negative case)
 
-| Given|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
+4. **Given** the Provider is authorised with identity attributes to manage resource descriptions\
+   **When** I receive a new resource description or a new version of a resource description\
+   **And** the payload has invalid JSON syntax\
+   **Then** `Simpl-Open should return with HTTP statu 400 Bad Request to indicate the syntax or parsing error`\
+   **And** no new resource description or new version of the resource description is created
 
-| When|I receive a new resource description or a new version of a resource description with an inactive schema |
-| --- |
+**Scenario:** The Governance Authority checks the schema for a new resource description or a new version of a resource description and an unexpected failure happens during creation (Schema status validation - negative case)
 
-| and|schema validation is done |
-| --- |
-
-| Then|Simpl-Open should return the verification results and the details together with error code "422" |
-| --- |
-
-| and|no new resource description or new version of the resource description is created |
-| --- |
-|  |  |
-
-| Scenario | The Governance Authority checks that the schema for a new resource description or a new version of a resource description but the Provider is unauthorised (Schema status validation - negative case) |
-| --- | --- |
-
-| Given|the Provider is not authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| When|I receive a new resource description or a new version of a resource description |
-| --- |
-
-| Then|Simpl-Open should return with error code 403 to indicate the operation is not authorized |
-| --- |
-
-| and|no new resource description or new version of the resource description is created |
-| --- |
-|  |  |
-
-| Scenario|**The Governance Authority checks the schema for a new resource description or a new version of a resource description with an invalid JSON syntax (Schema status validation - negative case)** |
-| --- |
-
-| Given|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| When|I receive a new resource description or a new version of a resource description |
-| --- |
-
-| and|the payload has invalid JSON syntax |
-| --- |
-
-| `Then`|`Simpl-Open should return with HTTP statu 400 Bad Request to indicate the syntax or parsing error` |
-| --- |
-
-| and|no new resource description or new version of the resource description is created |
-| --- |
-|  |  |
-
-| Scenario|**The Governance Authority checks the schema for a new resource description or a new version of a resource description and an unexpected failure happens during creation (Schema status validation - negative case)** |
-| --- |
-
-| Given|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| When|I receive a new resource description or a new version of a resource description with an active schema |
-| --- |
-
-| and|An unexpected internal server error occurs during processing |
-| --- |
-
-| Then|Simpl-Open should return with  HTTP status `500 Internal Server Error` |
-| --- |
-
-| and|no resource description or a new version of the resource description is created |
-| --- |
-|  |  |
+5. **Given** the Provider is authorised with identity attributes to manage resource descriptions\
+   **When** I receive a new resource description or a new version of a resource description with an active schema\
+   **And** An unexpected internal server error occurs during processing\
+   **Then** Simpl-Open should return with HTTP status `500 Internal Server Error`\
+   **And** no resource description or a new version of the resource description is created
 
 (internal page)
 

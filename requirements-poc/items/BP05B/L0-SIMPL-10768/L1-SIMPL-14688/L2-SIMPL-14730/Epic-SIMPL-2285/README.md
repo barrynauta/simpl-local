@@ -12,31 +12,18 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to retrieve a list of published resource types from the Governance Authority |
-| --- |
-
-| so that|I can start the creation of a new resource description. |
-| --- |
+**As a** Provider\
+**I want to** retrieve a list of published resource types from the Governance Authority\
+**So that** I can start the creation of a new resource description.
 
 #### Acceptance criteria
 
-| Scenario | A Provider retrieves a list of published resource types |
-| --- | --- |
+**Scenario:** A Provider retrieves a list of published resource types
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| When|I request a list of published resource types from the Governance Authority |
-| --- |
-
-| then|I receive a list containing the published resource types. |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **When** I request a list of published resource types from the Governance Authority\
+   **Then** I receive a list containing the published resource types.
 
 ## Where it fits
 

@@ -12,31 +12,18 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to be able to revoke a Resource description via UI or API |
-| --- |
-
-| so that|the Resource description cannot be used any more. |
-| --- |
+**As a** Provider\
+**I want to** be able to revoke a Resource description via UI or API\
+**So that** the Resource description cannot be used any more.
 
 #### Acceptance criteria
 
-| Scenario | A Provider requests the revocation of a Resource description via UI or API |
-| --- | --- |
+**Scenario:** A Provider requests the revocation of a Resource description via UI or API
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource descriptions |
-| --- |
-
-| when|I want to revoke a Resource description |
-| --- |
-
-| then|a revocation request is sent to the Governance authority. |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of Resource descriptions\
+   **When** I want to revoke a Resource description\
+   **Then** a revocation request is sent to the Governance authority.
 
 ## Where it fits
 

@@ -12,47 +12,23 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to check the semantics of a new resource description or a new version of a resource description |
-| --- |
-
-| so that|the published resource descriptions are consistent, reliable and compliant with pre-defined standards. |
-| --- |
+**As** Governance Authority\
+**I want to** check the semantics of a new resource description or a new version of a resource description\
+**So that** the published resource descriptions are consistent, reliable and compliant with pre-defined standards.
 
 #### Acceptance criteria
 
-| Scenario | The Governance Authority checks the semantics of a new Resource description or a new version of a Resource Description with valid semantics (Semantic validation - positive case) |
-| --- | --- |
+**Scenario:** The Governance Authority checks the semantics of a new Resource description or a new version of a Resource Description with valid semantics (Semantic validation - positive case)\
+When I, the Governance Authority, receive a new resource description or a new version of a resource description with valid semantics\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+Then the semantics of the content or the resource description is automatically checked\
+and the semantic validation for the resource description or new version of a resource description has the result "valid".
 
-| When|I, the Governance Authority, receive a new resource description or a new version of a resource description with valid semantics |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| Then|the semantics of the content or the resource description is automatically checked |
-| --- |
-
-| and|the semantic validation for the resource description or new version of a resource description has the result "valid". |
-| --- |
-|  |  |
-
-| Scenario | The Governance Authority checks the semantics of a new Resource description or a new version of a Resource Description with invalid semantics (Semantic validation - negative case) |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a new resource description or a new version of a resource description with invalid semantics |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| Then|the semantics of the content or the resource description is automatically checked |
-| --- |
-
-| and|the semantic validation for the resource description or new version of a resource description has the result "invalid". |
-| --- |
+**Scenario:** The Governance Authority checks the semantics of a new Resource description or a new version of a Resource Description with invalid semantics (Semantic validation - negative case)\
+When I, the Governance Authority, receive a new resource description or a new version of a resource description with invalid semantics\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+Then the semantics of the content or the resource description is automatically checked\
+and the semantic validation for the resource description or new version of a resource description has the result "invalid".
 
 ## Where it fits
 

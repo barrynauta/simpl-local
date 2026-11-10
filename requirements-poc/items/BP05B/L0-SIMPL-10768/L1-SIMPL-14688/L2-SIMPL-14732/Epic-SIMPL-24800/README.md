@@ -16,23 +16,12 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 **Acceptance criteria:**
 
-| Given|I am authenticated as a Provider end user |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|I am creating a new infrastructure resource description |
-| --- |
-
-| when|I reach the step "Resource type specific metadata" in the wizard |
-| --- |
-
-| then|I can retrieve the list of active deployment scripts to link to the new resource description. |
-| --- |
-
-| and|I can select one of the available deployments scripts to link it to the new resource description. |
-| --- |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new infrastructure resource description\
+   **When** I reach the step "Resource type specific metadata" in the wizard\
+   **Then** I can retrieve the list of active deployment scripts to link to the new resource description.\
+   **And** I can select one of the available deployments scripts to link it to the new resource description.
 
 ## Where it fits
 

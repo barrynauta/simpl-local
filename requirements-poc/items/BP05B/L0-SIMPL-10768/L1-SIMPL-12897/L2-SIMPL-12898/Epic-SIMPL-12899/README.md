@@ -12,28 +12,16 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to retrieve an overview of my own Resource descriptions via UI or API |
-| --- |
-
-| so that|I can review my Resource descriptions and decide if any action is to be taken. |
-| --- |
+**As a** Provider\
+**I want to** retrieve an overview of my own Resource descriptions via UI or API\
+**So that** I can review my Resource descriptions and decide if any action is to be taken.
 
 #### Acceptance criteria
 
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| when|I request to retrieve all my own Resource descriptions via UI or API |
-| --- |
-
-| then|a list containing an overview of my own Resource descriptions is returned. |
-| --- |
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **When** I request to retrieve all my own Resource descriptions via UI or API\
+   **Then** a list containing an overview of my own Resource descriptions is returned.
 
 ## Where it fits
 

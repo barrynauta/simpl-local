@@ -20,106 +20,49 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ##### Add or change a valid policy
 
-| Given|I have entered the values for an access or usage policy |
-| --- |
-
-| When|I choose "Add policy" or "Save changes" |
-| --- |
-
-| And|the backend accepts the policy |
-| --- |
-
-| Then|the editor adds or updates it in the current RD form |
-| --- |
-
-| And|I can see the policy in the list |
-| --- |
-
-| And|this action does not submit the RD version |
-| --- |
+1. **Given** I have entered the values for an access or usage policy\
+   **When** I choose "Add policy" or "Save changes"\
+   **And** the backend accepts the policy\
+   **Then** the editor adds or updates it in the current RD form\
+   **And** I can see the policy in the list\
+   **And** this action does not submit the RD version
 
 ##### Show errors and block submission
 
-| Given|I have entered an invalid access or usage policy |
-| --- |
-
-| When|I choose "Add policy" or "Save changes" |
-| --- |
-
-| And|the backend returns validation errors |
-| --- |
-
-| Then|the editor keeps the policy form open with my values |
-| --- |
-
-| And|it shows which field or rule needs correction and what is wrong |
-| --- |
-
-| And|it does not add or update the invalid policy |
-| --- |
-
-| And|I cannot submit the RD version while these errors remain unresolved |
-| --- |
+2. **Given** I have entered an invalid access or usage policy\
+   **When** I choose "Add policy" or "Save changes"\
+   **And** the backend returns validation errors\
+   **Then** the editor keeps the policy form open with my values\
+   **And** it shows which field or rule needs correction and what is wrong\
+   **And** it does not add or update the invalid policy\
+   **And** I cannot submit the RD version while these errors remain unresolved
 
 ##### Identify the affected part
 
-| Given|a policy contains several rules or constraints |
-| --- |
-
-| When|the backend returns a validation error |
-| --- |
-
-| Then|the editor identifies whether it concerns the access or usage policy |
-| --- |
-
-| And|it identifies the affected policy entry by its displayed name where one is available |
-| --- |
-
-| And|it names the field, rule or constraint that needs correction when the backend provides that detail |
-| --- |
-
-| And|it shows a clear message that tells me what to change |
-| --- |
+3. **Given** a policy contains several rules or constraints\
+   **When** the backend returns a validation error\
+   **Then** the editor identifies whether it concerns the access or usage policy\
+   **And** it identifies the affected policy entry by its displayed name where one is available\
+   **And** it names the field, rule or constraint that needs correction when the backend provides that detail\
+   **And** it shows a clear message that tells me what to change
 
 ##### The backend check is unavailable
 
-| Given|I am adding or changing a policy |
-| --- |
-
-| When|the backend check is unavailable |
-| --- |
-
-| Then|the editor shows that it could not check the policy |
-| --- |
-
-| And|it keeps the form and entered values editable |
-| --- |
-
-| And|it offers me a way to retry "Add policy" or "Save changes" |
-| --- |
-
-| And|it does not treat the policy as valid or let me submit it with unresolved errors |
-| --- |
+4. **Given** I am adding or changing a policy\
+   **When** the backend check is unavailable\
+   **Then** the editor shows that it could not check the policy\
+   **And** it keeps the form and entered values editable\
+   **And** it offers me a way to retry "Add policy" or "Save changes"\
+   **And** it does not treat the policy as valid or let me submit it with unresolved errors
 
 ##### Correct an error
 
-| Given|the editor showed a policy error |
-| --- |
-
-| When|I correct the values and choose "Add policy" or "Save changes" again |
-| --- |
-
-| And|the backend accepts the policy |
-| --- |
-
-| Then|the editor updates the policy entry |
-| --- |
-
-| And|it clears the errors for that entry |
-| --- |
-
-| And|I can continue preparing the RD version |
-| --- |
+5. **Given** the editor showed a policy error\
+   **When** I correct the values and choose "Add policy" or "Save changes" again\
+   **And** the backend accepts the policy\
+   **Then** the editor updates the policy entry\
+   **And** it clears the errors for that entry\
+   **And** I can continue preparing the RD version
 
 #### Technical details
 

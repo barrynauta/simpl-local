@@ -14,11 +14,8 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 **I want** Simpl-Open to automatically evaluate the metadata quality of a submitted resource description or a new version of a resource description by calculating:
 
 - Metadata quality overall score
-
 - Metadata quality dimension score for each defined dimension
-
 - Metadata quality classification for the overall score
-
 - Metadata quality classification for each dimension
 
 **So that** the metadata quality assessment is consistently and objectively determined according to defined evaluation rules.

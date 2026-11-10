@@ -12,37 +12,20 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to update the resource type specific metadata of a new version of  resource description via UI |
-| --- |
-
-| so that|I can align the resource description with the latest information related to my resource. |
-| --- |
+**As a** Provider end user\
+**I want to** update the resource type specific metadata of a new version of resource description via UI\
+**So that** I can align the resource description with the latest information related to my resource.
 
 #### Acceptance criteria
 
-| Scenario | A Provider updates resource type specific metadata of a new version of a resource description via UI |
-| --- | --- |
+**Scenario:** A Provider updates resource type specific metadata of a new version of a resource description via UI
 
-| Given|I am authenticated as a Provider end user |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new version of a resource description |
-| --- |
-
-| when|I reach the step "Resource type specific metadata" in the wizard |
-| --- |
-
-| then|the resource type specific metadata are prefilled with the values from the previous version |
-| --- |
-
-| and|I can update the resource type specific metadata. |
-| --- |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new version of a resource description\
+   **When** I reach the step "Resource type specific metadata" in the wizard\
+   **Then** the resource type specific metadata are prefilled with the values from the previous version\
+   **And** I can update the resource type specific metadata.
 
 ## Where it fits
 

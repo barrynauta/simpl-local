@@ -12,72 +12,39 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Story card
 
-| As|an authorised Provider managing Resource Descriptions |
-| --- |
-
-| I want|to retrieve the details of a usage-policy template |
-| --- |
-
-| So that|I can use the template when defining a usage policy |
-| --- |
+**As an** authorised Provider managing Resource Descriptions\
+**I want to** retrieve the details of a usage-policy template\
+**So that** I can use the template when defining a usage policy
 
 #### Acceptance criteria
 
 ##### Provider retrieves a usage-policy template
 
-| Given|I am authenticated as a Provider authorised to manage Resource Descriptions |
-| --- |
-
-| And|a usage-policy template exists with the requested identifier |
-| --- |
-
-| When|I request that template through the detailed policy-template API |
-| --- |
-
-| Then|the service responds with `200 OK` |
-| --- |
-
-| And|returns the template details needed to display and complete the template |
-| --- |
+1. **Given** I am authenticated as a Provider authorised to manage Resource Descriptions\
+   **And** a usage-policy template exists with the requested identifier\
+   **When** I request that template through the detailed policy-template API\
+   **Then** the service responds with `200 OK`\
+   **And** returns the template details needed to display and complete the template
 
 ##### Unauthenticated client is rejected
 
-| Given|I am not authenticated |
-| --- |
-
-| When|I request a usage-policy template |
-| --- |
-
-| Then|the service responds with `401 Unauthorized` |
-| --- |
-
-| And|returns no template |
-| --- |
+2. **Given** I am not authenticated\
+   **When** I request a usage-policy template\
+   **Then** the service responds with `401 Unauthorized`\
+   **And** returns no template
 
 ##### Unauthorised client is rejected
 
-| Given|I am authenticated but not authorised to manage Resource Descriptions |
-| --- |
-
-| When|I request a usage-policy template |
-| --- |
-
-| Then|the service responds with `403 Forbidden` |
-| --- |
-
-| And|returns no template |
-| --- |
+3. **Given** I am authenticated but not authorised to manage Resource Descriptions\
+   **When** I request a usage-policy template\
+   **Then** the service responds with `403 Forbidden`\
+   **And** returns no template
 
 ##### Requested template does not exist
 
-| Given|I am authenticated as a Provider authorised to manage Resource Descriptions |
-| --- |
-
-| When|I request a usage-policy template using an unknown identifier |
-| --- |
-
-| Then|the service responds with `404 Not Found` |
-| --- |
+4. **Given** I am authenticated as a Provider authorised to manage Resource Descriptions\
+   **When** I request a usage-policy template using an unknown identifier\
+   **Then** the service responds with `404 Not Found`
 
 #### Technical details
 

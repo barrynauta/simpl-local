@@ -12,28 +12,16 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to revoke a resource description upon request of a provider |
-| --- |
-
-| so that|the Provider can manage their resource descriptions. |
-| --- |
+**As** Governance Authority\
+**I want to** revoke a resource description upon request of a provider\
+**So that** the Provider can manage their resource descriptions.
 
 #### Acceptance criteria
 
-| Scenario | The Governance Authority revokes a resource description |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a request to revoke a resource description |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| Then|the resource description is revoked. |
-| --- |
+**Scenario:** The Governance Authority revokes a resource description\
+When I, the Governance Authority, receive a request to revoke a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+Then the resource description is revoked.
 
 ## Where it fits
 

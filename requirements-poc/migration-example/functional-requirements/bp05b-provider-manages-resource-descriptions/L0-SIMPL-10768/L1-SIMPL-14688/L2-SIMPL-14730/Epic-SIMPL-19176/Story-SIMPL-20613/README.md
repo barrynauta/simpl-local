@@ -12,34 +12,18 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to be able to select a resource type in the UI |
-| --- |
-
-| so that|I can start the creation of a new resource description. |
-| --- |
+**As a** Provider end user\
+**I want to** be able to select a resource type in the UI\
+**So that** I can start the creation of a new resource description.
 
 #### Acceptance criteria
 
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and |I have opened the resource description management page |
-| --- |
-
-| when|I select a resource type from the list of published resource types |
-| --- |
-
-| then|the resource description creation wizard is opened |
-| --- |
-
-| and|the steps of the wizard are based on the entities in the schema of the selected resource type. |
-| --- |
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I have opened the resource description management page\
+   **When** I select a resource type from the list of published resource types\
+   **Then** the resource description creation wizard is opened\
+   **And** the steps of the wizard are based on the entities in the schema of the selected resource type.
 
 *The contents of the individual steps of the wizard is covered in other user stories and out of the scope of this story.*
 

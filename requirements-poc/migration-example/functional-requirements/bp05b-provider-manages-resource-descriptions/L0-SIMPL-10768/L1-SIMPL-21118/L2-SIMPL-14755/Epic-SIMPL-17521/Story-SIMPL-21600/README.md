@@ -12,14 +12,9 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a| Provider |
-| --- |
-
-| I want|to notify the Consumers of a resource about a published new version of a Resource description |
-| --- |
-
-| so that|so that Consumers can decide if any actions are required based on this new version. |
-| --- |
+**As a** Provider\
+**I want to** notify the Consumers of a resource about a published new version of a Resource description\
+**So that** so that Consumers can decide if any actions are required based on this new version.
 
 ##### Acceptance Criteria
 

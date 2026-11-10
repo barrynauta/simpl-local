@@ -16,35 +16,17 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 **Acceptance Criteria**
 
-| Scenario|**A Provider assigns access policies by using a policy template to a new resource description via UI** |
-| --- |
+**Scenario:** A Provider assigns access policies by using a policy template to a new resource description via UI
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and |I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new resource description |
-| --- |
-
-| When|I reach the step "Access policies" in the wizard |
-| --- |
-
-| And|I retrieve the access policy templates |
-| --- |
-
-| And|I select the access policy template I want to use |
-| --- |
-
-| And|I fill in the parameters of the access policy template |
-| --- |
-
-| Then|an access policy is created based on the selected access policy template and values I provided for the parameters |
-| --- |
-
-| And|the created access policy is assigned to the resource description I am creating |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step "Access policies" in the wizard\
+   **And** I retrieve the access policy templates\
+   **And** I select the access policy template I want to use\
+   **And** I fill in the parameters of the access policy template\
+   **Then** an access policy is created based on the selected access policy template and values I provided for the parameters\
+   **And** the created access policy is assigned to the resource description I am creating
 
 ## Where it fits
 

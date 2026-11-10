@@ -10,32 +10,26 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-| **I want** | the system to prevent deletion of workflows that are referenced by active published datasets |
-| **so that** | I avoid breaking dataset dependencies and ensure the integrity of ongoing data processing during consumption. |
+**As a** Participant\
+**I want** the system to prevent deletion of workflows that are referenced by active published datasets\
+**So that** I avoid breaking dataset dependencies and ensure the integrity of ongoing data processing during consumption.
 
 **Acceptance Criteria**
 
 **AC1.** **Deletion Blocked for Dependent Workflows**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflows |
-| **and** | a data orchestration workflow is referenced by at least one published dataset in an active state, |
-| **When** | I try to delete the workflow definition, |
-| **Then** | Simpl-Open blocks the deletion of the workflow, |
-| **and** | informs me that active published datasets reference the workflow. |
+1. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflows\
+   **And** a data orchestration workflow is referenced by at least one published dataset in an active state,\
+   **When** I try to delete the workflow definition,\
+   **Then** Simpl-Open blocks the deletion of the workflow,\
+   **And** informs me that active published datasets reference the workflow.
 
 **AC2. Deletion Allowed for Non-Active Dependencies**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflows |
-| **and** | a data orchestration workflow is referenced only by revoked datasets, |
-| **When** | I delete the workflow definition, |
-| **Then** | Simpl-Open allows the deletion of the workflow, |
+2. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflows\
+   **And** a data orchestration workflow is referenced only by revoked datasets,\
+   **When** I delete the workflow definition,\
+   **Then** Simpl-Open allows the deletion of the workflow,
 
 ## Where it fits
 

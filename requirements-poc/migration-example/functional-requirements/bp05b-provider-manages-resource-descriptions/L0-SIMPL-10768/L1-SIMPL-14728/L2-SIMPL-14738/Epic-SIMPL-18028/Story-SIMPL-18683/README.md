@@ -12,40 +12,25 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to update the common metadata of a new version of a resource description via UI |
-| --- |
-
-| so that|the contents of the resource description is complete. |
-| --- |
+**As a** Provider end user\
+**I want to** update the common metadata of a new version of a resource description via UI\
+**So that** the contents of the resource description is complete.
 
 #### Acceptance criteria
 
-| Scenario | A Provider updates common metadata of a new version of a resource description via UI |
-| --- | --- |
+**Scenario:** A Provider updates common metadata of a new version of a resource description via UI
 
-| Given|I am authenticated as a Provider end user |
-| --- |
-
-| and |I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new version of a resource description |
-| --- |
-
-| when|I reach the step "Common metadata" in the wizard |
-| --- |
-
-| then|the common metadata attributes are prefilled with the values from the previous version |
-| --- |
-
-| and|I can update the contents of the attributes. |
-| --- |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new version of a resource description\
+   **When** I reach the step "Common metadata" in the wizard\
+   **Then** the common metadata attributes are prefilled with the values from the previous version\
+   **And** I can update the contents of the attributes.
 
 #### Technical details
 
+|   |
+| --- |
 | SD UI calls SD BE to retrieve SD schema from GA for dedicated RD type |
 | Result: UI parsed SD schema and rendered common metadata fields to the wizard screen |
 | SD UI calls SD BE to retrieve RD data from the last RD version |

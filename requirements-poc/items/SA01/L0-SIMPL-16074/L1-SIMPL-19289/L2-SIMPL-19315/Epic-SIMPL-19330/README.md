@@ -10,16 +10,14 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-|**I want**|to create a new version of an existing data orchestration workflow, including: *
+**As a** Participant\
+**I want to** create a new version of an existing data orchestration workflow, including:
 
    - Editing the services, using open-source libraries suggested by Simpl-Open or other open-source libraries, and control flow;
    - Editing the configurable parameters for the workflow
-   - For scheduled triggers and triggers on data change, editing the execution configuration of the workflow, including execution parameters (for example, actual input datasets, output destinations), and the scheduling configuration (e.g., time, date, recurrence rules).|\
-   |**so that**|I can perform the operation required by my business logic\
-   |
+   - For scheduled triggers and triggers on data change, editing the execution configuration of the workflow, including execution parameters (for example, actual input datasets, output destinations), and the scheduling configuration (e.g., time, date, recurrence rules).
+
+**So that** I can perform the operation required by my business logic
 
 **Acceptance Criteria**
 
@@ -27,13 +25,11 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 **AC1. Provider updates an existing workflow by developing a new version**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user |
-| **and** | I am a user who wants to update an existing workflow |
-| **When** | I start the process to create a new version of an existing data orchestration workflow |
-| **Then** | I am able to update the workflow by modifying its logic and steps through the capabilities of the integrated workflow tooling from my development environment |
-| **and** | I can implement the changes required to produce a new workflow version in code |
+1. **Given** I am an authenticated user\
+   **And** I am a user who wants to update an existing workflow\
+   **When** I start the process to create a new version of an existing data orchestration workflow\
+   **Then** I am able to update the workflow by modifying its logic and steps through the capabilities of the integrated workflow tooling from my development environment\
+   **And** I can implement the changes required to produce a new workflow version in code
 
 ## Where it fits
 

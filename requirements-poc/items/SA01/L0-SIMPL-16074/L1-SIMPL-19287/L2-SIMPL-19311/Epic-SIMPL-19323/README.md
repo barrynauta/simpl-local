@@ -10,25 +10,22 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-|**I want**|to create new data orchestration workflow including: *
+**As a** Participant\
+**I want to** create new data orchestration workflow including:
 
    - Defining the services, using open-source libraries suggested by Simpl-Open or other open-source libraries, and control flow;
    - Defining the configurable parameters for the workflow
-   - For scheduled triggers and triggers on data change, defining the execution configuration of the workflow, including execution parameters (for example, actual input datasets, output destinations), and the scheduling configuration (e.g., time, date, recurrence rules).|
-| **so that** | I can perform the operation required by my business logic |
+   - For scheduled triggers and triggers on data change, defining the execution configuration of the workflow, including execution parameters (for example, actual input datasets, output destinations), and the scheduling configuration (e.g., time, date, recurrence rules).
+
+**So that** I can perform the operation required by my business logic
 
 **Acceptance Criteria**
 
 **AC1. Workflow definition via code**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user |
-| **When** | defining a data orchestration workflow |
-| **Then** | I am able to define workflow steps and their logic using code through integrated workflow tooling. |
+1. **Given** I am an authenticated user\
+   **When** defining a data orchestration workflow\
+   **Then** I am able to define workflow steps and their logic using code through integrated workflow tooling.
 
 ## Where it fits
 

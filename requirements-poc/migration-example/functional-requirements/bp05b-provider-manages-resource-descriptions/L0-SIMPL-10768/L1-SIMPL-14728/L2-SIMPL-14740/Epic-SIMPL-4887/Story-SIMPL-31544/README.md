@@ -20,78 +20,41 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 ##### Retrieve the list of access-policy templates
 
-| Given|I am selecting an access-policy template in the new-version wizard |
-| --- |
-
-| When|the available template list is retrieved successfully |
-| --- |
-
-| Then|the UI displays the returned access-policy templates with their user-facing names |
-| --- |
+1. **Given** I am selecting an access-policy template in the new-version wizard\
+   **When** the available template list is retrieved successfully\
+   **Then** the UI displays the returned access-policy templates with their user-facing names
 
 ##### Select a template from the list
 
-| Given|the available access-policy templates are displayed |
-| --- |
-
-| When|I select a template and its details are retrieved successfully |
-| --- |
-
-| Then|the selected template and its details are available for preparing the policy |
-| --- |
+2. **Given** the available access-policy templates are displayed\
+   **When** I select a template and its details are retrieved successfully\
+   **Then** the selected template and its details are available for preparing the policy
 
 Field entry remains covered by SIMPL-31545. Adding the policy remains covered by SIMPL-31547.
 
 ##### Continue without a selection
 
-| Given|I have not selected an access-policy template |
-| --- |
-
-| When|I continue to the next step |
-| --- |
-
-| Then|the wizard allows me to continue without adding a new access policy |
-| --- |
-
-| And|it does not remove any carried-over policies |
-| --- |
+3. **Given** I have not selected an access-policy template\
+   **When** I continue to the next step\
+   **Then** the wizard allows me to continue without adding a new access policy\
+   **And** it does not remove any carried-over policies
 
 ##### No templates are installed
 
-| Given|I am creating a new resource-description version |
-| --- |
-
-| When|I reach the Access policies step |
-| --- |
-
-| And|the template API returns an empty list for kind access |
-| --- |
-
-| Then|the UI shows that no templates are available |
-| --- |
-
-| And|I can continue without adding a new policy |
-| --- |
+4. **Given** I am creating a new resource-description version\
+   **When** I reach the Access policies step\
+   **And** the template API returns an empty list for kind access\
+   **Then** the UI shows that no templates are available\
+   **And** I can continue without adding a new policy
 
 ##### Template retrieval fails
 
-| Given|I am creating a new resource-description version |
-| --- |
-
-| When|I reach the Access policies step |
-| --- |
-
-| And|the template API returns an error |
-| --- |
-
-| Then|the UI shows an error and offers a retry |
-| --- |
-
-| And|no new template can be selected until retrieval succeeds |
-| --- |
-
-| And|I can continue without adding a new policy |
-| --- |
+5. **Given** I am creating a new resource-description version\
+   **When** I reach the Access policies step\
+   **And** the template API returns an error\
+   **Then** the UI shows an error and offers a retry\
+   **And** no new template can be selected until retrieval succeeds\
+   **And** I can continue without adding a new policy
 
 #### Technical details
 

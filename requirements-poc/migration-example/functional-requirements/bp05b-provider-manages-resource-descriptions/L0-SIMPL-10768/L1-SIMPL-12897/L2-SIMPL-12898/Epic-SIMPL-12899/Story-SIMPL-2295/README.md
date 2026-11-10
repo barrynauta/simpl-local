@@ -12,47 +12,23 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to use a UI to see the self-descriptions I have published |
-| --- |
-
-| so that|I can locate a specific self-description that I want to update. |
-| --- |
+**As a** Provider end user\
+**I want to** use a UI to see the self-descriptions I have published\
+**So that** I can locate a specific self-description that I want to update.
 
 #### Acceptance criteria
 
-| Given|I am authenticated as Provider |
-| --- |
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** there are resource descriptions published by a provider\
+   **When** the provider end user opens the dialog of a list of self-descriptions\
+   **Then** the list of resource descriptions previously published by the provider is displayed.
 
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|there are resource descriptions published by a provider |
-| --- |
-
-| when|the provider end user opens the dialog of a list of self-descriptions |
-| --- |
-
-| then|the list of resource descriptions previously published by the provider is displayed. |
-| --- |
-|  |  |
-
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|there are no self-descriptions of a provider |
-| --- |
-
-| when|the provider end user opens the dialog of a list of self-descriptions |
-| --- |
-
-| then|a message saying that there are no self-descriptions is displayed. |
-| --- |
+2. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** there are no self-descriptions of a provider\
+   **When** the provider end user opens the dialog of a list of self-descriptions\
+   **Then** a message saying that there are no self-descriptions is displayed.
 
 #### Technical details
 

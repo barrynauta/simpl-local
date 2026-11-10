@@ -20,68 +20,34 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ##### Carry over existing policies
 
-| Given|I am creating a new version of a resource description |
-| --- |
-
-| When|the previous version's contents are retrieved successfully |
-| --- |
-
-| Then|the UI copies its access policies into the new version's wizard state |
-| --- |
-
-| And|it preserves their policy content and recorded scope association |
-| --- |
-
-| And|it shows any available "Applies during" information without letting me change it |
-| --- |
-
-| And|it does not replace existing values with current-template defaults |
-| --- |
+1. **Given** I am creating a new version of a resource description\
+   **When** the previous version's contents are retrieved successfully\
+   **Then** the UI copies its access policies into the new version's wizard state\
+   **And** it preserves their policy content and recorded scope association\
+   **And** it shows any available "Applies during" information without letting me change it\
+   **And** it does not replace existing values with current-template defaults
 
 ##### The previous version has no access policies
 
-| Given|the previous version contains no access policies |
-| --- |
-
-| When|I reach the Access policies step |
-| --- |
-
-| Then|the UI shows an empty policy list |
-| --- |
-
-| And|I can add a policy using the template-selection flow |
-| --- |
-
-| And|I can continue without adding an access policy |
-| --- |
+2. **Given** the previous version contains no access policies\
+   **When** I reach the Access policies step\
+   **Then** the UI shows an empty policy list\
+   **And** I can add a policy using the template-selection flow\
+   **And** I can continue without adding an access policy
 
 ##### Show enforcement information consistently
 
-| Given|an access policy is carried over or newly added |
-| --- |
-
-| When|its scope information is available |
-| --- |
-
-| Then|the UI shows "Applies during" for both carried-over and newly added policies |
-| --- |
-
-| And|the Provider cannot change the template's intended scopes through the form |
-| --- |
+3. **Given** an access policy is carried over or newly added\
+   **When** its scope information is available\
+   **Then** the UI shows "Applies during" for both carried-over and newly added policies\
+   **And** the Provider cannot change the template's intended scopes through the form
 
 ##### Previous contents cannot be retrieved
 
-| Given|I am creating a new resource-description version |
-| --- |
-
-| When|retrieval of the previous version fails |
-| --- |
-
-| Then|the UI shows an error and offers a retry |
-| --- |
-
-| And|it does not treat the failed retrieval as a confirmed empty policy list |
-| --- |
+4. **Given** I am creating a new resource-description version\
+   **When** retrieval of the previous version fails\
+   **Then** the UI shows an error and offers a retry\
+   **And** it does not treat the failed retrieval as a confirmed empty policy list
 
 #### Technical details
 

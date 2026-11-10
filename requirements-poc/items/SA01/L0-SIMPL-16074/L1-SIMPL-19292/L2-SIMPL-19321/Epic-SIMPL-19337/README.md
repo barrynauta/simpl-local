@@ -10,40 +10,34 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-| **I want** | Simpl-Open to capture and store detailed execution logs of workflows |
-| **so that** | I can have them available both during execution and retrospectively to monitor my executions. |
+**As a** Participant\
+**I want** Simpl-Open to capture and store detailed execution logs of workflows\
+**So that** I can have them available both during execution and retrospectively to monitor my executions.
 
 **Acceptance Criteria**
 
 **AC1. Real-Time Log Capture**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflows |
-| **and** | a workflow is being executed |
-| **When** | the execution starts and progresses through its defined steps |
-| **Then** | Simpl-Open captures detailed execution logs in real time |
-| **and** | persist them in the designated logging storage |
+1. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflows\
+   **And** a workflow is being executed\
+   **When** the execution starts and progresses through its defined steps\
+   **Then** Simpl-Open captures detailed execution logs in real time\
+   **And** persist them in the designated logging storage
 
 **AC2. Log Completeness**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflows |
-| **and** | a workflow is being executed |
-| **When** | logs are generated |
-|**Then**|Simpl-Open captures all relevant information, including at minimum:
+2. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflows\
+   **And** a workflow is being executed\
+   **When** logs are generated\
+   **Then** Simpl-Open captures all relevant information, including at minimum:
 
-- Timestamp of when each event occurred.
-- Type of event recorded during the workflow execution.
-- Identifier of the workflow step or operation involved.
-- Status or outcome of the step at the time of the event.
-- Error details when a failure occurs.
-- Duration of the step when available.
-- Any user-provided information configured for the step during the workflow definition phase.|
+   - Timestamp of when each event occurred.
+   - Type of event recorded during the workflow execution.
+   - Identifier of the workflow step or operation involved.
+   - Status or outcome of the step at the time of the event.
+   - Error details when a failure occurs.
+   - Duration of the step when available.
+   - Any user-provided information configured for the step during the workflow definition phase.
 
 ## Where it fits
 

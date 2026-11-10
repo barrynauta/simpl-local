@@ -12,82 +12,42 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want to|update the usage policies using an usage policy template to a new version of a resource description via UI |
-| --- |
-
-| so that|I can ensure that the use of the the new resource description and the underlying resource is aligned with my internal rules and obligations. |
-| --- |
+**As a** Provider end user\
+**I want to** update the usage policies using an usage policy template to a new version of a resource description via UI\
+**So that** I can ensure that the use of the the new resource description and the underlying resource is aligned with my internal rules and obligations.
 
 #### Acceptance criteria
 
 **Acceptance Criterion 1: Add usage policies to a new version of a resource description**
 
-|   |   |
-| --- | --- |
-| **Scenario** | **A Provider assigns the usage policies of a new version of a resource description by using usage policy template via UI** |
+**Scenario:** A Provider assigns the usage policies of a new version of a resource description by using usage policy template via UI
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and |I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new version of a resource description |
-| --- |
-
-| When|I reach the step "Usage policies" in the wizard |
-| --- |
-
-| Then|I can assign usage policies by using a usage policy template to the new resource description. |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new version of a resource description\
+   **When** I reach the step "Usage policies" in the wizard\
+   **Then** I can assign usage policies by using a usage policy template to the new resource description.
 
 **Acceptance Criterion 2: Remove usage policies from a new version of a resource description**
 
-|   |   |
-| --- | --- |
-| **Scenario** | **A Provider removes the usage policies from a new version of a resource description which were assigned with usage policy template via UI** |
+**Scenario:** A Provider removes the usage policies from a new version of a resource description which were assigned with usage policy template via UI
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and |I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new version of a resource description |
-| --- |
-
-| When|I reach the step "Usage policies" in the wizard |
-| --- |
-
-| Then|I can remove usage policies which were assigned with a policy template from the new resource description. |
-| --- |
+2. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new version of a resource description\
+   **When** I reach the step "Usage policies" in the wizard\
+   **Then** I can remove usage policies which were assigned with a policy template from the new resource description.
 
 **Acceptance Criterion 3: Finish updates of a new version of the resource description**
 
-|   |   |
-| --- | --- |
-| **Scenario** | **A Provider finishes updating usage policies of a new version of a resource description via UI** |
+**Scenario:** A Provider finishes updating usage policies of a new version of a resource description via UI
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and |I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new resource description |
-| --- |
-
-| When|I reach the step "Usage policies" in the wizard |
-| --- |
-
-| and|I have assigned or removed usage policies from the new resource description |
-| --- |
-
-| Then|I can navigate to the next step in the wizard. |
-| --- |
+3. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step "Usage policies" in the wizard\
+   **And** I have assigned or removed usage policies from the new resource description\
+   **Then** I can navigate to the next step in the wizard.
 
 ## Where it fits
 

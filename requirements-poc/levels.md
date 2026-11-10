@@ -65,7 +65,7 @@ Acceptance criteria are a numbered list, one number per scenario. A scenario sta
    **When** I reach the step 'Contract Clauses' in the wizard\
    **Then** the UI shows the contract clauses of the previous version
 
-The keywords Given, When, Then, And and But are in bold, with a capital first letter. When the source writes a scenario as one sentence, it stays one sentence, with the keywords in bold.
+The keywords Given, When, Then, And and But are in bold, with a capital first letter. When the source writes a scenario as one sentence, it stays one sentence, with the keywords in bold. When the source puts the story or the scenario in a table, with the keyword in the first column, it is shown in the same layout as above. A scenario title from such a table is shown as **Scenario:** above the scenario.
 
 ## Status
 

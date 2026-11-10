@@ -12,14 +12,9 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As |Governance Authority |
-| --- |
-
-| I want|to verify if a request to retrieve the list of own resource descriptions by a provider is authorised, based on the included identity attributes |
-| --- |
-
-| so that| I can ensure that I provide the information only to authorised providers |
-| --- |
+**As** Governance Authority\
+**I want to** verify if a request to retrieve the list of own resource descriptions by a provider is authorised, based on the included identity attributes\
+**So that** I can ensure that I provide the information only to authorised providers
 
 #### Acceptance criteria
 
@@ -29,14 +24,9 @@ The tier 2 identity attributes authorising the management of Resource descriptio
 - APP_PROVIDER_PUBLISHER
 - INFRA_PROVIDER_PUBLISHER
 
-| When|I, the Governance Authority, receive a request from a Provider to retrieve a list of their own Resource descriptions |
-| --- |
-
-| then|I, the Governance Authority, check the authentication |
-| --- |
-
-| and|I, the Governance Authority, check that  the identity attributes authorise the management of Resource descriptions. |
-| --- |
+When I, the Governance Authority, receive a request from a Provider to retrieve a list of their own Resource descriptions\
+then I, the Governance Authority, check the authentication\
+and I, the Governance Authority, check that  the identity attributes authorise the management of Resource descriptions.
 
 #### Additional notes
 

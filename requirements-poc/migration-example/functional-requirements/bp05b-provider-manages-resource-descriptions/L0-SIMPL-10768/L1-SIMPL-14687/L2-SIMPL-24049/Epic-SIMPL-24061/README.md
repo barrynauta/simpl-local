@@ -14,7 +14,6 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 **I want** Simpl-Open to automatically approve or reject the metadata of a submitted resource description or a new version of a resource description by:
 
 - Evaluating whether the overall metadata quality score is higher than the overall metadata quality threshold;
-
 - Evaluating whether the metadata quality score for each dimension is higher than the quality threshold defined for that dimension;
 
 **So that** only resource descriptions with a minimum required level of metadata quality are approved for publication.

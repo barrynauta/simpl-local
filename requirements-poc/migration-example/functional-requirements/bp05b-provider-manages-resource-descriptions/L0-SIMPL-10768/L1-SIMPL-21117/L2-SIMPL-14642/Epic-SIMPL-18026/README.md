@@ -12,28 +12,17 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to notify Consumers about a revoked resource description |
-| --- |
-
-| So that|they can react on this. |
-| --- |
+**As a** Provider\
+**I want to** notify Consumers about a revoked resource description\
+**So that** they can react on this.
 
 #### Acceptance criteria
 
-| Scenario | A Provider notifies Consumers about the revocation of a resource description |
-| --- | --- |
+**Scenario:** A Provider notifies Consumers about the revocation of a resource description
 
-| Given|I, the Provider, have requested the revocation of a resource description |
-| --- |
-
-| When|the resource description is revoked |
-| --- |
-
-| Then|a notification about the revocation is sent to the Consumers of the resource descriptions with an active contract. |
-| --- |
+1. **Given** I, the Provider, have requested the revocation of a resource description\
+   **When** the resource description is revoked\
+   **Then** a notification about the revocation is sent to the Consumers of the resource descriptions with an active contract.
 
 ## Where it fits
 

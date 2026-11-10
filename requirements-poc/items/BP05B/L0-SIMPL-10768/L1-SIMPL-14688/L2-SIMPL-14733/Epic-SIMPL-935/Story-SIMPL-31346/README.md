@@ -12,78 +12,41 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Story card
 
-| As|an authorised Provider managing Resource Descriptions |
-| --- |
-
-| I want|to retrieve the installed access-policy templates through the policy-template API |
-| --- |
-
-| So that|I can select a template when adding an access policy to a Resource Description |
-| --- |
+**As an** authorised Provider managing Resource Descriptions\
+**I want to** retrieve the installed access-policy templates through the policy-template API\
+**So that** I can select a template when adding an access policy to a Resource Description
 
 #### Acceptance criteria
 
 ##### Provider retrieves the access-policy templates
 
-| Given|I am authenticated as a Provider with the required role |
-| --- |
-
-| When|I request the installed policy templates using the access-policy filter |
-| --- |
-
-| Then|the service responds with `200 OK` |
-| --- |
-
-| And|returns every installed access-policy template |
-| --- |
-
-| And|each item contains a stable identifier, name, and description |
-| --- |
+1. **Given** I am authenticated as a Provider with the required role\
+   **When** I request the installed policy templates using the access-policy filter\
+   **Then** the service responds with `200 OK`\
+   **And** returns every installed access-policy template\
+   **And** each item contains a stable identifier, name, and description
 
 ##### No access-policy templates are installed
 
-| Given|I am authenticated as a Provider with the required role |
-| --- |
-
-| And|no access-policy templates are installed |
-| --- |
-
-| When|I request the installed policy templates using the access-policy filter |
-| --- |
-
-| Then|the service responds with `200 OK` |
-| --- |
-
-| And|returns an empty array `[]` |
-| --- |
+2. **Given** I am authenticated as a Provider with the required role\
+   **And** no access-policy templates are installed\
+   **When** I request the installed policy templates using the access-policy filter\
+   **Then** the service responds with `200 OK`\
+   **And** returns an empty array `[]`
 
 ##### Unauthenticated client is rejected
 
-| Given|I am not authenticated |
-| --- |
-
-| When|I request the installed policy templates using the access-policy filter |
-| --- |
-
-| Then|the service responds with `401 Unauthorized` |
-| --- |
-
-| And|returns no templates |
-| --- |
+3. **Given** I am not authenticated\
+   **When** I request the installed policy templates using the access-policy filter\
+   **Then** the service responds with `401 Unauthorized`\
+   **And** returns no templates
 
 ##### Provider without the required role is rejected
 
-| Given|I am authenticated without a role that allows me to manage Resource Descriptions |
-| --- |
-
-| When|I request the installed policy templates using the access-policy filter |
-| --- |
-
-| Then|the service responds with `403 Forbidden` |
-| --- |
-
-| And|returns no templates |
-| --- |
+4. **Given** I am authenticated without a role that allows me to manage Resource Descriptions\
+   **When** I request the installed policy templates using the access-policy filter\
+   **Then** the service responds with `403 Forbidden`\
+   **And** returns no templates
 
 #### Technical details
 

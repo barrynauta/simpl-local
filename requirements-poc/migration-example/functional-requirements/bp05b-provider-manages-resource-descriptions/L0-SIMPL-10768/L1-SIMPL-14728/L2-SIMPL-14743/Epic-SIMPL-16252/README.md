@@ -10,37 +10,20 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 ## Text
 
-| As a|Provider |
-| --- |
-
-| I want|to update contract clauses resulting in a new version of the resource description |
-| --- |
-
-| So that|the terms and conditions for using and providing a resource are defined |
-| --- |
+**As a** Provider\
+**I want to** update contract clauses resulting in a new version of the resource description\
+**So that** the terms and conditions for using and providing a resource are defined
 
 **Acceptance criteria:**
 
-| Scenario | A Provider updates the contract clauses, resulting in a new version of the resource description via UI |
-| --- | --- |
+**Scenario:** A Provider updates the contract clauses, resulting in a new version of the resource description via UI
 
-| Given|I am authenticated as a Provider end user |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I am creating a new version of a resource description |
-| --- |
-
-| when|I reach the step "Contract clauses" in the wizard |
-| --- |
-
-| then|the contract clauses attributes are prefilled with the values from the previous version |
-| --- |
-
-| and|I can update the contents of the attributes. |
-| --- |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I am creating a new version of a resource description\
+   **When** I reach the step "Contract clauses" in the wizard\
+   **Then** the contract clauses attributes are prefilled with the values from the previous version\
+   **And** I can update the contents of the attributes.
 
 ## Where it fits
 

@@ -12,31 +12,17 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to revoke the previous version of a new version of a  resource description |
-| --- |
-
-| so that|the Catalogue remains consistent. |
-| --- |
+**As** Governance Authority\
+**I want to** revoke the previous version of a new version of a resource description\
+**So that** the Catalogue remains consistent.
 
 #### Acceptance criteria
 
-| Scenario | The Governance Authority revokes the previous version of a new version of a resource description |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a new version of a resource description |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| and|the new version of the resource description is published |
-| --- |
-
-| Then|the previous version of the resource description is revoked. |
-| --- |
+**Scenario:** The Governance Authority revokes the previous version of a new version of a resource description\
+When I, the Governance Authority, receive a new version of a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+and the new version of the resource description is published\
+Then the previous version of the resource description is revoked.
 
 an internal page
 

@@ -12,14 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Participant (through sd-tooling-be or adv-search-be) |
-| --- |
-
-| I want|to retrieve (via sync-schema-adapter) a specific version of a schema |
-| --- |
-
-| so that|I can correctly display the resource description based on the specific schema with which it was created. |
-| --- |
+**As a** Participant (through sd-tooling-be or adv-search-be)\
+**I want to** retrieve (via sync-schema-adapter) a specific version of a schema\
+**So that** I can correctly display the resource description based on the specific schema with which it was created.
 
 #### Technical details
 

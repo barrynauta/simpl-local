@@ -12,14 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Participant Provider |
-| --- |
-
-| I want|to retrieve (via sd-tooling-be) the *resourceAddress* associated with a resourceDescription, as previously stored in the connector during the assetRegistration stage |
-| --- |
-
-| so that|I can correctly display the resource description based on the specific schema with which it was created. |
-| --- |
+**As a** Participant Provider\
+**I want to** retrieve (via sd-tooling-be) the *resourceAddress* associated with a resourceDescription, as previously stored in the connector during the assetRegistration stage\
+**So that** I can correctly display the resource description based on the specific schema with which it was created.
 
 #### Technical details
 

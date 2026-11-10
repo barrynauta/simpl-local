@@ -12,30 +12,18 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to retrieve the policies of one of my own Resource descriptions via UI |
-| --- |
-
-| so that|I can view them according to their structures. |
-| --- |
+**As a** Provider\
+**I want to** retrieve the policies of one of my own Resource descriptions via UI\
+**So that** I can view them according to their structures.
 
 #### Acceptance criteria
 
 **
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| when|I request to retrieve one particular of my own Resource descriptions via UI or API |
-| --- |
-
-| then|the policies of this Resource description shall be displayed in a structured format. |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **When** I request to retrieve one particular of my own Resource descriptions via UI or API\
+   **Then** the policies of this Resource description shall be displayed in a structured format.
 
 ## Where it fits
 

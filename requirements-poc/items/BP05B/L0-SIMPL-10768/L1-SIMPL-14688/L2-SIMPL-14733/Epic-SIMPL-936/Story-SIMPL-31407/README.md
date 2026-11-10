@@ -12,87 +12,44 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Story card
 
-| As|an authorised Provider managing Resource Descriptions |
-| --- |
-
-| I want|clear validation feedback when I confirm an access policy |
-| --- |
-
-| So that|I can correct invalid values before adding the policy |
-| --- |
+**As an** authorised Provider managing Resource Descriptions\
+**I want** clear validation feedback when I confirm an access policy\
+**So that** I can correct invalid values before adding the policy
 
 #### Acceptance criteria
 
 ##### Valid values pass validation
 
-| Given|I completed the fields of an access-policy template with valid values |
-| --- |
-
-| When|I confirm the policy in the modal |
-| --- |
-
-| Then|the access-policy backend validates the policy |
-| --- |
-
-| And|no validation errors are shown |
-| --- |
-
-| And|the valid policy is added to the Resource Description |
-| --- |
+1. **Given** I completed the fields of an access-policy template with valid values\
+   **When** I confirm the policy in the modal\
+   **Then** the access-policy backend validates the policy\
+   **And** no validation errors are shown\
+   **And** the valid policy is added to the Resource Description
 
 ##### Invalid values block confirmation
 
-| Given|one or more values do not meet the selected template's rules |
-| --- |
-
-| When|I confirm the policy in the modal |
-| --- |
-
-| Then|the access-policy backend validates the policy |
-| --- |
-
-| And|the UI shows a clear message for each invalid value |
-| --- |
-
-| And|the modal remains open |
-| --- |
-
-| And|the policy is not added to the Resource Description |
-| --- |
+2. **Given** one or more values do not meet the selected template's rules\
+   **When** I confirm the policy in the modal\
+   **Then** the access-policy backend validates the policy\
+   **And** the UI shows a clear message for each invalid value\
+   **And** the modal remains open\
+   **And** the policy is not added to the Resource Description
 
 ##### Missing required values block confirmation
 
-| Given|one or more required values are missing |
-| --- |
-
-| When|I confirm the policy in the modal |
-| --- |
-
-| Then|the UI shows which values are required |
-| --- |
-
-| And|the modal remains open |
-| --- |
-
-| And|the policy is not added to the Resource Description |
-| --- |
+3. **Given** one or more required values are missing\
+   **When** I confirm the policy in the modal\
+   **Then** the UI shows which values are required\
+   **And** the modal remains open\
+   **And** the policy is not added to the Resource Description
 
 ##### Provider corrects invalid values
 
-| Given|validation errors are shown |
-| --- |
-
-| When|I correct the values and confirm the policy again |
-| --- |
-
-| Then|the policy is validated again |
-| --- |
-
-| And|resolved errors are cleared |
-| --- |
-
-| And|the valid policy is added to the Resource Description |
-| --- |
+4. **Given** validation errors are shown\
+   **When** I correct the values and confirm the policy again\
+   **Then** the policy is validated again\
+   **And** resolved errors are cleared\
+   **And** the valid policy is added to the Resource Description
 
 #### Technical details
 

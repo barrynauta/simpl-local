@@ -12,56 +12,28 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to add common metadata to a new resource description via UI |
-| --- |
-
-| so that|I can ensure that the new resource description includes all relevant information to be compliant with the data space schema. |
-| --- |
+**As a** Provider end user\
+**I want to** add common metadata to a new resource description via UI\
+**So that** I can ensure that the new resource description includes all relevant information to be compliant with the data space schema.
 
 #### Acceptance criteria
 
-| Scenario | A Provider end user adds common metadata to a new resource description via UI |
-| --- | --- |
+**Scenario:** A Provider end user adds common metadata to a new resource description via UI
 
-| Given|I am authenticated as a Provider end user |
-| --- |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step "Common metadata" in the wizard\
+   **Then** I can add common metadata as defined in the schema of the selected resource type to the new resource description.
 
-| and |I have a role authorising the management of Resource Descriptions |
-| --- |
+**Scenario:** A Provider end user finishes adding common metadata to a new resource description via UI
 
-| and|I am creating a new resource description |
-| --- |
-
-| when|I reach the step "Common metadata" in the wizard |
-| --- |
-
-| then|I can add common metadata as defined in the schema of the selected resource type to the new resource description. |
-| --- |
-|  |  |
-
-| Scenario | A Provider end user finishes adding common metadata to a new resource description via UI |
-| --- | --- |
-
-| Given|I am authenticated as a Provider end user |
-| --- |
-
-| and |I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|I am creating a new resource description |
-| --- |
-
-| when|I reach the step "Common metadata" in the wizard |
-| --- |
-
-| and|I have added common metadata to the new resource description |
-| --- |
-
-| then|I can navigate to the next step in the wizard. |
-| --- |
+2. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new resource description\
+   **When** I reach the step "Common metadata" in the wizard\
+   **And** I have added common metadata to the new resource description\
+   **Then** I can navigate to the next step in the wizard.
 
 ## Where it fits
 

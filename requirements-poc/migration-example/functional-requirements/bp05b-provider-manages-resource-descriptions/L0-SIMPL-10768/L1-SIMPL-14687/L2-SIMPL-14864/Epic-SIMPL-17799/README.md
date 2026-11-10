@@ -12,53 +12,27 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to automatically check the version number of a new version of a resource description |
-| --- |
-
-| so that|the published resource descriptions are consistent, reliable and compliant with pre-defined standards. |
-| --- |
+**As** Governance Authority\
+**I want to** automatically check the version number of a new version of a resource description\
+**So that** the published resource descriptions are consistent, reliable and compliant with pre-defined standards.
 
 #### Acceptance criteria
 
-| Scenario | The Governance Authority checks the version number of a new version of a resource description(Version number validation - positive case) |
-| --- | --- |
+**Scenario:** The Governance Authority checks the version number of a new version of a resource description(Version number validation - positive case)
 
-| Given |an algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority |
-| --- |
+1. **Given** an algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority\
+   **When** I, the Governance Authority, receive a new version of a resource description with a correct version number\
+   **And** the Provider is authorised with identity attributes to manage resource descriptions\
+   **Then** it is checked that the version number of the new version of a Resource description is correct based on the version numbering algorithm\
+   **And** version number validation for the new version of a Resource description has the result "valid".
 
-| When|I, the Governance Authority, receive a new version of a resource description with a correct version number |
-| --- |
+**Scenario:** The Governance Authority checks the version number of a new version of a resource description(Version number validation - negative case)
 
-| and|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| then|it is checked that the version number of the new version of a Resource description is correct based on the version numbering algorithm |
-| --- |
-
-| and|version number validation for the new version of a Resource description has the result "valid". |
-| --- |
-|  |  |
-
-| Scenario | The Governance Authority checks the version number of a new version of a resource description(Version number validation - negative case) |
-| --- | --- |
-
-| Given |an algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority |
-| --- |
-
-| When|I, the Governance Authority, receive a new version of a resource description with an incorrect version number |
-| --- |
-
-| and|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| then|it is checked that the version number of the new version of a Resource description is correct based on the version numbering algorithm |
-| --- |
-
-| and|version number validation for the new version of a Resource description has the result "invalid". |
-| --- |
+2. **Given** an algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority\
+   **When** I, the Governance Authority, receive a new version of a resource description with an incorrect version number\
+   **And** the Provider is authorised with identity attributes to manage resource descriptions\
+   **Then** it is checked that the version number of the new version of a Resource description is correct based on the version numbering algorithm\
+   **And** version number validation for the new version of a Resource description has the result "invalid".
 
 ## Where it fits
 

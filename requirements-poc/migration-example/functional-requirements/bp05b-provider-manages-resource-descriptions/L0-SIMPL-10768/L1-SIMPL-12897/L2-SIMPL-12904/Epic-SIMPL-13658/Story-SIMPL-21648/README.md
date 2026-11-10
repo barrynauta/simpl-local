@@ -12,108 +12,46 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to provide the version history of one of a Provider's own resource description upon request via API |
-| --- |
-
-| so that|they can review it and decide if any action should be taken. |
-| --- |
+**As** Governance Authority\
+**I want to** provide the version history of one of a Provider's own resource description upon request via API\
+**So that** they can review it and decide if any action should be taken.
 
 #### Acceptance criteria
 
-| Scenario | The Governance authority provides the version history of a resource description via API - positive case |
-| --- | --- |
+**Scenario:** The Governance authority provides the version history of a resource description via API - positive case\
+When I, the Governance Authority, receive a request for the version history of a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+and the resource description was published by the requesting Provider\
+then the version history of this resource description is returned.
 
-| When|I, the Governance Authority, receive a request for the version history of a resource description |
-| --- |
+**Scenario:** The Governance authority provides the version history of a resource description via API - negative case: unauthorized\
+When I, the Governance Authority, receive a request for the version history of a resource description\
+and the Provider is not authorised with the identity attributes to manage resource descriptions\
+then an error message is returned.
 
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
+**Scenario:** The Governance authority provides the version history of a resource description via API - negative case: not own resource description\
+When I, the Governance Authority, receive a request for the version history of a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+and the resource description was not published by the requesting Provider\
+then an error message is returned.
 
-| and|the resource description was published by the requesting Provider |
-| --- |
+**Scenario:** The Governance authority provides the version history of a resource description via API - negative case: resource description not existing\
+When I, the Governance Authority, receive a request for the version history of a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+and the resource description does not exist\
+then an error message is returned.
 
-| then| the version history of this resource description is returned. |
-| --- |
-|  |  |
+**Scenario:** The Governance authority provides the version history of a resource description via API - negative case: not acceptable\
+When I, the Governance Authority, receive a request for the version history of a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+and the request is invalid\
+then an error message is returned.
 
-| Scenario | The Governance authority provides the version history of a resource description via API - negative case: unauthorized |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a request for the version history of a resource description |
-| --- |
-
-| and|the Provider is not authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| then| an error message is returned. |
-| --- |
-|  |  |
-
-| Scenario | The Governance authority provides the version history of a resource description via API - negative case: not own resource description |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a request for the version history of a resource description |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| and|the resource description was not published by the requesting Provider |
-| --- |
-
-| then| an error message is returned. |
-| --- |
-|  |  |
-
-| Scenario | The Governance authority provides the version history of a resource description via API - negative case: resource description not existing |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a request for the version history of a resource description |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| and|the resource description does not exist |
-| --- |
-
-| then|an error message is returned. |
-| --- |
-|  |  |
-
-| Scenario | The Governance authority provides the version history of a resource description via API - negative case: not acceptable |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a request for the version history of a resource description |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| and|the request is invalid |
-| --- |
-
-| then|an error message is returned. |
-| --- |
-|  |  |
-
-| Scenario | The Governance authority provides the version history of a resource description via API - negative case: internal server error |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a request for the version history of a resource description |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| and|there is an internal server error |
-| --- |
-
-| then|an error message is returned. |
-| --- |
+**Scenario:** The Governance authority provides the version history of a resource description via API - negative case: internal server error\
+When I, the Governance Authority, receive a request for the version history of a resource description\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+and there is an internal server error\
+then an error message is returned.
 
 ## Where it fits
 

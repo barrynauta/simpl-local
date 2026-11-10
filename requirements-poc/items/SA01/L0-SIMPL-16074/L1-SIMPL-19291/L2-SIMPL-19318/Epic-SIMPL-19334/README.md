@@ -10,22 +10,18 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-| **I want** | to manually trigger the execution of a workflow |
-| **so that** | I can run the defined logic and view the results of it |
+**As a** Participant\
+**I want to** manually trigger the execution of a workflow\
+**So that** I can run the defined logic and view the results of it
 
 **Acceptance Criteria**
 
 **AC1. Manual Trigger via UI and API**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflows |
-| **and** | an existing workflow with a valid configuration, |
-| **When** | I manually trigger its execution via UI or API, |
-| **Then** | Simpl-Open executes a new run of that workflow |
+1. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflows\
+   **And** an existing workflow with a valid configuration,\
+   **When** I manually trigger its execution via UI or API,\
+   **Then** Simpl-Open executes a new run of that workflow
 
 ## Where it fits
 

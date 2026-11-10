@@ -12,14 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Participant Provider |
-| --- |
-
-| I want|to retrieve (via SD‑Tooling frontend) the *resourceAddress* associated with a resourceDescription, as previously stored in the connector during assetRegistration stage |
-| --- |
-
-| so that|I can correctly visualize and modify the resourceDescription using the technical information originally registered in the connector. |
-| --- |
+**As a** Participant Provider\
+**I want to** retrieve (via SD‑Tooling frontend) the *resourceAddress* associated with a resourceDescription, as previously stored in the connector during assetRegistration stage\
+**So that** I can correctly visualize and modify the resourceDescription using the technical information originally registered in the connector.
 
 #### Technical details
 

@@ -12,30 +12,19 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to notify a Provider about  invalid semantics of a new resource description or a new version of a resource description |
-| --- |
-
-| so that|the Provider can correct the errors. |
-| --- |
+**As** Governance Authority\
+**I want to** notify a Provider about invalid semantics of a new resource description or a new version of a resource description\
+**So that** the Provider can correct the errors.
 
 #### Acceptance criteria
 
 *Note that notifications about invalid policies are not part of this story*
 
-| Scenario | The Governance Authority notifies a Provider about semantic validation errors (Semantic validation - negative case) |
-| --- | --- |
+**Scenario:** The Governance Authority notifies a Provider about semantic validation errors (Semantic validation - negative case)
 
-| Given|I receive a new resource description or a new version of a resource description with invalid semantics |
-| --- |
-
-| When|the semantics of the content or the resource description is automatically checked |
-| --- |
-
-| Then|a notification about invalid semantics is sent to the Provider. |
-| --- |
+1. **Given** I receive a new resource description or a new version of a resource description with invalid semantics\
+   **When** the semantics of the content or the resource description is automatically checked\
+   **Then** a notification about invalid semantics is sent to the Provider.
 
 #### Technical details
 

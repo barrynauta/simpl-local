@@ -12,34 +12,19 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to start the creation of a new version of a Resource description via UI |
-| --- |
-
-| so that|I can align the resource description with the latest information related to my resource. |
-| --- |
+**As a** Provider end user\
+**I want to** start the creation of a new version of a Resource description via UI\
+**So that** I can align the resource description with the latest information related to my resource.
 
 #### Acceptance criteria
 
-| Scenario | A Provider starts the creation of a new version of a Resource description via UI |
-| --- | --- |
+**Scenario:** A Provider starts the creation of a new version of a Resource description via UI
 
-| Given|I am authenticated as a Provider end user |
-| --- |
-
-| and |I have a role authorising the management of Resource descriptions |
-| --- |
-
-| and|I am consulting the full contents of a Resource description |
-| --- |
-
-| When|I demand to create a new version of this Resource description |
-| --- |
-
-| Then|I am guided to the first step of the wizard based on the latest version of the underlying schema for this resource type. |
-| --- |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource descriptions\
+   **And** I am consulting the full contents of a Resource description\
+   **When** I demand to create a new version of this Resource description\
+   **Then** I am guided to the first step of the wizard based on the latest version of the underlying schema for this resource type.
 
 ## Where it fits
 

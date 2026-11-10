@@ -12,54 +12,29 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard:
 
-| As|a Provider with a role authorising the management of resource descriptions |
-| --- |
-
-| I want|to remove an access policy from the new resource description at the "Access policies" step |
-| --- |
-
-| so that|the new resource description only carries the access policies I want to keep |
-| --- |
+**As a** Provider with a role authorising the management of resource descriptions\
+**I want to** remove an access policy from the new resource description at the "Access policies" step\
+**So that** the new resource description only carries the access policies I want to keep
 
 #### Acceptance criteria:
 
-| Scenario | Provider removes an access policy from the new resource description |
-| --- | --- |
+**Scenario:** Provider removes an access policy from the new resource description
 
-| Given|I am authenticated in the Provider UI with a role authorising the management of resource descriptions |
-| --- |
-
-| And|I am creating a new resource description and the "Access policies" step lists one or more access policies added from a template |
-| --- |
-
-| When|I remove one of the listed access policies |
-| --- |
-
-| Then|the UI removes that access policy from the set to be saved on the new resource description |
-| --- |
-
-| And|the remaining access policies stay unchanged and available for editing |
-| --- |
+1. **Given** I am authenticated in the Provider UI with a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description and the "Access policies" step lists one or more access policies added from a template\
+   **When** I remove one of the listed access policies\
+   **Then** the UI removes that access policy from the set to be saved on the new resource description\
+   **And** the remaining access policies stay unchanged and available for editing
 
 ##### Negative scenario
 
-| Scenario | No access policies are present to remove |
-| --- | --- |
+**Scenario:** No access policies are present to remove
 
-| Given|I am authenticated in the Provider UI with a role authorising the management of resource descriptions |
-| --- |
-
-| And|I am creating a new resource description and the "Access policies" step has no assigned access policies |
-| --- |
-
-| When|I view the list of access policies |
-| --- |
-
-| Then|the remove action is not available |
-| --- |
-
-| And|the step shows an empty state for access policies |
-| --- |
+2. **Given** I am authenticated in the Provider UI with a role authorising the management of resource descriptions\
+   **And** I am creating a new resource description and the "Access policies" step has no assigned access policies\
+   **When** I view the list of access policies\
+   **Then** the remove action is not available\
+   **And** the step shows an empty state for access policies
 
 #### Technical details:
 

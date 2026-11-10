@@ -12,37 +12,20 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to update the deployment script of a new version of an infrastructure resource description via UI |
-| --- |
-
-| so that|I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type. |
-| --- |
+**As a** Provider end user\
+**I want to** update the deployment script of a new version of an infrastructure resource description via UI\
+**So that** I can ensure that the new resource description includes all relevant information to be compliant with the data space schema of the selected resource type.
 
 #### Acceptance criteria
 
-| Scenario | A Provider updates the deployment script of a new version of an infrastructure Resource description via UI |
-| --- | --- |
+**Scenario:** A Provider updates the deployment script of a new version of an infrastructure Resource description via UI
 
-| Given|I am authenticated as a Provider end user |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|I am creating a new version of an infrastructure resource description |
-| --- |
-
-| when|I reach the step "Resource type specific metadata" in the wizard |
-| --- |
-
-| then|the deployment script is prefilled with the values from the previous version |
-| --- |
-
-| then|I can update the deployment script. |
-| --- |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am creating a new version of an infrastructure resource description\
+   **When** I reach the step "Resource type specific metadata" in the wizard\
+   **Then** the deployment script is prefilled with the values from the previous version\
+   **Then** I can update the deployment script.
 
 ## Where it fits
 

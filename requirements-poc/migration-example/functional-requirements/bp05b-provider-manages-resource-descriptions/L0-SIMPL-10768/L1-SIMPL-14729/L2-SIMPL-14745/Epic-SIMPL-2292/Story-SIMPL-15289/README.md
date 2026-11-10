@@ -12,47 +12,26 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|that my technical provider identifier is automatically in a new resource description when creating it via UI |
-| --- |
-
-| so that|the resource description can be identified as my own. |
-| --- |
+**As a** Provider\
+**I want** that my technical provider identifier is automatically in a new resource description when creating it via UI\
+**So that** the resource description can be identified as my own.
 
 #### Acceptance criteria
 
 **Positive case**
 
-| Given|I am authenticated as a provider |
-| --- |
-
-| and|I create a new resource description in the UI |
-| --- |
-
-| when|I submit the filled resource description to the backend |
-| --- |
-
-| Then|the provider ID is automatically set in the new resource description. |
-| --- |
+1. **Given** I am authenticated as a provider\
+   **And** I create a new resource description in the UI\
+   **When** I submit the filled resource description to the backend\
+   **Then** the provider ID is automatically set in the new resource description.
 
 **Negative Case**
 
-| Given|I am authenticated as a provider |
-| --- |
-
-| and|I create a new resource description in the UI |
-| --- |
-
-| when|I the provider ID cannot be retrieved and set automatically |
-| --- |
-
-| Then|I am not able to submit the resource description |
-| --- |
-
-| and|I receive a comprehensive error message |
-| --- |
+2. **Given** I am authenticated as a provider\
+   **And** I create a new resource description in the UI\
+   **When** I the provider ID cannot be retrieved and set automatically\
+   **Then** I am not able to submit the resource description\
+   **And** I receive a comprehensive error message
 
 #### Technical Information
 

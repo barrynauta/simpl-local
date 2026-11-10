@@ -12,14 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to retrieve the version history of one of my own resource descriptions via API |
-| --- |
-
-| so that|I can review it and decide if any action should be taken. |
-| --- |
+**As a** Provider\
+**I want to** retrieve the version history of one of my own resource descriptions via API\
+**So that** I can review it and decide if any action should be taken.
 
 #### Technical Details
 
@@ -30,90 +25,42 @@ which is defined in the following OpenAPI specification file:\
 
 #### Acceptance criteria
 
-| Scenario | A Provider consults the version history of one of its own resource descriptions via API - positive case |
-| --- | --- |
+**Scenario:** A Provider consults the version history of one of its own resource descriptions via API - positive case
 
-| Given|I am authenticated as Provider |
-| --- |
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request to retrieve the version history of one of my own resource descriptions\
+   **Then** the version history of this resource description is returned.
 
-| and|I have a role authorising the management of resource descriptions |
-| --- |
+**Scenario:** A Provider consults the version history of one of its own resource descriptions via API - negative case: not own resource description
 
-| when|I request to retrieve the version history of one of my own resource descriptions |
-| --- |
+2. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request to retrieve the version history of a resource description not published by me\
+   **Then** an error message is returned.
 
-| then| the version history of this resource description is returned. |
-| --- |
-|  |  |
+**Scenario:** A Provider consults the version history of one of its own resource descriptions via API - negative case: resource description not existing
 
-| Scenario | A Provider consults the version history of one of its own resource descriptions via API - negative case: not own resource description |
-| --- | --- |
+3. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request to retrieve the version history of a resource description that does not exist\
+   **Then** an error message is returned.
 
-| Given|I am authenticated as Provider |
-| --- |
+**Scenario:** A Provider consults the version history of one of its own resource descriptions via API - negative case: bad request
 
-| and|I have a role authorising the management of resource descriptions |
-| --- |
+4. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request to retrieve the version history of one of my own resource descriptions\
+   **And** I send a malformed request\
+   **Then** an error message is returned.
 
-| when|I request to retrieve the version history of a resource description not published by me |
-| --- |
+**Scenario:** A Provider consults the version history of one of its own resource descriptions via API - negative case: internal server error
 
-| then|an error message is returned. |
-| --- |
-|  |  |
-
-| Scenario | A Provider consults the version history of one of its own resource descriptions via API - negative case: resource description not existing |
-| --- | --- |
-
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| when|I request to retrieve the version history of a resource description that does not exist |
-| --- |
-
-| then|an error message is returned. |
-| --- |
-|  |  |
-
-| Scenario | A Provider consults the version history of one of its own resource descriptions via API - negative case: bad request |
-| --- | --- |
-
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| when|I request to retrieve the version history of one of my own resource descriptions |
-| --- |
-
-| and|I send a malformed request |
-| --- |
-
-| then|an error message is returned. |
-| --- |
-|  |  |
-
-| Scenario | A Provider consults the version history of one of its own resource descriptions via API - negative case: internal server error |
-| --- | --- |
-
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| when|I request to retrieve the version history of one of my own resource descriptions |
-| --- |
-
-| and|there is an internal server error |
-| --- |
-
-| then|an error message is returned. |
-| --- |
+5. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request to retrieve the version history of one of my own resource descriptions\
+   **And** there is an internal server error\
+   **Then** an error message is returned.
 
 ## Where it fits
 

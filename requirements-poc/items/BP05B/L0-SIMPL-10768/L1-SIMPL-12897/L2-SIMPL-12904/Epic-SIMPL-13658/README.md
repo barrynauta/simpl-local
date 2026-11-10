@@ -12,31 +12,18 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to retrieve the version history of one of my own resource descriptions via UI or API |
-| --- |
-
-| so that|I can review it and decide if any action should be taken. |
-| --- |
+**As a** Provider\
+**I want to** retrieve the version history of one of my own resource descriptions via UI or API\
+**So that** I can review it and decide if any action should be taken.
 
 #### Acceptance criteria
 
-| Scenario | A Provider consults the version history of one of its own resource descriptions |
-| --- | --- |
+**Scenario:** A Provider consults the version history of one of its own resource descriptions
 
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| when|I request to retrieve the version history of one of my own resource descriptions via UI or API |
-| --- |
-
-| then| the version history of this resource description is returned. |
-| --- |
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request to retrieve the version history of one of my own resource descriptions via UI or API\
+   **Then** the version history of this resource description is returned.
 
 ## Where it fits
 

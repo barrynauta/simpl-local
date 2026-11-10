@@ -16,31 +16,19 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 **Acceptance Criterion 1: Provide feedback about syntax validation errors of an access policies**
 
-| Scenario|The Governance Authority provides feedback to a Provider about syntax validation errors of an access policy (Syntax validation - negative case) |
-| --- |
+**Scenario:** The Governance Authority provides feedback to a Provider about syntax validation errors of an access policy (Syntax validation - negative case)
 
-| Given|I have received a new resource description or a new version of a resource description with invalid syntax of an access policy |
-| --- |
-
-| When|the syntax of this policy in the resource description is automatically checked |
-| --- |
-
-| Then|a feedback about invalid syntax of the access policy is sent to the Provider with details |
-| --- |
+1. **Given** I have received a new resource description or a new version of a resource description with invalid syntax of an access policy\
+   **When** the syntax of this policy in the resource description is automatically checked\
+   **Then** a feedback about invalid syntax of the access policy is sent to the Provider with details
 
 **Acceptance Criterion 2: Provide feedback about syntax validation errors of a usage policies**
 
-| Scenario|The Governance Authority provides feedback to a Provider about syntax validation errors of an usage policy (Syntax validation - negative case) |
-| --- |
+**Scenario:** The Governance Authority provides feedback to a Provider about syntax validation errors of an usage policy (Syntax validation - negative case)
 
-| Given|I have received a new resource description or a new version of a resource description with invalid syntax of a usage policy |
-| --- |
-
-| When|the syntax of this policy in the resource description is automatically checked |
-| --- |
-
-| Then|a feedback about invalid syntax of the usage policy is sent to the Provider with details |
-| --- |
+2. **Given** I have received a new resource description or a new version of a resource description with invalid syntax of a usage policy\
+   **When** the syntax of this policy in the resource description is automatically checked\
+   **Then** a feedback about invalid syntax of the usage policy is sent to the Provider with details
 
 ## Where it fits
 

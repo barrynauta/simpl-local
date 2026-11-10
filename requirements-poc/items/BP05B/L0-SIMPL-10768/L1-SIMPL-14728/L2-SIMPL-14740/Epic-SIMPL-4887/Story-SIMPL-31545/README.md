@@ -20,76 +20,39 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ##### Render the template fields
 
-| Given|I selected an access-policy template in the new-version wizard |
-| --- |
-
-| When|its details are retrieved |
-| --- |
-
-| Then|the UI renders its ordered fields using their labels, types and controls |
-| --- |
-
-| And|it retrieves approved choices where the field defines a value source |
-| --- |
+1. **Given** I selected an access-policy template in the new-version wizard\
+   **When** its details are retrieved\
+   **Then** the UI renders its ordered fields using their labels, types and controls\
+   **And** it retrieves approved choices where the field defines a value source
 
 ##### Retain entered values
 
-| Given|the selected template's fields are displayed |
-| --- |
-
-| When|I enter or change a field value |
-| --- |
-
-| Then|the entered value is retained in the policy draft |
-| --- |
+2. **Given** the selected template's fields are displayed\
+   **When** I enter or change a field value\
+   **Then** the entered value is retained in the policy draft
 
 ##### Show access-enforcement information
 
-| Given|the selected access template declares intended scopes |
-| --- |
-
-| When|the form is displayed |
-| --- |
-
-| Then|the UI shows that information as read-only |
-| --- |
-
-| And|it does not insert scope metadata into the ODRL policy |
-| --- |
+3. **Given** the selected access template declares intended scopes\
+   **When** the form is displayed\
+   **Then** the UI shows that information as read-only\
+   **And** it does not insert scope metadata into the ODRL policy
 
 ##### Change a template after entering values
 
-| Given|I entered one or more values for the selected template |
-| --- |
-
-| When|I select another template |
-| --- |
-
-| Then|the UI warns me that switching will discard those values and asks me to confirm |
-| --- |
-
-| And|only after I confirm does the UI clear the old values and load the new fields |
-| --- |
-
-| And|if I cancel, the UI keeps the existing template and values |
-| --- |
+4. **Given** I entered one or more values for the selected template\
+   **When** I select another template\
+   **Then** the UI warns me that switching will discard those values and asks me to confirm\
+   **And** only after I confirm does the UI clear the old values and load the new fields\
+   **And** if I cancel, the UI keeps the existing template and values
 
 ##### Template details cannot be retrieved
 
-| Given|I selected a template |
-| --- |
-
-| When|retrieval of its details fails |
-| --- |
-
-| Then|the UI shows an error and offers a retry |
-| --- |
-
-| And|it does not display a form from another template |
-| --- |
-
-| And|it does not add the policy until the correct details are available |
-| --- |
+5. **Given** I selected a template\
+   **When** retrieval of its details fails\
+   **Then** the UI shows an error and offers a retry\
+   **And** it does not display a form from another template\
+   **And** it does not add the policy until the correct details are available
 
 #### Technical details
 

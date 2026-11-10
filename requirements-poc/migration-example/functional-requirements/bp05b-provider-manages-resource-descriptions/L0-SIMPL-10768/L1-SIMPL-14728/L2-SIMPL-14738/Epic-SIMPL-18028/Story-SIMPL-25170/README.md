@@ -12,14 +12,9 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|Participant Provider |
-| --- |
-
-| I want|to view the resourceAddress information associated with an existing resourceDescription when accessing its details (in read‑only or editing mode) |
-| --- |
-
-| so that|I can verify the previously configured values and, optionally update them before submitting a modified resourceDescription. |
-| --- |
+**As a** Participant Provider\
+**I want to** view the resourceAddress information associated with an existing resourceDescription when accessing its details (in read‑only or editing mode)\
+**So that** I can verify the previously configured values and, optionally update them before submitting a modified resourceDescription.
 
 #### Technical details
 

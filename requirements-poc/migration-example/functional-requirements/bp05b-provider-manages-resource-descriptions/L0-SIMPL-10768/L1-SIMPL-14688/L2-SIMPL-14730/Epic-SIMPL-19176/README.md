@@ -12,31 +12,18 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to retrieve the schema of a published resource type from the Governance Authority |
-| --- |
-
-| so that|I can start the creation of a new resource description. |
-| --- |
+**As a** Provider\
+**I want to** retrieve the schema of a published resource type from the Governance Authority\
+**So that** I can start the creation of a new resource description.
 
 #### Acceptance criteria
 
-| Scenario | A Provider retrieves the schema of a published resource type |
-| --- | --- |
+**Scenario:** A Provider retrieves the schema of a published resource type
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| When|I request the schema of a published resource type from the Governance Authority |
-| --- |
-
-| then|I receive the schema of the published resource type. |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **When** I request the schema of a published resource type from the Governance Authority\
+   **Then** I receive the schema of the published resource type.
 
 ## Where it fits
 

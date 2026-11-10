@@ -12,86 +12,43 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to be able to see the details of one of my self-descriptions |
-| --- |
-
-| so that|I can inform myself about the details and decide if any action should be taken. |
-| --- |
+**As a** Provider end user\
+**I want to** be able to see the details of one of my self-descriptions\
+**So that** I can inform myself about the details and decide if any action should be taken.
 
 #### Acceptance criteria
 
-| Scenario|A provider consults the details of one of its own Resource descriptions in the UI - positive case |
-| --- |
+**Scenario:** A provider consults the details of one of its own Resource descriptions in the UI - positive case
 
-| Given|I am authenticated as Provider |
-| --- |
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am consulting the overview of Resource descriptions\
+   **And** there is a Resource description published by me\
+   **When** I open the resource description details page\
+   **Then** all details of the selected Resource description are shown.
 
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
+**Scenario:** A provider consults the details of one of its own Resource descriptions in the UI - negative case
 
-| and|I am consulting the overview of Resource descriptions |
-| --- |
-
-| and|there is a Resource description published by me |
-| --- |
-
-| when|I open the resource description details page |
-| --- |
-
-| then|all details of the selected Resource description are shown. |
-| --- |
-|  |  |
-
-| Scenario|A provider consults the details of one of its own Resource descriptions in the UI - negative case |
-| --- |
-
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|I am consulting the overview of Resource descriptions |
-| --- |
-
-| and|there is a Resource description published by me |
-| --- |
-
-| when|I open the Resource description details page |
-| --- |
-
-| and|the API returns an error |
-| --- |
-
-| then|an error message showing the error description is shown. |
-| --- |
+2. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I am consulting the overview of Resource descriptions\
+   **And** there is a Resource description published by me\
+   **When** I open the Resource description details page\
+   **And** the API returns an error\
+   **Then** an error message showing the error description is shown.
 
 *Note: as this screen can only be reached if there exists at least one Resource description of the Provider, a negative case for "no Resource description" does not exist.*
 
-| Scenario | A user is not authenticated as Provider |
-| --- | --- |
+**Scenario:** A user is not authenticated as Provider
 
-| When|I am not autenticated as Provider |
-| --- |
+**When** I am not autenticated as Provider\
+   **Then** I cannot access Resource description management in the UI.
 
-| Then|I cannot access Resource description management in the UI. |
-| --- |
-|  |  |
+**Scenario:** A user does not have role authorising the management of Resource Descriptions
 
-| Scenario | A user does not have role authorising the management of Resource Descriptions |
-| --- | --- |
-
-| Given|I am autenticated as Provider |
-| --- |
-
-| When|I do not have a role authorising the management of Resource Descriptions |
-| --- |
-
-| Then|I cannot access Resource description management in the UI. |
-| --- |
+3. **Given** I am autenticated as Provider\
+   **When** I do not have a role authorising the management of Resource Descriptions\
+   **Then** I cannot access Resource description management in the UI.
 
 #### Technical Info
 

@@ -20,62 +20,32 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ##### Render the template fields
 
-| Given|I selected a usage-policy template in the new-version wizard |
-| --- |
-
-| When|its details are retrieved |
-| --- |
-
-| Then|the UI renders its ordered fields using their labels, types and controls |
-| --- |
-
-| And|it retrieves approved choices where the field defines a value source |
-| --- |
+1. **Given** I selected a usage-policy template in the new-version wizard\
+   **When** its details are retrieved\
+   **Then** the UI renders its ordered fields using their labels, types and controls\
+   **And** it retrieves approved choices where the field defines a value source
 
 ##### Keep entered values
 
-| Given|the selected template's fields are displayed |
-| --- |
-
-| When|I enter or change a field value |
-| --- |
-
-| Then|the wizard keeps that value in the policy draft |
-| --- |
+2. **Given** the selected template's fields are displayed\
+   **When** I enter or change a field value\
+   **Then** the wizard keeps that value in the policy draft
 
 ##### Change a template after entering values
 
-| Given|I entered one or more values for the selected template |
-| --- |
-
-| When|I select another template |
-| --- |
-
-| Then|the UI asks me to confirm that those values will be discarded |
-| --- |
-
-| And|confirmation clears the old values and loads the new fields |
-| --- |
-
-| And|cancellation keeps the existing template and values |
-| --- |
+3. **Given** I entered one or more values for the selected template\
+   **When** I select another template\
+   **Then** the UI asks me to confirm that those values will be discarded\
+   **And** confirmation clears the old values and loads the new fields\
+   **And** cancellation keeps the existing template and values
 
 ##### Template details cannot be retrieved
 
-| Given|I selected a template |
-| --- |
-
-| When|retrieval of its details fails |
-| --- |
-
-| Then|the UI shows an error and offers a retry |
-| --- |
-
-| And|it does not display a form from another template |
-| --- |
-
-| And|it does not add the policy until the correct details are available |
-| --- |
+4. **Given** I selected a template\
+   **When** retrieval of its details fails\
+   **Then** the UI shows an error and offers a retry\
+   **And** it does not display a form from another template\
+   **And** it does not add the policy until the correct details are available
 
 #### Technical details
 

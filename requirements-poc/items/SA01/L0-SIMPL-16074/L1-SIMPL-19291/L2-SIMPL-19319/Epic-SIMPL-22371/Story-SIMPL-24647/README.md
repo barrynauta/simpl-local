@@ -12,14 +12,9 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 #### Storycard
 
-| As a|Provider Participant |
-| --- |
-
-| I want|to validate and associate the workflow associated with the resource asset |
-| --- |
-
-| so that|the asset has a validated workflow reference that can be correctly retrieved and triggered during future consumption. |
-| --- |
+**As a** Provider Participant\
+**I want to** validate and associate the workflow associated with the resource asset\
+**So that** the asset has a validated workflow reference that can be correctly retrieved and triggered during future consumption.
 
 #### Technical details
 

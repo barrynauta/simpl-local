@@ -12,47 +12,23 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to automatically check the syntax of a new resource description or a new version of a resource description |
-| --- |
-
-| So that|the published resource descriptions are consistent, reliable and compliant with pre-defined standards. |
-| --- |
+**As** Governance Authority\
+**I want to** automatically check the syntax of a new resource description or a new version of a resource description\
+**So that** the published resource descriptions are consistent, reliable and compliant with pre-defined standards.
 
 #### Acceptance criteria
 
-| Scenario | The Governance Authority checks the syntax of a new Resource description or a new version of a Resource Description with valid syntax (Syntax validation - positive case) |
-| --- | --- |
+**Scenario:** The Governance Authority checks the syntax of a new Resource description or a new version of a Resource Description with valid syntax (Syntax validation - positive case)\
+When I, the Governance Authority, receive a new resource description or a new version of a resource description with valid syntax\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+then the syntax of the content of the resource description is automatically checked\
+and the syntax validation for the resource description or new version of the resource description has the result "valid".
 
-| When|I, the Governance Authority, receive a new resource description or a new version of a resource description with valid syntax |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| then|the syntax of the content of the resource description is automatically checked |
-| --- |
-
-| and|the syntax validation for the resource description or new version of the resource description has the result "valid". |
-| --- |
-|  |  |
-
-| Scenario | The Governance Authority checks the syntax of a new Resource description or a new version of a Resource Description with invalid syntax (Syntax validation - negative case) |
-| --- | --- |
-
-| When|I, the Governance Authority, receive a new resource description or a new version of a resource description with invalid syntax |
-| --- |
-
-| and|the Provider is authorised with the identity attributes to manage resource descriptions |
-| --- |
-
-| then|the syntax of the content of the resource description is automatically checked |
-| --- |
-
-| and|the syntax validation for the resource description or new version of the resource description has the result "invalid". |
-| --- |
+**Scenario:** The Governance Authority checks the syntax of a new Resource description or a new version of a Resource Description with invalid syntax (Syntax validation - negative case)\
+When I, the Governance Authority, receive a new resource description or a new version of a resource description with invalid syntax\
+and the Provider is authorised with the identity attributes to manage resource descriptions\
+then the syntax of the content of the resource description is automatically checked\
+and the syntax validation for the resource description or new version of the resource description has the result "invalid".
 
 ## Where it fits
 

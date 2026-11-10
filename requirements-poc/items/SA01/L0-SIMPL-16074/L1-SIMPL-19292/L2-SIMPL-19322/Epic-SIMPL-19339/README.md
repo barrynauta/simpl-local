@@ -10,23 +10,19 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-| **I want** | to view the current status of a workflow (e.g., running, completed, failed), |
-| **so that** | I can get an immediate overview of execution progress and final outcome without checking detailed logs |
+**As a** Participant\
+**I want to** view the current status of a workflow (e.g., running, completed, failed),\
+**So that** I can get an immediate overview of execution progress and final outcome without checking detailed logs
 
 **Acceptance Criteria**
 
 **AC1. Workflow Status Indicators**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflow execution logs |
-| **and** | one or more workflows are currently executing or completed, |
-| **When** | I view the data orchestration workflow list or detail page, |
-| **Then** | Simpl-Open displays the correct execution status (e.g., Running, Completed, Failed), |
-| **and** | the displayed status is updated dynamically as the workflow progresses. |
+1. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflow execution logs\
+   **And** one or more workflows are currently executing or completed,\
+   **When** I view the data orchestration workflow list or detail page,\
+   **Then** Simpl-Open displays the correct execution status (e.g., Running, Completed, Failed),\
+   **And** the displayed status is updated dynamically as the workflow progresses.
 
 ## Where it fits
 

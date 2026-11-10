@@ -10,50 +10,40 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-| **I want** | my workflow to automatically start when the event that has been defined as its trigger occurs |
-| **so that** | I can ensure that the defined logic is executed in reaction to relevant data activities, without manual intervention |
+**As a** Participant\
+**I want** my workflow to automatically start when the event that has been defined as its trigger occurs\
+**So that** I can ensure that the defined logic is executed in reaction to relevant data activities, without manual intervention
 
 **Acceptance Criteria**
 
 **AC1. Automatic Trigger Before Dataset Consumption**
 
-|   |   |
-| --- | --- |
-| **Given** | a workflow configured with an event-based trigger linked to the consumption of a target dataset already published in the catalogue, |
-| **When** | a consumer requests the consumption of this dataset, |
-| **Then** | Simpl-Open automatically starts the execution of the associated workflow to prepare the required data, |
-| **and** | the workflow must complete successfully before the dataset is made available for consumption. |
+1. **Given** a workflow configured with an event-based trigger linked to the consumption of a target dataset already published in the catalogue,\
+   **When** a consumer requests the consumption of this dataset,\
+   **Then** Simpl-Open automatically starts the execution of the associated workflow to prepare the required data,\
+   **And** the workflow must complete successfully before the dataset is made available for consumption.
 
 **AC2. Automatic Trigger on Source Dataset Change**
 
-|   |   |
-| --- | --- |
-| **Given** | a workflow configured with an event-based trigger linked to the modification of a source dataset already published in the catalogue, |
-| **When** | that source dataset is updated, |
-| **Then** | Simpl-Open automatically starts the execution of the associated workflow without manual action, |
-| **and** | the run status must be updated accordingly. |
+2. **Given** a workflow configured with an event-based trigger linked to the modification of a source dataset already published in the catalogue,\
+   **When** that source dataset is updated,\
+   **Then** Simpl-Open automatically starts the execution of the associated workflow without manual action,\
+   **And** the run status must be updated accordingly.
 
 **AC3. Handling Workflow Failure on Event-Based Execution**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflows |
-| **and** | a workflow is automatically triggered by an event |
-| **When** | the workflow execution fails |
-| **Then** | Simpl-Open applies a retry policy (if configured by the user in the creation phase) |
-| **and** | notifies the relevant users that the failure occurred. |
+3. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflows\
+   **And** a workflow is automatically triggered by an event\
+   **When** the workflow execution fails\
+   **Then** Simpl-Open applies a retry policy (if configured by the user in the creation phase)\
+   **And** notifies the relevant users that the failure occurred.
 
 **AC4. Handling Multiple Event-Based Execution**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant with a role authorising to access the data orchestration workflows |
-| **and** | a workflow is associated to one or more event as triggering events |
-| **When** | multiple triggers happen at the same time |
-| **Then** | Simpl-Open automatically creates one workflow execution for each triggering event. |
+4. **Given** I am an authenticated user of a participant with a role authorising to access the data orchestration workflows\
+   **And** a workflow is associated to one or more event as triggering events\
+   **When** multiple triggers happen at the same time\
+   **Then** Simpl-Open automatically creates one workflow execution for each triggering event.
 
 ## Where it fits
 

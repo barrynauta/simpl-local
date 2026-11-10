@@ -12,14 +12,9 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 #### Storycard
 
-| As a|Provider Participant |
-| --- |
-
-| I want|to visualize and use the resource address templates associated with the selected app sharing method when creating a resource description for app case |
-| --- |
-
-| so that|I can configure the required parameters for the selected sharing method and resource address template |
-| --- |
+**As a** Provider Participant\
+**I want to** visualize and use the resource address templates associated with the selected app sharing method when creating a resource description for app case\
+**So that** I can configure the required parameters for the selected sharing method and resource address template
 
 #### Technical details
 

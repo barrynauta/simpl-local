@@ -12,33 +12,20 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|Simpl to automatically assign the initial version number, based on the applicable versioning algorithm, to a new resource description |
-| --- |
-
-| so that|I can uniquely identify the resource description ensuring traceability. |
-| --- |
+**As a** Provider\
+**I want** Simpl to automatically assign the initial version number, based on the applicable versioning algorithm, to a new resource description\
+**So that** I can uniquely identify the resource description ensuring traceability.
 
 #### Acceptance criteria
 
-| Scenario | A Provider automatically assigns a version number to a new resource desciption - Positive case |
-| --- | --- |
+**Scenario:** A Provider automatically assigns a version number to a new resource desciption - Positive case
 
-| Given|I am authenticated as a provider |
-| --- |
+1. **Given** I am authenticated as a provider\
+   **And** I create a new resource description in the UI\
+   **When** I submit the filled resource description to the backend to be enriched and validated\
+   **Then** Simpl-open assigns the initial version number, based on the applicable versioning algorithm for resouce desciptions.
 
-| and|I create a new resource description in the UI |
-| --- |
-
-| When|I submit the filled resource description to the backend to be enriched and validated |
-| --- |
-
-| Then|Simpl-open assigns the initial version number, based on the applicable versioning algorithm for resouce desciptions. |
-| --- |
-
-1. **Given** a developer wants to define or configure a versioning algorithm\
+2. **Given** a developer wants to define or configure a versioning algorithm\
    **When** they access the Simpl-open documentation\
    **Then** the documentation contains instructions describing how to define a versioning algorithm\
    **And** the documentation includes the default versioning algorithm used by Simpl-open\

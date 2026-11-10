@@ -20,68 +20,34 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 ##### Select the required identity attributes
 
-| Given|I am adding an access policy to a resource description |
-| --- |
-
-| When|I choose the policy template for identity attributes |
-| --- |
-
-| Then|I can select one or more of the available identity attributes |
-| --- |
-
-| And|the form explains that the Consumer must have every attribute I select |
-| --- |
+1. **Given** I am adding an access policy to a resource description\
+   **When** I choose the policy template for identity attributes\
+   **Then** I can select one or more of the available identity attributes\
+   **And** the form explains that the Consumer must have every attribute I select
 
 ##### Add the policy to the resource description
 
-| Given|I have selected the identity attributes required for access |
-| --- |
-
-| When|I confirm the policy |
-| --- |
-
-| Then|the policy is added to the resource description I am preparing |
-| --- |
-
-| And|it shows the identity attributes I selected |
-| --- |
-
-| And|confirming the policy does not submit the resource description |
-| --- |
+2. **Given** I have selected the identity attributes required for access\
+   **When** I confirm the policy\
+   **Then** the policy is added to the resource description I am preparing\
+   **And** it shows the identity attributes I selected\
+   **And** confirming the policy does not submit the resource description
 
 ##### No identity attribute is selected
 
-| Given|I am adding an access policy that requires identity attributes |
-| --- |
-
-| And|I have not selected any identity attribute |
-| --- |
-
-| When|I confirm the policy |
-| --- |
-
-| Then|I am told to select at least one identity attribute |
-| --- |
-
-| And|the policy form remains open |
-| --- |
-
-| And|the policy is not added to the resource description |
-| --- |
+3. **Given** I am adding an access policy that requires identity attributes\
+   **And** I have not selected any identity attribute\
+   **When** I confirm the policy\
+   **Then** I am told to select at least one identity attribute\
+   **And** the policy form remains open\
+   **And** the policy is not added to the resource description
 
 ##### Available identity attributes cannot be loaded
 
-| Given|I am adding an access policy that requires identity attributes |
-| --- |
-
-| When|the available identity attributes cannot be loaded |
-| --- |
-
-| Then|I see an error message and an option to retry |
-| --- |
-
-| And|I cannot confirm the policy until I can select the required attributes |
-| --- |
+4. **Given** I am adding an access policy that requires identity attributes\
+   **When** the available identity attributes cannot be loaded\
+   **Then** I see an error message and an option to retry\
+   **And** I cannot confirm the policy until I can select the required attributes
 
 #### Technical details
 

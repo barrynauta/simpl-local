@@ -12,14 +12,9 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|Participant Provider |
-| --- |
-
-| I want|to trigger (through SD-Tooling) a single operation that automatically enriches, validates, and digitally signs a resourceDescription |
-| --- |
-
-| so that|I can securely and efficiently manage update and versioning workflows, receiving a final version that is already validated, digitally signed, immutable, and ready for publication without the risk of unintended modifications. |
-| --- |
+**As a** Participant Provider\
+**I want to** trigger (through SD-Tooling) a single operation that automatically enriches, validates, and digitally signs a resourceDescription\
+**So that** I can securely and efficiently manage update and versioning workflows, receiving a final version that is already validated, digitally signed, immutable, and ready for publication without the risk of unintended modifications.
 
 #### Technical details
 

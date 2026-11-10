@@ -12,14 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to retrieve the version history of one of my own resource descriptions via UI |
-| --- |
-
-| so that|I can review it and decide if any action should be taken. |
-| --- |
+**As a** Provider\
+**I want to** retrieve the version history of one of my own resource descriptions via UI\
+**So that** I can review it and decide if any action should be taken.
 
 #### Technical Details
 
@@ -31,41 +26,21 @@ From a UI perspective, the following implementation is envisaged:
 
 #### Acceptance criteria
 
-| Scenario | A Provider consults the version history of one of its own resource descriptions via UI |
-| --- | --- |
+**Scenario:** A Provider consults the version history of one of its own resource descriptions via UI
 
-| Given|I am authenticated as Provider |
-| --- |
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request to view the version history of one of my own resource descriptions\
+   **Then** the version history of this resource description is displayed.
 
-| and|I have a role authorising the management of resource descriptions |
-| --- |
+**Scenario:** Error while retrieving the version history
 
-| when|I request to view the version history of one of my own resource descriptions |
-| --- |
-
-| then| the version history of this resource description is displayed. |
-| --- |
-
-| Scenario | Error while retrieving the version history |
-| --- | --- |
-
-| Given|I am authenticated as Provider |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| when|I request to view the version history of one of my own resource descriptions |
-| --- |
-
-| and|an error occurs while retrieving the version history |
-| --- |
-
-| then|the version history is not displayed |
-| --- |
-
-| and|I am informed that the version history cannot be retrieved |
-| --- |
+2. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **When** I request to view the version history of one of my own resource descriptions\
+   **And** an error occurs while retrieving the version history\
+   **Then** the version history is not displayed\
+   **And** I am informed that the version history cannot be retrieved
 
 ## Where it fits
 

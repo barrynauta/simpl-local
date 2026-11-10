@@ -20,77 +20,37 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 ##### Show the existing usage policies
 
-| Given|I am creating a new version of an existing resource description |
-| --- |
-
-| And|the existing resource description has been loaded |
-| --- |
-
-| When|I reach the Usage policies step |
-| --- |
-
-| Then|its assigned usage policies are shown with their saved values |
-| --- |
-
-| And|policies supported by the available templates can be opened for editing |
-| --- |
-
-| And|I can keep or remove the listed policies |
-| --- |
+1. **Given** I am creating a new version of an existing resource description\
+   **And** the existing resource description has been loaded\
+   **When** I reach the Usage policies step\
+   **Then** its assigned usage policies are shown with their saved values\
+   **And** policies supported by the available templates can be opened for editing\
+   **And** I can keep or remove the listed policies
 
 ##### No usage policies are assigned
 
-| Given|I am creating a new resource-description version |
-| --- |
-
-| And|the existing resource description has no usage policies |
-| --- |
-
-| When|I reach the Usage policies step |
-| --- |
-
-| Then|the UI shows an empty list |
-| --- |
-
-| And|I can add a usage policy if a template is available |
-| --- |
-
-| And|I can continue without adding a usage policy |
-| --- |
+2. **Given** I am creating a new resource-description version\
+   **And** the existing resource description has no usage policies\
+   **When** I reach the Usage policies step\
+   **Then** the UI shows an empty list\
+   **And** I can add a usage policy if a template is available\
+   **And** I can continue without adding a usage policy
 
 ##### A saved policy cannot be reopened for editing
 
-| Given|the existing resource description contains a usage policy |
-| --- |
-
-| When|the form needed to edit that policy cannot be opened |
-| --- |
-
-| Then|the policy remains in the resource description with its saved values |
-| --- |
-
-| And|I can view it as read-only information |
-| --- |
-
-| And|I can keep it or remove it and add a replacement from an available template |
-| --- |
-
-| And|I can continue preparing the resource description |
-| --- |
+3. **Given** the existing resource description contains a usage policy\
+   **When** the form needed to edit that policy cannot be opened\
+   **Then** the policy remains in the resource description with its saved values\
+   **And** I can view it as read-only information\
+   **And** I can keep it or remove it and add a replacement from an available template\
+   **And** I can continue preparing the resource description
 
 ##### The existing resource description cannot be loaded
 
-| Given|I want to create a new version of an existing resource description |
-| --- |
-
-| When|the existing resource description cannot be retrieved |
-| --- |
-
-| Then|the UI shows an error and offers a retry |
-| --- |
-
-| And|it does not open an empty new-version wizard in its place |
-| --- |
+4. **Given** I want to create a new version of an existing resource description\
+   **When** the existing resource description cannot be retrieved\
+   **Then** the UI shows an error and offers a retry\
+   **And** it does not open an empty new-version wizard in its place
 
 #### Technical details
 

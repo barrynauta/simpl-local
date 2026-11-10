@@ -12,54 +12,29 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard:
 
-| As|a Provider with a role authorising the management of resource descriptions |
-| --- |
-
-| I want|to remove a usage policy from the new resource description version at the "Usage policies" step |
-| --- |
-
-| so that|the new version only carries the usage policies I want to keep |
-| --- |
+**As a** Provider with a role authorising the management of resource descriptions\
+**I want to** remove a usage policy from the new resource description version at the "Usage policies" step\
+**So that** the new version only carries the usage policies I want to keep
 
 #### Acceptance criteria:
 
-| Scenario | Provider removes a usage policy from the new version |
-| --- | --- |
+**Scenario:** Provider removes a usage policy from the new version
 
-| Given|I am authenticated in the Provider UI with a role authorising the management of resource descriptions |
-| --- |
-
-| And|the "Usage policies" step lists one or more usage policies carried over from the previous version or added from a template |
-| --- |
-
-| When|I remove one of the listed usage policies |
-| --- |
-
-| Then|the UI removes that usage policy from the set to be saved on the new version |
-| --- |
-
-| And|the remaining usage policies stay unchanged and available for editing |
-| --- |
+1. **Given** I am authenticated in the Provider UI with a role authorising the management of resource descriptions\
+   **And** the "Usage policies" step lists one or more usage policies carried over from the previous version or added from a template\
+   **When** I remove one of the listed usage policies\
+   **Then** the UI removes that usage policy from the set to be saved on the new version\
+   **And** the remaining usage policies stay unchanged and available for editing
 
 ##### Negative scenario
 
-| Scenario | No usage policies are present to remove |
-| --- | --- |
+**Scenario:** No usage policies are present to remove
 
-| Given|I am authenticated in the Provider UI with a role authorising the management of resource descriptions |
-| --- |
-
-| And|the "Usage policies" step has no assigned usage policies |
-| --- |
-
-| When|I view the list of usage policies |
-| --- |
-
-| Then|the remove action is not available |
-| --- |
-
-| And|the step shows an empty state for usage policies |
-| --- |
+2. **Given** I am authenticated in the Provider UI with a role authorising the management of resource descriptions\
+   **And** the "Usage policies" step has no assigned usage policies\
+   **When** I view the list of usage policies\
+   **Then** the remove action is not available\
+   **And** the step shows an empty state for usage policies
 
 #### Technical details:
 

@@ -12,38 +12,23 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to add metadata to a new resource description via UI |
-| --- |
-
-| so that|the contents of the resource description is complete for each property group |
-| --- |
+**As a** Provider end user\
+**I want to** add metadata to a new resource description via UI\
+**So that** the contents of the resource description is complete for each property group
 
 #### Acceptance criteria
 
-| Scenario | A Provider end user adds common metadata to a new resource description via UI |
-| --- | --- |
+**Scenario:** A Provider end user adds common metadata to a new resource description via UI
 
-| Given|I am authenticated as a Provider end user |
-| --- |
-
-| and |I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| and|I initiate the creation of a Resource Description in the UI |
-| --- |
-
-| when|I select a resource type |
-| --- |
-
-| then|a screen is displayed allowing me to fill in the Resource Description properties |
-| --- |
-| and | the screen is compliant with the schema linked to the selected resource type, displaying a tab for each property group of the schema |
-| and | each tab displays a field for each of the properties in the property group, compliant with the resource type |
-| and | each tab contains buttons allowing me to move to the next or previous tab (if applicable) |
-| and | the last tab contains a button to sign and submit the Resource Description |
+1. **Given** I am authenticated as a Provider end user\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **And** I initiate the creation of a Resource Description in the UI\
+   **When** I select a resource type\
+   **Then** a screen is displayed allowing me to fill in the Resource Description properties\
+   **And** the screen is compliant with the schema linked to the selected resource type, displaying a tab for each property group of the schema\
+   **And** each tab displays a field for each of the properties in the property group, compliant with the resource type\
+   **And** each tab contains buttons allowing me to move to the next or previous tab (if applicable)\
+   **And** the last tab contains a button to sign and submit the Resource Description
 
 #### Mockups:
 

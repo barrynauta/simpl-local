@@ -12,125 +12,66 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-As Governance Authority, I want Simpl-Open to check the access and usage policies when a Provider submits a new resource-description version, so that versions with invalid policies are not published and the Provider can correct the errors.
+**As** Governance Authority,\
+**I want** Simpl-Open to check the access and usage policies when a Provider submits a new resource-description version,\
+**So that** versions with invalid policies are not published and the Provider can correct the errors.
 
 #### Acceptance criteria
 
 ##### All policies are valid
 
-| Given|an authorised Provider submits a new version of a resource description |
-| --- |
-
-| And|its access and usage policies meet the supported policy rules |
-| --- |
-
-| When|Simpl-Open checks those policies |
-| --- |
-
-| Then|the Provider receives a successful policy-validation result |
-| --- |
-
-| And|the new version can continue through the remaining publication checks |
-| --- |
+1. **Given** an authorised Provider submits a new version of a resource description\
+   **And** its access and usage policies meet the supported policy rules\
+   **When** Simpl-Open checks those policies\
+   **Then** the Provider receives a successful policy-validation result\
+   **And** the new version can continue through the remaining publication checks
 
 ##### An access policy is invalid
 
-| Given|an authorised Provider submits a new resource-description version |
-| --- |
-
-| And|one of its access policies contains an invalid requirement |
-| --- |
-
-| When|Simpl-Open checks the policies |
-| --- |
-
-| Then|the Provider receives feedback identifying the access policy and the requirement to correct |
-| --- |
-
-| And|the new version is not published |
-| --- |
+2. **Given** an authorised Provider submits a new resource-description version\
+   **And** one of its access policies contains an invalid requirement\
+   **When** Simpl-Open checks the policies\
+   **Then** the Provider receives feedback identifying the access policy and the requirement to correct\
+   **And** the new version is not published
 
 ##### A usage policy is invalid
 
-| Given|an authorised Provider submits a new resource-description version |
-| --- |
-
-| And|one of its usage policies contains an invalid condition or obligation |
-| --- |
-
-| When|Simpl-Open checks the policies |
-| --- |
-
-| Then|the Provider receives feedback identifying the usage policy and the condition or obligation to correct |
-| --- |
-
-| And|the new version is not published |
-| --- |
+3. **Given** an authorised Provider submits a new resource-description version\
+   **And** one of its usage policies contains an invalid condition or obligation\
+   **When** Simpl-Open checks the policies\
+   **Then** the Provider receives feedback identifying the usage policy and the condition or obligation to correct\
+   **And** the new version is not published
 
 ##### A policy uses an unsupported rule
 
-| Given|an authorised Provider submits a new resource-description version |
-| --- |
-
-| And|a policy uses a rule that Simpl-Open does not support |
-| --- |
-
-| When|Simpl-Open checks the policies |
-| --- |
-
-| Then|the Provider receives feedback identifying the policy and the unsupported rule |
-| --- |
-
-| And|the new version is not published |
-| --- |
+4. **Given** an authorised Provider submits a new resource-description version\
+   **And** a policy uses a rule that Simpl-Open does not support\
+   **When** Simpl-Open checks the policies\
+   **Then** the Provider receives feedback identifying the policy and the unsupported rule\
+   **And** the new version is not published
 
 ##### Access and usage policies are both invalid
 
-| Given|an authorised Provider submits a new resource-description version |
-| --- |
-
-| And|it contains an invalid access policy and an invalid usage policy |
-| --- |
-
-| When|Simpl-Open checks the policies |
-| --- |
-
-| Then|the Provider receives feedback identifying both policies and their errors |
-| --- |
-
-| And|the new version is not published |
-| --- |
+5. **Given** an authorised Provider submits a new resource-description version\
+   **And** it contains an invalid access policy and an invalid usage policy\
+   **When** Simpl-Open checks the policies\
+   **Then** the Provider receives feedback identifying both policies and their errors\
+   **And** the new version is not published
 
 ##### The submitted policies cannot be read
 
-| Given|an authorised Provider submits a new resource-description version |
-| --- |
-
-| And|the submitted policies cannot be read |
-| --- |
-
-| When|Simpl-Open processes the submission |
-| --- |
-
-| Then|the Provider receives an error explaining that the submitted policies could not be read |
-| --- |
-
-| And|the new version is not published |
-| --- |
+6. **Given** an authorised Provider submits a new resource-description version\
+   **And** the submitted policies cannot be read\
+   **When** Simpl-Open processes the submission\
+   **Then** the Provider receives an error explaining that the submitted policies could not be read\
+   **And** the new version is not published
 
 ##### The sender is not authorised
 
-| Given|the sender is not authorised to manage resource descriptions |
-| --- |
-
-| When|the sender submits a new resource-description version |
-| --- |
-
-| Then|the submission is refused |
-| --- |
-
-| And|the new version is not published |
-| --- |
+7. **Given** the sender is not authorised to manage resource descriptions\
+   **When** the sender submits a new resource-description version\
+   **Then** the submission is refused\
+   **And** the new version is not published
 
 #### Technical details
 

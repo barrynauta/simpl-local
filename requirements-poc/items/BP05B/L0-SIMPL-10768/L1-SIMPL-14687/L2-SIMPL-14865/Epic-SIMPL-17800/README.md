@@ -12,31 +12,17 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to notify Providers about a wrong version number of a new version of a resource description |
-| --- |
-
-| so that|the Provider can correct the error. |
-| --- |
+**As** Governance Authority\
+**I want to** notify Providers about a wrong version number of a new version of a resource description\
+**So that** the Provider can correct the error.
 
 #### Acceptance criteria
 
-| Given|an algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority |
-| --- |
-
-| and|I have received a new resource description or a new version of a resource description with an incorrect version number |
-| --- |
-
-| When|it is checked that the version number of the new version of a Resource description is correct based on the version numbering algorithm |
-| --- |
-
-| and|version number validation for the new version of a Resource description has the result "invalid". |
-| --- |
-
-| Then|a notification about an version numbering error is sent to the Provider. |
-| --- |
+1. **Given** an algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority\
+   **And** I have received a new resource description or a new version of a resource description with an incorrect version number\
+   **When** it is checked that the version number of the new version of a Resource description is correct based on the version numbering algorithm\
+   **And** version number validation for the new version of a Resource description has the result "invalid".\
+   **Then** a notification about an version numbering error is sent to the Provider.
 
 ## Where it fits
 

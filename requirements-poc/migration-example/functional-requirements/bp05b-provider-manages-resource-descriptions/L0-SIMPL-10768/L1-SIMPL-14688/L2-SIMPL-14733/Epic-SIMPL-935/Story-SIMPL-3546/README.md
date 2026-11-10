@@ -20,68 +20,34 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 ##### Submit a policy with several required attributes
 
-| Given|I am authorised to manage resource descriptions |
-| --- |
-
-| And|my submitted resource description includes an otherwise valid access policy requiring several identity attributes |
-| --- |
-
-| When|Simpl-Open checks the policy |
-| --- |
-
-| Then|the policy is accepted for the remaining publication checks |
-| --- |
+1. **Given** I am authorised to manage resource descriptions\
+   **And** my submitted resource description includes an otherwise valid access policy requiring several identity attributes\
+   **When** Simpl-Open checks the policy\
+   **Then** the policy is accepted for the remaining publication checks
 
 ##### Submit a policy with one required attribute
 
-| Given|I am authorised to manage resource descriptions |
-| --- |
-
-| And|my submitted resource description includes an otherwise valid access policy requiring one identity attribute |
-| --- |
-
-| When|Simpl-Open checks the policy |
-| --- |
-
-| Then|the policy is accepted for the remaining publication checks |
-| --- |
+2. **Given** I am authorised to manage resource descriptions\
+   **And** my submitted resource description includes an otherwise valid access policy requiring one identity attribute\
+   **When** Simpl-Open checks the policy\
+   **Then** the policy is accepted for the remaining publication checks
 
 ##### Reject an empty attribute requirement
 
-| Given|I am authorised to manage resource descriptions |
-| --- |
-
-| And|my submitted policy requires identity attributes but does not specify any |
-| --- |
-
-| When|Simpl-Open checks the policy |
-| --- |
-
-| Then|it rejects the policy |
-| --- |
-
-| And|the feedback identifies the policy and explains that at least one attribute is required |
-| --- |
-
-| And|the resource description is not published |
-| --- |
+3. **Given** I am authorised to manage resource descriptions\
+   **And** my submitted policy requires identity attributes but does not specify any\
+   **When** Simpl-Open checks the policy\
+   **Then** it rejects the policy\
+   **And** the feedback identifies the policy and explains that at least one attribute is required\
+   **And** the resource description is not published
 
 ##### Reject an invalid attribute requirement
 
-| Given|I am authorised to manage resource descriptions |
-| --- |
-
-| And|an attribute requirement in my submitted policy cannot be interpreted |
-| --- |
-
-| When|Simpl-Open checks the policy |
-| --- |
-
-| Then|the feedback identifies the policy and the invalid requirement |
-| --- |
-
-| And|the resource description is not published |
-| --- |
+4. **Given** I am authorised to manage resource descriptions\
+   **And** an attribute requirement in my submitted policy cannot be interpreted\
+   **When** Simpl-Open checks the policy\
+   **Then** the feedback identifies the policy and the invalid requirement\
+   **And** the resource description is not published
 
 #### Technical details
 

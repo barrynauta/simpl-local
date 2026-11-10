@@ -20,48 +20,25 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 ##### Remove an access policy
 
-| Given|I am preparing a new resource-description version |
-| --- |
-
-| And|its access policies include a policy I want to remove |
-| --- |
-
-| When|I choose Remove for that policy |
-| --- |
-
-| Then|the policy is removed immediately from the resource description I am preparing |
-| --- |
-
-| And|the remaining policies stay unchanged |
-| --- |
-
-| And|the previously published resource description stays unchanged |
-| --- |
+1. **Given** I am preparing a new resource-description version\
+   **And** its access policies include a policy I want to remove\
+   **When** I choose Remove for that policy\
+   **Then** the policy is removed immediately from the resource description I am preparing\
+   **And** the remaining policies stay unchanged\
+   **And** the previously published resource description stays unchanged
 
 ##### Submit after removing a policy
 
-| Given|I removed an access policy while preparing a new resource-description version |
-| --- |
-
-| When|I submit the completed resource description |
-| --- |
-
-| Then|the submitted policy set excludes the removed policy |
-| --- |
+2. **Given** I removed an access policy while preparing a new resource-description version\
+   **When** I submit the completed resource description\
+   **Then** the submitted policy set excludes the removed policy
 
 ##### No access policies are present
 
-| Given|the resource description I am preparing has no access policies |
-| --- |
-
-| When|I view its access policies |
-| --- |
-
-| Then|the UI shows an empty list |
-| --- |
-
-| And|no policy removal action is available |
-| --- |
+3. **Given** the resource description I am preparing has no access policies\
+   **When** I view its access policies\
+   **Then** the UI shows an empty list\
+   **And** no policy removal action is available
 
 #### Technical details
 

@@ -12,70 +12,36 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Story card
 
-| As|an authorised Provider managing Resource Descriptions |
-| --- |
-
-| I want|the Usage policies step to show the fields of the selected template |
-| --- |
-
-| So that|I can enter the values needed for a usage policy |
-| --- |
+**As an** authorised Provider managing Resource Descriptions\
+**I want** the Usage policies step to show the fields of the selected template\
+**So that** I can enter the values needed for a usage policy
 
 #### Acceptance criteria
 
 ##### Provider fills in a usage-policy template
 
-| Given|I am authenticated as a Provider authorised to manage Resource Descriptions |
-| --- |
-
-| And|I selected a usage-policy template in the Resource Description wizard |
-| --- |
-
-| When|the template details are loaded |
-| --- |
-
-| Then|the UI displays the fields, labels and guidance described by the template |
-| --- |
-
-| And|stores the values I enter in the wizard state |
-| --- |
+1. **Given** I am authenticated as a Provider authorised to manage Resource Descriptions\
+   **And** I selected a usage-policy template in the Resource Description wizard\
+   **When** the template details are loaded\
+   **Then** the UI displays the fields, labels and guidance described by the template\
+   **And** stores the values I enter in the wizard state
 
 ##### Provider changes the selected template
 
-| Given|I selected a usage-policy template |
-| --- |
-
-| And|I entered one or more values |
-| --- |
-
-| When|I choose a different template |
-| --- |
-
-| Then|the UI asks me to confirm that the entered values will be discarded |
-| --- |
-
-| And|confirming the change clears those values and displays the new template fields |
-| --- |
-
-| And|cancelling the change keeps the current template and values |
-| --- |
+2. **Given** I selected a usage-policy template\
+   **And** I entered one or more values\
+   **When** I choose a different template\
+   **Then** the UI asks me to confirm that the entered values will be discarded\
+   **And** confirming the change clears those values and displays the new template fields\
+   **And** cancelling the change keeps the current template and values
 
 ##### Template details cannot be retrieved
 
-| Given|I selected a usage-policy template |
-| --- |
-
-| When|the template details cannot be retrieved |
-| --- |
-
-| Then|the UI shows an error and offers a retry |
-| --- |
-
-| And|no parameter fields are displayed |
-| --- |
-
-| And|the policy cannot be added until the details are available |
-| --- |
+3. **Given** I selected a usage-policy template\
+   **When** the template details cannot be retrieved\
+   **Then** the UI shows an error and offers a retry\
+   **And** no parameter fields are displayed\
+   **And** the policy cannot be added until the details are available
 
 #### Technical details
 

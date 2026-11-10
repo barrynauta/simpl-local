@@ -12,140 +12,75 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-As Governance Authority, I want the Provider to receive clear feedback when the policies in a submitted resource description are invalid, so that the Provider can correct them before publication.
+**As** Governance Authority,\
+**I want** the Provider to receive clear feedback when the policies in a submitted resource description are invalid,\
+**So that** the Provider can correct them before publication.
 
 #### Acceptance criteria
 
 ##### Valid policies allow submission to continue
 
-| Given|an authorised Provider submits a new resource description or a new version |
-| --- |
-
-| And|all its access and usage policies meet the supported policy rules |
-| --- |
-
-| When|Simpl-Open checks the submitted policies |
-| --- |
-
-| Then|no policy error is returned |
-| --- |
-
-| And|the resource description continues through the remaining publication checks |
-| --- |
+1. **Given** an authorised Provider submits a new resource description or a new version\
+   **And** all its access and usage policies meet the supported policy rules\
+   **When** Simpl-Open checks the submitted policies\
+   **Then** no policy error is returned\
+   **And** the resource description continues through the remaining publication checks
 
 ##### A readable policy contains an invalid rule
 
-| Given|an authorised Provider submits a resource description |
-| --- |
-
-| And|the submitted content can be read |
-| --- |
-
-| And|an access or usage policy contains an unsupported action, an invalid condition, or a missing required value |
-| --- |
-
-| When|Simpl-Open checks the policies |
-| --- |
-
-| Then|the resource description is not published |
-| --- |
-
-| And|the response identifies the affected policy |
-| --- |
-
-| And|explains which part needs correcting, which rule it breaks, and why |
-| --- |
+2. **Given** an authorised Provider submits a resource description\
+   **And** the submitted content can be read\
+   **And** an access or usage policy contains an unsupported action, an invalid condition, or a missing required value\
+   **When** Simpl-Open checks the policies\
+   **Then** the resource description is not published\
+   **And** the response identifies the affected policy\
+   **And** explains which part needs correcting, which rule it breaks, and why
 
 This applies to both new resource descriptions and new versions. A readable document must still be rejected when its policy rules are invalid.
 
 ##### Access and usage policies both contain errors
 
-| Given|an authorised Provider submits a resource description |
-| --- |
-
-| And|both an access policy and a usage policy contain errors |
-| --- |
-
-| When|Simpl-Open checks the policies |
-| --- |
-
-| Then|the response identifies both failed policies |
-| --- |
-
-| And|gives at least one useful correction message for each invalid policy |
-| --- |
-
-| And|the resource description is not published |
-| --- |
+3. **Given** an authorised Provider submits a resource description\
+   **And** both an access policy and a usage policy contain errors\
+   **When** Simpl-Open checks the policies\
+   **Then** the response identifies both failed policies\
+   **And** gives at least one useful correction message for each invalid policy\
+   **And** the resource description is not published
 
 ##### A policy cannot be read
 
-| Given|an authorised Provider submits a resource description |
-| --- |
-
-| And|the resource description can be read but one of its policy contents cannot |
-| --- |
-
-| When|Simpl-Open checks the policies |
-| --- |
-
-| Then|the resource description is not published |
-| --- |
-
-| And|the response identifies the unreadable policy and explains that its contents must be corrected |
-| --- |
+4. **Given** an authorised Provider submits a resource description\
+   **And** the resource description can be read but one of its policy contents cannot\
+   **When** Simpl-Open checks the policies\
+   **Then** the resource description is not published\
+   **And** the response identifies the unreadable policy and explains that its contents must be corrected
 
 If the whole submission cannot be read, return the existing malformed-request error instead of a policy-validation success.
 
 ##### Policies carried over from an earlier resource description are checked
 
-| Given|an authorised Provider submits a new resource-description version |
-| --- |
-
-| And|it retains policies from an earlier version |
-| --- |
-
-| When|Simpl-Open checks the submitted policies |
-| --- |
-
-| Then|it checks the retained policies as well as newly added or edited policies |
-| --- |
-
-| And|a missing authoring template does not cause a policy to be skipped or silently removed |
-| --- |
+5. **Given** an authorised Provider submits a new resource-description version\
+   **And** it retains policies from an earlier version\
+   **When** Simpl-Open checks the submitted policies\
+   **Then** it checks the retained policies as well as newly added or edited policies\
+   **And** a missing authoring template does not cause a policy to be skipped or silently removed
 
 The same policy checks apply to submissions made directly through the API.
 
 ##### The sender cannot publish resource descriptions
 
-| Given|a sender does not have the required identity attributes to manage resource descriptions |
-| --- |
-
-| When|the sender submits a resource description |
-| --- |
-
-| Then|the submission is forbidden |
-| --- |
-
-| And|no policy-validation feedback is returned |
-| --- |
+6. **Given** a sender does not have the required identity attributes to manage resource descriptions\
+   **When** the sender submits a resource description\
+   **Then** the submission is forbidden\
+   **And** no policy-validation feedback is returned
 
 ##### The policy check cannot complete
 
-| Given|an authorised Provider submits a resource description |
-| --- |
-
-| When|a technical failure prevents the required policy check from completing |
-| --- |
-
-| Then|the response reports that the check could not complete |
-| --- |
-
-| And|does not report the policies as valid |
-| --- |
-
-| And|the resource description is not published |
-| --- |
+7. **Given** an authorised Provider submits a resource description\
+   **When** a technical failure prevents the required policy check from completing\
+   **Then** the response reports that the check could not complete\
+   **And** does not report the policies as valid\
+   **And** the resource description is not published
 
 #### Technical details
 

@@ -12,85 +12,41 @@ Folder: [functional-requirements](../../../../../../README.md) / [BP05B](../../.
 
 #### Storycard
 
-| As a|Provider end user |
-| --- |
-
-| I want|to be able to consult the published resource type in the UI |
-| --- |
-
-| so that|I can select one to start the creation of a new resource description for a specific resource type. |
-| --- |
+**As a** Provider end user\
+**I want to** be able to consult the published resource type in the UI\
+**So that** I can select one to start the creation of a new resource description for a specific resource type.
 
 #### Acceptance criteria
 
-| Scenario | Consulting the list of published resource types - positive case |
-| --- | --- |
+**Scenario:** Consulting the list of published resource types - positive case
 
-| Given|I am authenticated as Provider |
-| --- |
+1. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **When** I open the resource description management page\
+   **Then** the list of active resource types available from the Governance Authority is shown.
 
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
+**Scenario:** Consulting the list of published resource types - API error
 
-| When|I open the resource description management page |
-| --- |
+2. **Given** I am authenticated as Provider\
+   **And** I have a role authorising the management of Resource Descriptions\
+   **When** I open the resource description management page\
+   **And** the API to retrieve the list of resource types throws an error\
+   **Then** an empty list of resource types for creating a new resource description is shown\
+   **And** the creation of a new resource description is not possible\
+   **And** a notification is shown that the resource types could not be retrieved and resource description is not possible.
 
-| Then|the list of active resource types available from the Governance Authority is shown. |
-| --- |
-|  |  |
+**Scenario:** Consulting the list of published resource types - not authenticated
 
-| Scenario | Consulting the list of published resource types - API error |
-| --- | --- |
+3. **Given** I am not authenticated as Provider\
+   **When** try to open the resource description management page\
+   **Then** I cannot open the resource description management page.
 
-| Given|I am authenticated as Provider |
-| --- |
+**Scenario:** Consulting the list of published resource types - no role
 
-| and|I have a role authorising the management of Resource Descriptions |
-| --- |
-
-| When|I open the resource description management page |
-| --- |
-
-| and |the API to retrieve the list of resource types throws an error |
-| --- |
-
-| Then|an empty list of resource types for creating a new resource description is shown |
-| --- |
-
-| and|the creation of a new resource description is not possible |
-| --- |
-
-| and|a notification is shown that the resource types could not be retrieved and resource description is not  possible. |
-| --- |
-|  |  |
-
-| Scenario | Consulting the list of published resource types - not authenticated |
-| --- | --- |
-
-| Given|I am not authenticated as Provider |
-| --- |
-
-| When|try to open the resource description management page |
-| --- |
-
-| Then |I cannot open the resource description management page. |
-| --- |
-|  |  |
-
-| Scenario | Consulting the list of published resource types - no role |
-| --- | --- |
-
-| Given|I am authenticated as Provider |
-| --- |
-
-| and |I do not have a role authorising the management of Resource Descriptions |
-| --- |
-
-| When|try to open the resource description management page |
-| --- |
-
-| Then |I cannot open the resource description management page. |
-| --- |
+4. **Given** I am authenticated as Provider\
+   **And** I do not have a role authorising the management of Resource Descriptions\
+   **When** try to open the resource description management page\
+   **Then** I cannot open the resource description management page.
 
 #### Mockups:
 

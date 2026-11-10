@@ -12,43 +12,22 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As a|Provider |
-| --- |
-
-| I want|to sign and submit a new resource description or a new version of a resource description to the Governance Authority using an API |
-| --- |
-
-| so that|the resource description can be published in the Catalogue . |
-| --- |
+**As a** Provider\
+**I want to** sign and submit a new resource description or a new version of a resource description to the Governance Authority using an API\
+**So that** the resource description can be published in the Catalogue .
 
 #### Acceptance criteria
 
-| Scenario | A Provider signs and submits a new Resource description or a new version of a Resource description |
-| --- | --- |
+**Scenario:** A Provider signs and submits a new Resource description or a new version of a Resource description
 
-| Given|I am authenticated as a Provider |
-| --- |
-
-| and|I have a role authorising the management of resource descriptions |
-| --- |
-
-| and|I have finished editing or updating a new Resource description or a new version of a Resource description |
-| --- |
-
-| When|I request the publication of the new Resource description or new version of a Resource description |
-| --- |
-
-| then|the new Resource description or new version of the Resource description is validated |
-| --- |
-
-| and|the elements of the resource description, required to later support consumption of the resource, are stored in my agent |
-| --- |
-
-| and|the new Resource description or new version of the Resource description is signed |
-| --- |
-
-| and|the signed new Resource description or new version of the Resource description is submitted to the Governance Authority for publication. |
-| --- |
+1. **Given** I am authenticated as a Provider\
+   **And** I have a role authorising the management of resource descriptions\
+   **And** I have finished editing or updating a new Resource description or a new version of a Resource description\
+   **When** I request the publication of the new Resource description or new version of a Resource description\
+   **Then** the new Resource description or new version of the Resource description is validated\
+   **And** the elements of the resource description, required to later support consumption of the resource, are stored in my agent\
+   **And** the new Resource description or new version of the Resource description is signed\
+   **And** the signed new Resource description or new version of the Resource description is submitted to the Governance Authority for publication.
 
 ## Where it fits
 

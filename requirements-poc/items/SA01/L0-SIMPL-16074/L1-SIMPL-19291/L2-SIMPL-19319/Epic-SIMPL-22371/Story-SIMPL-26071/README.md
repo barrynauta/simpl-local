@@ -12,14 +12,9 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 #### Storycard
 
-| As a|Participant Provider |
-| --- |
-
-| I want|to view the default configuration associated with a specific processing workflow |
-| --- |
-
-| so that|I can understand the predefined workflow settings and optionally adjust specific configuration values before associate it with resource description |
-| --- |
+**As a** Participant Provider\
+**I want to** view the default configuration associated with a specific processing workflow\
+**So that** I can understand the predefined workflow settings and optionally adjust specific configuration values before associate it with resource description
 
 #### Technical details
 

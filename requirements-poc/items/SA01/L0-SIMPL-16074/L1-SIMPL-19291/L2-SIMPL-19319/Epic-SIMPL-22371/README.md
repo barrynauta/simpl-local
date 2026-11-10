@@ -10,25 +10,21 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 ## Text
 
-|   |   |
-| --- | --- |
-| **As a** | Participant |
-| **I want** | to associate one of my workflows with a resource description during its creation, |
-| **so that** | the workflow automatically starts when the defined resource description is consumed. |
+**As a** Participant\
+**I want to** associate one of my workflows with a resource description during its creation,\
+**So that** the workflow automatically starts when the defined resource description is consumed.
 
 **Acceptance Criteria**
 
 **AC1. Association of workflow with resource description**
 
-|   |   |
-| --- | --- |
-| **Given** | I am an authenticated user of a participant |
-| **and** | I have a role authorising the access to data orchestration workflows and the management of resource descriptions |
-| **When** | I submit a resource description for a dataset that must trigger a workflow during consumption |
-| **and** | I have assigned one of my previously created and stored workflows to the resource description |
-| **and** | I have provided a configuration for the parameters required by the workflow |
-| **Then** | Simpl-Open validates the provided configuration for the selected workflow |
-| **and** | registers the association between the resource description, the workflow, and its parameter configuration to be triggered on the consumption |
+1. **Given** I am an authenticated user of a participant\
+   **And** I have a role authorising the access to data orchestration workflows and the management of resource descriptions\
+   **When** I submit a resource description for a dataset that must trigger a workflow during consumption\
+   **And** I have assigned one of my previously created and stored workflows to the resource description\
+   **And** I have provided a configuration for the parameters required by the workflow\
+   **Then** Simpl-Open validates the provided configuration for the selected workflow\
+   **And** registers the association between the resource description, the workflow, and its parameter configuration to be triggered on the consumption
 
 ## Where it fits
 

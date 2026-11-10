@@ -12,47 +12,25 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to notify a Provider about an invalid schema of a new resource description or a new version of a resource description |
-| --- |
-
-| so that|the Provider can correct the errors. |
-| --- |
+**As** Governance Authority\
+**I want to** notify a Provider about an invalid schema of a new resource description or a new version of a resource description\
+**So that** the Provider can correct the errors.
 
 #### Acceptance criteria
 
-| Scenario | The Governance Authority notifies a Provider about an inactive schema of a new resource description or a new version of a resource description (Schema status validation - notification in negative case) |
-| --- | --- |
+**Scenario:** The Governance Authority notifies a Provider about an inactive schema of a new resource description or a new version of a resource description (Schema status validation - notification in negative case)
 
-| Given|I have received a new resource description or a new version of a resource description with an inactive schema |
-| --- |
+1. **Given** I have received a new resource description or a new version of a resource description with an inactive schema\
+   **When** it is checked if the schema of that resource description is active\
+   **And** schema status validation for the resource description or new version of a resource description has the result "invalid"\
+   **Then** a notification about an inactive schema error is sent to the Provider.
 
-| When|it is checked if the schema of that resource description is active |
-| --- |
+**Scenario:** The Governance Authority notifies a Provider about a different resource type of a new version of a resource description (Schema type validation - notification in negative case)
 
-| and|schema status validation for the resource description or new version of a resource description has the result "invalid" |
-| --- |
-
-| Then|a notification about an inactive schema error is sent to the Provider. |
-| --- |
-|  |  |
-
-| Scenario | The Governance Authority notifies a Provider about a different resource type of a new version of a resource description (Schema type validation - notification in negative case) |
-| --- | --- |
-
-| Given|I have received a new version of a resource description with resource type different to the resource type of the previous version |
-| --- |
-
-| When|it is checked if the schema of that resource description has the same resource type as the previous version |
-| --- |
-
-| and |schema type validation for the new version of the resource description has the result "invalid" |
-| --- |
-
-| Then|a notification about a wrong resource type is sent to the Provider. |
-| --- |
+2. **Given** I have received a new version of a resource description with resource type different to the resource type of the previous version\
+   **When** it is checked if the schema of that resource description has the same resource type as the previous version\
+   **And** schema type validation for the new version of the resource description has the result "invalid"\
+   **Then** a notification about a wrong resource type is sent to the Provider.
 
 ## Where it fits
 

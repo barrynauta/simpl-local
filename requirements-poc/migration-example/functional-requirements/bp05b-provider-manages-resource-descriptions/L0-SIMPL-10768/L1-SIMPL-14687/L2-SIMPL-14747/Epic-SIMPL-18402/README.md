@@ -16,31 +16,17 @@ Folder: [functional-requirements](../../../../../README.md) / [BP05B](../../../.
 
 **Acceptance Criterion 1: Syntax validation access policies**
 
-| Scenario|**The Governance Authority validates the syntax of the access policies assigned to a new resource description or a new version of a resource description** |
-| --- |
-
-| When|I receive a new resource description or a new version of a resource description |
-| --- |
-
-| and|the sender has the identity attributes to manage resource descriptions |
-| --- |
-
-| then|the syntax of the access policies of the resource description is automatically validated, which includes verifying the correct usage of action verbs and ODRL constraints. |
-| --- |
+**Scenario:** The Governance Authority validates the syntax of the access policies assigned to a new resource description or a new version of a resource description\
+When I receive a new resource description or a new version of a resource description\
+and the sender has the identity attributes to manage resource descriptions\
+then the syntax of the access policies of the resource description is automatically validated, which includes verifying the correct usage of action verbs and ODRL constraints.
 
 **Acceptance Criterion 2: Syntax validation usage policies**
 
-| Scenario|**The Governance Authority validates the syntax of the usage policies assigned to a new resource description or a new version of a resource description** |
-| --- |
-
-| When|I receive a new resource description or a new version of a resource description |
-| --- |
-
-| and|the sender has the identity attributes to manage resource descriptions |
-| --- |
-
-| then|the syntax of the usage policies of the resource description is automatically validated. |
-| --- |
+**Scenario:** The Governance Authority validates the syntax of the usage policies assigned to a new resource description or a new version of a resource description\
+When I receive a new resource description or a new version of a resource description\
+and the sender has the identity attributes to manage resource descriptions\
+then the syntax of the usage policies of the resource description is automatically validated.
 
 ## Where it fits
 

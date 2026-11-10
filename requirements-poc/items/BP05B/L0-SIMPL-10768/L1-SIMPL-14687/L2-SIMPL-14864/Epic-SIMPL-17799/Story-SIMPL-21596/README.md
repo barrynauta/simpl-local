@@ -12,14 +12,9 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 #### Storycard
 
-| As|Governance Authority |
-| --- |
-
-| I want|to automatically check the version number of a new version of a resource description |
-| --- |
-
-| so that|the published resource descriptions are consistent, reliable and compliant with pre-defined standards. |
-| --- |
+**As** Governance Authority\
+**I want to** automatically check the version number of a new version of a resource description\
+**So that** the published resource descriptions are consistent, reliable and compliant with pre-defined standards.
 
 scenarios to check for both - new resource description and new version of a resource description
 
@@ -30,115 +25,49 @@ scenarios to check for both - new resource description and new version of a reso
 - 403 - Unauthorized
 - 500 - Internal Server Error
 
-| Scenario | The Governance Authority checks the version number of a new version of a resource description, valid version number (Version number validation - positive case) |
-| --- | --- |
+**Scenario:** The Governance Authority checks the version number of a new version of a resource description, valid version number (Version number validation - positive case)
 
-| Given |a version numbering algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority |
-| --- |
+1. **Given** a version numbering algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority\
+   **When** I, the Governance Authority, receive a new version of a resource description with a correct version number\
+   **And** the Provider is authorised with identity attributes to manage resource descriptions\
+   **And** the version numbering algorithm checks the version number of the new version of the Resource description\
+   **Then** Simpl-Open should return with the positive publishing result with the code "201"\
+   **And** the new resource description or the new version of the resource description is created
 
-| When|I, the Governance Authority, receive a new version of a resource description with a correct version number |
-| --- |
+**Scenario:** The Governance Authority checks the version number of a new version of a resource description, invalid version number (Version number validation - negative case)
 
-| and|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
+2. **Given** a version numbering algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority\
+   **When** I, the Governance Authority, receive a new version of a resource description with an incorrect version number\
+   **And** the Provider is authorised with identity attributes to manage resource descriptions\
+   **And** the version numbering algorithm checks the version number of the new version of the Resource description\
+   **Then** Simpl-Open should return the verification results and the details together with error code "422"\
+   **And** no new resource description or new version of the resource description is created
 
-| and|the version numbering algorithm checks the version number of the new version of the Resource description |
-| --- |
+**Scenario:** The Governance Authority checks the version number of a new version of a resource description, Provider is not authorized (Version number validation - negative case)
 
-| Then|Simpl-Open should return with the positive publishing result with the code "201" |
-| --- |
+3. **Given** a version numbering algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority\
+   **When** I, the Governance Authority, receive a new version of a resource description with an incorrect version number\
+   **And** the Provider is not authorised with identity attributes to manage resource descriptions\
+   **Then** Simpl-Open should return with error code 403 to indicate the operation is not authorized\
+   **And** no new resource description or new version of the resource description is created
 
-| and|the new resource description or the new version of the resource description is created |
-| --- |
-|  |  |
+**Scenario:** The Governance Authority checks the schema for a new resource description or a new version of a resource description with an invalid JSON syntax (Schema status validation - negative case)
 
-| Scenario | The Governance Authority checks the version number of a new version of a resource description, invalid version number (Version number validation - negative case) |
-| --- | --- |
+4. **Given** a version numbering algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority\
+   **When** I, the Governance Authority, receive a new version of a resource description with a correct version number\
+   **And** the Provider is not authorised with identity attributes to manage resource descriptions\
+   **And** the payload has invalid JSON syntax\
+   **Then** `Simpl-Open should return with HTTP status 400 Bad Request to indicate the syntax or parsing error`\
+   **And** no new resource description or new version of the resource description is created
 
-| Given |a version numbering algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority |
-| --- |
+**Scenario:** The Governance Authority checks the schema for a new resource description or a new version of a resource description and an unexpected failure happens during creation (Schema status validation - negative case)
 
-| When|I, the Governance Authority, receive a new version of a resource description with an incorrect version number |
-| --- |
-
-| and|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| and|the version numbering algorithm checks the version number of the new version of the Resource description |
-| --- |
-
-| Then|Simpl-Open should return the verification results and the details together with error code "422" |
-| --- |
-
-| and|no new resource description or new version of the resource description is created |
-| --- |
-|  |  |
-|  |  |
-
-| Scenario | The Governance Authority checks the version number of a new version of a resource description, Provider is not authorized (Version number validation - negative case) |
-| --- | --- |
-
-| Given |a version numbering algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority |
-| --- |
-
-| When|I, the Governance Authority, receive a new version of a resource description with an incorrect version number |
-| --- |
-
-| and|the Provider is not authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| Then|Simpl-Open should return with error code 403 to indicate the operation is not authorized |
-| --- |
-
-| and|no new resource description or new version of the resource description is created |
-| --- |
-|  |  |
-
-| Scenario|**The Governance Authority checks the schema for a new resource description or a new version of a resource description with an invalid JSON syntax (Schema status validation - negative case)** |
-| --- |
-
-| Given |a version numbering algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority |
-| --- |
-
-| When|I, the Governance Authority, receive a new version of a resource description with a correct version number |
-| --- |
-
-| and|the Provider is not authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| and|the payload has invalid JSON syntax |
-| --- |
-
-| `Then`|`Simpl-Open should return with HTTP status 400 Bad Request to indicate the syntax or parsing error` |
-| --- |
-
-| and|no new resource description or new version of the resource description is created |
-| --- |
-|  |  |
-
-| Scenario|**The Governance Authority checks the schema for a new resource description or a new version of a resource description and an unexpected failure happens during creation (Schema status validation - negative case)** |
-| --- |
-
-| Given |a version numbering algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority |
-| --- |
-
-| When|I, the Governance Authority, receive a new version of a resource description with a correct version number |
-| --- |
-
-| and|the Provider is authorised with identity attributes to manage resource descriptions |
-| --- |
-
-| and|An unexpected internal server error occurs during processing |
-| --- |
-
-| Then|Simpl-Open should return with  HTTP status `500 Internal Server Error` |
-| --- |
-
-| and|no resource description or a new version of the resource description is created |
-| --- |
-
-| | |
-| --- |
+5. **Given** a version numbering algorithm to calculate and verify version numbers of resource description is defined by me, the Governance Authority\
+   **When** I, the Governance Authority, receive a new version of a resource description with a correct version number\
+   **And** the Provider is authorised with identity attributes to manage resource descriptions\
+   **And** An unexpected internal server error occurs during processing\
+   **Then** Simpl-Open should return with HTTP status `500 Internal Server Error`\
+   **And** no resource description or a new version of the resource description is created
 
 #### Technical details
 

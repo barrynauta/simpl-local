@@ -12,28 +12,17 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 #### Storycard
 
-| As a| Provider |
-| --- |
-
-| I want|to notify the Consumers of a resource about a published new version of a Resource description |
-| --- |
-
-| so that|so that Consumers can decide if any actions are required based on this new version. |
-| --- |
+**As a** Provider\
+**I want to** notify the Consumers of a resource about a published new version of a Resource description\
+**So that** so that Consumers can decide if any actions are required based on this new version.
 
 #### Acceptance criteria
 
-| Scenario | A Provider notifies Consumers about a new version of a Resource description |
-| --- | --- |
+**Scenario:** A Provider notifies Consumers about a new version of a Resource description
 
-| Given|I, the the Provider, have requested the publication of a new version of a resource description |
-| --- |
-
-| When|the new version of the Resource description is published |
-| --- |
-
-| Then|a notification about the new version is sent to the Consumers of the previous versions of the Resource description with an active contract. |
-| --- |
+1. **Given** I, the the Provider, have requested the publication of a new version of a resource description\
+   **When** the new version of the Resource description is published\
+   **Then** a notification about the new version is sent to the Consumers of the previous versions of the Resource description with an active contract.
 
 ## Where it fits
 
