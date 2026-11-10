@@ -2,13 +2,13 @@
 
 > Part of the [Simpl-Open requirements proof of concept](README.md). New here? [Start here](README.md) · [What the levels mean](levels.md)
 
-The handbook says every item must trace up to a business process (see [linking rules](levels.md#linking-rules)). This page checks the ten items against those rules. A gap can mean that a link is missing in Jira, or that the export left out the item that makes the link. This page does not say which; that needs a look in Jira.
+The handbook says every item must trace up to a business process (see [linking rules](levels.md#linking-rules)). This page checks the ten items against those rules. A gap can mean that a link is not recorded on the item, or that the export left out the item that makes the link. This page does not say which; that needs a check at the source.
 
 ## Summary
 
 | Result | Items |
 | --- | --- |
-| ✓ Traces to a business process in Jira | 3 of 10: SIMPL-18783, SIMPL-26074, SIMPL-10171 |
+| ✓ Traces to a business process through its recorded parents | 3 of 10: SIMPL-18783, SIMPL-26074, SIMPL-10171 |
 | ⚠ Traces only from the process side | 1 of 10: SIMPL-30560 |
 | ⚠ Does not trace to any business process | 6 of 10: SIMPL-31424, SIMPL-31425, SIMPL-31426, SIMPL-31853, SIMPL-30641, SIMPL-31429 |
 
@@ -16,8 +16,8 @@ The handbook says every item must trace up to a business process (see [linking r
 
 | Item | Level | Rule | Finding |
 | --- | --- | --- | --- |
-| [SIMPL-30560](items/SIMPL-30560.md) | L1 | Linked to exactly one business process | No parent in Jira. The public SA01 page lists it as requirement 1.6. |
-| [SIMPL-31424](items/SIMPL-31424.md) | L1 | Linked to exactly one business process | No parent in Jira. No public process page lists it. |
+| [SIMPL-30560](items/SIMPL-30560.md) | L1 | Linked to exactly one business process | No recorded parent. The public SA01 page lists it as requirement 1.6. |
+| [SIMPL-31424](items/SIMPL-31424.md) | L1 | Linked to exactly one business process | No recorded parent. No public process page lists it. |
 | [SIMPL-31425](items/SIMPL-31425.md) | L2 | Linked to exactly one parent L1 | Rule met (SIMPL-31424), but the chain ends at an L1 without a process. |
 | [SIMPL-31426](items/SIMPL-31426.md) | Epic | Linked to at least one L2 | Rule met (SIMPL-31425), same chain as above. |
 | [SIMPL-31853](items/SIMPL-31853.md) | Epic | Linked to at least one L2 | No parent. |
@@ -43,6 +43,6 @@ The export publishes some items without their parent or children. The public pro
 
 ## To look into
 
-1. Do SIMPL-31424, SIMPL-31853 and SIMPL-30641 have a parent in Jira that the export did not publish, or no parent at all?
-2. Why does the public SA01 page list SIMPL-30560 while Jira gives it no parent?
+1. Do SIMPL-31424, SIMPL-31853 and SIMPL-30641 have a recorded parent that the export did not publish, or no parent at all?
+2. Why does the public SA01 page list SIMPL-30560 while the item records no parent?
 3. What are the publication criteria? The export does not say why an item is in or out.

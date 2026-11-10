@@ -32,7 +32,7 @@ Providers and Consumers design, run and monitor repeatable data processing workf
 Public pages: [business-processes repository](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/sa01-data-orchestration/README.md)
 
 - *Not in this folder:* the L0 item for SA01
-  - [SIMPL-30560](items/SIMPL-30560.md) L1 · Participant executes workflow on saved distribution configuration · Defined · ⚠ linked from the public SA01 page only, not in Jira
+  - [SIMPL-30560](items/SIMPL-30560.md) L1 · Participant executes workflow on saved distribution configuration · Defined · ⚠ linked from the public SA01 page only, no recorded parent
     - *Not in this folder:* 1.6.1 (detailed requirement)
 
 ## ⚠ No business process

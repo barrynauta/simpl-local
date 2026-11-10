@@ -17,4 +17,4 @@ Ten items, top level first. Status as exported on 10 November 2026.
 | [SIMPL-30641](items/SIMPL-30641.md) | A Provider removes contract clauses from a resource description via UI, resulting in a new version of the resource description | User story | PBI Defined | none | ⚠ gap |
 | [SIMPL-31429](items/SIMPL-31429.md) | Participant updates contact email after onboarding | Epic | 🔴 Cancelled | none | ⚠ gap |
 
-**Trace:** ✓ linked to a business process in Jira · ⚠ one way: the public process page lists it, Jira does not · ⚠ gap: no business process. Details in [trace gaps](trace-gaps.md).
+**Trace:** ✓ recorded link to a business process · ⚠ one way: the public process page lists it, the item records no link · ⚠ gap: no business process. Details in [trace gaps](trace-gaps.md).

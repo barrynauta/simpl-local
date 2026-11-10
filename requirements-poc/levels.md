@@ -2,13 +2,13 @@
 
 > Part of the [Simpl-Open requirements proof of concept](README.md).
 
-Simpl-Open requirements are written top-down in five levels. Each level is a Jira issue type. The definitions below are summarised from the Simpl Development Handbook V1.8, chapter "Requirements elicitation and management" (internal Confluence).
+Simpl-Open requirements are written top-down in five levels. Each level has its own purpose and its own way of writing. The definitions below are summarised from the Simpl Development Handbook V1.8, chapter "Requirements elicitation and management".
 
 ```mermaid
 graph TD
     BP["Business process or supporting activity<br/>e.g. BP02A, SA09"] --> L0
-    L0["L0 requirement<br/>the business process as a Jira item"] --> L1
-    L1["L1 requirement<br/>business capability: WHAT"] --> L2
+    L0["L0 requirement<br/>the business process as a requirement"] --> L1
+    L1["L1 requirement<br/>high-level requirement: WHAT"] --> L2
     L2["L2 requirement<br/>detailed functionality: WHAT"] --> EP
     EP["Epic<br/>deliverable, testable feature: WHAT"] --> US
     US["User story<br/>implementable work: HOW"]
@@ -19,8 +19,8 @@ graph TD
 | Level | Describes | In one sentence | Written as |
 | --- | --- | --- | --- |
 | **Business process (BP) or supporting activity (SA)** | A business process | What the actors of a data space do, step by step, for example BP02A "Configure ID/Trust security solution". | A process page with steps such as BP02A.02. |
-| **L0** | The business process in Jira | The Jira item that stands for one BP or SA, so lower levels can hang under it. | The BP name, for example "BP02A - Configure ID/Trust security solution". |
-| **L1** | A business capability | What Simpl-Open must enable to support one step, or a few related steps, of a business process. | Title: actor, verb, object. Text: "Simpl-Open shall allow ...". |
+| **L0** | The business process as a requirement | The item that stands for one BP or SA, so lower levels can hang under it. | The BP name, for example "BP02A - Configure ID/Trust security solution". |
+| **L1** | A high-level requirement | What Simpl-Open must allow an actor to do in one step, or a few related steps, of a business process. The public requirements site uses the same term, for example high-level requirement 2A.1. | Title: actor, verb, object. Text: "Simpl-Open shall allow ...". |
 | **L2** | A detailed functionality | A concrete and testable function that makes part of an L1 real. | "Simpl-Open shall ..." for one actor and one function. |
 | **Epic** | A deliverable feature | A testable feature seen from a business actor. It bridges the requirements (L2) and the implementation work (stories). | "As a ... I want ... so that ...", with acceptance criteria in Given / When / Then. |
 | **User story** | Implementable work | A piece of work a team can build and test in a sprint, often split into a UI story and an API story. | "As a ... I want ... so that ...", with acceptance criteria. |
@@ -50,11 +50,11 @@ An item that does not meet its rule is tagged **⚠ Trace gap** on its page.
 
 ## Status
 
-Status is the Jira workflow status. The ones you see in this folder, roughly in order:
+Status shows where an item is in its life cycle. The ones you see in this folder, roughly in order:
 
 | Status | Meaning |
 | --- | --- |
 | Defined, PBI Defined | Written and approved after elicitation. The handbook keeps the key fields stable from PBI Defined on. |
 | In Progress | Being worked on. |
-| Internal QA check | A review step in the Jira workflow. The handbook page "Jira SDLC implemented definitions and flows" defines it. |
+| Internal QA check | An internal review step. |
 | Cancelled | Dropped. Kept for history. |
