@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP05B](../../../README.md) / [L0-SIMPL
 
 # SIMPL-12904: A Provider consults the version history of one of its own resource descriptions
 
-**L2 requirement (detailed requirement)** · Status **Defined**
+**L2 requirement (detailed requirement)**
 
 **Trace:** [BP05B](../../../README.md) › [SIMPL-10768](../../README.md) (L0) › [SIMPL-12897](../README.md) (L1) › **SIMPL-12904** (L2)
 
@@ -20,4 +20,4 @@ Simpl-Open shall allow a Provider via UI and API
 | --- | --- |
 | **Business process** | [BP05B](../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp05b-provider-manages-resource-descriptions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp05b-provider-manages-resource-descriptions)) |
 | **Parent** | [SIMPL-12897](../README.md) (L1) A Provider consults its own Resource descriptions |
-| **Children** | [SIMPL-13658](Epic-SIMPL-13658/README.md) (Epic) A Provider consults the version history of one of its own resource descriptions<br>[SIMPL-29371](Epic-SIMPL-29371/README.md) (Epic) A Provider consults the version history of one of its own resource descriptions [Improvement] |
+| **Children** | [SIMPL-13658](Epic-SIMPL-13658/README.md) (Epic) A Provider consults the version history of one of its own resource descriptions |

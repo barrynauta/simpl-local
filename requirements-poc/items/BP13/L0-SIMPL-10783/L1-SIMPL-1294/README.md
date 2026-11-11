@@ -4,9 +4,9 @@ Folder: [items](../../../README.md) / [BP13](../../README.md) / [L0-SIMPL-10783]
 
 # SIMPL-1294: SIMPL Agent standard Cross Cutting Concern to handle cross capabilities/agents communication
 
-**L1 requirement (high-level requirement)** · Status **Blocked**
+**L1 requirement (high-level requirement)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP13](../../README.md) › [SIMPL-10783](../README.md) (L0) › **SIMPL-1294** (L1)
 

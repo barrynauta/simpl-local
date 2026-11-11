@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 # SIMPL-936: A Provider assigns access policies to a new resource description by using policy template via UI
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP05B](../../../../README.md) › [SIMPL-10768](../../../README.md) (L0) › [SIMPL-14688](../../README.md) (L1) › [SIMPL-14733](../README.md) (L2) › **SIMPL-936** (Epic)
 
@@ -34,4 +34,4 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 | --- | --- |
 | **Business process** | [BP05B](../../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp05b-provider-manages-resource-descriptions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp05b-provider-manages-resource-descriptions)) |
 | **Parent** | [SIMPL-14733](../README.md) (L2) A Provider assigns access policies to a new Resource description |
-| **Children** | [SIMPL-493](Story-SIMPL-493/README.md) (User story) UI for defining access policies<br>[SIMPL-2581](Story-SIMPL-2581/README.md) (User story) Define Access Policy for the SD-Schema<br>[SIMPL-3545](Story-SIMPL-3545/README.md) (User story) [UI] Access Policy multiple attributes per Permission<br>[SIMPL-31405](Story-SIMPL-31405/README.md) (User story) [UI] Provider selects an access policy template in the resource description wizard<br>[SIMPL-31406](Story-SIMPL-31406/README.md) (User story) [UI] Provider fills in the access policy template parameters in the resource description wizard<br>[SIMPL-31407](Story-SIMPL-31407/README.md) (User story) [UI] Provider sees inline validation feedback for access policy template parameters<br>[SIMPL-31433](Story-SIMPL-31433/README.md) (User story) [UI] Provider adds an access policy to a new Resource Description<br>[SIMPL-31703](Story-SIMPL-31703/README.md) (User story) [UI] Provider removes an access policy from the new resource description |
+| **Children** | [SIMPL-493](Story-SIMPL-493/README.md) (User story) UI for defining access policies<br>[SIMPL-2581](Story-SIMPL-2581/README.md) (User story) Define Access Policy for the SD-Schema<br>[SIMPL-31405](Story-SIMPL-31405/README.md) (User story) [UI] Provider selects an access policy template in the resource description wizard<br>[SIMPL-31406](Story-SIMPL-31406/README.md) (User story) [UI] Provider fills in the access policy template parameters in the resource description wizard<br>[SIMPL-31407](Story-SIMPL-31407/README.md) (User story) [UI] Provider sees inline validation feedback for access policy template parameters<br>[SIMPL-31433](Story-SIMPL-31433/README.md) (User story) [UI] Provider adds an access policy to a new Resource Description<br>[SIMPL-31703](Story-SIMPL-31703/README.md) (User story) [UI] Provider removes an access policy from the new resource description |

@@ -11,7 +11,7 @@ The items sit in folders that follow the levels, from business process down to u
 - **what kind of item it is** and what that level means,
 - **where it sits**: the business process it serves and its parent and children,
 - **what it says**: the requirement, user story and acceptance criteria, cleaned up but not reworded, if the item is published,
-- **its status**,
+- for a user story, **how far its development is** (Planned, In development or Developed),
 - for the ten items of PSO's export: **what is wrong with it in the source or the export**, under "Notes on the source".
 
 ## How the levels fit together
@@ -34,7 +34,7 @@ You can start anywhere. Pick the view that matches your question.
 | Your question | Start at |
 | --- | --- |
 | What does this business process require from Simpl-Open? | [By business process](processes.md) |
-| Which items are there, and what is their status? | [All items](all-items.md) |
+| Which items are there, and which user stories are developed? | [All items](all-items.md) |
 | How are the items nested, level by level? | [Items by folder](items/README.md) |
 | What do L0, L1, L2, Epic and Story mean? | [What the levels mean](levels.md) |
 | Does every item trace back to a business process? | [Trace gaps](trace-gaps.md) |
@@ -48,7 +48,8 @@ You can start anywhere. Pick the view that matches your question.
 - **Source of the content**: the requirements source on 10 November 2026, not PSO's export. PSO's export left out parent links and children; the [trace gaps](trace-gaps.md) page shows what it lost.
 - **Published items only.** An item's text is shown only when the item is published on the requirements website. For an Epic or user story, the L2, L1 or L0 above it decides. The ten items of PSO's export are shown in full, as PSO already made them public. Other items show only key, level, title and status.
 - **Cancelled items are left out.** They are not part of the requirements.
+- **Only approved Epics and user stories.** Epics from Defined, user stories from PBI Defined. A user story whose Epic is not approved yet is left out too. The [trace gaps](trace-gaps.md) page counts them.
 - **Texts are kept as written.** The words are not changed and typos are not corrected. Only the layout of user stories and acceptance criteria is made the same everywhere (see [the levels page](levels.md#how-user-stories-and-acceptance-criteria-are-written)). Links to internal pages are replaced by "(internal page)", and names of people and email addresses are removed.
 - **Item keys are plain text.** The source system needs a login, so keys link only to pages in this folder.
 - **Business process links** go to the public [business-processes](https://code.europa.eu/simpl/simpl-open/foundations/business-processes) repository and to the public requirements site [simpl-programme.ec.europa.eu](https://simpl-programme.ec.europa.eu).
-- **Status** is the status on 10 November 2026. It is not kept up to date here.
+- **Development status** of user stories is the one of 10 November 2026. It is not kept up to date here. Other levels show no status.

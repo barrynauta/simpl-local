@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 
 # SIMPL-28599: [UI] Data Provider updates consent assertion status from consent assertion details page
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [SA09](../../../../../README.md) › [SIMPL-26074](../../../../README.md) (L0) › [SIMPL-26083](../../../README.md) (L1) › [SIMPL-27195](../../README.md) (L2) › [SIMPL-27206](../README.md) (Epic) › **SIMPL-28599** (User story)
 

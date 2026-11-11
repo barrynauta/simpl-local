@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 # SIMPL-2054: Verify agent credentials
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP13](../../../../README.md) › [SIMPL-10783](../../../README.md) (L0) › [SIMPL-1277](../../README.md) (L1) › [SIMPL-1616](../README.md) (L2) › **SIMPL-2054** (Epic)
 

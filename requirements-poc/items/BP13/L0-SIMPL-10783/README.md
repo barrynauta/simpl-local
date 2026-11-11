@@ -4,7 +4,7 @@ Folder: [items](../../README.md) / [BP13](../README.md) / **L0-SIMPL-10783**
 
 # SIMPL-10783: BP13 - IT Administration
 
-**L0 requirement (the business process as a requirement)** · Status **New**
+**L0 requirement (the business process as a requirement)**
 
 **Trace:** [BP13](../README.md) › **SIMPL-10783** (L0)
 

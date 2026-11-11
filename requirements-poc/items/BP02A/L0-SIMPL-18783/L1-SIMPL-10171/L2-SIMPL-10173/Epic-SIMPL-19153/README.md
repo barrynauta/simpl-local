@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 # SIMPL-19153: Governance authority creates eIDAS rules for automated onboarding request validation
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP02A](../../../../README.md) › [SIMPL-18783](../../../README.md) (L0) › [SIMPL-10171](../../README.md) (L1) › [SIMPL-10173](../README.md) (L2) › **SIMPL-19153** (Epic)
 

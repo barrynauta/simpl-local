@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 # SIMPL-24062: The Governance Authority notifies the Provider about metadata quality results
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP05B](../../../../README.md) › [SIMPL-10768](../../../README.md) (L0) › [SIMPL-14687](../../README.md) (L1) › [SIMPL-22688](../README.md) (L2) › **SIMPL-24062** (Epic)
 

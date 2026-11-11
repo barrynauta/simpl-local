@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.1.3 A Provider consults the version history of one of its own resource descriptions](../bp5b1-provider-consults-its-own-resource-descriptions.md#5b13-a-provider-consults-the-version-history-of-one-of-its-own-resource-descriptions), under high-level requirement [5B.1 A Provider consults its own Resource descriptions](../bp5b1-provider-consults-its-own-resource-descriptions.md). In the process it belongs to step [Trigger (resource description management)](../README.md#trigger--resource-description-management).
 
-In the backlog (Jira) it is item SIMPL-13658. It has 3 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-13658. It has 3 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -27,13 +27,13 @@ In the backlog (Jira) it is item SIMPL-13658. It has 3 user stories, each with a
 
 ## User stories
 
-1. [[UI] A provider consults the version history of a resource description](#user-story-1-ui-a-provider-consults-the-version-history-of-a-resource-description)
-2. [[API] A provider consults the version history of a resource description via API (SD tooling)](#user-story-2-api-a-provider-consults-the-version-history-of-a-resource-description-via-api-sd-tooling)
-3. [[API] The Governance authority provides the version history of a resource description via API (Query mapper)](#user-story-3-api-the-governance-authority-provides-the-version-history-of-a-resource-description-via-api-query-mapper)
+1. [[UI] A provider consults the version history of a resource description](#user-story-1-ui-a-provider-consults-the-version-history-of-a-resource-description) · Developed
+2. [[API] A provider consults the version history of a resource description via API (SD tooling)](#user-story-2-api-a-provider-consults-the-version-history-of-a-resource-description-via-api-sd-tooling) · Developed
+3. [[API] The Governance authority provides the version history of a resource description via API (Query mapper)](#user-story-3-api-the-governance-authority-provides-the-version-history-of-a-resource-description-via-api-query-mapper) · Developed
 
 ### User story 1: [UI] A provider consults the version history of a resource description
 
-Backlog item SIMPL-21646
+**Development:** Developed · backlog item SIMPL-21646
 
 #### Storycard
 
@@ -69,7 +69,7 @@ From a UI perspective, the following implementation is envisaged:
 
 ### User story 2: [API] A provider consults the version history of a resource description via API (SD tooling)
 
-Backlog item SIMPL-21647
+**Development:** Developed · backlog item SIMPL-21647
 
 #### Storycard
 
@@ -125,7 +125,7 @@ which is defined in the following OpenAPI specification file:\
 
 ### User story 3: [API] The Governance authority provides the version history of a resource description via API (Query mapper)
 
-Backlog item SIMPL-21648
+**Development:** Developed · backlog item SIMPL-21648
 
 #### Storycard
 

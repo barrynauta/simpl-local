@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 # SIMPL-4887: A Provider updates the access policies of a new version of a Resource description by using policy templatesvia UI
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP05B](../../../../README.md) › [SIMPL-10768](../../../README.md) (L0) › [SIMPL-14728](../../README.md) (L1) › [SIMPL-14740](../README.md) (L2) › **SIMPL-4887** (Epic)
 

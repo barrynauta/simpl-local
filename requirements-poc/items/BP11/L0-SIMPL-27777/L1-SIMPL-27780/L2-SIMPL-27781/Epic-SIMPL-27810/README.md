@@ -4,9 +4,9 @@ Folder: [items](../../../../../README.md) / [BP11](../../../../README.md) / [L0-
 
 # SIMPL-27810: A Provider and Consumer consult an overview of their usage contracts
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP11](../../../../README.md) › [SIMPL-27777](../../../README.md) (L0) › [SIMPL-27780](../../README.md) (L1) › [SIMPL-27781](../README.md) (L2) › **SIMPL-27810** (Epic)
 

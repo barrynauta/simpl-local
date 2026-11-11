@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 # SIMPL-12899: A Provider consults an overview of its Resource descriptions via UI and API
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP05B](../../../../README.md) › [SIMPL-10768](../../../README.md) (L0) › [SIMPL-12897](../../README.md) (L1) › [SIMPL-12898](../README.md) (L2) › **SIMPL-12899** (Epic)
 

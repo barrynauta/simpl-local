@@ -4,7 +4,7 @@ Folder: [items](../../../README.md) / [BP13](../../README.md) / [L0-SIMPL-10783]
 
 # SIMPL-1301: Business continuity and disaster recovery
 
-**L1 requirement (high-level requirement)** · Status **Defined**
+**L1 requirement (high-level requirement)**
 
 **Trace:** [BP13](../../README.md) › [SIMPL-10783](../README.md) (L0) › **SIMPL-1301** (L1)
 

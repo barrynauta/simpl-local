@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-19789: [API] The Governance Authority revokes a Resource Description (Query Mapper)
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14640](../../../README.md) (L1) › [SIMPL-14641](../../README.md) (L2) › [SIMPL-18025](../README.md) (Epic) › **SIMPL-19789** (User story)
 

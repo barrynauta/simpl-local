@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-1648: A Participant sets the VPN configuration for data transfer between the Simpl-Open agent and data resource source or destination
 
-**L2 requirement (detailed requirement)** · Status **Defined**
+**L2 requirement (detailed requirement)**
 
 **Trace:** [BP13](../../../README.md) › [SIMPL-10783](../../README.md) (L0) › [SIMPL-1379](../README.md) (L1) › **SIMPL-1648** (L2)
 

@@ -4,9 +4,9 @@ Folder: [items](../../../../../README.md) / [BP11](../../../../README.md) / [L0-
 
 # SIMPL-31926: A Participant performs the contract expiration actions [Extension federation]
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP11](../../../../README.md) › [SIMPL-27777](../../../README.md) (L0) › [SIMPL-28467](../../README.md) (L1) › [SIMPL-29137](../README.md) (L2) › **SIMPL-31926** (Epic)
 

@@ -4,7 +4,7 @@ Folder: [items](../../../README.md) / [BP13](../../README.md) / [L0-SIMPL-10783]
 
 # SIMPL-13574: A Participant uses the Simpl-Open landing page
 
-**L1 requirement (high-level requirement)** · Status **In Progress**
+**L1 requirement (high-level requirement)**
 
 **Trace:** [BP13](../../README.md) › [SIMPL-10783](../README.md) (L0) › **SIMPL-13574** (L1)
 

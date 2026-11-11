@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 # SIMPL-19328: A Participant gets the list of existing data orchestration workflows
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [SA01](../../../../README.md) › [SIMPL-16074](../../../README.md) (L0) › [SIMPL-19288](../../README.md) (L1) › [SIMPL-19312](../README.md) (L2) › **SIMPL-19328** (Epic)
 

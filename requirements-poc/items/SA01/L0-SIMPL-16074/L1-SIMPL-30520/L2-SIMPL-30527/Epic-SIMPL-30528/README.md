@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 # SIMPL-30528: A Participant defines the sub-service distribution model of a data orchestration workflow
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [SA01](../../../../README.md) › [SIMPL-16074](../../../README.md) (L0) › [SIMPL-30520](../../README.md) (L1) › [SIMPL-30527](../README.md) (L2) › **SIMPL-30528** (Epic)
 

@@ -9,7 +9,6 @@ The text of this detailed requirement is on the [5B.3 page](../bp5b3-provider-cr
 - [Epic: A Provider updates the resource source address for resource sharing](simpl-12250-a-provider-updates-the-resource-source-address-for-resource.md), 1 user story
 - [Epic: A Provider updates common metadata of a new version of a Resource description via UI](simpl-18028-a-provider-updates-common-metadata-of-a-new-version-of-a-res.md), 5 user stories
 - [Epic: A Provider starts the creation of a new version of a Resource description via UI](simpl-19293-a-provider-starts-the-creation-of-a-new-version-of-a-resourc.md), 1 user story
-- [Epic: A Provider updates common metadata of a new version of a Resource description via UI (Improvement)](simpl-32140-a-provider-updates-common-metadata-of-a-new-version-of-a-res.md), no user stories yet
 
 ## 5B.3.2 A Provider updates the resource type specific metadata of a new version of a Resource description
 
@@ -29,7 +28,7 @@ The text of this detailed requirement is on the [5B.3 page](../bp5b3-provider-cr
 
 The text of this detailed requirement is on the [5B.3 page](../bp5b3-provider-creates-new-version-resource-description.md#5b34-a-provider-updates-the-usage-policies-of-a-new-version-of-a-resource-description).
 
-- [Epic: A Provider updates the usage policies of a new version of a resource description by using policy template via UI](simpl-18030-a-provider-updates-the-usage-policies-of-a-new-version-of-a.md), 5 user stories
+- [Epic: A Provider updates the usage policies of a new version of a resource description by using policy template via UI](simpl-18030-a-provider-updates-the-usage-policies-of-a-new-version-of-a.md), 4 user stories
 
 ## 5B.3.5 A Provider updates the set of contract clauses of a new version of a resource description
 

@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 # SIMPL-24652: [UI] Retrieve Available Workflows and Render Workflow‑Enabled Template (Data Orchestration)
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [SA01](../../../../../README.md) › [SIMPL-16074](../../../../README.md) (L0) › [SIMPL-19291](../../../README.md) (L1) › [SIMPL-19319](../../README.md) (L2) › [SIMPL-22371](../README.md) (Epic) › **SIMPL-24652** (User story)
 

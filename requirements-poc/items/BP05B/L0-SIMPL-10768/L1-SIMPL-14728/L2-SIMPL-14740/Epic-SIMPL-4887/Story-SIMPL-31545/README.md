@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-31545: [UI] Provider fills in the access policy template parameters in the new resource description version wizard
 
-**User story (implementable work)** · Status **PBI INTERNAL QA**
+**User story (implementable work)** · Development: **In development**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14728](../../../README.md) (L1) › [SIMPL-14740](../../README.md) (L2) › [SIMPL-4887](../README.md) (Epic) › **SIMPL-31545** (User story)
 

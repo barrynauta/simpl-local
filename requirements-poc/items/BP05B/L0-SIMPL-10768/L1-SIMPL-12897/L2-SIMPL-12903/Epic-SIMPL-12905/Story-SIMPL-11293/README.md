@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-11293: API to provide the full content of a publisher's resource description
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-12897](../../../README.md) (L1) › [SIMPL-12903](../../README.md) (L2) › [SIMPL-12905](../README.md) (Epic) › **SIMPL-11293** (User story)
 

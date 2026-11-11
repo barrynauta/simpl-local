@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.3 A Provider adds resource type specific metadata to a new Resource description](../bp5b2-provider-creates-new-resource-description.md#5b23-a-provider-adds-resource-type-specific-metadata-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.02 Add resource type specific metadata](../README.md#bp05b02-add-resource-type-specific-metadata).
 
-In the backlog (Jira) it is item SIMPL-17409. It has 3 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-17409. It has 3 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -37,13 +37,13 @@ In the backlog (Jira) it is item SIMPL-17409. It has 3 user stories, each with a
 
 ## User stories
 
-1. [[UI] Add data resource type specific metadata](#user-story-1-ui-add-data-resource-type-specific-metadata)
-2. [[UI] Add application resource type specific metadata](#user-story-2-ui-add-application-resource-type-specific-metadata)
-3. [[UI] Add infrastructure resource type specific metadata](#user-story-3-ui-add-infrastructure-resource-type-specific-metadata)
+1. [[UI] Add data resource type specific metadata](#user-story-1-ui-add-data-resource-type-specific-metadata) · Developed
+2. [[UI] Add application resource type specific metadata](#user-story-2-ui-add-application-resource-type-specific-metadata) · Developed
+3. [[UI] Add infrastructure resource type specific metadata](#user-story-3-ui-add-infrastructure-resource-type-specific-metadata) · Developed
 
 ### User story 1: [UI] Add data resource type specific metadata
 
-Backlog item SIMPL-18344
+**Development:** Developed · backlog item SIMPL-18344
 
 #### Storycard
 
@@ -83,7 +83,7 @@ Backlog item SIMPL-18344
 
 ### User story 2: [UI] Add application resource type specific metadata
 
-Backlog item SIMPL-20969
+**Development:** Developed · backlog item SIMPL-20969
 
 #### Storycard
 
@@ -122,7 +122,7 @@ Backlog item SIMPL-20969
 
 ### User story 3: [UI] Add infrastructure resource type specific metadata
 
-Backlog item SIMPL-21590
+**Development:** Developed · backlog item SIMPL-21590
 
 #### Storycard
 

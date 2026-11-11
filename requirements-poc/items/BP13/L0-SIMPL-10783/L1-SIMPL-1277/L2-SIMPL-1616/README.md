@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-1616: Authentication between participant agents
 
-**L2 requirement (detailed requirement)** · Status **In Progress**
+**L2 requirement (detailed requirement)**
 
 **Trace:** [BP13](../../../README.md) › [SIMPL-10783](../../README.md) (L0) › [SIMPL-1277](../README.md) (L1) › **SIMPL-1616** (L2)
 
@@ -32,4 +32,4 @@ Simpl shall provide an API that:
 | --- | --- |
 | **Business process** | [BP13](../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp13-it-administration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp13-it-administration)) |
 | **Parent** | [SIMPL-1277](../README.md) (L1) Authentication process - IAA |
-| **Children** | [SIMPL-461](Epic-SIMPL-461/README.md) (Epic) Secure communication between agents - reverse proxy<br>[SIMPL-2049](Epic-SIMPL-2049/README.md) (Epic) Secure interaction between agents<br>[SIMPL-2054](Epic-SIMPL-2054/README.md) (Epic) Verify agent credentials |
+| **Children** | [SIMPL-2054](Epic-SIMPL-2054/README.md) (Epic) Verify agent credentials |

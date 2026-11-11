@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 # SIMPL-31429: Participant updates contact email after onboarding
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP13](../../../../README.md) › [SIMPL-10783](../../../README.md) (L0) › [SIMPL-31424](../../README.md) (L1) › [SIMPL-31427](../README.md) (L2) › **SIMPL-31429** (Epic)
 

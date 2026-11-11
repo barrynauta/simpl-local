@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 # SIMPL-27801: A Participant displays functionalities aligned with their Participant type on the landing page UI
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP13](../../../../../README.md) › [SIMPL-10783](../../../../README.md) (L0) › [SIMPL-13574](../../../README.md) (L1) › [SIMPL-12044](../../README.md) (L2) › [SIMPL-12046](../README.md) (Epic) › **SIMPL-27801** (User story)
 

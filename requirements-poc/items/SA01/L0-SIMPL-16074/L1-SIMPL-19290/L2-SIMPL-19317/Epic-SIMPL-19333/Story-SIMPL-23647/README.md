@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 # SIMPL-23647: Check Whether a Workflow Has Associated Resource Descriptions
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [SA01](../../../../../README.md) › [SIMPL-16074](../../../../README.md) (L0) › [SIMPL-19290](../../../README.md) (L1) › [SIMPL-19317](../../README.md) (L2) › [SIMPL-19333](../README.md) (Epic) › **SIMPL-23647** (User story)
 

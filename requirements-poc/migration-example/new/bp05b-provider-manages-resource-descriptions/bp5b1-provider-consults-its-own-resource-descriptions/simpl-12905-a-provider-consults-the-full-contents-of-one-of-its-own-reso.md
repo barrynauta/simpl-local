@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.1.2 A Provider consults the details of one of its own resource descriptions](../bp5b1-provider-consults-its-own-resource-descriptions.md#5b12-a-provider-consults-the-details-of-one-of-its-own-resource-descriptions), under high-level requirement [5B.1 A Provider consults its own Resource descriptions](../bp5b1-provider-consults-its-own-resource-descriptions.md). In the process it belongs to step [Trigger (resource description management)](../README.md#trigger--resource-description-management).
 
-In the backlog (Jira) it is item SIMPL-12905. It has 3 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-12905. It has 3 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -25,13 +25,13 @@ In the backlog (Jira) it is item SIMPL-12905. It has 3 user stories, each with a
 
 ## User stories
 
-1. [Display self-description details](#user-story-1-display-self-description-details)
-2. [API to provide the full content of a publisher's resource description](#user-story-2-api-to-provide-the-full-content-of-a-publishers-resource-description)
-3. [[API] API to provide the full contents of a provider's own resource description to the UI](#user-story-3-api-api-to-provide-the-full-contents-of-a-providers-own-resource-description-to-the-ui)
+1. [Display self-description details](#user-story-1-display-self-description-details) · Developed
+2. [API to provide the full content of a publisher's resource description](#user-story-2-api-to-provide-the-full-content-of-a-publishers-resource-description) · Developed
+3. [[API] API to provide the full contents of a provider's own resource description to the UI](#user-story-3-api-api-to-provide-the-full-contents-of-a-providers-own-resource-description-to-the-ui) · Developed
 
 ### User story 1: Display self-description details
 
-Backlog item SIMPL-9838
+**Development:** Developed · backlog item SIMPL-9838
 
 #### Storycard
 
@@ -89,7 +89,7 @@ UI for the list of Resource descriptions: (internal page)
 
 ### User story 2: API to provide the full content of a publisher's resource description
 
-Backlog item SIMPL-11293
+**Development:** Developed · backlog item SIMPL-11293
 
 #### Storycard
 
@@ -114,7 +114,7 @@ Backlog item SIMPL-11293
 
 ### User story 3: [API] API to provide the full contents of a provider's own resource description to the UI
 
-Backlog item SIMPL-15622
+**Development:** Developed · backlog item SIMPL-15622
 
 #### Storycard
 

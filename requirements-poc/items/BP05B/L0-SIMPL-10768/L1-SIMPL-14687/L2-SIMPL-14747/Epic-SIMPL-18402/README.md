@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 # SIMPL-18402: The Governance Authority validates the syntax of the policies assigned to a new Resource description or a new version of a Resource Description
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP05B](../../../../README.md) › [SIMPL-10768](../../../README.md) (L0) › [SIMPL-14687](../../README.md) (L1) › [SIMPL-14747](../README.md) (L2) › **SIMPL-18402** (Epic)
 
@@ -34,4 +34,4 @@ then the syntax of the usage policies of the resource description is automatical
 | --- | --- |
 | **Business process** | [BP05B](../../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp05b-provider-manages-resource-descriptions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp05b-provider-manages-resource-descriptions)) |
 | **Parent** | [SIMPL-14747](../README.md) (L2) The Governance Authority validates the syntax of a new Resource description or a new version of a Resource Description |
-| **Children** | [SIMPL-31673](Story-SIMPL-31673/README.md) (User story) [API] GA validates the syntax of access and usage policies of new RD version<br>[SIMPL-31674](Story-SIMPL-31674/README.md) (User story) [UI] Provider sees the policy syntax validation outcome in the RD editor for new RD version |
+| **Children** | [SIMPL-31674](Story-SIMPL-31674/README.md) (User story) [UI] Provider sees the policy syntax validation outcome in the RD editor for new RD version |

@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.6 A Provider adds a set of contract clauses to a new resource description](../bp5b2-provider-creates-new-resource-description.md#5b26-a-provider-adds-a-set-of-contract-clauses-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog (Jira) it is item SIMPL-29976. It has 2 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-29976. It has 1 user story, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -26,12 +26,11 @@ In the backlog (Jira) it is item SIMPL-29976. It has 2 user stories, each with a
 
 ## User stories
 
-1. [[UI] Add Intended Purpose Contract Clause to Resource Description](#user-story-1-ui-add-intended-purpose-contract-clause-to-resource-description)
-2. [[UI] Enable Consent Management Intended purpose Contract Clauses Document Download in SDTooling UI](#user-story-2-ui-enable-consent-management-intended-purpose-contract-clauses-document-download-in-sdtooling-ui)
+1. [[UI] Add Intended Purpose Contract Clause to Resource Description](#user-story-1-ui-add-intended-purpose-contract-clause-to-resource-description) · Planned
 
 ### User story 1: [UI] Add Intended Purpose Contract Clause to Resource Description
 
-Backlog item SIMPL-34169
+**Development:** Planned · backlog item SIMPL-34169
 
 ###### User Story
 
@@ -69,50 +68,6 @@ The **Intended Purpose Contract Clause** is optionally available within the **Co
    **Then** the document is validated and stored inside provider storage\
    **And** an Intended Purpose Contract Clause is associated with the Resource Description\
    **And** the uploaded document is linked to the created Contract Clause
-
-### User story 2: [UI] Enable Consent Management Intended purpose Contract Clauses Document Download in SDTooling UI
-
-Backlog item SIMPL-34486
-
-**As a** Provider,\
-**I want to** download the documents associated with Contract Clauses categories (Intended purpose) for the resources published on the Catalogue,\
-**So that** I can verify and review the related contractual documentation.
-
-**Technical Description**\
-This task aims to enhance the Contract Clauses section of the SDTooling UI by providing access to documents uploaded by the provider. For each Contract Clauses category (Intended Purpose), SD-Tooling UI shall verify whether the document is available. Whenever the document exists for a given category (Intended Purpose), the application shall display a **Download** button associated with that document. Upon user interaction, SD-Tooling UI shall invoke the API exposed by **xfsc-adv-search component** implemented under **ticket** SIMPL-29049 to retrieve the selected document and download it to the user's device.
-
-**Acceptance Criteria**
-
-###### AC1 - Display Download Action
-
-1. **Given** the Provider is viewing the Contract Clauses section of a published resource\
-   **And** the document is available for an Intended Purpose Contract Clauses\
-   **When** the section is displayed\
-   **Then** a Download button shall be displayed for each available document\
-   **And** the document name shall be visible to the user.
-
-###### AC2 - Successful Download
-
-2. **Given** a Download button is displayed for a document\
-   **When** the Provider clicks the Download button\
-   **And** the document is successfully retrieved by the backend service\
-   **Then** the document shall be downloaded to the user's device.
-
-###### AC3 - No Documents Available
-
-3. **Given** the Provider is viewing a Contract Clauses category for which no documents are available\
-   **When** the Contract Clauses section is displayed\
-   **Then** no Download button shall be displayed for that category.
-
-###### AC4 - Download Failure Handling
-
-4. **Given** a Download button is displayed for a document\
-   **When** the Provider clicks the Download button\
-   **And** the document cannot be retrieved due to an API or backend error\
-   **Then** the download shall not start\
-   **And** the user shall be notified with an appropriate error message displayed within the dedicated SD-Tooling error notification area located at the top of the page containing following message "A technical issue has occurred, and it is not possible to access the file content"
-
-.
 
 ---
 

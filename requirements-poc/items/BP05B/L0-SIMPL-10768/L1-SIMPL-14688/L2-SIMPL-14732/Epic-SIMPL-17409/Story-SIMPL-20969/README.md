@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-20969: [UI] Add application resource type specific metadata
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14688](../../../README.md) (L1) › [SIMPL-14732](../../README.md) (L2) › [SIMPL-17409](../README.md) (Epic) › **SIMPL-20969** (User story)
 

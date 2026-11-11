@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-25713: [API] Implement API to atomically enrich and sign a resourceDescription (SD-Tooling))
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14728](../../../README.md) (L1) › [SIMPL-14738](../../README.md) (L2) › [SIMPL-18028](../README.md) (Epic) › **SIMPL-25713** (User story)
 

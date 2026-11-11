@@ -31,14 +31,14 @@ The text of this detailed requirement is on the [5B.5 page](../bp5b5-governance-
 The text of this detailed requirement is on the [5B.5 page](../bp5b5-governance-authority-publishes-resource-description.md#5b55-the-governance-authority-validates-the-syntax-of-a-new-resource-description-or-a-new-version-of-a-resource-description).
 
 - [Epic: The Governance Authority checks the syntax of a new Resource description or a new version of a Resource Description](simpl-982-the-governance-authority-checks-the-syntax-of-a-new-resource.md), 1 user story
-- [Epic: The Governance Authority validates the syntax of the policies assigned to a new Resource description or a new version of a Resource Description](simpl-18402-the-governance-authority-validates-the-syntax-of-the-policie.md), 2 user stories
+- [Epic: The Governance Authority validates the syntax of the policies assigned to a new Resource description or a new version of a Resource Description](simpl-18402-the-governance-authority-validates-the-syntax-of-the-policie.md), 1 user story
 
 ## 5B.5.6 The Governance Authority provides feedback to a Provider about syntax validation errors
 
 The text of this detailed requirement is on the [5B.5 page](../bp5b5-governance-authority-publishes-resource-description.md#5b56-the-governance-authority-provides-feedback-to-a-provider-about-syntax-validation-errors).
 
 - [Epic: The Governance Authority notifies a Provider about syntax validation errors](simpl-17801-the-governance-authority-notifies-a-provider-about-syntax-va.md), 1 user story
-- [Epic: The Governance Authority provides feedback to a Provider about syntax validation errors of a policy](simpl-25371-the-governance-authority-provides-feedback-to-a-provider-abo.md), 1 user story
+- [Epic: The Governance Authority provides feedback to a Provider about syntax validation errors of a policy](simpl-25371-the-governance-authority-provides-feedback-to-a-provider-abo.md), no user stories yet
 
 ## 5B.5.7 The Governance Authority validates the semantics of a new Resource description or a new version of a Resource Description
 

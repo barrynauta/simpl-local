@@ -4,9 +4,9 @@ Folder: [items](../../../../../README.md) / [BP11](../../../../README.md) / [L0-
 
 # SIMPL-29138: A Participant performs follow-up actions when the automated checks detect an SLA breach
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP11](../../../../README.md) › [SIMPL-27777](../../../README.md) (L0) › [SIMPL-28467](../../README.md) (L1) › [SIMPL-29136](../README.md) (L2) › **SIMPL-29138** (Epic)
 

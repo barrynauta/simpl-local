@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.7.1 A Provider requests the revocation of a resource description](../bp5b7-provider-requests-revocation-resource-description.md#5b71-a-provider-requests-the-revocation-of-a-resource-description), under high-level requirement [5B.7 A Provider requests the revocation of a Resource description](../bp5b7-provider-requests-revocation-resource-description.md). In the process it belongs to step [BP05B.13 Request resource description revocation](../README.md#bp05b13-request-resource-description-revocation).
 
-In the backlog (Jira) it is item SIMPL-9764. It has 2 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-9764. It has 2 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -27,12 +27,12 @@ In the backlog (Jira) it is item SIMPL-9764. It has 2 user stories, each with ac
 
 ## User stories
 
-1. [[UI] A Provider requests the revocation of a Resource description via UI](#user-story-1-ui-a-provider-requests-the-revocation-of-a-resource-description-via-ui)
-2. [[API] Provider requests the revocation of a Resource description via API (SD tooling)](#user-story-2-api-provider-requests-the-revocation-of-a-resource-description-via-api-sd-tooling)
+1. [[UI] A Provider requests the revocation of a Resource description via UI](#user-story-1-ui-a-provider-requests-the-revocation-of-a-resource-description-via-ui) · Developed
+2. [[API] Provider requests the revocation of a Resource description via API (SD tooling)](#user-story-2-api-provider-requests-the-revocation-of-a-resource-description-via-api-sd-tooling) · Developed
 
 ### User story 1: [UI] A Provider requests the revocation of a Resource description via UI
 
-Backlog item SIMPL-19784
+**Development:** Developed · backlog item SIMPL-19784
 
 #### Storycard
 
@@ -93,7 +93,7 @@ Backlog item SIMPL-19784
 
 ### User story 2: [API] Provider requests the revocation of a Resource description via API (SD tooling)
 
-Backlog item SIMPL-19785
+**Development:** Developed · backlog item SIMPL-19785
 
 #### Storycard
 

@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-10289: [UI] Select Resource Type "Infrastructure" and Open Deployment Script Upload
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14688](../../../README.md) (L1) › [SIMPL-14732](../../README.md) (L2) › [SIMPL-21309](../README.md) (Epic) › **SIMPL-10289** (User story)
 

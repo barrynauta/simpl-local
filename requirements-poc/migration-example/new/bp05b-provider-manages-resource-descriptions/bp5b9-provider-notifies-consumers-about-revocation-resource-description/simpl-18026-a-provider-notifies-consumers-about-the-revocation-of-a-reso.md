@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.9.1 A Provider notifies Consumers about the revocation of a resource description](../bp5b9-provider-notifies-consumers-about-revocation-resource-description.md#5b91-a-provider-notifies-consumers-about-the-revocation-of-a-resource-description), under high-level requirement [5B.9 The Provider notifies Consumers about the revocation of a resource description](../bp5b9-provider-notifies-consumers-about-revocation-resource-description.md). In the process it belongs to step [BP05B.15 Inform about revocation](../README.md#bp05b15-inform-about-revocation).
 
-In the backlog (Jira) it is item SIMPL-18026. It has 2 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-18026. It has 2 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -26,12 +26,12 @@ In the backlog (Jira) it is item SIMPL-18026. It has 2 user stories, each with a
 
 ## User stories
 
-1. [[API] A Provider notifies Consumers about revocation of Resource Description](#user-story-1-api-a-provider-notifies-consumers-about-revocation-of-resource-description)
-2. [[UI] Inform end user (provider) about successful revocation](#user-story-2-ui-inform-end-user-provider-about-successful-revocation)
+1. [[API] A Provider notifies Consumers about revocation of Resource Description](#user-story-1-api-a-provider-notifies-consumers-about-revocation-of-resource-description) · In development
+2. [[UI] Inform end user (provider) about successful revocation](#user-story-2-ui-inform-end-user-provider-about-successful-revocation) · Planned
 
 ### User story 1: [API] A Provider notifies Consumers about revocation of Resource Description
 
-Backlog item SIMPL-19790
+**Development:** In development · backlog item SIMPL-19790
 
 #### Storycard
 
@@ -98,7 +98,7 @@ curl -X POST http://localhost:8080/notify/ \
 
 ### User story 2: [UI] Inform end user (provider) about successful revocation
 
-Backlog item SIMPL-22586
+**Development:** Planned · backlog item SIMPL-22586
 
 #### Storycard
 

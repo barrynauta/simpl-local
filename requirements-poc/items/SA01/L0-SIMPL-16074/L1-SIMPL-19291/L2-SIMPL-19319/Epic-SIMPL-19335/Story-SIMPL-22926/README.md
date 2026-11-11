@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 # SIMPL-22926: API for Workflow and Default Config Retrieval
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [SA01](../../../../../README.md) › [SIMPL-16074](../../../../README.md) (L0) › [SIMPL-19291](../../../README.md) (L1) › [SIMPL-19319](../../README.md) (L2) › [SIMPL-19335](../README.md) (Epic) › **SIMPL-22926** (User story)
 

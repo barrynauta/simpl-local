@@ -4,9 +4,9 @@ Folder: [items](../../../README.md) / [BP11](../../README.md) / [L0-SIMPL-27777]
 
 # SIMPL-28467: A Participant performs usage contract actions related to the follow-up of usage contract terms
 
-**L1 requirement (high-level requirement)** · Status **Defined**
+**L1 requirement (high-level requirement)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP11](../../README.md) › [SIMPL-27777](../README.md) (L0) › **SIMPL-28467** (L1)
 

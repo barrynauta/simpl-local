@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.8.1 The Governance Authority revokes a resource description](../bp5b8-governance-authority-revokes-resource-description.md#5b81-the-governance-authority-revokes-a-resource-description), under high-level requirement [5B.8 The Governance Authority revokes a resource description](../bp5b8-governance-authority-revokes-resource-description.md). In the process it belongs to step [BP05B.14 Revoke a resource description](../README.md#bp05b14-revoke-a-resource-description).
 
-In the backlog (Jira) it is item SIMPL-18025. It has 2 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-18025. It has 2 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -25,12 +25,12 @@ Then the resource description is revoked.
 
 ## User stories
 
-1. [[API] The Governance Authority revokes a Resource Description (Query Mapper)](#user-story-1-api-the-governance-authority-revokes-a-resource-description-query-mapper)
-2. [[API] The Governance Authority revokes a Resource Description (Catalogue)](#user-story-2-api-the-governance-authority-revokes-a-resource-description-catalogue)
+1. [[API] The Governance Authority revokes a Resource Description (Query Mapper)](#user-story-1-api-the-governance-authority-revokes-a-resource-description-query-mapper) · Developed
+2. [[API] The Governance Authority revokes a Resource Description (Catalogue)](#user-story-2-api-the-governance-authority-revokes-a-resource-description-catalogue) · Developed
 
 ### User story 1: [API] The Governance Authority revokes a Resource Description (Query Mapper)
 
-Backlog item SIMPL-19789
+**Development:** Developed · backlog item SIMPL-19789
 
 #### Storycard
 
@@ -78,7 +78,7 @@ Then an error message is returned.
 
 ### User story 2: [API] The Governance Authority revokes a Resource Description (Catalogue)
 
-Backlog item SIMPL-22059
+**Development:** Developed · backlog item SIMPL-22059
 
 #### Storycard
 

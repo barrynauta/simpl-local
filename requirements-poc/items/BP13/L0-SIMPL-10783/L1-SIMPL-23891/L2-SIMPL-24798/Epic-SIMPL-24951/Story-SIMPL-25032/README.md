@@ -4,9 +4,9 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 # SIMPL-25032: Governance authority configures dataspace name and contact email
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP13](../../../../../README.md) › [SIMPL-10783](../../../../README.md) (L0) › [SIMPL-23891](../../../README.md) (L1) › [SIMPL-24798](../../README.md) (L2) › [SIMPL-24951](../README.md) (Epic) › **SIMPL-25032** (User story)
 

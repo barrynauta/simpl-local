@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 # SIMPL-13919: Governance Authority intialization with built-in identity attributes
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP02A](../../../../../README.md) › [SIMPL-18783](../../../../README.md) (L0) › [SIMPL-10192](../../../README.md) (L1) › [SIMPL-1610](../../README.md) (L2) › [SIMPL-10194](../README.md) (Epic) › **SIMPL-13919** (User story)
 

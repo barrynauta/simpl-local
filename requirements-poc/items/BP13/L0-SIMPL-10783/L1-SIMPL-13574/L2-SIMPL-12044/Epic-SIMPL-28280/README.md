@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 # SIMPL-28280: A Participant uses the Simpl-Open landing page adapted to their user role [Improvement]
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP13](../../../../README.md) › [SIMPL-10783](../../../README.md) (L0) › [SIMPL-13574](../../README.md) (L1) › [SIMPL-12044](../README.md) (L2) › **SIMPL-28280** (Epic)
 

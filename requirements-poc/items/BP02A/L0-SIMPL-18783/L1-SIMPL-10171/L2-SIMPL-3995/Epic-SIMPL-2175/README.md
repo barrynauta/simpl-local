@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 # SIMPL-2175: Onboarding Process Governance Framework - resources/documents
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP02A](../../../../README.md) › [SIMPL-18783](../../../README.md) (L0) › [SIMPL-10171](../../README.md) (L1) › [SIMPL-3995](../README.md) (L2) › **SIMPL-2175** (Epic)
 

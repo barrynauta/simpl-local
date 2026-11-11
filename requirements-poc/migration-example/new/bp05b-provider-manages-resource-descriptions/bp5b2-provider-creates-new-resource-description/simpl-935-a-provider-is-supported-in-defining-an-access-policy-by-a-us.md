@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.4 A Provider assigns access policies to a new Resource description](../bp5b2-provider-creates-new-resource-description.md#5b24-a-provider-assigns-access-policies-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog (Jira) it is item SIMPL-935. It has 4 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-935. It has 4 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -42,14 +42,14 @@ The Provider can use predefined policy templates to create policies. Simpl-Open 
 
 ## User stories
 
-1. [API for Access Policy](#user-story-1-api-for-access-policy)
-2. [[API] Access Policy multiple attributes per Permission](#user-story-2-api-access-policy-multiple-attributes-per-permission)
-3. [[API] Provider retrieves the list of access policy templates](#user-story-3-api-provider-retrieves-the-list-of-access-policy-templates)
-4. [[API] Provider retrieves the details of an access policy template](#user-story-4-api-provider-retrieves-the-details-of-an-access-policy-template)
+1. [API for Access Policy](#user-story-1-api-for-access-policy) · Developed
+2. [[API] Access Policy multiple attributes per Permission](#user-story-2-api-access-policy-multiple-attributes-per-permission) · Planned
+3. [[API] Provider retrieves the list of access policy templates](#user-story-3-api-provider-retrieves-the-list-of-access-policy-templates) · Developed
+4. [[API] Provider retrieves the details of an access policy template](#user-story-4-api-provider-retrieves-the-details-of-an-access-policy-template) · Developed
 
 ### User story 1: API for Access Policy
 
-Backlog item SIMPL-2938
+**Development:** Developed · backlog item SIMPL-2938
 
 **As a** Provider User\
 **I want to** use an API to assign the previously formulated machine-readable access policies to the self-description and thus to the dataset/application/infrastructure\
@@ -122,7 +122,7 @@ Once US is done the related US can be closed/marked as done
 
 ### User story 2: [API] Access Policy multiple attributes per Permission
 
-Backlog item SIMPL-3546
+**Development:** Planned · backlog item SIMPL-3546
 
 #### Storycard
 
@@ -193,7 +193,7 @@ The submission API preserves and validates the requirement. The connector decide
 
 ### User story 3: [API] Provider retrieves the list of access policy templates
 
-Backlog item SIMPL-31346
+**Development:** Developed · backlog item SIMPL-31346
 
 #### Story card
 
@@ -254,7 +254,7 @@ Backlog item SIMPL-31346
 
 ### User story 4: [API] Provider retrieves the details of an access policy template
 
-Backlog item SIMPL-31347
+**Development:** Developed · backlog item SIMPL-31347
 
 #### Story card
 

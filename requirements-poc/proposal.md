@@ -28,15 +28,16 @@ A reader who opens a page in the first attempt sees a requirement item without c
 | A **trace line** on every page, from the business process down to the item | The process is visible from any level. |
 | Links to the public process pages and requirements site | Traceability works without a login. |
 | A short "What this item is" paragraph | The reader knows what the item is about before reading the formal text. |
-| Content first, and only the level and status as metadata | The requirement is what readers come for. Workflow fields mean nothing to a reader. |
+| Content first, and only the level as metadata; user stories also show their development status (Planned, In development, Developed) | The requirement is what readers come for. Workflow fields mean nothing to a reader. |
 | One layout for all user stories and acceptance criteria: **As a**, **I want to**, **So that** on three lines; one numbered scenario per **Given**, with **When**, **Then**, **And**, **But** on their own lines | Every item reads the same way, whoever wrote it. Criteria are readable and testable. |
 | A fuller text on each business process page: overview, who takes part, what must be in place, the steps, and the high-level requirements in the folder | A reader understands the process before opening its items. |
 | The full tree of each business process, from L0 down to user story | The reader sees an item with all its context, not a sample. |
 | A [trace gaps](trace-gaps.md) page that checks every item against the linking rules | Missing links would be visible, not hidden. In this tree there are none. |
-| Only published items show their text; the others show key, level, title and status | The tree is complete, and nothing unpublished leaks. |
+| Only published items show their text; the others show key, level and title | The tree is complete, and nothing unpublished leaks. |
 | "Notes on the source" on each page | Problems in the source are listed without changing the text. |
 | Folders follow the levels: business process › L0 › L1 › L2 › Epic › user story, one folder per item, named after its level and key (for example `L1-SIMPL-10171`) | The structure shows the trace by itself, also when there are hundreds of items. Names stay short and stable. |
 | Cancelled items are left out | They are not part of the requirements, so they have no value for a reader. |
+| Epics and user stories that are not approved yet are left out | Their scope and quality are not settled yet. |
 
 ## What the final publication should do
 

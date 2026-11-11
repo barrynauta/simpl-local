@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.3 The Governance Authority validates the versioning of a new version of a Resource description](../bp5b5-governance-authority-publishes-resource-description.md#5b53-the-governance-authority-validates-the-versioning-of-a-new-version-of-a-resource-description), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.05 Validate the resource description](../README.md#bp05b05-validate-the-resource-description).
 
-In the backlog (Jira) it is item SIMPL-17799. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-17799. It has 1 user story, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -36,11 +36,11 @@ In the backlog (Jira) it is item SIMPL-17799. It has 1 user story, each with acc
 
 ## User stories
 
-1. [[API] The Governance Authority checks the version number of a new version of a Resource description](#user-story-1-api-the-governance-authority-checks-the-version-number-of-a-new-version-of-a-resource-description)
+1. [[API] The Governance Authority checks the version number of a new version of a Resource description](#user-story-1-api-the-governance-authority-checks-the-version-number-of-a-new-version-of-a-resource-description) · Developed
 
 ### User story 1: [API] The Governance Authority checks the version number of a new version of a Resource description
 
-Backlog item SIMPL-21596
+**Development:** Developed · backlog item SIMPL-21596
 
 #### Storycard
 

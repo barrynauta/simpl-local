@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.1.1 A Provider consults an overview of its Resource descriptions](../bp5b1-provider-consults-its-own-resource-descriptions.md#5b11-a-provider-consults-an-overview-of-its-resource-descriptions), under high-level requirement [5B.1 A Provider consults its own Resource descriptions](../bp5b1-provider-consults-its-own-resource-descriptions.md). In the process it belongs to step [Trigger (resource description management)](../README.md#trigger--resource-description-management).
 
-In the backlog (Jira) it is item SIMPL-12899. It has 4 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-12899. It has 4 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -25,14 +25,14 @@ In the backlog (Jira) it is item SIMPL-12899. It has 4 user stories, each with a
 
 ## User stories
 
-1. [Displaying a list of a provider's own self-descriptions](#user-story-1-displaying-a-list-of-a-providers-own-self-descriptions)
-2. [API to provide a list of a provider's own resource descriptions](#user-story-2-api-to-provide-a-list-of-a-providers-own-resource-descriptions)
-3. [[API] API to provide a list of a provider's own resource descriptions (SD tooling)](#user-story-3-api-api-to-provide-a-list-of-a-providers-own-resource-descriptions-sd-tooling)
-4. [Using identity attributes in the API to provide a list of a provider's own resource descriptions](#user-story-4-using-identity-attributes-in-the-api-to-provide-a-list-of-a-providers-own-resource-descriptions)
+1. [Displaying a list of a provider's own self-descriptions](#user-story-1-displaying-a-list-of-a-providers-own-self-descriptions) · Developed
+2. [API to provide a list of a provider's own resource descriptions](#user-story-2-api-to-provide-a-list-of-a-providers-own-resource-descriptions) · Developed
+3. [[API] API to provide a list of a provider's own resource descriptions (SD tooling)](#user-story-3-api-api-to-provide-a-list-of-a-providers-own-resource-descriptions-sd-tooling) · Developed
+4. [Using identity attributes in the API to provide a list of a provider's own resource descriptions](#user-story-4-using-identity-attributes-in-the-api-to-provide-a-list-of-a-providers-own-resource-descriptions) · Developed
 
 ### User story 1: Displaying a list of a provider's own self-descriptions
 
-Backlog item SIMPL-2295
+**Development:** Developed · backlog item SIMPL-2295
 
 #### Storycard
 
@@ -64,7 +64,7 @@ UI Mockup:
 
 ### User story 2: API to provide a list of a provider's own resource descriptions
 
-Backlog item SIMPL-11277
+**Development:** Developed · backlog item SIMPL-11277
 
 #### Storycard
 
@@ -100,7 +100,7 @@ Backlog item SIMPL-11277
 
 ### User story 3: [API] API to provide a list of a provider's own resource descriptions (SD tooling)
 
-Backlog item SIMPL-15584
+**Development:** Developed · backlog item SIMPL-15584
 
 #### Storycard
 
@@ -165,7 +165,7 @@ UI implementation ticket: (internal page)
 
 ### User story 4: Using identity attributes in the API to provide a list of a provider's own resource descriptions
 
-Backlog item SIMPL-18524
+**Development:** Developed · backlog item SIMPL-18524
 
 #### Storycard
 

@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-19785: [API] Provider requests the revocation of a Resource description via API (SD tooling)
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14699](../../../README.md) (L1) › [SIMPL-14639](../../README.md) (L2) › [SIMPL-9764](../README.md) (Epic) › **SIMPL-19785** (User story)
 

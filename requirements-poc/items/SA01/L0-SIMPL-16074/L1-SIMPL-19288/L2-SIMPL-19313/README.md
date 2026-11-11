@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [SA01](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-19313: Participant consults the details of a data orchestration workflow
 
-**L2 requirement (detailed requirement)** · Status **Defined**
+**L2 requirement (detailed requirement)**
 
 **Trace:** [SA01](../../../README.md) › [SIMPL-16074](../../README.md) (L0) › [SIMPL-19288](../README.md) (L1) › **SIMPL-19313** (L2)
 

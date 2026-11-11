@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 # SIMPL-18905: [API] Dataspace participant agent validates a Tier 1 credential
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP13](../../../../../README.md) › [SIMPL-10783](../../../../README.md) (L0) › [SIMPL-1277](../../../README.md) (L1) › [SIMPL-1616](../../README.md) (L2) › [SIMPL-2054](../README.md) (Epic) › **SIMPL-18905** (User story)
 

@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 # SIMPL-19335: A Participant automatically executes an event-triggered data orchestration workflow execution
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [SA01](../../../../README.md) › [SIMPL-16074](../../../README.md) (L0) › [SIMPL-19291](../../README.md) (L1) › [SIMPL-19319](../README.md) (L2) › **SIMPL-19335** (Epic)
 

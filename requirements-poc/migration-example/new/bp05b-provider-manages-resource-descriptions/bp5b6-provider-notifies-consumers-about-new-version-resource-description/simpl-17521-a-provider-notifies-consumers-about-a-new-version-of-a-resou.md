@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.6.1 A Provider notifies Consumers about a new version of a Resource description](../bp5b6-provider-notifies-consumers-about-new-version-resource-description.md#5b61-a-provider-notifies-consumers-about-a-new-version-of-a-resource-description), under high-level requirement [5B.6 A Provider notifies Consumers about a new version of a Resource description](../bp5b6-provider-notifies-consumers-about-new-version-resource-description.md). In the process it belongs to step [BP05B.12 Inform about new version](../README.md#bp05b12-inform-about-new-version).
 
-In the backlog (Jira) it is item SIMPL-17521. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-17521. It has 1 user story, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -26,11 +26,11 @@ In the backlog (Jira) it is item SIMPL-17521. It has 1 user story, each with acc
 
 ## User stories
 
-1. [[BE] A Provider notifies Consumers about a new version of a Resource description](#user-story-1-be-a-provider-notifies-consumers-about-a-new-version-of-a-resource-description)
+1. [[BE] A Provider notifies Consumers about a new version of a Resource description](#user-story-1-be-a-provider-notifies-consumers-about-a-new-version-of-a-resource-description) · In development
 
 ### User story 1: [BE] A Provider notifies Consumers about a new version of a Resource description
 
-Backlog item SIMPL-21600
+**Development:** In development · backlog item SIMPL-21600
 
 #### Storycard
 

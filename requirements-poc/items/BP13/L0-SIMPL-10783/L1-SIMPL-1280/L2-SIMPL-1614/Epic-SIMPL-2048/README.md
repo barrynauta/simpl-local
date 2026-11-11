@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 # SIMPL-2048: Communication agent to agent(tier 2)- exceptions in mTLS
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP13](../../../../README.md) › [SIMPL-10783](../../../README.md) (L0) › [SIMPL-1280](../../README.md) (L1) › [SIMPL-1614](../README.md) (L2) › **SIMPL-2048** (Epic)
 
@@ -23,4 +23,4 @@ This Epic will be considered as done once all the child US will be closed/marked
 | --- | --- |
 | **Business process** | [BP13](../../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp13-it-administration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp13-it-administration)) |
 | **Parent** | [SIMPL-1614](../README.md) (L2) Controlling communication between participants |
-| **Children** | [SIMPL-2569](Story-SIMPL-2569/README.md) (User story) [UI] Tier 2 Gateway Resources Exclusions List<br>[SIMPL-2572](Story-SIMPL-2572/README.md) (User story) [UI] Tier 2 Gateway Resources Exclusions List - filtering<br>[SIMPL-2574](Story-SIMPL-2574/README.md) (User story) [UI] Tier 2 Gateway Resources Exclusions List - ordering |
+| **Children** | None. |

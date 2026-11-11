@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 # SIMPL-30564: Simpl-Open enforces authorization before cluster selection or use
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [SA01](../../../../README.md) › [SIMPL-16074](../../../README.md) (L0) › [SIMPL-30560](../../README.md) (L1) › [SIMPL-30562](../README.md) (L2) › **SIMPL-30564** (Epic)
 

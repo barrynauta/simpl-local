@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-31543: [UI] Provider sees the access policies carried over from the previous resource description version
 
-**User story (implementable work)** · Status **PBI INTERNAL QA**
+**User story (implementable work)** · Development: **In development**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14728](../../../README.md) (L1) › [SIMPL-14740](../../README.md) (L2) › [SIMPL-4887](../README.md) (Epic) › **SIMPL-31543** (User story)
 

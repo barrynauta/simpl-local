@@ -4,9 +4,9 @@ Folder: [items](../../../README.md) / [BP13](../../README.md) / [L0-SIMPL-10783]
 
 # SIMPL-23891: Governance Authority publishes its public profile
 
-**L1 requirement (high-level requirement)** · Status **In Progress**
+**L1 requirement (high-level requirement)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP13](../../README.md) › [SIMPL-10783](../README.md) (L0) › **SIMPL-23891** (L1)
 

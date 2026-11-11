@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 # SIMPL-22405: [API][IMPROVEMENT] Dataspace Governance Authority updates onboarding expirationTimeframe and credentialId
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP02A](../../../../../README.md) › [SIMPL-18783](../../../../README.md) (L0) › [SIMPL-10171](../../../README.md) (L1) › [SIMPL-3995](../../README.md) (L2) › [SIMPL-2175](../README.md) (Epic) › **SIMPL-22405** (User story)
 

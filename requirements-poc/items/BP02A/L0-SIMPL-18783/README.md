@@ -4,7 +4,7 @@ Folder: [items](../../README.md) / [BP02A](../README.md) / **L0-SIMPL-18783**
 
 # SIMPL-18783: BP02A - Configure ID/Trust security solution
 
-**L0 requirement (the business process as a requirement)** · Status **In Progress**
+**L0 requirement (the business process as a requirement)**
 
 **Trace:** [BP02A](../README.md) › **SIMPL-18783** (L0)
 

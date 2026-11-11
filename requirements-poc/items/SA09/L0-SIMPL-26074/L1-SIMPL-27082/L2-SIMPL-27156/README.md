@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [SA09](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-27156: Data Provider consults and updates existing consent assertions
 
-**L2 requirement (detailed requirement)** · Status **Defined**
+**L2 requirement (detailed requirement)**
 
 **Trace:** [SA09](../../../README.md) › [SIMPL-26074](../../README.md) (L0) › [SIMPL-27082](../README.md) (L1) › **SIMPL-27156** (L2)
 

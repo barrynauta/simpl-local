@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 # SIMPL-20517: [UI][IMPROVEMENT] Governance Authority Manages document template types on onboarding procedure templates
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP02A](../../../../../README.md) › [SIMPL-18783](../../../../README.md) (L0) › [SIMPL-10171](../../../README.md) (L1) › [SIMPL-3995](../../README.md) (L2) › [SIMPL-2175](../README.md) (Epic) › **SIMPL-20517** (User story)
 

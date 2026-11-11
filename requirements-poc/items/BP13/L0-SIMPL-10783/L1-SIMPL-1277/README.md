@@ -4,7 +4,7 @@ Folder: [items](../../../README.md) / [BP13](../../README.md) / [L0-SIMPL-10783]
 
 # SIMPL-1277: Authentication process - IAA
 
-**L1 requirement (high-level requirement)** · Status **In Progress**
+**L1 requirement (high-level requirement)**
 
 **Trace:** [BP13](../../README.md) › [SIMPL-10783](../README.md) (L0) › **SIMPL-1277** (L1)
 

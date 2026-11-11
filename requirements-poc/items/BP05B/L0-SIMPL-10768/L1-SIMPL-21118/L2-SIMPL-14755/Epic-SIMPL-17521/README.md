@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 # SIMPL-17521: A Provider notifies Consumers about a new version of a Resource description
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP05B](../../../../README.md) › [SIMPL-10768](../../../README.md) (L0) › [SIMPL-21118](../../README.md) (L1) › [SIMPL-14755](../README.md) (L2) › **SIMPL-17521** (Epic)
 

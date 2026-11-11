@@ -4,9 +4,9 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 # SIMPL-24970: Governance Authority exposes agent participant information through its public discovery profile
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP13](../../../../README.md) › [SIMPL-10783](../../../README.md) (L0) › [SIMPL-23891](../../README.md) (L1) › [SIMPL-24969](../README.md) (L2) › **SIMPL-24970** (Epic)
 

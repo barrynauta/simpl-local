@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-21600: [BE] A Provider notifies Consumers about a new version of a Resource description
 
-**User story (implementable work)** · Status **DevTeam PBI blocked**
+**User story (implementable work)** · Development: **In development**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-21118](../../../README.md) (L1) › [SIMPL-14755](../../README.md) (L2) › [SIMPL-17521](../README.md) (Epic) › **SIMPL-21600** (User story)
 

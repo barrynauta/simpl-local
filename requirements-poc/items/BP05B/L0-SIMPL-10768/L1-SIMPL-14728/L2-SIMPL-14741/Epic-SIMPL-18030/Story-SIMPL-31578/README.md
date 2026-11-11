@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-31578: [UI] Provider removes a usage policy from the new resource description version
 
-**User story (implementable work)** · Status **PBI INTERNAL QA**
+**User story (implementable work)** · Development: **In development**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14728](../../../README.md) (L1) › [SIMPL-14741](../../README.md) (L2) › [SIMPL-18030](../README.md) (Epic) › **SIMPL-31578** (User story)
 

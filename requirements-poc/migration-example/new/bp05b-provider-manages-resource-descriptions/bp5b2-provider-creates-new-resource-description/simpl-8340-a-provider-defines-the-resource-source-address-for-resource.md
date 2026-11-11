@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.2 A Provider adds common metadata to a new Resource description](../bp5b2-provider-creates-new-resource-description.md#5b22-a-provider-adds-common-metadata-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.01 Create a new resource description](../README.md#bp05b01-create-a-new-resource-description).
 
-In the backlog (Jira) it is item SIMPL-8340. It has 6 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-8340. It has 6 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -54,16 +54,16 @@ In the backlog (Jira) it is item SIMPL-8340. It has 6 user stories, each with ac
 
 ## User stories
 
-1. [[UI] Viewing Resource Sharing Methods and Their Templates (Provider)](#user-story-1-ui-viewing-resource-sharing-methods-and-their-templates-provider)
-2. [[API] Extend the SD Tooling API for Retrieving Available Resource Sharing Methods and Templates (Provider)](#user-story-2-api-extend-the-sd-tooling-api-for-retrieving-available-resource-sharing-methods-and-templates-provider)
-3. [[API] Resource Source Address Validation Based on Resource Sharing Method and Provider Template](#user-story-3-api-resource-source-address-validation-based-on-resource-sharing-method-and-provider-template)
-4. [[UI] Selecting, Filling, and Submitting the Resource Source Template (Provider)](#user-story-4-ui-selecting-filling-and-submitting-the-resource-source-template-provider)
-5. [[API] Resource Source Address Validation Upon Provider Resource Submission](#user-story-5-api-resource-source-address-validation-upon-provider-resource-submission)
-6. [Create Resource Address Template for eDelivery](#user-story-6-create-resource-address-template-for-edelivery)
+1. [[UI] Viewing Resource Sharing Methods and Their Templates (Provider)](#user-story-1-ui-viewing-resource-sharing-methods-and-their-templates-provider) · Developed
+2. [[API] Extend the SD Tooling API for Retrieving Available Resource Sharing Methods and Templates (Provider)](#user-story-2-api-extend-the-sd-tooling-api-for-retrieving-available-resource-sharing-methods-and-templates-provider) · Developed
+3. [[API] Resource Source Address Validation Based on Resource Sharing Method and Provider Template](#user-story-3-api-resource-source-address-validation-based-on-resource-sharing-method-and-provider-template) · Developed
+4. [[UI] Selecting, Filling, and Submitting the Resource Source Template (Provider)](#user-story-4-ui-selecting-filling-and-submitting-the-resource-source-template-provider) · Developed
+5. [[API] Resource Source Address Validation Upon Provider Resource Submission](#user-story-5-api-resource-source-address-validation-upon-provider-resource-submission) · Developed
+6. [Create Resource Address Template for eDelivery](#user-story-6-create-resource-address-template-for-edelivery) · Developed
 
 ### User story 1: [UI] Viewing Resource Sharing Methods and Their Templates (Provider)
 
-Backlog item SIMPL-10301
+**Development:** Developed · backlog item SIMPL-10301
 
 **As a** provider,\
 **I want to** view a list of available resource sharing methods and their associated templates,\
@@ -99,7 +99,7 @@ Backlog item SIMPL-10301
 
 ### User story 2: [API] Extend the SD Tooling API for Retrieving Available Resource Sharing Methods and Templates (Provider)
 
-Backlog item SIMPL-10562
+**Development:** Developed · backlog item SIMPL-10562
 
 **As a** provider user authorised to manage resource descriptions,\
 **I want to** retrieve via an API a list of available resource sharing methods and their associated templates,\
@@ -123,7 +123,7 @@ Backlog item SIMPL-10562
 
 ### User story 3: [API] Resource Source Address Validation Based on Resource Sharing Method and Provider Template
 
-Backlog item SIMPL-12291
+**Development:** Developed · backlog item SIMPL-12291
 
 **As a** provider user creating a resource description,\
 **I want** the resource source that is submitted as part of the resource description to be syntactically validated and validated against the resource source template of the previously selected resource sharing method\
@@ -154,7 +154,7 @@ Backlog item SIMPL-12291
 
 ### User story 4: [UI] Selecting, Filling, and Submitting the Resource Source Template (Provider)
 
-Backlog item SIMPL-13565
+**Development:** Developed · backlog item SIMPL-13565
 
 **As a** provider,\
 **I want to** select a resource source template associated with a sharing method, fill in the required details, and submit it as part of the resource description,\
@@ -195,7 +195,7 @@ https://www.figma.com/design/YZZ6QWqLcVHlNhjnI81Wzm/Catalogue--negotiation-and-t
 
 ### User story 5: [API] Resource Source Address Validation Upon Provider Resource Submission
 
-Backlog item SIMPL-13635
+**Development:** Developed · backlog item SIMPL-13635
 
 **As a** provider,\
 **I want to** validate a resource source address submitted as part of the resource description,\
@@ -232,7 +232,7 @@ Backlog item SIMPL-13635
 
 ### User story 6: Create Resource Address Template for eDelivery
 
-Backlog item SIMPL-18360
+**Development:** Developed · backlog item SIMPL-18360
 
 **As a** system or application integrating with SIMPL,\
 **I want to** use standardized templates for eDelivery resource addresses during both creation (as Resource Source) and consumption (as Resource Destination),\

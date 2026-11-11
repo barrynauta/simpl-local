@@ -13,7 +13,7 @@ This is high-level requirement 5B.3 of business process [BP05B - Provider manage
 
 In the process it covers 3 steps: [BP05B.08 Create a new version of a resource description](./README.md#bp05b08-create-a-new-version-of-a-resource-description), [BP05B.09 Update resource type specific metadata](./README.md#bp05b09-update-resource-type-specific-metadata) and [BP05B.10 Update policies and contract related metadata](./README.md#bp05b10-update-policies-and-contract-related-metadata). The dynamic view shows it in [Define and publish self-description](bp05b-dynamic-view.md#define-and-publish-self-description).
 
-It is split into 5 detailed requirements, delivered through 11 Epics with 23 user stories in total. Each detailed requirement below says what Simpl-Open must do. Under it are its Epics: open one to read its user stories and their acceptance criteria.
+It is split into 5 detailed requirements, delivered through 10 Epics with 22 user stories in total. Each detailed requirement below says what Simpl-Open must do. Under it are its Epics: open one to read its user stories and their acceptance criteria.
 
 ## Description
 
@@ -27,10 +27,10 @@ Select a title to jump to its section below.
 
 | ID | Detailed requirement | Process step | Epics | User stories |
 | --- | --- | --- | --- | --- |
-| 5B.3.1 | [A Provider updates the common metadata of a new version of a Resource description](#5b31-a-provider-updates-the-common-metadata-of-a-new-version-of-a-resource-description) | BP05B.08 Create a new version of a resource description | 4 | 7 |
+| 5B.3.1 | [A Provider updates the common metadata of a new version of a Resource description](#5b31-a-provider-updates-the-common-metadata-of-a-new-version-of-a-resource-description) | BP05B.08 Create a new version of a resource description | 3 | 7 |
 | 5B.3.2 | [A Provider updates the resource type specific metadata of a new version of a Resource description](#5b32-a-provider-updates-the-resource-type-specific-metadata-of-a-new-version-of-a-resource-description) | BP05B.09 Update resource type specific metadata | 3 | 4 |
 | 5B.3.3 | [A Provider updates the access policies of a new version of a Resource description](#5b33-a-provider-updates-the-access-policies-of-a-new-version-of-a-resource-description) | BP05B.10 Update policies and contract related metadata | 1 | 5 |
-| 5B.3.4 | [A Provider updates the usage policies of a new version of a Resource description](#5b34-a-provider-updates-the-usage-policies-of-a-new-version-of-a-resource-description) | BP05B.10 Update policies and contract related metadata | 1 | 5 |
+| 5B.3.4 | [A Provider updates the usage policies of a new version of a Resource description](#5b34-a-provider-updates-the-usage-policies-of-a-new-version-of-a-resource-description) | BP05B.10 Update policies and contract related metadata | 1 | 4 |
 | 5B.3.5 | [A Provider updates the set of contract clauses of a new version of a resource description](#5b35-a-provider-updates-the-set-of-contract-clauses-of-a-new-version-of-a-resource-description) | BP05B.10 Update policies and contract related metadata | 2 | 2 |
 
 ### 5B.3.1 A Provider updates the common metadata of a new version of a Resource description
@@ -42,7 +42,7 @@ Simpl-Open shall allow a Provider via an UI and an API
 
 - to update the common metadata, which are present for every type of Resource, in a new version of a Resource description.
 
-**Delivered through 4 Epics.** Each Epic page has the user stories and their acceptance criteria.
+**Delivered through 3 Epics.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: A Provider updates the resource source address for resource sharing](./bp5b3-provider-creates-new-version-resource-description/simpl-12250-a-provider-updates-the-resource-source-address-for-resource.md)<br>
   *As a Provider, I want to update via API or UI, as part of a resource description, the Resource Source based on the resource address template that is valid for the resource sharing method, which I use for sharing my resources* · 1 user story
@@ -50,8 +50,6 @@ Simpl-Open shall allow a Provider via an UI and an API
   *As a Provider end user, I want to update the common metadata of a new version of a resource description via UI* · 5 user stories
 - [Epic: A Provider starts the creation of a new version of a Resource description via UI](./bp5b3-provider-creates-new-version-resource-description/simpl-19293-a-provider-starts-the-creation-of-a-new-version-of-a-resourc.md)<br>
   *As a Provider end user, I want to start the creation of a new version of a Resource description via UI* · 1 user story
-- [Epic: A Provider updates common metadata of a new version of a Resource description via UI (Improvement)](./bp5b3-provider-creates-new-version-resource-description/simpl-32140-a-provider-updates-common-metadata-of-a-new-version-of-a-res.md)<br>
-  *As a Provider end user, I want to update the common metadata of a new version of a resource description via UI* · no user stories yet
 
 ### 5B.3.2 A Provider updates the resource type specific metadata of a new version of a Resource description
 
@@ -97,7 +95,7 @@ Simpl-Open shall allow a Provider via an UI and an API
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: A Provider updates the usage policies of a new version of a resource description by using policy template via UI](./bp5b3-provider-creates-new-version-resource-description/simpl-18030-a-provider-updates-the-usage-policies-of-a-new-version-of-a.md)<br>
-  *As a Provider end user, I want to update the usage policies using an usage policy template to a new version of a resource description via UI* · 5 user stories
+  *As a Provider end user, I want to update the usage policies using an usage policy template to a new version of a resource description via UI* · 4 user stories
 
 ### 5B.3.5 A Provider updates the set of contract clauses of a new version of a resource description
 

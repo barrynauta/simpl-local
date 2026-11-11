@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 # SIMPL-11766: [UI] Governance Authority deletes a validation rule
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP02A](../../../../../README.md) › [SIMPL-18783](../../../../README.md) (L0) › [SIMPL-10171](../../../README.md) (L1) › [SIMPL-10173](../../README.md) (L2) › [SIMPL-12326](../README.md) (Epic) › **SIMPL-11766** (User story)
 

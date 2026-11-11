@@ -4,9 +4,9 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-32448: Consumers and Providers expose public identity credentials in their public profile
 
-**L2 requirement (detailed requirement)** · Status **In Progress**
+**L2 requirement (detailed requirement)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP13](../../../README.md) › [SIMPL-10783](../../README.md) (L0) › [SIMPL-32447](../README.md) (L1) › **SIMPL-32448** (L2)
 

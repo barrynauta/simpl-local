@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-1614: Controlling communication between participants
 
-**L2 requirement (detailed requirement)** · Status **In Progress**
+**L2 requirement (detailed requirement)**
 
 **Trace:** [BP13](../../../README.md) › [SIMPL-10783](../../README.md) (L0) › [SIMPL-1280](../README.md) (L1) › **SIMPL-1614** (L2)
 
@@ -22,4 +22,4 @@ SIMPL shall provide a service that will be in charge of controlling every commun
 | --- | --- |
 | **Business process** | [BP13](../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp13-it-administration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp13-it-administration)) |
 | **Parent** | [SIMPL-1280](../README.md) (L1) Encryption mechanisms - data in motion |
-| **Children** | [SIMPL-2046](Epic-SIMPL-2046/README.md) (Epic) Communication agent to agent(tier 2) - secure data exchange<br>[SIMPL-2047](Epic-SIMPL-2047/README.md) (Epic) Communication agent to agent(tier 2) - secure connection<br>[SIMPL-2048](Epic-SIMPL-2048/README.md) (Epic) Communication agent to agent(tier 2)- exceptions in mTLS |
+| **Children** | [SIMPL-2048](Epic-SIMPL-2048/README.md) (Epic) Communication agent to agent(tier 2)- exceptions in mTLS |

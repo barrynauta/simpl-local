@@ -148,8 +148,8 @@ The requirements of BP05B are kept in the programme backlog (Jira, item SIMPL-10
 
 - **High-level requirement**: what Simpl-Open must offer for one part of the process. BP05B has 9, numbered 5B.1 to 5B.9 as on the requirements site.
 - **Detailed requirement**: one function within a high-level requirement, for example 5B.2.1 for retrieving a resource type. BP05B has 32.
-- **Epic**: a feature that delivers a detailed requirement and can be tested as a whole, often one for the user interface and one for the API. BP05B has 69.
-- **User story**: one piece of work in an Epic, written as *As a ... I want to ... So that ...*, with acceptance criteria (*Given ... When ... Then ...*) that say when it is done. BP05B has 140.
+- **Epic**: a feature that delivers a detailed requirement and can be tested as a whole, often one for the user interface and one for the API. BP05B has 63.
+- **User story**: one piece of work in an Epic, written as *As a ... I want to ... So that ...*, with acceptance criteria (*Given ... When ... Then ...*) that say when it is done. BP05B has 122.
 
 Each title in the table opens the page of that high-level requirement. That page explains which process steps it covers, lists its detailed requirements, and links to the Epics, where the user stories and their acceptance criteria are. The step numbers refer to the process steps above. The link in the last column opens the same requirement on the public requirements site.
 
@@ -169,11 +169,11 @@ Each title in the table opens the page of that high-level requirement. That page
 
 Each page below has the text of the high-level requirement, its detailed requirements, and the Epics and user stories that deliver them.
 
-- [5B.1 - A Provider consults its own Resource descriptions](./bp5b1-provider-consults-its-own-resource-descriptions.md): 3 detailed requirements, 6 Epics, 11 user stories
-- [5B.2 - A Provider creates a new Resource description](./bp5b2-provider-creates-new-resource-description.md): 6 detailed requirements, 29 Epics, 68 user stories
-- [5B.3 - A Provider creates a new version of a Resource description](./bp5b3-provider-creates-new-version-resource-description.md): 5 detailed requirements, 11 Epics, 23 user stories
-- [5B.4 - A Provider signs and submits a new Resource description or a new version of a Resource description](./bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md): 1 detailed requirement, 3 Epics, 13 user stories
-- [5B.5 - The Governance Authority publishes a Resource description](./bp5b5-governance-authority-publishes-resource-description.md): 13 detailed requirements, 16 Epics, 18 user stories
+- [5B.1 - A Provider consults its own Resource descriptions](./bp5b1-provider-consults-its-own-resource-descriptions.md): 3 detailed requirements, 5 Epics, 11 user stories
+- [5B.2 - A Provider creates a new Resource description](./bp5b2-provider-creates-new-resource-description.md): 6 detailed requirements, 26 Epics, 53 user stories
+- [5B.3 - A Provider creates a new version of a Resource description](./bp5b3-provider-creates-new-version-resource-description.md): 5 detailed requirements, 10 Epics, 22 user stories
+- [5B.4 - A Provider signs and submits a new Resource description or a new version of a Resource description](./bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md): 1 detailed requirement, 2 Epics, 13 user stories
+- [5B.5 - The Governance Authority publishes a Resource description](./bp5b5-governance-authority-publishes-resource-description.md): 13 detailed requirements, 16 Epics, 16 user stories
 - [5B.6 - A Provider notifies Consumers about a new version of a Resource description](./bp5b6-provider-notifies-consumers-about-new-version-resource-description.md): 1 detailed requirement, 1 Epic, 1 user story
 - [5B.7 - A Provider requests the revocation of a Resource description](./bp5b7-provider-requests-revocation-resource-description.md): 1 detailed requirement, 1 Epic, 2 user stories
 - [5B.8 - The Governance Authority revokes a resource description](./bp5b8-governance-authority-revokes-resource-description.md): 1 detailed requirement, 1 Epic, 2 user stories

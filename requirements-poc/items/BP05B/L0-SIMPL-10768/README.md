@@ -4,7 +4,7 @@ Folder: [items](../../README.md) / [BP05B](../README.md) / **L0-SIMPL-10768**
 
 # SIMPL-10768: BP05B - Provider manages resource descriptions
 
-**L0 requirement (the business process as a requirement)** · Status **In Progress**
+**L0 requirement (the business process as a requirement)**
 
 **Trace:** [BP05B](../README.md) › **SIMPL-10768** (L0)
 

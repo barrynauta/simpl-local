@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.13 The Governance Authority approves/rejects the metadata of a new resource description or a new version of a resource description](../bp5b5-governance-authority-publishes-resource-description.md#5b513-the-governance-authority-approvesrejects-the-metadata-of-a-new-resource-description-or-a-new-version-of-a-resource-description), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.05 Validate the resource description](../README.md#bp05b05-validate-the-resource-description).
 
-In the backlog (Jira) it is item SIMPL-24061. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-24061. It has 1 user story, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -40,11 +40,11 @@ In the backlog (Jira) it is item SIMPL-24061. It has 1 user story, each with acc
 
 ## User stories
 
-1. [Catalogue validates against the Quality Assesment Record and decides the publication before storing self-description](#user-story-1-catalogue-validates-against-the-quality-assesment-record-and-decides-the-publication-before-storing-self-description)
+1. [Catalogue validates against the Quality Assesment Record and decides the publication before storing self-description](#user-story-1-catalogue-validates-against-the-quality-assesment-record-and-decides-the-publication-before-storing-self-description) · Developed
 
 ### User story 1: Catalogue validates against the Quality Assesment Record and decides the publication before storing self-description
 
-Backlog item SIMPL-27998
+**Development:** Developed · backlog item SIMPL-27998
 
 **As a** Governance Authority,\
 **I want to** automatically approve or reject a resource description based on overall and per-dimension thresholds,\

@@ -4,9 +4,9 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 # SIMPL-34233: Applicant accepts changed Terms and Conditions
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP02A](../../../../../README.md) › [SIMPL-18783](../../../../README.md) (L0) › [SIMPL-31409](../../../README.md) (L1) › [SIMPL-31410](../../README.md) (L2) › [SIMPL-31411](../README.md) (Epic) › **SIMPL-34233** (User story)
 

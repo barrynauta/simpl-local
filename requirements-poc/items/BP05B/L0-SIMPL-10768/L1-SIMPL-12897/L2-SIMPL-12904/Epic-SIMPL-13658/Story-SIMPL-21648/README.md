@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-21648: [API] The Governance authority provides the version history of a resource description via API (Query mapper)
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-12897](../../../README.md) (L1) › [SIMPL-12904](../../README.md) (L2) › [SIMPL-13658](../README.md) (Epic) › **SIMPL-21648** (User story)
 

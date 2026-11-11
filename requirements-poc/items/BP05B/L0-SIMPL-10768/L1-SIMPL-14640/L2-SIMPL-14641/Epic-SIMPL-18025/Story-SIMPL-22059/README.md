@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-22059: [API] The Governance Authority revokes a Resource Description (Catalogue)
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14640](../../../README.md) (L1) › [SIMPL-14641](../../README.md) (L2) › [SIMPL-18025](../README.md) (Epic) › **SIMPL-22059** (User story)
 

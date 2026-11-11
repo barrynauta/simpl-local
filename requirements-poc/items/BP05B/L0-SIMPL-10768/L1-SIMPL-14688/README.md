@@ -4,7 +4,7 @@ Folder: [items](../../../README.md) / [BP05B](../../README.md) / [L0-SIMPL-10768
 
 # SIMPL-14688: A Provider creates a new Resource description
 
-**L1 requirement (high-level requirement)** · Status **In Progress**
+**L1 requirement (high-level requirement)**
 
 **Trace:** [BP05B](../../README.md) › [SIMPL-10768](../README.md) (L0) › **SIMPL-14688** (L1)
 

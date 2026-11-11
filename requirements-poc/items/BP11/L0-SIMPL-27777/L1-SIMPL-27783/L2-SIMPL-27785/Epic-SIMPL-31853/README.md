@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP11](../../../../README.md) / [L0-
 
 # SIMPL-31853: A Provider triggers the decommissioning of an infrastructure resource when revocation request is accepted
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP11](../../../../README.md) › [SIMPL-27777](../../../README.md) (L0) › [SIMPL-27783](../../README.md) (L1) › [SIMPL-27785](../README.md) (L2) › **SIMPL-31853** (Epic)
 

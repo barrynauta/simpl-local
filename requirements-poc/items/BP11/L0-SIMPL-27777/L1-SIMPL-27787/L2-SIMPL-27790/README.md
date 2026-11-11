@@ -4,9 +4,9 @@ Folder: [items](../../../../README.md) / [BP11](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-27790: A Provider suspends a usage contract by providing a reason
 
-**L2 requirement (detailed requirement)** · Status **Defined**
+**L2 requirement (detailed requirement)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP11](../../../README.md) › [SIMPL-27777](../../README.md) (L0) › [SIMPL-27787](../README.md) (L1) › **SIMPL-27790** (L2)
 

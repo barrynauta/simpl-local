@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.6 A Provider adds a set of contract clauses to a new resource description](../bp5b2-provider-creates-new-resource-description.md#5b26-a-provider-adds-a-set-of-contract-clauses-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog (Jira) it is item SIMPL-16251. It has 9 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-16251. It has 9 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -26,19 +26,19 @@ In the backlog (Jira) it is item SIMPL-16251. It has 9 user stories, each with a
 
 ## User stories
 
-1. [A Provider adds a licence agreement to a new resource description via UI](#user-story-1-a-provider-adds-a-licence-agreement-to-a-new-resource-description-via-ui)
-2. [A Provider adds a billing schema to a new resource description via UI](#user-story-2-a-provider-adds-a-billing-schema-to-a-new-resource-description-via-ui)
-3. [A Provider adds an SLA to a new resource description via UI](#user-story-3-a-provider-adds-an-sla-to-a-new-resource-description-via-ui)
-4. [Store uploaded Contract Clauses documents and generate hash metadata](#user-story-4-store-uploaded-contract-clauses-documents-and-generate-hash-metadata)
-5. [[API] - API to store Contract Clause document](#user-story-5-api---api-to-store-contract-clause-document)
-6. [[API] - API to retrieve Contract Clause document (xfsc-adv-search)](#user-story-6-api---api-to-retrieve-contract-clause-document-xfsc-adv-search)
-7. [A Provider adds a generic contract clause to a new resource description via UI](#user-story-7-a-provider-adds-a-generic-contract-clause-to-a-new-resource-description-via-ui)
-8. [[UI] Enable Contract Clauses Document Download in SDTooling UI](#user-story-8-ui-enable-contract-clauses-document-download-in-sdtooling-ui)
-9. [[UI] Enable Contract Clauses Document Download in CatalogueUI](#user-story-9-ui-enable-contract-clauses-document-download-in-catalogueui)
+1. [A Provider adds a licence agreement to a new resource description via UI](#user-story-1-a-provider-adds-a-licence-agreement-to-a-new-resource-description-via-ui) · Developed
+2. [A Provider adds a billing schema to a new resource description via UI](#user-story-2-a-provider-adds-a-billing-schema-to-a-new-resource-description-via-ui) · Developed
+3. [A Provider adds an SLA to a new resource description via UI](#user-story-3-a-provider-adds-an-sla-to-a-new-resource-description-via-ui) · Developed
+4. [Store uploaded Contract Clauses documents and generate hash metadata](#user-story-4-store-uploaded-contract-clauses-documents-and-generate-hash-metadata) · Developed
+5. [[API] - API to store Contract Clause document](#user-story-5-api---api-to-store-contract-clause-document) · Developed
+6. [[API] - API to retrieve Contract Clause document (xfsc-adv-search)](#user-story-6-api---api-to-retrieve-contract-clause-document-xfsc-adv-search) · Developed
+7. [A Provider adds a generic contract clause to a new resource description via UI](#user-story-7-a-provider-adds-a-generic-contract-clause-to-a-new-resource-description-via-ui) · Developed
+8. [[UI] Enable Contract Clauses Document Download in SDTooling UI](#user-story-8-ui-enable-contract-clauses-document-download-in-sdtooling-ui) · In development
+9. [[UI] Enable Contract Clauses Document Download in CatalogueUI](#user-story-9-ui-enable-contract-clauses-document-download-in-catalogueui) · In development
 
 ### User story 1: A Provider adds a licence agreement to a new resource description via UI
 
-Backlog item SIMPL-26472
+**Development:** Developed · backlog item SIMPL-26472
 
 **As a** Provider end user\
 **I want to** to add the data of the contract clause License Agreement to a new resource description via UI\
@@ -131,7 +131,7 @@ Backlog item SIMPL-26472
 
 ### User story 2: A Provider adds a billing schema to a new resource description via UI
 
-Backlog item SIMPL-28815
+**Development:** Developed · backlog item SIMPL-28815
 
 **As a** Provider end user\
 **I want to** to add the data of the contract clause 'Billing Schema' to a new resource description via UI\
@@ -232,7 +232,7 @@ Backlog item SIMPL-28815
 
 ### User story 3: A Provider adds an SLA to a new resource description via UI
 
-Backlog item SIMPL-28816
+**Development:** Developed · backlog item SIMPL-28816
 
 **As a** Provider end user\
 **I want to** to add the data of the contract clause 'SLA' to a new resource description via UI\
@@ -358,7 +358,7 @@ Backlog item SIMPL-28816
 
 ### User story 4: Store uploaded Contract Clauses documents and generate hash metadata
 
-Backlog item SIMPL-28846
+**Development:** Developed · backlog item SIMPL-28846
 
 **Goal**
 
@@ -540,7 +540,7 @@ The upload API definition must clarify:
 
 ### User story 5: [API] - API to store Contract Clause document
 
-Backlog item SIMPL-29022
+**Development:** Developed · backlog item SIMPL-29022
 
 **As a** Provider\
 **I want to** store a contract clause document\
@@ -590,7 +590,7 @@ Backlog item SIMPL-29022
 
 ### User story 6: [API] - API to retrieve Contract Clause document (xfsc-adv-search)
 
-Backlog item SIMPL-29049
+**Development:** Developed · backlog item SIMPL-29049
 
 **As a** Provider or Consumer\
 **I want to** retrieve a contract clause document\
@@ -641,7 +641,7 @@ Backlog item SIMPL-29049
 
 ### User story 7: A Provider adds a generic contract clause to a new resource description via UI
 
-Backlog item SIMPL-29384
+**Development:** Developed · backlog item SIMPL-29384
 
 **As a** Provider end user\
 **I want to** to add the data of a generic contract clause to a new resource description via UI\
@@ -734,7 +734,7 @@ Backlog item SIMPL-29384
 
 ### User story 8: [UI] Enable Contract Clauses Document Download in SDTooling UI
 
-Backlog item SIMPL-33065
+**Development:** In development · backlog item SIMPL-33065
 
 **As a** Provider,\
 **I want to** download the documents associated with Contract Clauses categories (SLA, License, Billing, and Generic) for the resources published on the Catalogue,\
@@ -787,7 +787,7 @@ This task aims to enhance the Contract Clauses section of the SDTooling UI by pr
 
 ### User story 9: [UI] Enable Contract Clauses Document Download in CatalogueUI
 
-Backlog item SIMPL-33084
+**Development:** In development · backlog item SIMPL-33084
 
 **As a** Provider or Consumer,\
 **I want to** download the documents associated with Contract Clauses categories (SLA, License, Billing, and Generic) for the resources published on the Catalogue,\

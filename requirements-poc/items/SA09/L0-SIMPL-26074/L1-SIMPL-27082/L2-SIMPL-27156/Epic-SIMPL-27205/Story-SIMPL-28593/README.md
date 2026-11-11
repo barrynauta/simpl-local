@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 
 # SIMPL-28593: [API] Data provider updates consent assertion
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [SA09](../../../../../README.md) › [SIMPL-26074](../../../../README.md) (L0) › [SIMPL-27082](../../../README.md) (L1) › [SIMPL-27156](../../README.md) (L2) › [SIMPL-27205](../README.md) (Epic) › **SIMPL-28593** (User story)
 

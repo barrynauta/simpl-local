@@ -4,9 +4,9 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 # SIMPL-33929: [API] Participant checks if Tier2 session with another participant is present (non-mtls OPTIONS /tier2/v2/session?sessionId={sessionId})
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP13](../../../../../README.md) › [SIMPL-10783](../../../../README.md) (L0) › [SIMPL-1273](../../../README.md) (L1) › [SIMPL-1615](../../README.md) (L2) › [SIMPL-32434](../README.md) (Epic) › **SIMPL-33929** (User story)
 

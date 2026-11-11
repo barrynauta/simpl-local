@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [SA09](../../../../README.md) / [L0-
 
 # SIMPL-27206: Data Provider withdraws and reactivates consent assertions
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [SA09](../../../../README.md) › [SIMPL-26074](../../../README.md) (L0) › [SIMPL-26083](../../README.md) (L1) › [SIMPL-27195](../README.md) (L2) › **SIMPL-27206** (Epic)
 

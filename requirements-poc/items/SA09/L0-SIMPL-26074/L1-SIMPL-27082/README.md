@@ -4,7 +4,7 @@ Folder: [items](../../../README.md) / [SA09](../../README.md) / [L0-SIMPL-26074]
 
 # SIMPL-27082: Data Provider manages consent assertions for shared data resources
 
-**L1 requirement (high-level requirement)** · Status **Defined**
+**L1 requirement (high-level requirement)**
 
 **Trace:** [SA09](../../README.md) › [SIMPL-26074](../README.md) (L0) › **SIMPL-27082** (L1)
 

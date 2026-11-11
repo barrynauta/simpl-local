@@ -4,9 +4,9 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 # SIMPL-25108: [API] Governance authority publishes its credentials as a certificate chain in pem format via public endpoint
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP13](../../../../../README.md) › [SIMPL-10783](../../../../README.md) (L0) › [SIMPL-23891](../../../README.md) (L1) › [SIMPL-23892](../../README.md) (L2) › [SIMPL-24738](../README.md) (Epic) › **SIMPL-25108** (User story)
 

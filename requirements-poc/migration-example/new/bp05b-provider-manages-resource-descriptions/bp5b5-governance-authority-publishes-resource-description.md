@@ -13,7 +13,7 @@ This is high-level requirement 5B.5 of business process [BP05B - Provider manage
 
 In the process it covers 4 steps: [BP05B.05 Validate the resource description](./README.md#bp05b05-validate-the-resource-description), [BP05B.06 Remediate validation issues](./README.md#bp05b06-remediate-validation-issues), [BP05B.07 Publish the resource description](./README.md#bp05b07-publish-the-resource-description) and [BP05B.11 Revoke the previous version of the resource description](./README.md#bp05b11-revoke-the-previous-version-of-the-resource-description). The dynamic view shows it in [Define and publish self-description](bp05b-dynamic-view.md#define-and-publish-self-description) and [the technology components view](bp05b-tcv-dynamic-view.md).
 
-It is split into 13 detailed requirements, delivered through 16 Epics with 18 user stories in total. Each detailed requirement below says what Simpl-Open must do. Under it are its Epics: open one to read its user stories and their acceptance criteria.
+It is split into 13 detailed requirements, delivered through 16 Epics with 16 user stories in total. Each detailed requirement below says what Simpl-Open must do. Under it are its Epics: open one to read its user stories and their acceptance criteria.
 
 ## Description
 
@@ -31,8 +31,8 @@ Select a title to jump to its section below.
 | 5B.5.2 | [The Governance Authority notifies a Provider about an inactive schema](#5b52-the-governance-authority-notifies-a-provider-about-an-inactive-schema) | BP05B.06 Remediate validation issues | 1 | 1 |
 | 5B.5.3 | [The Governance Authority validates the versioning of a new version of a Resource description](#5b53-the-governance-authority-validates-the-versioning-of-a-new-version-of-a-resource-description) | BP05B.05 Validate the resource description | 1 | 1 |
 | 5B.5.4 | [The Governance Authority notifies a Provider about wrong versioning of new versions of a Resource description](#5b54-the-governance-authority-notifies-a-provider-about-wrong-versioning-of-new-versions-of-a-resource-description) | BP05B.06 Remediate validation issues | 1 | 1 |
-| 5B.5.5 | [The Governance Authority validates the syntax of a new Resource description or a new version of a Resource Description](#5b55-the-governance-authority-validates-the-syntax-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | BP05B.05 Validate the resource description | 2 | 3 |
-| 5B.5.6 | [The Governance Authority provides feedback to a Provider about syntax validation errors](#5b56-the-governance-authority-provides-feedback-to-a-provider-about-syntax-validation-errors) | BP05B.06 Remediate validation issues | 2 | 2 |
+| 5B.5.5 | [The Governance Authority validates the syntax of a new Resource description or a new version of a Resource Description](#5b55-the-governance-authority-validates-the-syntax-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | BP05B.05 Validate the resource description | 2 | 2 |
+| 5B.5.6 | [The Governance Authority provides feedback to a Provider about syntax validation errors](#5b56-the-governance-authority-provides-feedback-to-a-provider-about-syntax-validation-errors) | BP05B.06 Remediate validation issues | 2 | 1 |
 | 5B.5.7 | [The Governance Authority validates the semantics of a new Resource description or a new version of a Resource Description](#5b57-the-governance-authority-validates-the-semantics-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | BP05B.05 Validate the resource description | 2 | 2 |
 | 5B.5.8 | [The Governance Authority provides feedback to a Provider about semantic validation errors](#5b58-the-governance-authority-provides-feedback-to-a-provider-about-semantic-validation-errors) | BP05B.06 Remediate validation issues | 1 | 1 |
 | 5B.5.9 | [The Governance Authority publishes a new Resource description or a new version of a Resource description](#5b59-the-governance-authority-publishes-a-new-resource-description-or-a-new-version-of-a-resource-description) | BP05B.07 Publish the resource description | 1 | 0 |
@@ -111,7 +111,7 @@ Simpl-Open shall support the Governance Authority
 - [Epic: The Governance Authority checks the syntax of a new Resource description or a new version of a Resource Description](./bp5b5-governance-authority-publishes-resource-description/simpl-982-the-governance-authority-checks-the-syntax-of-a-new-resource.md)<br>
   *As Governance Authority, I want to automatically check the syntax of a new resource description or a new version of a resource description* · 1 user story
 - [Epic: The Governance Authority validates the syntax of the policies assigned to a new Resource description or a new version of a Resource Description](./bp5b5-governance-authority-publishes-resource-description/simpl-18402-the-governance-authority-validates-the-syntax-of-the-policie.md)<br>
-  *As a Governance Authority, I want to automatically validate the syntax of policies in a new resource description or a new version of a resource description* · 2 user stories
+  *As a Governance Authority, I want to automatically validate the syntax of policies in a new resource description or a new version of a resource description* · 1 user story
 
 ### 5B.5.6 The Governance Authority provides feedback to a Provider about syntax validation errors
 
@@ -127,7 +127,7 @@ Simpl-Open shall support the Governance Authority
 - [Epic: The Governance Authority notifies a Provider about syntax validation errors](./bp5b5-governance-authority-publishes-resource-description/simpl-17801-the-governance-authority-notifies-a-provider-about-syntax-va.md)<br>
   *As Governance Authority, I want to notify a Provider about invalid syntax of a new resource description or a new version of a resource description* · 1 user story
 - [Epic: The Governance Authority provides feedback to a Provider about syntax validation errors of a policy](./bp5b5-governance-authority-publishes-resource-description/simpl-25371-the-governance-authority-provides-feedback-to-a-provider-abo.md)<br>
-  *As a Governance Authority, I want to provide feedback to a Provider about invalid syntax of a policy in a resource description* · 1 user story
+  *As a Governance Authority, I want to provide feedback to a Provider about invalid syntax of a policy in a resource description* · no user stories yet
 
 ### 5B.5.7 The Governance Authority validates the semantics of a new Resource description or a new version of a Resource Description
 

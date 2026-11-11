@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.2 A Provider adds common metadata to a new Resource description](../bp5b2-provider-creates-new-resource-description.md#5b22-a-provider-adds-common-metadata-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.01 Create a new resource description](../README.md#bp05b01-create-a-new-resource-description).
 
-In the backlog (Jira) it is item SIMPL-15863. It has 2 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-15863. It has 2 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -37,12 +37,12 @@ In the backlog (Jira) it is item SIMPL-15863. It has 2 user stories, each with a
 
 ## User stories
 
-1. [[UI] Displaying Self-description Fields in the UI - SD Tool](#user-story-1-ui-displaying-self-description-fields-in-the-ui---sd-tool)
-2. [[UI] Provider adds metadata property groups to a new Resource description](#user-story-2-ui-provider-adds-metadata-property-groups-to-a-new-resource-description)
+1. [[UI] Displaying Self-description Fields in the UI - SD Tool](#user-story-1-ui-displaying-self-description-fields-in-the-ui---sd-tool) · Developed
+2. [[UI] Provider adds metadata property groups to a new Resource description](#user-story-2-ui-provider-adds-metadata-property-groups-to-a-new-resource-description) · Developed
 
 ### User story 1: [UI] Displaying Self-description Fields in the UI - SD Tool
 
-Backlog item SIMPL-232
+**Development:** Developed · backlog item SIMPL-232
 
 **As a** service provider\
 **I want to** see the fields I need to specify for the self-description\
@@ -68,7 +68,7 @@ mock up docu (internal page)\
 
 ### User story 2: [UI] Provider adds metadata property groups to a new Resource description
 
-Backlog item SIMPL-18343
+**Development:** Developed · backlog item SIMPL-18343
 
 #### Storycard
 

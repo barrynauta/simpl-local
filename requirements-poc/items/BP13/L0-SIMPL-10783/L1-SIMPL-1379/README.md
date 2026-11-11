@@ -4,7 +4,7 @@ Folder: [items](../../../README.md) / [BP13](../../README.md) / [L0-SIMPL-10783]
 
 # SIMPL-1379: A Participants set the VPN configuration for secure data transfer and secure access to Simpl-Open resources
 
-**L1 requirement (high-level requirement)** · Status **Defined**
+**L1 requirement (high-level requirement)**
 
 **Trace:** [BP13](../../README.md) › [SIMPL-10783](../README.md) (L0) › **SIMPL-1379** (L1)
 

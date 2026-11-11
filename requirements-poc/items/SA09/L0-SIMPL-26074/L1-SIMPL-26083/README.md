@@ -4,7 +4,7 @@ Folder: [items](../../../README.md) / [SA09](../../README.md) / [L0-SIMPL-26074]
 
 # SIMPL-26083: Data Provider manages consent assertion status changes
 
-**L1 requirement (high-level requirement)** · Status **In Progress**
+**L1 requirement (high-level requirement)**
 
 **Trace:** [SA09](../../README.md) › [SIMPL-26074](../README.md) (L0) › **SIMPL-26083** (L1)
 

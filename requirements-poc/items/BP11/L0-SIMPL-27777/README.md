@@ -4,9 +4,9 @@ Folder: [items](../../README.md) / [BP11](../README.md) / **L0-SIMPL-27777**
 
 # SIMPL-27777: BP11 - Consumer and Provider manage a usage contract
 
-**L0 requirement (the business process as a requirement)** · Status **For DG Connect Review**
+**L0 requirement (the business process as a requirement)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP11](../README.md) › **SIMPL-27777** (L0)
 

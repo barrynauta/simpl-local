@@ -4,7 +4,7 @@ Folder: [items](../../../README.md) / [BP02A](../../README.md) / [L0-SIMPL-18783
 
 # SIMPL-10171: Configure Onboarding Procedure Templates
 
-**L1 requirement (high-level requirement)** · Status **In Progress**
+**L1 requirement (high-level requirement)**
 
 **Trace:** [BP02A](../../README.md) › [SIMPL-18783](../README.md) (L0) › **SIMPL-10171** (L1)
 

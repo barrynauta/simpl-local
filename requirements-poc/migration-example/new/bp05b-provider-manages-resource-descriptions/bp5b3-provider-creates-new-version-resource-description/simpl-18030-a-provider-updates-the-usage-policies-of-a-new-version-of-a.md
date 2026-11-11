@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.3.4 A Provider updates the usage policies of a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md#5b34-a-provider-updates-the-usage-policies-of-a-new-version-of-a-resource-description), under high-level requirement [5B.3 A Provider creates a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md). In the process it belongs to step [BP05B.10 Update policies and contract related metadata](../README.md#bp05b10-update-policies-and-contract-related-metadata).
 
-In the backlog (Jira) it is item SIMPL-18030. It has 5 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-18030. It has 4 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -51,15 +51,14 @@ In the backlog (Jira) it is item SIMPL-18030. It has 5 user stories, each with a
 
 ## User stories
 
-1. [[UI] Provider sees the usage policies carried over from the previous resource description version](#user-story-1-ui-provider-sees-the-usage-policies-carried-over-from-the-previous-resource-description-version)
-2. [[UI] Provider selects a usage policy template in the new resource description version wizard](#user-story-2-ui-provider-selects-a-usage-policy-template-in-the-new-resource-description-version-wizard)
-3. [[UI] Provider fills in the usage policy template parameters in the new resource description version wizard](#user-story-3-ui-provider-fills-in-the-usage-policy-template-parameters-in-the-new-resource-description-version-wizard)
-4. [[UI] Provider removes a usage policy from the new resource description version](#user-story-4-ui-provider-removes-a-usage-policy-from-the-new-resource-description-version)
-5. [[UI] Provider saves the updated usage policies on the new resource description version](#user-story-5-ui-provider-saves-the-updated-usage-policies-on-the-new-resource-description-version)
+1. [[UI] Provider sees the usage policies carried over from the previous resource description version](#user-story-1-ui-provider-sees-the-usage-policies-carried-over-from-the-previous-resource-description-version) · In development
+2. [[UI] Provider selects a usage policy template in the new resource description version wizard](#user-story-2-ui-provider-selects-a-usage-policy-template-in-the-new-resource-description-version-wizard) · In development
+3. [[UI] Provider fills in the usage policy template parameters in the new resource description version wizard](#user-story-3-ui-provider-fills-in-the-usage-policy-template-parameters-in-the-new-resource-description-version-wizard) · In development
+4. [[UI] Provider removes a usage policy from the new resource description version](#user-story-4-ui-provider-removes-a-usage-policy-from-the-new-resource-description-version) · In development
 
 ### User story 1: [UI] Provider sees the usage policies carried over from the previous resource description version
 
-Backlog item SIMPL-31575
+**Development:** In development · backlog item SIMPL-31575
 
 #### Storycard
 
@@ -126,7 +125,7 @@ Backlog item SIMPL-31575
 
 ### User story 2: [UI] Provider selects a usage policy template in the new resource description version wizard
 
-Backlog item SIMPL-31576
+**Development:** In development · backlog item SIMPL-31576
 
 #### Storycard
 
@@ -191,7 +190,7 @@ This story covers selection. The field-entry story covers rendering. Policy conf
 
 ### User story 3: [UI] Provider fills in the usage policy template parameters in the new resource description version wizard
 
-Backlog item SIMPL-31577
+**Development:** In development · backlog item SIMPL-31577
 
 #### Storycard
 
@@ -252,7 +251,7 @@ Policy confirmation and final submission: SIMPL-31579 (internal page).
 
 ### User story 4: [UI] Provider removes a usage policy from the new resource description version
 
-Backlog item SIMPL-31578
+**Development:** In development · backlog item SIMPL-31578
 
 #### Storycard:
 
@@ -291,79 +290,6 @@ API definition ticket: (internal page)
 
 - (internal page)
 - (internal page)
-
-[Back to the list of user stories](#user-stories)
-
-### User story 5: [UI] Provider saves the updated usage policies on the new resource description version
-
-Backlog item SIMPL-31579
-
-#### Storycard
-
-**As a** Provider authorised to manage resource descriptions,\
-**I want to** include the usage policies I kept, added or changed in the new resource-description version,\
-**So that** the submitted version carries the policy set I chose.
-
-#### Acceptance criteria
-
-##### Add or save a policy in the wizard
-
-1. **Given** I entered the required values for a usage-policy template\
-   **When** I click Add policy for a new policy or Save changes for an edited policy\
-   **Then** the UI checks the values against the template's field rules\
-   **And** it copies the template's ODRL policy and fills only the declared slots\
-   **And** a valid completed policy is added to or replaces its entry in wizard state\
-   **And** the policy stays in the current wizard until I submit the complete resource description
-
-##### Submit the complete version
-
-2. **Given** the new-version wizard contains the usage policies I intend to keep\
-   **When** I submit the complete resource-description version\
-   **Then** the UI includes those completed policies in the RD submission payload\
-   **And** the publication component validates the final policies before publication\
-   **And** only a successful submission saves those policies with the new version\
-   **And** the previous published version remains unchanged
-
-##### Invalid policy values
-
-3. **Given** required policy values are missing or invalid\
-   **When** I confirm that policy\
-   **Then** the UI shows validation feedback\
-   **And** it keeps the form open with the entered values\
-   **And** it does not add an invalid policy to the RD
-
-##### Final submission fails
-
-4. **Given** I submit the new resource-description version\
-   **When** the submission fails\
-   **Then** the UI shows the failure\
-   **And** retains the wizard data and policy set for correction or retry\
-   **And** it does not report the new version as published
-
-##### Unauthorised submission
-
-5. **Given** I am authenticated without a role authorising management of resource descriptions\
-   **When** I submit the new resource-description version with its policies\
-   **Then** the service returns 403 Forbidden\
-   **And** the policies are not saved
-
-#### Technical details
-
-The template envelope contains an ODRL JSON-LD `policy` and ordered `fields`. The UI uses field names to read values and field paths to replace only declared slots in a copy of the policy. It preserves fixed policy structure. The publication component validates the completed policy and any final policy IDs and asset targets before publication. Browser validation alone does not establish that a policy is valid.
-
-Usage policies do not acquire access-enforcement scopes in this flow. Usage monitoring belongs to HLF4. Keep retained usage policies as completed ODRL policies; do not force every policy into a duty-only structure.
-
-Use the existing RD submission integration linked by SIMPL-25712. Invalidate a prior validation result when the Provider changes the submitted policy values.
-
-#### Additional notes
-
-- API definition ticket: (internal page)
-- (internal page)
-- (internal page)
-
-- Shared policy-template API definition, SIMPL-31345 (internal page)
-- R08 ODRL template technical description (internal page)
-- ODRL template architecture rationale (internal page)
 
 [Back to the list of user stories](#user-stories)
 

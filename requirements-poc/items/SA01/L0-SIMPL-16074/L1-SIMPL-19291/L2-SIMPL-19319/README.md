@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [SA01](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-19319: Participant executes data orchestration workflows automatically based on events
 
-**L2 requirement (detailed requirement)** · Status **Defined**
+**L2 requirement (detailed requirement)**
 
 **Trace:** [SA01](../../../README.md) › [SIMPL-16074](../../README.md) (L0) › [SIMPL-19291](../README.md) (L1) › **SIMPL-19319** (L2)
 

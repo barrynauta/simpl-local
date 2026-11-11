@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 # SIMPL-25746: Provider configures lineage metadata at job and service level
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [SA01](../../../../../README.md) › [SIMPL-16074](../../../../README.md) (L0) › [SIMPL-19291](../../../README.md) (L1) › [SIMPL-1620](../../README.md) (L2) › [SIMPL-2068](../README.md) (Epic) › **SIMPL-25746** (User story)
 

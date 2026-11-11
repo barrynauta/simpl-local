@@ -4,7 +4,7 @@ Folder: [items](../../README.md) / [SA01](../README.md) / **L0-SIMPL-16074**
 
 # SIMPL-16074: SA01 - Data orchestration used by a Participant
 
-**L0 requirement (the business process as a requirement)** · Status **Defined**
+**L0 requirement (the business process as a requirement)**
 
 **Trace:** [SA01](../README.md) › **SIMPL-16074** (L0)
 

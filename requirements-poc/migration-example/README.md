@@ -29,8 +29,10 @@ Only the requirements part. In the original it lists the 9 high-level requiremen
   - *Description*: the text from Jira.
   - *Detailed requirements*: a table, then one section per detailed requirement with its text, process step, its link to the requirements site, and the Epics that deliver it.
   - Under each detailed requirement, its Epics, each with one line taken from its story card (for example *As a Provider, I want to retrieve a list of published resource types*), so a reader knows what an Epic is about before opening it.
-- **Epic pages, new.** One folder per requirement page, with one page per Epic (69 in total). An Epic page explains where it sits (detailed requirement, high-level requirement, process step), gives the Epic text, and then its user stories (140 in total), each with its story card and acceptance criteria. Long pages have a link back to the list of user stories after each story, and every page ends with links back up.
+- **Epic pages, new.** One folder per requirement page, with one page per Epic (63 in total). An Epic page explains where it sits (detailed requirement, high-level requirement, process step), gives the Epic text, and then its user stories (122 in total), each with its story card and acceptance criteria. Long pages have a link back to the list of user stories after each story, and every page ends with links back up.
 - **A README in each Epic folder.** GitLab shows it when someone opens the folder, so a visitor who lands there sees which requirement the Epics belong to, grouped by detailed requirement.
+
+Only approved Epics and user stories are included: Epics from Defined, user stories from PBI Defined. A user story under an Epic that is not approved yet is left out too.
 
 Links say where they go ("5B.2.1 on the requirements site", "Epic: ...", "BP05B.01 Create a new resource description"); step numbers in tables are plain text, not bare links. Jira keys are shown as text, not as links, because jira.simplprogramme.eu is closed to public visitors.
 
@@ -40,7 +42,7 @@ Links say where they go ("5B.2.1 on the requirements site", "Epic: ...", "BP05B.
 - **Dynamic view sections.** The same: the link from a requirement to a section of the dynamic view is made by hand.
 - **Requirements site numbers.** The IDs such as 5B.2.1 exist only on the requirements site. 12 of the 32 detailed requirements were matched to them by hand, all under 5B.5, because the site uses short titles there.
 - **Which text.** The text comes from Jira. It is almost the same as on the requirements site,, with small differences in wording. The final publication must choose one source.
-- **No status.** The pages show no status: it changes often and means little to a visitor. The site shows every requirement as Proposed, Jira shows Defined or In Progress.
+- **Status.** Requirements and Epics show no status. User stories show how far their development is: Planned, In development or Developed. Developed means built, not necessarily released.
 - **Old story text.** A few older user stories (for example SIMPL-330) still have Jira formatting that the conversion does not handle, such as `+**As a**+`.
 
 Built with `example_bp05b.py` in the build folder, from the proof-of-concept tree of 10 November 2026.

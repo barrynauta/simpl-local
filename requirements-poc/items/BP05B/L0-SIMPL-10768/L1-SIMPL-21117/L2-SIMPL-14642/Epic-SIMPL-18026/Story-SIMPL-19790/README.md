@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-19790: [API] A Provider notifies Consumers about revocation of Resource Description
 
-**User story (implementable work)** · Status **DevTeam PBI blocked**
+**User story (implementable work)** · Development: **In development**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-21117](../../../README.md) (L1) › [SIMPL-14642](../../README.md) (L2) › [SIMPL-18026](../README.md) (Epic) › **SIMPL-19790** (User story)
 

@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.4 A Provider assigns access policies to a new Resource description](../bp5b2-provider-creates-new-resource-description.md#5b24-a-provider-assigns-access-policies-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog (Jira) it is item SIMPL-936. It has 8 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-936. It has 7 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -30,18 +30,17 @@ In the backlog (Jira) it is item SIMPL-936. It has 8 user stories, each with acc
 
 ## User stories
 
-1. [UI for defining access policies](#user-story-1-ui-for-defining-access-policies)
-2. [Define Access Policy for the SD-Schema](#user-story-2-define-access-policy-for-the-sd-schema)
-3. [[UI] Access Policy multiple attributes per Permission](#user-story-3-ui-access-policy-multiple-attributes-per-permission)
-4. [[UI] Provider selects an access policy template in the resource description wizard](#user-story-4-ui-provider-selects-an-access-policy-template-in-the-resource-description-wizard)
-5. [[UI] Provider fills in the access policy template parameters in the resource description wizard](#user-story-5-ui-provider-fills-in-the-access-policy-template-parameters-in-the-resource-description-wizard)
-6. [[UI] Provider sees inline validation feedback for access policy template parameters](#user-story-6-ui-provider-sees-inline-validation-feedback-for-access-policy-template-parameters)
-7. [[UI] Provider adds an access policy to a new Resource Description](#user-story-7-ui-provider-adds-an-access-policy-to-a-new-resource-description)
-8. [[UI] Provider removes an access policy from the new resource description](#user-story-8-ui-provider-removes-an-access-policy-from-the-new-resource-description)
+1. [UI for defining access policies](#user-story-1-ui-for-defining-access-policies) · Developed
+2. [Define Access Policy for the SD-Schema](#user-story-2-define-access-policy-for-the-sd-schema) · Developed
+3. [[UI] Provider selects an access policy template in the resource description wizard](#user-story-3-ui-provider-selects-an-access-policy-template-in-the-resource-description-wizard) · Developed
+4. [[UI] Provider fills in the access policy template parameters in the resource description wizard](#user-story-4-ui-provider-fills-in-the-access-policy-template-parameters-in-the-resource-description-wizard) · Developed
+5. [[UI] Provider sees inline validation feedback for access policy template parameters](#user-story-5-ui-provider-sees-inline-validation-feedback-for-access-policy-template-parameters) · Developed
+6. [[UI] Provider adds an access policy to a new Resource Description](#user-story-6-ui-provider-adds-an-access-policy-to-a-new-resource-description) · Developed
+7. [[UI] Provider removes an access policy from the new resource description](#user-story-7-ui-provider-removes-an-access-policy-from-the-new-resource-description) · Developed
 
 ### User story 1: UI for defining access policies
 
-Backlog item SIMPL-493
+**Development:** Developed · backlog item SIMPL-493
 
 **As a** Provider User\
 **I want** use an UI to support the formulation of the access policies in a machine-readable format\
@@ -79,7 +78,7 @@ AC:
 
 ### User story 2: Define Access Policy for the SD-Schema
 
-Backlog item SIMPL-2581
+**Development:** Developed · backlog item SIMPL-2581
 
 Create a policy that has Read or Write as an action and link it to attributes that are in the ABAC context of Authentication and Onboarding.
 
@@ -97,77 +96,9 @@ AC:
 
 [Back to the list of user stories](#user-stories)
 
-### User story 3: [UI] Access Policy multiple attributes per Permission
+### User story 3: [UI] Provider selects an access policy template in the resource description wizard
 
-Backlog item SIMPL-3545
-
-#### Storycard
-
-**As a** Provider authorised to manage resource descriptions,\
-**I want to** select one or more identity attributes for an access policy,\
-**So that** I can specify which attributes a Consumer must have to access my resource.
-
-#### Acceptance criteria
-
-##### Select the required identity attributes
-
-1. **Given** I am adding an access policy to a resource description\
-   **When** I choose the policy template for identity attributes\
-   **Then** I can select one or more of the available identity attributes\
-   **And** the form explains that the Consumer must have every attribute I select
-
-##### Add the policy to the resource description
-
-2. **Given** I have selected the identity attributes required for access\
-   **When** I confirm the policy\
-   **Then** the policy is added to the resource description I am preparing\
-   **And** it shows the identity attributes I selected\
-   **And** confirming the policy does not submit the resource description
-
-##### No identity attribute is selected
-
-3. **Given** I am adding an access policy that requires identity attributes\
-   **And** I have not selected any identity attribute\
-   **When** I confirm the policy\
-   **Then** I am told to select at least one identity attribute\
-   **And** the policy form remains open\
-   **And** the policy is not added to the resource description
-
-##### Available identity attributes cannot be loaded
-
-4. **Given** I am adding an access policy that requires identity attributes\
-   **When** the available identity attributes cannot be loaded\
-   **Then** I see an error message and an option to retry\
-   **And** I cannot confirm the policy until I can select the required attributes
-
-#### Technical details
-
-The `identity-attributes` template contains an ODRL JSON-LD `policy` and ordered `fields`. The UI copies the policy and fills only the declared field path with the selected attribute codes. The multiple-attribute constraint uses `odrl:isAllOf` and a nonempty `odrl:rightOperand` list. Preserve the context declaration `@container: @list`, including when the Provider selects only one attribute. The separate single-attribute template uses `odrl:hasPart` and a typed string value.
-
-The current template fetches choices through the Provider T1 identity-attributes API, filtered for enabled attributes assignable to roles. That authoring source is separate from the Consumer's runtime `identity_attributes` IAM claim.
-
-The local connector evaluates the permission during contract negotiation. It compares codes case-insensitively without trimming whitespace, requires every selected code and permits extra Consumer codes. Empty or malformed requirements and missing or malformed claims deny the constraint. The evaluator does not apply the browser source filters.
-
-Trusted publication validation checks the completed policy and any final policy IDs and asset targets. Browser checks do not replace that validation. The local implementation does not establish production deployment of the authoring integration.
-
-#### Supporting documentation
-
-- R08 ODRL template technical description (internal page)
-- R08 policy assignment and validation requirements (internal page)
-- Shared policy-template API definition, SIMPL-31345 (internal page)
-
-##### Policy wizard screenshots
-
-These screenshots replace the missing mock-up. The access-policy dialog shows a single-attribute example. The policy-step overview shows where the added access policy appears.
-
-- Add an access policy, single-attribute example (internal page)
-- Policy step with an access policy added (internal page)
-
-[Back to the list of user stories](#user-stories)
-
-### User story 4: [UI] Provider selects an access policy template in the resource description wizard
-
-Backlog item SIMPL-31405
+**Development:** Developed · backlog item SIMPL-31405
 
 #### Story card
 
@@ -230,9 +161,9 @@ Backlog item SIMPL-31405
 
 [Back to the list of user stories](#user-stories)
 
-### User story 5: [UI] Provider fills in the access policy template parameters in the resource description wizard
+### User story 4: [UI] Provider fills in the access policy template parameters in the resource description wizard
 
-Backlog item SIMPL-31406
+**Development:** Developed · backlog item SIMPL-31406
 
 #### Story card
 
@@ -286,9 +217,9 @@ Backlog item SIMPL-31406
 
 [Back to the list of user stories](#user-stories)
 
-### User story 6: [UI] Provider sees inline validation feedback for access policy template parameters
+### User story 5: [UI] Provider sees inline validation feedback for access policy template parameters
 
-Backlog item SIMPL-31407
+**Development:** Developed · backlog item SIMPL-31407
 
 #### Story card
 
@@ -350,9 +281,9 @@ Backlog item SIMPL-31407
 
 [Back to the list of user stories](#user-stories)
 
-### User story 7: [UI] Provider adds an access policy to a new Resource Description
+### User story 6: [UI] Provider adds an access policy to a new Resource Description
 
-Backlog item SIMPL-31433
+**Development:** Developed · backlog item SIMPL-31433
 
 #### Story card
 
@@ -410,9 +341,9 @@ Backlog item SIMPL-31433
 
 [Back to the list of user stories](#user-stories)
 
-### User story 8: [UI] Provider removes an access policy from the new resource description
+### User story 7: [UI] Provider removes an access policy from the new resource description
 
-Backlog item SIMPL-31703
+**Development:** Developed · backlog item SIMPL-31703
 
 #### Storycard:
 

@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 # SIMPL-19332: A Participant deletes a data orchestration workflow that is not referenced by any published dataset
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [SA01](../../../../README.md) › [SIMPL-16074](../../../README.md) (L0) › [SIMPL-19290](../../README.md) (L1) › [SIMPL-19317](../README.md) (L2) › **SIMPL-19332** (Epic)
 

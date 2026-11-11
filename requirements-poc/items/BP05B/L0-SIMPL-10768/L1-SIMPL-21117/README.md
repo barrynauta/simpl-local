@@ -4,7 +4,7 @@ Folder: [items](../../../README.md) / [BP05B](../../README.md) / [L0-SIMPL-10768
 
 # SIMPL-21117: The Provider notifies Consumers about the revocation of a resource description
 
-**L1 requirement (high-level requirement)** · Status **In Progress**
+**L1 requirement (high-level requirement)**
 
 **Trace:** [BP05B](../../README.md) › [SIMPL-10768](../README.md) (L0) › **SIMPL-21117** (L1)
 

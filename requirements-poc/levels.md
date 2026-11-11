@@ -69,10 +69,14 @@ The keywords Given, When, Then, And and But are in bold, with a capital first le
 
 ## Status
 
-Status shows where an item is in its life cycle. Cancelled items are left out of this folder. Some of the statuses you see:
+Only approved items are in this folder: Epics from Defined, user stories from PBI Defined. Cancelled items are left out.
 
-| Status | Meaning |
-| --- | --- |
-| Defined, PBI Defined | Written and approved after elicitation. The handbook keeps the key fields stable from PBI Defined on. |
-| In Progress | Being worked on. |
-| Internal QA check | An internal review step. |
+Requirements (L0, L1, L2) and Epics show no status: once approved, their status adds little for a reader, and above the user story it is not kept up to date.
+
+User stories show how far their development is, in three steps:
+
+| Development | Status in the source | Meaning |
+| --- | --- | --- |
+| Planned | PBI Defined | Approved, not started yet. |
+| In development | DevTeam PBI In Progress, PBI INTERNAL QA, DevTeam PBI blocked | A team is building it. |
+| Developed | DevTeam PBI is ready for Implementation check, Ready for DG Acceptance, PBI Closed (resolution Done) | Built. Not necessarily released yet: the release follows from the version, not from the status. |

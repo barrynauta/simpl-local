@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 # SIMPL-9764: A Provider requests the revocation of a resource description via UI or API
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP05B](../../../../README.md) › [SIMPL-10768](../../../README.md) (L0) › [SIMPL-14699](../../README.md) (L1) › [SIMPL-14639](../README.md) (L2) › **SIMPL-9764** (Epic)
 

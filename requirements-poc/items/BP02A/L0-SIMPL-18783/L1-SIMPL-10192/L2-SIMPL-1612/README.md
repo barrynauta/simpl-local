@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP02A](../../../README.md) / [L0-SIMPL
 
 # SIMPL-1612: Tier 2 identity attributes configuration
 
-**L2 requirement (detailed requirement)** · Status **Defined**
+**L2 requirement (detailed requirement)**
 
 **Trace:** [BP02A](../../../README.md) › [SIMPL-18783](../../README.md) (L0) › [SIMPL-10192](../README.md) (L1) › **SIMPL-1612** (L2)
 
@@ -26,4 +26,4 @@ SIMPL shall provide a UI and API where:
 | --- | --- |
 | **Business process** | [BP02A](../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp02-configuration-governance-authority/bp02a-configure-idtrust-security-solution.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp02a-configure-idtrust-security-solution)) |
 | **Parent** | [SIMPL-10192](../README.md) (L1) Configure Dataspace Identity Attributes |
-| **Children** | [SIMPL-10199](Epic-SIMPL-10199/README.md) (Epic) Managing identity attributes<br>[SIMPL-10200](Epic-SIMPL-10200/README.md) (Epic) Making identity attributes assignable on Tier1 roles<br>[SIMPL-24949](Epic-SIMPL-24949/README.md) (Epic) Governance Authority marks identity attributes as public<br>[SIMPL-24950](Epic-SIMPL-24950/README.md) (Epic) Governance Authority marks identity attributes as federable<br>[SIMPL-28810](Epic-SIMPL-28810/README.md) (Epic) Governance authority manages the description of identity attributes |
+| **Children** | [SIMPL-24949](Epic-SIMPL-24949/README.md) (Epic) Governance Authority marks identity attributes as public<br>[SIMPL-24950](Epic-SIMPL-24950/README.md) (Epic) Governance Authority marks identity attributes as federable |

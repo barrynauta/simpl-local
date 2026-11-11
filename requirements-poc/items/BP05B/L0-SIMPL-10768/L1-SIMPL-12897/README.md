@@ -4,7 +4,7 @@ Folder: [items](../../../README.md) / [BP05B](../../README.md) / [L0-SIMPL-10768
 
 # SIMPL-12897: A Provider consults its own Resource descriptions
 
-**L1 requirement (high-level requirement)** · Status **Defined**
+**L1 requirement (high-level requirement)**
 
 **Trace:** [BP05B](../../README.md) › [SIMPL-10768](../README.md) (L0) › **SIMPL-12897** (L1)
 

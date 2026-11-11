@@ -4,7 +4,7 @@ Folder: [items](../../README.md) / [SA09](../README.md) / **L0-SIMPL-26074**
 
 # SIMPL-26074: SA09 - Data Provider manages consent assertions
 
-**L0 requirement (the business process as a requirement)** · Status **In Progress**
+**L0 requirement (the business process as a requirement)**
 
 **Trace:** [SA09](../README.md) › **SIMPL-26074** (L0)
 

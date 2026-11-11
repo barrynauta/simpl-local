@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.3 A Provider adds resource type specific metadata to a new Resource description](../bp5b2-provider-creates-new-resource-description.md#5b23-a-provider-adds-resource-type-specific-metadata-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.02 Add resource type specific metadata](../README.md#bp05b02-add-resource-type-specific-metadata).
 
-In the backlog (Jira) it is item SIMPL-21309. It has 2 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-21309. It has 2 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -28,12 +28,12 @@ In the backlog (Jira) it is item SIMPL-21309. It has 2 user stories, each with a
 
 ## User stories
 
-1. [[UI] Select Resource Type "Infrastructure" and Open Deployment Script Upload](#user-story-1-ui-select-resource-type-infrastructure-and-open-deployment-script-upload)
-2. [[UI] Upload Deployment Script in Popup Window](#user-story-2-ui-upload-deployment-script-in-popup-window)
+1. [[UI] Select Resource Type "Infrastructure" and Open Deployment Script Upload](#user-story-1-ui-select-resource-type-infrastructure-and-open-deployment-script-upload) · Developed
+2. [[UI] Upload Deployment Script in Popup Window](#user-story-2-ui-upload-deployment-script-in-popup-window) · Developed
 
 ### User story 1: [UI] Select Resource Type "Infrastructure" and Open Deployment Script Upload
 
-Backlog item SIMPL-10289
+**Development:** Developed · backlog item SIMPL-10289
 
 **As a** provider creating a resource description for an infrastructure resource,\
 **I want to** be able to upload a deployment script and related information while filling out the infrastructure resource description form,\
@@ -98,7 +98,7 @@ About the Hardcoded Provider List - we don't know which provider's will be suppo
 
 ### User story 2: [UI] Upload Deployment Script in Popup Window
 
-Backlog item SIMPL-13605
+**Development:** Developed · backlog item SIMPL-13605
 
 **As a** Provider creating a resource description for an infrastructure resource,\
 **I want to** fill out the deployment script popup with Title, Description, Cloud -Provider- Environment, and upload a deployment script,\

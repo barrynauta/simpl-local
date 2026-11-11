@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 # SIMPL-31426: Applicant provides participant contact email during onboarding
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP13](../../../../README.md) › [SIMPL-10783](../../../README.md) (L0) › [SIMPL-31424](../../README.md) (L1) › [SIMPL-31425](../README.md) (L2) › **SIMPL-31426** (Epic)
 

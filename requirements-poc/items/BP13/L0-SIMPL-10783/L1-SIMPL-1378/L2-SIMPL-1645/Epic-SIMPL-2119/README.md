@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 # SIMPL-2119: A Participant integrates their Simpl-Open agent with software firewall solutions
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP13](../../../../README.md) › [SIMPL-10783](../../../README.md) (L0) › [SIMPL-1378](../../README.md) (L1) › [SIMPL-1645](../README.md) (L2) › **SIMPL-2119** (Epic)
 

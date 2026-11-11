@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [SA01](../../../../README.md) / [L0-
 
 # SIMPL-19337: A Participant captures data orchestration workflow execution logs
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [SA01](../../../../README.md) › [SIMPL-16074](../../../README.md) (L0) › [SIMPL-19292](../../README.md) (L1) › [SIMPL-19321](../README.md) (L2) › **SIMPL-19337** (Epic)
 

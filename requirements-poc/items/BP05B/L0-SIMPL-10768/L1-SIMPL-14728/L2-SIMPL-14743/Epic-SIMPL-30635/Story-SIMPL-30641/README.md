@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-30641: A Provider removes contract clauses from a resource description via UI, resulting in a new version of the resource description
 
-**User story (implementable work)** · Status **PBI Defined**
+**User story (implementable work)** · Development: **Planned**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14728](../../../README.md) (L1) › [SIMPL-14743](../../README.md) (L2) › [SIMPL-30635](../README.md) (Epic) › **SIMPL-30641** (User story)
 

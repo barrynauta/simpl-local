@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 
 # SIMPL-28808: [API][IMPROVEMENT] Simpl-Open user to retrieve participant details
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [SA09](../../../../../README.md) › [SIMPL-26074](../../../../README.md) (L0) › [SIMPL-27082](../../../README.md) (L1) › [SIMPL-27154](../../README.md) (L2) › [SIMPL-27203](../README.md) (Epic) › **SIMPL-28808** (User story)
 

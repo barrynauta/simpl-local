@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [SA01](../../../../../README.md) 
 
 # SIMPL-30789: A Participant defines the service distribution model of a data orchestration workflow
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [SA01](../../../../../README.md) › [SIMPL-16074](../../../../README.md) (L0) › [SIMPL-30520](../../../README.md) (L1) › [SIMPL-30525](../../README.md) (L2) › [SIMPL-30526](../README.md) (Epic) › **SIMPL-30789** (User story)
 

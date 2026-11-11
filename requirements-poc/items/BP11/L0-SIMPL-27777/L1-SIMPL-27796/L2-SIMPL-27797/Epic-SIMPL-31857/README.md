@@ -4,9 +4,9 @@ Folder: [items](../../../../../README.md) / [BP11](../../../../README.md) / [L0-
 
 # SIMPL-31857: A Provider triggers the decommissioning of an infrastructure resource when the termination conditions from the usage contract are met
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP11](../../../../README.md) › [SIMPL-27777](../../../README.md) (L0) › [SIMPL-27796](../../README.md) (L1) › [SIMPL-27797](../README.md) (L2) › **SIMPL-31857** (Epic)
 

@@ -13,7 +13,7 @@ This is high-level requirement 5B.1 of business process [BP05B - Provider manage
 
 It has no process step of its own: a Provider consults its descriptions before deciding what to do, so it belongs to the [Trigger (resource description management)](./README.md#trigger--resource-description-management) of the process. The dynamic view shows it in [Retrieve SD metadata](bp05b-dynamic-view.md#retrieve-sd-metadata) and [Retrieve full self-description](bp05b-dynamic-view.md#retrieve-full-self-description).
 
-It is split into 3 detailed requirements, delivered through 6 Epics with 11 user stories in total. Each detailed requirement below says what Simpl-Open must do. Under it are its Epics: open one to read its user stories and their acceptance criteria.
+It is split into 3 detailed requirements, delivered through 5 Epics with 11 user stories in total. Each detailed requirement below says what Simpl-Open must do. Under it are its Epics: open one to read its user stories and their acceptance criteria.
 
 ## Description
 
@@ -29,7 +29,7 @@ Select a title to jump to its section below.
 | --- | --- | --- | --- | --- |
 | 5B.1.1 | [A Provider consults an overview of its Resource descriptions](#5b11-a-provider-consults-an-overview-of-its-resource-descriptions) | Trigger | 1 | 4 |
 | 5B.1.2 | [A Provider consults the details of one of its own resource descriptions](#5b12-a-provider-consults-the-details-of-one-of-its-own-resource-descriptions) | Trigger | 3 | 4 |
-| 5B.1.3 | [A Provider consults the version history of one of its own resource descriptions](#5b13-a-provider-consults-the-version-history-of-one-of-its-own-resource-descriptions) | Trigger | 2 | 3 |
+| 5B.1.3 | [A Provider consults the version history of one of its own resource descriptions](#5b13-a-provider-consults-the-version-history-of-one-of-its-own-resource-descriptions) | Trigger | 1 | 3 |
 
 ### 5B.1.1 A Provider consults an overview of its Resource descriptions
 
@@ -72,9 +72,7 @@ Simpl-Open shall allow a Provider via UI and API
 
 - to consult the version history of one of its own Resource descriptions.
 
-**Delivered through 2 Epics.** Each Epic page has the user stories and their acceptance criteria.
+**Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: A Provider consults the version history of one of its own resource descriptions](./bp5b1-provider-consults-its-own-resource-descriptions/simpl-13658-a-provider-consults-the-version-history-of-one-of-its-own-re.md)<br>
   *As a Provider, I want to retrieve the version history of one of my own resource descriptions via UI or API* · 3 user stories
-- [Epic: A Provider consults the version history of one of its own resource descriptions [Improvement]](./bp5b1-provider-consults-its-own-resource-descriptions/simpl-29371-a-provider-consults-the-version-history-of-one-of-its-own-re.md)<br>
-  *As a Provider, I want to retrieve the version history of one of my own resource descriptions via UI or API* · no user stories yet

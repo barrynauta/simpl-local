@@ -4,9 +4,9 @@ Folder: [items](../../../README.md) / [BP02A](../../README.md) / [L0-SIMPL-18783
 
 # SIMPL-31409: Governance Authority configures onboarding terms and conditions
 
-**L1 requirement (high-level requirement)** · Status **In Progress**
+**L1 requirement (high-level requirement)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP02A](../../README.md) › [SIMPL-18783](../README.md) (L0) › **SIMPL-31409** (L1)
 

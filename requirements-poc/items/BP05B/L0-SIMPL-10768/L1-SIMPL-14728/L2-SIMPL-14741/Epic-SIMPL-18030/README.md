@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 # SIMPL-18030: A Provider updates the usage policies of a new version of a resource description by using policy template via UI
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP05B](../../../../README.md) › [SIMPL-10768](../../../README.md) (L0) › [SIMPL-14728](../../README.md) (L1) › [SIMPL-14741](../README.md) (L2) › **SIMPL-18030** (Epic)
 
@@ -55,4 +55,4 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 | --- | --- |
 | **Business process** | [BP05B](../../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp05b-provider-manages-resource-descriptions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp05b-provider-manages-resource-descriptions)) |
 | **Parent** | [SIMPL-14741](../README.md) (L2) A Provider updates the usage policies of a new version of a Resource description |
-| **Children** | [SIMPL-31575](Story-SIMPL-31575/README.md) (User story) [UI] Provider sees the usage policies carried over from the previous resource description version<br>[SIMPL-31576](Story-SIMPL-31576/README.md) (User story) [UI] Provider selects a usage policy template in the new resource description version wizard<br>[SIMPL-31577](Story-SIMPL-31577/README.md) (User story) [UI] Provider fills in the usage policy template parameters in the new resource description version wizard<br>[SIMPL-31578](Story-SIMPL-31578/README.md) (User story) [UI] Provider removes a usage policy from the new resource description version<br>[SIMPL-31579](Story-SIMPL-31579/README.md) (User story) [UI] Provider saves the updated usage policies on the new resource description version |
+| **Children** | [SIMPL-31575](Story-SIMPL-31575/README.md) (User story) [UI] Provider sees the usage policies carried over from the previous resource description version<br>[SIMPL-31576](Story-SIMPL-31576/README.md) (User story) [UI] Provider selects a usage policy template in the new resource description version wizard<br>[SIMPL-31577](Story-SIMPL-31577/README.md) (User story) [UI] Provider fills in the usage policy template parameters in the new resource description version wizard<br>[SIMPL-31578](Story-SIMPL-31578/README.md) (User story) [UI] Provider removes a usage policy from the new resource description version |

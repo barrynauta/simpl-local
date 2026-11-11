@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.4.1 A Provider signs and submits a new Resource description or a new version of a Resource description](../bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md#5b41-a-provider-signs-and-submits-a-new-resource-description-or-a-new-version-of-a-resource-description), under high-level requirement [5B.4 A Provider signs and submits a new Resource description or a new version of a Resource description](../bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md). In the process it belongs to step [BP05B.04 Sign and submit the resource description](../README.md#bp05b04-sign-and-submit-the-resource-description).
 
-In the backlog (Jira) it is item SIMPL-2282. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-2282. It has 1 user story, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -30,11 +30,11 @@ In the backlog (Jira) it is item SIMPL-2282. It has 1 user story, each with acce
 
 ## User stories
 
-1. [[UI] A Provider views notifications about validation errors](#user-story-1-ui-a-provider-views-notifications-about-validation-errors)
+1. [[UI] A Provider views notifications about validation errors](#user-story-1-ui-a-provider-views-notifications-about-validation-errors) · Developed
 
 ### User story 1: [UI] A Provider views notifications about validation errors
 
-Backlog item SIMPL-21642
+**Development:** Developed · backlog item SIMPL-21642
 
 #### Storycard
 

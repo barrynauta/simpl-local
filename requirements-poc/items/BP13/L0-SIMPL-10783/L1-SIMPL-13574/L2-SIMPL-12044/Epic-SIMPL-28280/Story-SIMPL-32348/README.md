@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 # SIMPL-32348: A Participant uses the landing page to access the ticketing system
 
-**User story (implementable work)** · Status **PBI INTERNAL QA**
+**User story (implementable work)** · Development: **In development**
 
 **Trace:** [BP13](../../../../../README.md) › [SIMPL-10783](../../../../README.md) (L0) › [SIMPL-13574](../../../README.md) (L1) › [SIMPL-12044](../../README.md) (L2) › [SIMPL-28280](../README.md) (Epic) › **SIMPL-32348** (User story)
 

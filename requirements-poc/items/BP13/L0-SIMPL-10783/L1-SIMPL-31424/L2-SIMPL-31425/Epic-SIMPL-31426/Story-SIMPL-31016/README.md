@@ -4,9 +4,9 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 # SIMPL-31016: [UI][IMPROVEMENT] Governance authority views contact email address of an onboarding request
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP13](../../../../../README.md) › [SIMPL-10783](../../../../README.md) (L0) › [SIMPL-31424](../../../README.md) (L1) › [SIMPL-31425](../../README.md) (L2) › [SIMPL-31426](../README.md) (Epic) › **SIMPL-31016** (User story)
 

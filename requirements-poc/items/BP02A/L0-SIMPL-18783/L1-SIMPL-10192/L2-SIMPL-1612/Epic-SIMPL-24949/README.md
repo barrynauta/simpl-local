@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 # SIMPL-24949: Governance Authority marks identity attributes as public
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP02A](../../../../README.md) › [SIMPL-18783](../../../README.md) (L0) › [SIMPL-10192](../../README.md) (L1) › [SIMPL-1612](../README.md) (L2) › **SIMPL-24949** (Epic)
 

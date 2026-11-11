@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP02A](../../../../../README.md)
 
 # SIMPL-18671: [UI] [IMPROVEMENT] Participant detail page - Assign attributes
 
-**User story (implementable work)** · Status **Ready for DG Acceptance**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP02A](../../../../../README.md) › [SIMPL-18783](../../../../README.md) (L0) › [SIMPL-10171](../../../README.md) (L1) › [SIMPL-10174](../../README.md) (L2) › [SIMPL-10175](../README.md) (Epic) › **SIMPL-18671** (User story)
 

@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-1613: Tier 2 attributes management - services
 
-**L2 requirement (detailed requirement)** · Status **Defined**
+**L2 requirement (detailed requirement)**
 
 **Trace:** [BP13](../../../README.md) › [SIMPL-10783](../../README.md) (L0) › [SIMPL-1275](../README.md) (L1) › **SIMPL-1613** (L2)
 
@@ -21,4 +21,4 @@ SIMPL shall provide a service:
 | --- | --- |
 | **Business process** | [BP13](../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp13-it-administration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp13-it-administration)) |
 | **Parent** | [SIMPL-1275](../README.md) (L1) Agent setup and initialisation |
-| **Children** | [SIMPL-466](Epic-SIMPL-466/README.md) (Epic) Monitoring service for identity attributes syncronization<br>[SIMPL-467](Epic-SIMPL-467/README.md) (Epic) Synchronisation process for local identity attribute list update |
+| **Children** | None. |

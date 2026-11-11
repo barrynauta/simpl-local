@@ -21,4 +21,3 @@ The text of this detailed requirement is on the [5B.1 page](../bp5b1-provider-co
 The text of this detailed requirement is on the [5B.1 page](../bp5b1-provider-consults-its-own-resource-descriptions.md#5b13-a-provider-consults-the-version-history-of-one-of-its-own-resource-descriptions).
 
 - [Epic: A Provider consults the version history of one of its own resource descriptions](simpl-13658-a-provider-consults-the-version-history-of-one-of-its-own-re.md), 3 user stories
-- [Epic: A Provider consults the version history of one of its own resource descriptions [Improvement]](simpl-29371-a-provider-consults-the-version-history-of-one-of-its-own-re.md), no user stories yet

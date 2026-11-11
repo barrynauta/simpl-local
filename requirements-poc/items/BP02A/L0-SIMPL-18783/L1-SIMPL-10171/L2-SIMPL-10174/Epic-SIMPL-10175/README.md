@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP02A](../../../../README.md) / [L0
 
 # SIMPL-10175: Dataspace Governance authority links a subset of identity attributes to an onboarding procedure template
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP02A](../../../../README.md) › [SIMPL-18783](../../../README.md) (L0) › [SIMPL-10171](../../README.md) (L1) › [SIMPL-10174](../README.md) (L2) › **SIMPL-10175** (Epic)
 

@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-31425: Governance authority registers participants' contact email
 
-**L2 requirement (detailed requirement)** · Status **In Progress**
+**L2 requirement (detailed requirement)**
 
 **Trace:** [BP13](../../../README.md) › [SIMPL-10783](../../README.md) (L0) › [SIMPL-31424](../README.md) (L1) › **SIMPL-31425** (L2)
 

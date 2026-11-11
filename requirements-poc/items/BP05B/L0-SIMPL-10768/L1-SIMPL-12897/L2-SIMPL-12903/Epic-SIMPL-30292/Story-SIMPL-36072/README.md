@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-36072: A Provider selects a resource description and triggers the update of the resource consent status
 
-**User story (implementable work)** · Status **PBI Defined**
+**User story (implementable work)** · Development: **Planned**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-12897](../../../README.md) (L1) › [SIMPL-12903](../../README.md) (L2) › [SIMPL-30292](../README.md) (Epic) › **SIMPL-36072** (User story)
 

@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.5 A Provider assigns usage policies to a new Resource description](../bp5b2-provider-creates-new-resource-description.md#5b25-a-provider-assigns-usage-policies-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog (Jira) it is item SIMPL-960. It has 3 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-960. It has 3 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -38,13 +38,13 @@ In the backlog (Jira) it is item SIMPL-960. It has 3 user stories, each with acc
 
 ## User stories
 
-1. [API for Usage Policy](#user-story-1-api-for-usage-policy)
-2. [[API] Provider retrieves the list of usage policy templates](#user-story-2-api-provider-retrieves-the-list-of-usage-policy-templates)
-3. [[API] Provider retrieves the details of a usage policy template](#user-story-3-api-provider-retrieves-the-details-of-a-usage-policy-template)
+1. [API for Usage Policy](#user-story-1-api-for-usage-policy) · Developed
+2. [[API] Provider retrieves the list of usage policy templates](#user-story-2-api-provider-retrieves-the-list-of-usage-policy-templates) · Developed
+3. [[API] Provider retrieves the details of a usage policy template](#user-story-3-api-provider-retrieves-the-details-of-a-usage-policy-template) · Developed
 
 ### User story 1: API for Usage Policy
 
-Backlog item SIMPL-3241
+**Development:** Developed · backlog item SIMPL-3241
 
 **As a** Provider User\
 **I want to** use an API to assign the previously formulated machine-readable usage policies to the self-description and thus to the dataset/application/infrastructure\
@@ -150,7 +150,7 @@ Once US is done the related US can be closed/marked as done
 
 ### User story 2: [API] Provider retrieves the list of usage policy templates
 
-Backlog item SIMPL-31385
+**Development:** Developed · backlog item SIMPL-31385
 
 #### Story card
 
@@ -208,7 +208,7 @@ Backlog item SIMPL-31385
 
 ### User story 3: [API] Provider retrieves the details of a usage policy template
 
-Backlog item SIMPL-31386
+**Development:** Developed · backlog item SIMPL-31386
 
 #### Story card
 

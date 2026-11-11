@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-19784: [UI] A Provider requests the revocation of a Resource description via UI
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14699](../../../README.md) (L1) › [SIMPL-14639](../../README.md) (L2) › [SIMPL-9764](../README.md) (Epic) › **SIMPL-19784** (User story)
 

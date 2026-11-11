@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [SA09](../../../../../README.md) 
 
 # SIMPL-30310: [UI][IMPROVEMENT] User responsible for self description views catalogue UI link in a resource consent assertion
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
 **Trace:** [SA09](../../../../../README.md) › [SIMPL-26074](../../../../README.md) (L0) › [SIMPL-27082](../../../README.md) (L1) › [SIMPL-27156](../../README.md) (L2) › [SIMPL-30295](../README.md) (Epic) › **SIMPL-30310** (User story)
 

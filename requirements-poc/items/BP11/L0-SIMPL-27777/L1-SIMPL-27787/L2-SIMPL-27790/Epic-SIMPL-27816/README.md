@@ -4,9 +4,9 @@ Folder: [items](../../../../../README.md) / [BP11](../../../../README.md) / [L0-
 
 # SIMPL-27816: A Provider suspends a usage contract by providing a reason
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP11](../../../../README.md) › [SIMPL-27777](../../../README.md) (L0) › [SIMPL-27787](../../README.md) (L1) › [SIMPL-27790](../README.md) (L2) › **SIMPL-27816** (Epic)
 
@@ -16,4 +16,4 @@ Folder: [items](../../../../../README.md) / [BP11](../../../../README.md) / [L0-
 | --- | --- |
 | **Business process** | [BP11](../../../../README.md) (no public page) |
 | **Parent** | [SIMPL-27790](../README.md) (L2) A Provider suspends a usage contract by providing a reason |
-| **Children** | [SIMPL-31115](Story-SIMPL-31115/README.md) (User story) A Provider suspends a usage contract by providing a reason in their contract manager UI<br>[SIMPL-31204](Story-SIMPL-31204/README.md) (User story) The Consumers receives a notification when the Provider has suspended their usage contract<br>[SIMPL-31229](Story-SIMPL-31229/README.md) (User story) [API] - API to suspend a usage contract |
+| **Children** | None. |

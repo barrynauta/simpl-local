@@ -4,7 +4,7 @@ Folder: [items](../../../../README.md) / [BP13](../../../README.md) / [L0-SIMPL-
 
 # SIMPL-1627: Virtualisation ready
 
-**L2 requirement (detailed requirement)** · Status **Defined**
+**L2 requirement (detailed requirement)**
 
 **Trace:** [BP13](../../../README.md) › [SIMPL-10783](../../README.md) (L0) › [SIMPL-1376](../README.md) (L1) › **SIMPL-1627** (L2)
 
@@ -24,4 +24,4 @@ Simpl shall:
 | --- | --- |
 | **Business process** | [BP13](../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp13-it-administration/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp13-it-administration)) |
 | **Parent** | [SIMPL-1376](../README.md) (L1) Infrastructure interoperability |
-| **Children** | [SIMPL-2089](Epic-SIMPL-2089/README.md) (Epic) Offer Virtualization-Ready Minimal Consumer Agent Image<br>[SIMPL-2090](Epic-SIMPL-2090/README.md) (Epic) VM Repository for Minimal Consumer Agent Image<br>[SIMPL-2091](Epic-SIMPL-2091/README.md) (Epic) Select a Standard for the building and registry of the Agent image |
+| **Children** | None. |

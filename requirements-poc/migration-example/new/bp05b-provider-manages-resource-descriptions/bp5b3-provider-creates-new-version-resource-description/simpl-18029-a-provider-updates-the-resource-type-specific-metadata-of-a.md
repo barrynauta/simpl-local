@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.3.2 A Provider updates the resource type specific metadata of a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md#5b32-a-provider-updates-the-resource-type-specific-metadata-of-a-new-version-of-a-resource-description), under high-level requirement [5B.3 A Provider creates a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md). In the process it belongs to step [BP05B.09 Update resource type specific metadata](../README.md#bp05b09-update-resource-type-specific-metadata).
 
-In the backlog (Jira) it is item SIMPL-18029. It has 3 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-18029. It has 3 user stories, each with acceptance criteria that say when the work is done. For each story, the development status shows whether it is Planned, In development or Developed (built, not necessarily released yet).
 
 ## What this Epic delivers
 
@@ -29,13 +29,13 @@ In the backlog (Jira) it is item SIMPL-18029. It has 3 user stories, each with a
 
 ## User stories
 
-1. [[UI] Update data resource type specific metadata to new RD version](#user-story-1-ui-update-data-resource-type-specific-metadata-to-new-rd-version)
-2. [[UI] Update application resource type specific metadata to new RD version](#user-story-2-ui-update-application-resource-type-specific-metadata-to-new-rd-version)
-3. [[UI] Update infrastructure resource type specific metadata to new RD version](#user-story-3-ui-update-infrastructure-resource-type-specific-metadata-to-new-rd-version)
+1. [[UI] Update data resource type specific metadata to new RD version](#user-story-1-ui-update-data-resource-type-specific-metadata-to-new-rd-version) · Developed
+2. [[UI] Update application resource type specific metadata to new RD version](#user-story-2-ui-update-application-resource-type-specific-metadata-to-new-rd-version) · Developed
+3. [[UI] Update infrastructure resource type specific metadata to new RD version](#user-story-3-ui-update-infrastructure-resource-type-specific-metadata-to-new-rd-version) · Developed
 
 ### User story 1: [UI] Update data resource type specific metadata to new RD version
 
-Backlog item SIMPL-18685
+**Development:** Developed · backlog item SIMPL-18685
 
 #### Storycard
 
@@ -56,7 +56,7 @@ Backlog item SIMPL-18685
 
 ### User story 2: [UI] Update application resource type specific metadata to new RD version
 
-Backlog item SIMPL-20970
+**Development:** Developed · backlog item SIMPL-20970
 
 #### Storycard
 
@@ -77,7 +77,7 @@ Backlog item SIMPL-20970
 
 ### User story 3: [UI] Update infrastructure resource type specific metadata to new RD version
 
-Backlog item SIMPL-21641
+**Development:** Developed · backlog item SIMPL-21641
 
 #### Storycard
 

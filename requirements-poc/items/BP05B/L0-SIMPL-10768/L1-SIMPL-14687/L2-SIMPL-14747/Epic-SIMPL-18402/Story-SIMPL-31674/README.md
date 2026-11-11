@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-31674: [UI] Provider sees the policy syntax validation outcome in the RD editor for new RD version
 
-**User story (implementable work)** · Status **PBI INTERNAL QA**
+**User story (implementable work)** · Development: **In development**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14687](../../../README.md) (L1) › [SIMPL-14747](../../README.md) (L2) › [SIMPL-18402](../README.md) (Epic) › **SIMPL-31674** (User story)
 

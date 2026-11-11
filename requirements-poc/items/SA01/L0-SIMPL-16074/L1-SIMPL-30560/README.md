@@ -4,7 +4,7 @@ Folder: [items](../../../README.md) / [SA01](../../README.md) / [L0-SIMPL-16074]
 
 # SIMPL-30560: Participant executes workflow on saved distribution configuration
 
-**L1 requirement (high-level requirement)** · Status **Defined**
+**L1 requirement (high-level requirement)**
 
 **Trace:** [SA01](../../README.md) › [SIMPL-16074](../README.md) (L0) › **SIMPL-30560** (L1)
 

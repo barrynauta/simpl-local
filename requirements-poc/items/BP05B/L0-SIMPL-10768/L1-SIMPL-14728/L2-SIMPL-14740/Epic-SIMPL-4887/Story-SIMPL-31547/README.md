@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-31547: [UI] Provider saves the updated access policies on the new resource description version
 
-**User story (implementable work)** · Status **PBI Defined**
+**User story (implementable work)** · Development: **Planned**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14728](../../../README.md) (L1) › [SIMPL-14740](../../README.md) (L2) › [SIMPL-4887](../README.md) (Epic) › **SIMPL-31547** (User story)
 

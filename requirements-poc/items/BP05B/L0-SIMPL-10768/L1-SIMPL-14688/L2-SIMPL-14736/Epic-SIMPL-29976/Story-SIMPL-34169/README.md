@@ -4,7 +4,7 @@ Folder: [items](../../../../../../README.md) / [BP05B](../../../../../README.md)
 
 # SIMPL-34169: [UI] Add Intended Purpose Contract Clause to Resource Description
 
-**User story (implementable work)** · Status **PBI Defined**
+**User story (implementable work)** · Development: **Planned**
 
 **Trace:** [BP05B](../../../../../README.md) › [SIMPL-10768](../../../../README.md) (L0) › [SIMPL-14688](../../../README.md) (L1) › [SIMPL-14736](../../README.md) (L2) › [SIMPL-29976](../README.md) (Epic) › **SIMPL-34169** (User story)
 

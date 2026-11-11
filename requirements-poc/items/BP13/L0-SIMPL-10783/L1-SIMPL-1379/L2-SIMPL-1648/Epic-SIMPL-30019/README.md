@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP13](../../../../README.md) / [L0-
 
 # SIMPL-30019: A Provider sets the VPN configuration for data transfer between the data resource source and their Simpl-Open agent
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP13](../../../../README.md) › [SIMPL-10783](../../../README.md) (L0) › [SIMPL-1379](../../README.md) (L1) › [SIMPL-1648](../README.md) (L2) › **SIMPL-30019** (Epic)
 

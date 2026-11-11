@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 # SIMPL-18026: A Provider notifies Consumers about the revocation of a resource description
 
-**Epic (deliverable, testable feature)** · Status **In Progress**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP05B](../../../../README.md) › [SIMPL-10768](../../../README.md) (L0) › [SIMPL-21117](../../README.md) (L1) › [SIMPL-14642](../README.md) (L2) › **SIMPL-18026** (Epic)
 

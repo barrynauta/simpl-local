@@ -4,9 +4,9 @@ Folder: [items](../../../../../../README.md) / [BP13](../../../../../README.md) 
 
 # SIMPL-31743: [IMPROVEMENT][API] Consumer and Provider publishes its credentials as a certificate chain in pem format via public endpoint
 
-**User story (implementable work)** · Status **DevTeam PBI is ready for Implementation check**
+**User story (implementable work)** · Development: **Developed**
 
-> **Not published.** This item is not published on the requirements website, so only its key, level, title and status are shown.
+> **Not published.** This item is not published on the requirements website, so only its key, level and title are shown.
 
 **Trace:** [BP13](../../../../../README.md) › [SIMPL-10783](../../../../README.md) (L0) › [SIMPL-32447](../../../README.md) (L1) › [SIMPL-32448](../../README.md) (L2) › [SIMPL-32449](../README.md) (Epic) › **SIMPL-31743** (User story)
 

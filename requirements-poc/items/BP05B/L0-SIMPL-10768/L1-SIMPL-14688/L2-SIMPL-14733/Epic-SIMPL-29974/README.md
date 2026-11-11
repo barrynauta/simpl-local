@@ -4,7 +4,7 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 
 # SIMPL-29974: A Provider assigns access policies related to contract consent to a new resource description via UI
 
-**Epic (deliverable, testable feature)** · Status **Defined**
+**Epic (deliverable, testable feature)**
 
 **Trace:** [BP05B](../../../../README.md) › [SIMPL-10768](../../../README.md) (L0) › [SIMPL-14688](../../README.md) (L1) › [SIMPL-14733](../README.md) (L2) › **SIMPL-29974** (Epic)
 
@@ -31,4 +31,4 @@ Folder: [items](../../../../../README.md) / [BP05B](../../../../README.md) / [L0
 | --- | --- |
 | **Business process** | [BP05B](../../../../README.md) ([public process page](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/blob/main/bp05b-provider-manages-resource-descriptions/README.md) · [requirements site](https://simpl-programme.ec.europa.eu/book-page/bp05b-provider-manages-resource-descriptions)) |
 | **Parent** | [SIMPL-14733](../README.md) (L2) A Provider assigns access policies to a new Resource description |
-| **Children** | [SIMPL-34176](Story-SIMPL-34176/README.md) (User story) [UI] Configure Contract Consent Access Policy for Resource Descriptions |
+| **Children** | None. |

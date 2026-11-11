@@ -8,4 +8,3 @@ The text of this detailed requirement is on the [5B.4 page](../bp5b4-provider-si
 
 - [Epic: A Provider receives notifications about validation errors via UI or API](simpl-2282-a-provider-receives-notifications-about-validation-errors-vi.md), 1 user story
 - [Epic: A Provider signs and submits a new Resource description or a new version of a Resource description](simpl-2292-a-provider-signs-and-submits-a-new-resource-description-or-a.md), 12 user stories
-- [Epic: A Provider signs and submits a new Resource description or a new version of a Resource description [Improvement]](simpl-26078-a-provider-signs-and-submits-a-new-resource-description-or-a.md), no user stories yet
