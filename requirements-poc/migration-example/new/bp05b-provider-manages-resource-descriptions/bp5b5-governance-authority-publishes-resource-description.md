@@ -9,7 +9,7 @@
 
 ## About this requirement
 
-This is high-level requirement 5B.5 of business process [BP05B - Provider manages resource descriptions](./README.md). In the backlog it is item SIMPL-14687, status **In Progress**. The status is the one in the backlog (Jira). The requirements site shows all requirements as Proposed.
+This is high-level requirement 5B.5 of business process [BP05B - Provider manages resource descriptions](./README.md). In the backlog (Jira) it is item SIMPL-14687.
 
 In the process it covers 4 steps: [BP05B.05 Validate the resource description](./README.md#bp05b05-validate-the-resource-description), [BP05B.06 Remediate validation issues](./README.md#bp05b06-remediate-validation-issues), [BP05B.07 Publish the resource description](./README.md#bp05b07-publish-the-resource-description) and [BP05B.11 Revoke the previous version of the resource description](./README.md#bp05b11-revoke-the-previous-version-of-the-resource-description). The dynamic view shows it in [Define and publish self-description](bp05b-dynamic-view.md#define-and-publish-self-description) and [the technology components view](bp05b-tcv-dynamic-view.md).
 
@@ -25,25 +25,24 @@ Simpl-Open shall support the Governance Authority
 
 Select a title to jump to its section below.
 
-| ID | Detailed requirement | Status | Process step | Epics | User stories |
-| --- | --- | --- | --- | --- | --- |
-| 5B.5.1 | [The Governance Authority validates the schema of a new Resource description or a new version of a Resource Description](#5b51-the-governance-authority-validates-the-schema-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | Defined | BP05B.05 Validate the resource description | 1 | 1 |
-| 5B.5.2 | [The Governance Authority notifies a Provider about an inactive schema](#5b52-the-governance-authority-notifies-a-provider-about-an-inactive-schema) | Defined | BP05B.06 Remediate validation issues | 1 | 1 |
-| 5B.5.3 | [The Governance Authority validates the versioning of a new version of a Resource description](#5b53-the-governance-authority-validates-the-versioning-of-a-new-version-of-a-resource-description) | Defined | BP05B.05 Validate the resource description | 1 | 1 |
-| 5B.5.4 | [The Governance Authority notifies a Provider about wrong versioning of new versions of a Resource description](#5b54-the-governance-authority-notifies-a-provider-about-wrong-versioning-of-new-versions-of-a-resource-description) | Defined | BP05B.06 Remediate validation issues | 1 | 1 |
-| 5B.5.5 | [The Governance Authority validates the syntax of a new Resource description or a new version of a Resource Description](#5b55-the-governance-authority-validates-the-syntax-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | In Progress | BP05B.05 Validate the resource description | 2 | 3 |
-| 5B.5.6 | [The Governance Authority provides feedback to a Provider about syntax validation errors](#5b56-the-governance-authority-provides-feedback-to-a-provider-about-syntax-validation-errors) | In Progress | BP05B.06 Remediate validation issues | 2 | 2 |
-| 5B.5.7 | [The Governance Authority validates the semantics of a new Resource description or a new version of a Resource Description](#5b57-the-governance-authority-validates-the-semantics-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | Defined | BP05B.05 Validate the resource description | 2 | 2 |
-| 5B.5.8 | [The Governance Authority provides feedback to a Provider about semantic validation errors](#5b58-the-governance-authority-provides-feedback-to-a-provider-about-semantic-validation-errors) | Defined | BP05B.06 Remediate validation issues | 1 | 1 |
-| 5B.5.9 | [The Governance Authority publishes a new Resource description or a new version of a Resource description](#5b59-the-governance-authority-publishes-a-new-resource-description-or-a-new-version-of-a-resource-description) | Defined | BP05B.07 Publish the resource description | 1 | 0 |
-| 5B.5.10 | [The Governance Authority revokes the previous version of a Resource description](#5b510-the-governance-authority-revokes-the-previous-version-of-a-resource-description) | Defined | BP05B.11 Revoke the previous version of the resource description | 1 | 1 |
-| 5B.5.11 | [The Governance Authority evaluates the metadata quality of a new resource description or a new version of a resource description](#5b511-the-governance-authority-evaluates-the-metadata-quality-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | Defined | BP05B.05 Validate the resource description | 1 | 3 |
-| 5B.5.12 | [The Governance Authority notifies the Provider about the metadata quality](#5b512-the-governance-authority-notifies-the-provider-about-the-metadata-quality) | Defined | BP05B.06 Remediate validation issues | 1 | 1 |
-| 5B.5.13 | [The Governance Authority approves/rejects the metadata of a new resource description or a new version of a resource description](#5b513-the-governance-authority-approvesrejects-the-metadata-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | Defined | BP05B.05 Validate the resource description | 1 | 1 |
+| ID | Detailed requirement | Process step | Epics | User stories |
+| --- | --- | --- | --- | --- |
+| 5B.5.1 | [The Governance Authority validates the schema of a new Resource description or a new version of a Resource Description](#5b51-the-governance-authority-validates-the-schema-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | BP05B.05 Validate the resource description | 1 | 1 |
+| 5B.5.2 | [The Governance Authority notifies a Provider about an inactive schema](#5b52-the-governance-authority-notifies-a-provider-about-an-inactive-schema) | BP05B.06 Remediate validation issues | 1 | 1 |
+| 5B.5.3 | [The Governance Authority validates the versioning of a new version of a Resource description](#5b53-the-governance-authority-validates-the-versioning-of-a-new-version-of-a-resource-description) | BP05B.05 Validate the resource description | 1 | 1 |
+| 5B.5.4 | [The Governance Authority notifies a Provider about wrong versioning of new versions of a Resource description](#5b54-the-governance-authority-notifies-a-provider-about-wrong-versioning-of-new-versions-of-a-resource-description) | BP05B.06 Remediate validation issues | 1 | 1 |
+| 5B.5.5 | [The Governance Authority validates the syntax of a new Resource description or a new version of a Resource Description](#5b55-the-governance-authority-validates-the-syntax-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | BP05B.05 Validate the resource description | 2 | 3 |
+| 5B.5.6 | [The Governance Authority provides feedback to a Provider about syntax validation errors](#5b56-the-governance-authority-provides-feedback-to-a-provider-about-syntax-validation-errors) | BP05B.06 Remediate validation issues | 2 | 2 |
+| 5B.5.7 | [The Governance Authority validates the semantics of a new Resource description or a new version of a Resource Description](#5b57-the-governance-authority-validates-the-semantics-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | BP05B.05 Validate the resource description | 2 | 2 |
+| 5B.5.8 | [The Governance Authority provides feedback to a Provider about semantic validation errors](#5b58-the-governance-authority-provides-feedback-to-a-provider-about-semantic-validation-errors) | BP05B.06 Remediate validation issues | 1 | 1 |
+| 5B.5.9 | [The Governance Authority publishes a new Resource description or a new version of a Resource description](#5b59-the-governance-authority-publishes-a-new-resource-description-or-a-new-version-of-a-resource-description) | BP05B.07 Publish the resource description | 1 | 0 |
+| 5B.5.10 | [The Governance Authority revokes the previous version of a Resource description](#5b510-the-governance-authority-revokes-the-previous-version-of-a-resource-description) | BP05B.11 Revoke the previous version of the resource description | 1 | 1 |
+| 5B.5.11 | [The Governance Authority evaluates the metadata quality of a new resource description or a new version of a resource description](#5b511-the-governance-authority-evaluates-the-metadata-quality-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | BP05B.05 Validate the resource description | 1 | 3 |
+| 5B.5.12 | [The Governance Authority notifies the Provider about the metadata quality](#5b512-the-governance-authority-notifies-the-provider-about-the-metadata-quality) | BP05B.06 Remediate validation issues | 1 | 1 |
+| 5B.5.13 | [The Governance Authority approves/rejects the metadata of a new resource description or a new version of a resource description](#5b513-the-governance-authority-approvesrejects-the-metadata-of-a-new-resource-description-or-a-new-version-of-a-resource-description) | BP05B.05 Validate the resource description | 1 | 1 |
 
 ### 5B.5.1 The Governance Authority validates the schema of a new Resource description or a new version of a Resource Description
 
-**Status:** Defined (backlog item SIMPL-14689)<br>
 **Process step:** [BP05B.05 Validate the resource description](./README.md#bp05b05-validate-the-resource-description)<br>
 **Public text:** [5B.5.1 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b51-governance-authority-validates-schema-new-resource-description-or-new-version)
 
@@ -54,11 +53,10 @@ Simpl-Open shall support the Governance Authority
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority checks the schema of a new resource description or a new version of a resource description](./bp5b5-governance-authority-publishes-resource-description/simpl-17332-the-governance-authority-checks-the-schema-of-a-new-resource.md)<br>
-  *As Governance Authority, I want to automatically check the schema of a new resource description or new version of a resource description* · 1 user story · status Defined
+  *As Governance Authority, I want to automatically check the schema of a new resource description or new version of a resource description* · 1 user story
 
 ### 5B.5.2 The Governance Authority notifies a Provider about an inactive schema
 
-**Status:** Defined (backlog item SIMPL-14746)<br>
 **Process step:** [BP05B.06 Remediate validation issues](./README.md#bp05b06-remediate-validation-issues)<br>
 **Public text:** [5B.5.2 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b52-governance-authority-notifies-provider-about-inactive-schema)
 
@@ -69,11 +67,10 @@ Simpl-Open shall support the Governance Authority
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority notifies a Provider about an invalid schema](./bp5b5-governance-authority-publishes-resource-description/simpl-17798-the-governance-authority-notifies-a-provider-about-an-invali.md)<br>
-  *As Governance Authority, I want to notify a Provider about an invalid schema of a new resource description or a new version of a resource description* · 1 user story · status Defined
+  *As Governance Authority, I want to notify a Provider about an invalid schema of a new resource description or a new version of a resource description* · 1 user story
 
 ### 5B.5.3 The Governance Authority validates the versioning of a new version of a Resource description
 
-**Status:** Defined (backlog item SIMPL-14864)<br>
 **Process step:** [BP05B.05 Validate the resource description](./README.md#bp05b05-validate-the-resource-description)<br>
 **Public text:** [5B.5.3 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b53-governance-authority-validates-versioning-new-version-resource-description)
 
@@ -84,11 +81,10 @@ Simpl-Open shall support the Governance Authority
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority checks the version number of a new version of a Resource description](./bp5b5-governance-authority-publishes-resource-description/simpl-17799-the-governance-authority-checks-the-version-number-of-a-new.md)<br>
-  *As Governance Authority, I want to automatically check the version number of a new version of a resource description* · 1 user story · status Defined
+  *As Governance Authority, I want to automatically check the version number of a new version of a resource description* · 1 user story
 
 ### 5B.5.4 The Governance Authority notifies a Provider about wrong versioning of new versions of a Resource description
 
-**Status:** Defined (backlog item SIMPL-14865)<br>
 **Process step:** [BP05B.06 Remediate validation issues](./README.md#bp05b06-remediate-validation-issues)<br>
 **Public text:** [5B.5.4 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b54-governance-authority-notifies-provider-about-wrong-versioning-new-versions)
 
@@ -99,11 +95,10 @@ Simpl-Open shall support the Governance Authority
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority notifies a Provider about a wrong version number of a new version of a Resource description](./bp5b5-governance-authority-publishes-resource-description/simpl-17800-the-governance-authority-notifies-a-provider-about-a-wrong-v.md)<br>
-  *As Governance Authority, I want to notify Providers about a wrong version number of a new version of a resource description* · 1 user story · status Defined
+  *As Governance Authority, I want to notify Providers about a wrong version number of a new version of a resource description* · 1 user story
 
 ### 5B.5.5 The Governance Authority validates the syntax of a new Resource description or a new version of a Resource Description
 
-**Status:** In Progress (backlog item SIMPL-14747)<br>
 **Process step:** [BP05B.05 Validate the resource description](./README.md#bp05b05-validate-the-resource-description)<br>
 **Public text:** [5B.5.5 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b55-governance-authority-validates-syntax-new-resource-description-or-new-version)
 
@@ -114,13 +109,12 @@ Simpl-Open shall support the Governance Authority
 **Delivered through 2 Epics.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority checks the syntax of a new Resource description or a new version of a Resource Description](./bp5b5-governance-authority-publishes-resource-description/simpl-982-the-governance-authority-checks-the-syntax-of-a-new-resource.md)<br>
-  *As Governance Authority, I want to automatically check the syntax of a new resource description or a new version of a resource description* · 1 user story · status Defined
+  *As Governance Authority, I want to automatically check the syntax of a new resource description or a new version of a resource description* · 1 user story
 - [Epic: The Governance Authority validates the syntax of the policies assigned to a new Resource description or a new version of a Resource Description](./bp5b5-governance-authority-publishes-resource-description/simpl-18402-the-governance-authority-validates-the-syntax-of-the-policie.md)<br>
-  *As a Governance Authority, I want to automatically validate the syntax of policies in a new resource description or a new version of a resource description* · 2 user stories · status In Progress
+  *As a Governance Authority, I want to automatically validate the syntax of policies in a new resource description or a new version of a resource description* · 2 user stories
 
 ### 5B.5.6 The Governance Authority provides feedback to a Provider about syntax validation errors
 
-**Status:** In Progress (backlog item SIMPL-14748)<br>
 **Process step:** [BP05B.06 Remediate validation issues](./README.md#bp05b06-remediate-validation-issues)<br>
 **Public text:** [5B.5.6 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b56-governance-authority-notifies-provider-about-syntax-validation-errors)
 
@@ -131,13 +125,12 @@ Simpl-Open shall support the Governance Authority
 **Delivered through 2 Epics.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority notifies a Provider about syntax validation errors](./bp5b5-governance-authority-publishes-resource-description/simpl-17801-the-governance-authority-notifies-a-provider-about-syntax-va.md)<br>
-  *As Governance Authority, I want to notify a Provider about invalid syntax of a new resource description or a new version of a resource description* · 1 user story · status Defined
+  *As Governance Authority, I want to notify a Provider about invalid syntax of a new resource description or a new version of a resource description* · 1 user story
 - [Epic: The Governance Authority provides feedback to a Provider about syntax validation errors of a policy](./bp5b5-governance-authority-publishes-resource-description/simpl-25371-the-governance-authority-provides-feedback-to-a-provider-abo.md)<br>
-  *As a Governance Authority, I want to provide feedback to a Provider about invalid syntax of a policy in a resource description* · 1 user story · status In Progress
+  *As a Governance Authority, I want to provide feedback to a Provider about invalid syntax of a policy in a resource description* · 1 user story
 
 ### 5B.5.7 The Governance Authority validates the semantics of a new Resource description or a new version of a Resource Description
 
-**Status:** Defined (backlog item SIMPL-14749)<br>
 **Process step:** [BP05B.05 Validate the resource description](./README.md#bp05b05-validate-the-resource-description)<br>
 **Public text:** [5B.5.7 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b57-governance-authority-validates-semantics-new-resource-description-or-new-version)
 
@@ -148,13 +141,12 @@ Simpl-Open shall support the Governance Authority
 **Delivered through 2 Epics.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority checks the semantics of a new Resource description or a new version of a Resource Description](./bp5b5-governance-authority-publishes-resource-description/simpl-889-the-governance-authority-checks-the-semantics-of-a-new-resou.md)<br>
-  *As Governance Authority, I want to check the semantics of a new resource description or a new version of a resource description* · 2 user stories · status Defined
+  *As Governance Authority, I want to check the semantics of a new resource description or a new version of a resource description* · 2 user stories
 - [Epic: The Governance Authority checks the semantics of a new Resource description or a new version of a Resource Description [Extension Consent]](./bp5b5-governance-authority-publishes-resource-description/simpl-29978-the-governance-authority-checks-the-semantics-of-a-new-resou.md)<br>
-  no user stories yet · status Defined
+  no user stories yet
 
 ### 5B.5.8 The Governance Authority provides feedback to a Provider about semantic validation errors
 
-**Status:** Defined (backlog item SIMPL-14750)<br>
 **Process step:** [BP05B.06 Remediate validation issues](./README.md#bp05b06-remediate-validation-issues)<br>
 **Public text:** [5B.5.8 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b58-governance-authority-notifies-provider-about-semantic-validation-errors)
 
@@ -165,11 +157,10 @@ Simpl-Open shall support the Governance Authority
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority provides feedback to a Provider about semantic validation errors](./bp5b5-governance-authority-publishes-resource-description/simpl-18040-the-governance-authority-provides-feedback-to-a-provider-abo.md)<br>
-  *As Governance Authority, I want to provide feedback to a Provider about invalid semantics of a new resource description or a new version of a resource description* · 1 user story · status Defined
+  *As Governance Authority, I want to provide feedback to a Provider about invalid semantics of a new resource description or a new version of a resource description* · 1 user story
 
 ### 5B.5.9 The Governance Authority publishes a new Resource description or a new version of a Resource description
 
-**Status:** Defined (backlog item SIMPL-14753)<br>
 **Process step:** [BP05B.07 Publish the resource description](./README.md#bp05b07-publish-the-resource-description)<br>
 **Public text:** [5B.5.9 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b59-governance-authority-publishes-new-resource-description-or-new-version-resource)
 
@@ -180,11 +171,10 @@ Simpl-Open shall support the Governance authority
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority publishes a new resource description or a new version of a resource description](./bp5b5-governance-authority-publishes-resource-description/simpl-4890-the-governance-authority-publishes-a-new-resource-descriptio.md)<br>
-  *As Governance Authority, I want to automatically publish a valid new Resource description or a valid new version of a Resource description in the catalogue* · no user stories yet · status Defined
+  *As Governance Authority, I want to automatically publish a valid new Resource description or a valid new version of a Resource description in the catalogue* · no user stories yet
 
 ### 5B.5.10 The Governance Authority revokes the previous version of a Resource description
 
-**Status:** Defined (backlog item SIMPL-14754)<br>
 **Process step:** [BP05B.11 Revoke the previous version of the resource description](./README.md#bp05b11-revoke-the-previous-version-of-the-resource-description)<br>
 **Public text:** [5B.5.10 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b510-governance-authority-revokes-previous-version-resource-description)
 
@@ -195,11 +185,10 @@ Simpl-Open shall support the Governance Authority
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority revokes the previous version of a new version of a resource description](./bp5b5-governance-authority-publishes-resource-description/simpl-18041-the-governance-authority-revokes-the-previous-version-of-a-n.md)<br>
-  *As Governance Authority, I want to revoke the previous version of a new version of a resource description* · 1 user story · status Defined
+  *As Governance Authority, I want to revoke the previous version of a new version of a resource description* · 1 user story
 
 ### 5B.5.11 The Governance Authority evaluates the metadata quality of a new resource description or a new version of a resource description
 
-**Status:** Defined (backlog item SIMPL-22687)<br>
 **Process step:** [BP05B.05 Validate the resource description](./README.md#bp05b05-validate-the-resource-description)<br>
 **Public text:** [5B.5.11 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b511-governance-authority-evaluates-metadata-quality-new-resource-description-or-new)
 
@@ -215,11 +204,10 @@ The calculated metadata quality scores represent the current evaluation of the r
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority evaluates the metadata quality of a Resource description](./bp5b5-governance-authority-publishes-resource-description/simpl-24060-the-governance-authority-evaluates-the-metadata-quality-of-a.md)<br>
-  *As Governance Authority, I want Simpl-Open to automatically evaluate the metadata quality of a submitted resource description or a new version of a resource description by calculating* · 3 user stories · status Defined
+  *As Governance Authority, I want Simpl-Open to automatically evaluate the metadata quality of a submitted resource description or a new version of a resource description by calculating* · 3 user stories
 
 ### 5B.5.12 The Governance Authority notifies the Provider about the metadata quality
 
-**Status:** Defined (backlog item SIMPL-22688)<br>
 **Process step:** [BP05B.06 Remediate validation issues](./README.md#bp05b06-remediate-validation-issues)<br>
 **Public text:** [5B.5.12 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b512-governance-authority-notifies-provider-about-metadata-quality)
 
@@ -244,11 +232,10 @@ Simpl-Open shall provide this retrieval capability via the UI and API without re
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority notifies the Provider about metadata quality results](./bp5b5-governance-authority-publishes-resource-description/simpl-24062-the-governance-authority-notifies-the-provider-about-metadat.md)<br>
-  *As Governance Authority, I want Simpl-Open to automatically notify the Provider who submitted a resource description about the metadata quality assessment results* · 1 user story · status Defined
+  *As Governance Authority, I want Simpl-Open to automatically notify the Provider who submitted a resource description about the metadata quality assessment results* · 1 user story
 
 ### 5B.5.13 The Governance Authority approves/rejects the metadata of a new resource description or a new version of a resource description
 
-**Status:** Defined (backlog item SIMPL-24049)<br>
 **Process step:** [BP05B.05 Validate the resource description](./README.md#bp05b05-validate-the-resource-description)<br>
 **Public text:** [5B.5.13 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b513-governance-authority-approvesrejects-metadata-new-resource-description-or-new)
 
@@ -260,4 +247,4 @@ Simpl-Open shall support the Governance Authority to automatically approve or re
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority approves or rejects a Resource description based on metadata quality](./bp5b5-governance-authority-publishes-resource-description/simpl-24061-the-governance-authority-approves-or-rejects-a-resource-desc.md)<br>
-  *As Governance Authority, I want Simpl-Open to automatically approve or reject the metadata of a submitted resource description or a new version of a resource description* · 1 user story · status Defined
+  *As Governance Authority, I want Simpl-Open to automatically approve or reject the metadata of a submitted resource description or a new version of a resource description* · 1 user story

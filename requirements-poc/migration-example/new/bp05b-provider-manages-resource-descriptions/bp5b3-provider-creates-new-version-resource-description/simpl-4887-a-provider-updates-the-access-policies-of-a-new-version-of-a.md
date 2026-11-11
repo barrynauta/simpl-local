@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.3.3 A Provider updates the access policies of a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md#5b33-a-provider-updates-the-access-policies-of-a-new-version-of-a-resource-description), under high-level requirement [5B.3 A Provider creates a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md). In the process it belongs to step [BP05B.10 Update policies and contract related metadata](../README.md#bp05b10-update-policies-and-contract-related-metadata).
 
-In the backlog it is item SIMPL-4887, status **In Progress**. It has 5 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-4887. It has 5 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -53,15 +53,15 @@ In the backlog it is item SIMPL-4887, status **In Progress**. It has 5 user stor
 
 ## User stories
 
-1. [[UI] Provider sees the access policies carried over from the previous resource description version](#user-story-1-ui-provider-sees-the-access-policies-carried-over-from-the-previous-resource-description-version) (PBI INTERNAL QA)
-2. [[UI] Provider selects an access policy template in the new resource description version wizard](#user-story-2-ui-provider-selects-an-access-policy-template-in-the-new-resource-description-version-wizard) (PBI INTERNAL QA)
-3. [[UI] Provider fills in the access policy template parameters in the new resource description version wizard](#user-story-3-ui-provider-fills-in-the-access-policy-template-parameters-in-the-new-resource-description-version-wizard) (PBI INTERNAL QA)
-4. [[UI] Provider removes an access policy from the new resource description version](#user-story-4-ui-provider-removes-an-access-policy-from-the-new-resource-description-version) (PBI INTERNAL QA)
-5. [[UI] Provider saves the updated access policies on the new resource description version](#user-story-5-ui-provider-saves-the-updated-access-policies-on-the-new-resource-description-version) (PBI Defined)
+1. [[UI] Provider sees the access policies carried over from the previous resource description version](#user-story-1-ui-provider-sees-the-access-policies-carried-over-from-the-previous-resource-description-version)
+2. [[UI] Provider selects an access policy template in the new resource description version wizard](#user-story-2-ui-provider-selects-an-access-policy-template-in-the-new-resource-description-version-wizard)
+3. [[UI] Provider fills in the access policy template parameters in the new resource description version wizard](#user-story-3-ui-provider-fills-in-the-access-policy-template-parameters-in-the-new-resource-description-version-wizard)
+4. [[UI] Provider removes an access policy from the new resource description version](#user-story-4-ui-provider-removes-an-access-policy-from-the-new-resource-description-version)
+5. [[UI] Provider saves the updated access policies on the new resource description version](#user-story-5-ui-provider-saves-the-updated-access-policies-on-the-new-resource-description-version)
 
 ### User story 1: [UI] Provider sees the access policies carried over from the previous resource description version
 
-**Status:** PBI INTERNAL QA (backlog item SIMPL-31543)
+Backlog item SIMPL-31543
 
 #### Storycard
 
@@ -120,7 +120,7 @@ The UI uses the existing previous-version retrieval flow. This story introduces 
 
 ### User story 2: [UI] Provider selects an access policy template in the new resource description version wizard
 
-**Status:** PBI INTERNAL QA (backlog item SIMPL-31544)
+Backlog item SIMPL-31544
 
 #### Storycard
 
@@ -185,7 +185,7 @@ This story covers selection. The field-entry story covers rendering. Policy conf
 
 ### User story 3: [UI] Provider fills in the access policy template parameters in the new resource description version wizard
 
-**Status:** PBI INTERNAL QA (backlog item SIMPL-31545)
+Backlog item SIMPL-31545
 
 #### Storycard
 
@@ -251,7 +251,7 @@ Policy confirmation and final submission: SIMPL-31547 (internal page).
 
 ### User story 4: [UI] Provider removes an access policy from the new resource description version
 
-**Status:** PBI INTERNAL QA (backlog item SIMPL-31546)
+Backlog item SIMPL-31546
 
 #### Storycard
 
@@ -302,7 +302,7 @@ Policy confirmation and final submission: SIMPL-31547 (internal page).
 
 ### User story 5: [UI] Provider saves the updated access policies on the new resource description version
 
-**Status:** PBI Defined (backlog item SIMPL-31547)
+Backlog item SIMPL-31547
 
 #### Storycard
 

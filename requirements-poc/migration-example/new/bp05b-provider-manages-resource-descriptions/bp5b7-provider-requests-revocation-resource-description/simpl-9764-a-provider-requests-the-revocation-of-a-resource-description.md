@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.7.1 A Provider requests the revocation of a resource description](../bp5b7-provider-requests-revocation-resource-description.md#5b71-a-provider-requests-the-revocation-of-a-resource-description), under high-level requirement [5B.7 A Provider requests the revocation of a Resource description](../bp5b7-provider-requests-revocation-resource-description.md). In the process it belongs to step [BP05B.13 Request resource description revocation](../README.md#bp05b13-request-resource-description-revocation).
 
-In the backlog it is item SIMPL-9764, status **Defined**. It has 2 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-9764. It has 2 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -27,12 +27,12 @@ In the backlog it is item SIMPL-9764, status **Defined**. It has 2 user stories,
 
 ## User stories
 
-1. [[UI] A Provider requests the revocation of a Resource description via UI](#user-story-1-ui-a-provider-requests-the-revocation-of-a-resource-description-via-ui) (DevTeam PBI is ready for Implementation check)
-2. [[API] Provider requests the revocation of a Resource description via API (SD tooling)](#user-story-2-api-provider-requests-the-revocation-of-a-resource-description-via-api-sd-tooling) (Ready for DG Acceptance)
+1. [[UI] A Provider requests the revocation of a Resource description via UI](#user-story-1-ui-a-provider-requests-the-revocation-of-a-resource-description-via-ui)
+2. [[API] Provider requests the revocation of a Resource description via API (SD tooling)](#user-story-2-api-provider-requests-the-revocation-of-a-resource-description-via-api-sd-tooling)
 
 ### User story 1: [UI] A Provider requests the revocation of a Resource description via UI
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-19784)
+Backlog item SIMPL-19784
 
 #### Storycard
 
@@ -93,7 +93,7 @@ In the backlog it is item SIMPL-9764, status **Defined**. It has 2 user stories,
 
 ### User story 2: [API] Provider requests the revocation of a Resource description via API (SD tooling)
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-19785)
+Backlog item SIMPL-19785
 
 #### Storycard
 

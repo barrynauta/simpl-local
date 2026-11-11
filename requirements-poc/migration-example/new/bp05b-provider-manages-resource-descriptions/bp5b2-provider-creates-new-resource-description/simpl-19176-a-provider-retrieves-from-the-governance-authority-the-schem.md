@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.1 A provider retrieves a Resource type](../bp5b2-provider-creates-new-resource-description.md#5b21-a-provider-retrieves-a-resource-type), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.01 Create a new resource description](../README.md#bp05b01-create-a-new-resource-description).
 
-In the backlog it is item SIMPL-19176, status **Defined**. It has 4 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-19176. It has 4 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -27,14 +27,14 @@ In the backlog it is item SIMPL-19176, status **Defined**. It has 4 user stories
 
 ## User stories
 
-1. [API for Schema Managament Webhook Notification and Trigger Schema Update](#user-story-1-api-for-schema-managament-webhook-notification-and-trigger-schema-update) (DevTeam PBI is ready for Implementation check)
-2. [[UI] A provider selects the Resource type in the UI](#user-story-2-ui-a-provider-selects-the-resource-type-in-the-ui) (DevTeam PBI is ready for Implementation check)
-3. [[API] API for retrieving a specific schema version (schema-sync-adapter)](#user-story-3-api-api-for-retrieving-a-specific-schema-version-schema-sync-adapter) (DevTeam PBI is ready for Implementation check)
-4. [[API] API for retrieving a specific schema version (sd-tooling-be)](#user-story-4-api-api-for-retrieving-a-specific-schema-version-sd-tooling-be) (DevTeam PBI is ready for Implementation check)
+1. [API for Schema Managament Webhook Notification and Trigger Schema Update](#user-story-1-api-for-schema-managament-webhook-notification-and-trigger-schema-update)
+2. [[UI] A provider selects the Resource type in the UI](#user-story-2-ui-a-provider-selects-the-resource-type-in-the-ui)
+3. [[API] API for retrieving a specific schema version (schema-sync-adapter)](#user-story-3-api-api-for-retrieving-a-specific-schema-version-schema-sync-adapter)
+4. [[API] API for retrieving a specific schema version (sd-tooling-be)](#user-story-4-api-api-for-retrieving-a-specific-schema-version-sd-tooling-be)
 
 ### User story 1: API for Schema Managament Webhook Notification and Trigger Schema Update
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-20514)
+Backlog item SIMPL-20514
 
 **As a** Simpl-Open Participant\
 **I want to** receive a notification via an API (exposed by schema-sync-adapter component) when a new schema version is created or revoked and synchronise my local schema storage\
@@ -75,7 +75,7 @@ In the backlog it is item SIMPL-19176, status **Defined**. It has 4 user stories
 
 ### User story 2: [UI] A provider selects the Resource type in the UI
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-20613)
+Backlog item SIMPL-20613
 
 #### Storycard
 
@@ -111,7 +111,7 @@ In the backlog it is item SIMPL-19176, status **Defined**. It has 4 user stories
 
 ### User story 3: [API] API for retrieving a specific schema version (schema-sync-adapter)
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-23442)
+Backlog item SIMPL-23442
 
 #### Storycard
 
@@ -156,7 +156,7 @@ Following list of response code:
 
 ### User story 4: [API] API for retrieving a specific schema version (sd-tooling-be)
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-24335)
+Backlog item SIMPL-24335
 
 #### Storycard
 

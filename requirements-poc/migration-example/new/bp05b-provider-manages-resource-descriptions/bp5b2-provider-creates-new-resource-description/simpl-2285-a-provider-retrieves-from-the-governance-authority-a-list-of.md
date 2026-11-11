@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.1 A provider retrieves a Resource type](../bp5b2-provider-creates-new-resource-description.md#5b21-a-provider-retrieves-a-resource-type), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.01 Create a new resource description](../README.md#bp05b01-create-a-new-resource-description).
 
-In the backlog it is item SIMPL-2285, status **Defined**. It has 3 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-2285. It has 3 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -27,13 +27,13 @@ In the backlog it is item SIMPL-2285, status **Defined**. It has 3 user stories,
 
 ## User stories
 
-1. [[API] API for the Self-Description Tool](#user-story-1-api-api-for-the-self-description-tool) (Ready for DG Acceptance)
-2. [[UI] A provider consults a list of published resource types in the resource description manager UI](#user-story-2-ui-a-provider-consults-a-list-of-published-resource-types-in-the-resource-description-manager-ui) (DevTeam PBI is ready for Implementation check)
-3. [[API] A provider resource description manager retrieves a list of active schemas via API for the UI](#user-story-3-api-a-provider-resource-description-manager-retrieves-a-list-of-active-schemas-via-api-for-the-ui) (Ready for DG Acceptance)
+1. [[API] API for the Self-Description Tool](#user-story-1-api-api-for-the-self-description-tool)
+2. [[UI] A provider consults a list of published resource types in the resource description manager UI](#user-story-2-ui-a-provider-consults-a-list-of-published-resource-types-in-the-resource-description-manager-ui)
+3. [[API] A provider resource description manager retrieves a list of active schemas via API for the UI](#user-story-3-api-a-provider-resource-description-manager-retrieves-a-list-of-active-schemas-via-api-for-the-ui)
 
 ### User story 1: [API] API for the Self-Description Tool
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-330)
+Backlog item SIMPL-330
 
 '+**As a**+ service provider **I want** to use the API Backend of the Self-Description Tool **so that** I can create a Self-Description
 
@@ -50,7 +50,7 @@ Integrate and test the SD Creation Wizard API to create a new self-description 
 
 ### User story 2: [UI] A provider consults a list of published resource types in the resource description manager UI
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-15867)
+Backlog item SIMPL-15867
 
 #### Storycard
 
@@ -104,7 +104,7 @@ API definition ticket (internal page).
 
 ### User story 3: [API] A provider resource description manager retrieves a list of active schemas via API for the UI
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-16118)
+Backlog item SIMPL-16118
 
 #### Storycard
 

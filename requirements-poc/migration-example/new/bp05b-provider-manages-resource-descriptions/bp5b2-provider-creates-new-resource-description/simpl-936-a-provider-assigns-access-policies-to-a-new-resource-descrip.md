@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.4 A Provider assigns access policies to a new Resource description](../bp5b2-provider-creates-new-resource-description.md#5b24-a-provider-assigns-access-policies-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog it is item SIMPL-936, status **In Progress**. It has 8 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-936. It has 8 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -30,18 +30,18 @@ In the backlog it is item SIMPL-936, status **In Progress**. It has 8 user stori
 
 ## User stories
 
-1. [UI for defining access policies](#user-story-1-ui-for-defining-access-policies) (DevTeam PBI is ready for Implementation check)
-2. [Define Access Policy for the SD-Schema](#user-story-2-define-access-policy-for-the-sd-schema) (DevTeam PBI is ready for Implementation check)
-3. [[UI] Access Policy multiple attributes per Permission](#user-story-3-ui-access-policy-multiple-attributes-per-permission) (FOR SC TO RESPOND)
-4. [[UI] Provider selects an access policy template in the resource description wizard](#user-story-4-ui-provider-selects-an-access-policy-template-in-the-resource-description-wizard) (DevTeam PBI is ready for Implementation check)
-5. [[UI] Provider fills in the access policy template parameters in the resource description wizard](#user-story-5-ui-provider-fills-in-the-access-policy-template-parameters-in-the-resource-description-wizard) (DevTeam PBI is ready for Implementation check)
-6. [[UI] Provider sees inline validation feedback for access policy template parameters](#user-story-6-ui-provider-sees-inline-validation-feedback-for-access-policy-template-parameters) (DevTeam PBI is ready for Implementation check)
-7. [[UI] Provider adds an access policy to a new Resource Description](#user-story-7-ui-provider-adds-an-access-policy-to-a-new-resource-description) (DevTeam PBI is ready for Implementation check)
-8. [[UI] Provider removes an access policy from the new resource description](#user-story-8-ui-provider-removes-an-access-policy-from-the-new-resource-description) (DevTeam PBI is ready for Implementation check)
+1. [UI for defining access policies](#user-story-1-ui-for-defining-access-policies)
+2. [Define Access Policy for the SD-Schema](#user-story-2-define-access-policy-for-the-sd-schema)
+3. [[UI] Access Policy multiple attributes per Permission](#user-story-3-ui-access-policy-multiple-attributes-per-permission)
+4. [[UI] Provider selects an access policy template in the resource description wizard](#user-story-4-ui-provider-selects-an-access-policy-template-in-the-resource-description-wizard)
+5. [[UI] Provider fills in the access policy template parameters in the resource description wizard](#user-story-5-ui-provider-fills-in-the-access-policy-template-parameters-in-the-resource-description-wizard)
+6. [[UI] Provider sees inline validation feedback for access policy template parameters](#user-story-6-ui-provider-sees-inline-validation-feedback-for-access-policy-template-parameters)
+7. [[UI] Provider adds an access policy to a new Resource Description](#user-story-7-ui-provider-adds-an-access-policy-to-a-new-resource-description)
+8. [[UI] Provider removes an access policy from the new resource description](#user-story-8-ui-provider-removes-an-access-policy-from-the-new-resource-description)
 
 ### User story 1: UI for defining access policies
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-493)
+Backlog item SIMPL-493
 
 **As a** Provider User\
 **I want** use an UI to support the formulation of the access policies in a machine-readable format\
@@ -79,7 +79,7 @@ AC:
 
 ### User story 2: Define Access Policy for the SD-Schema
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-2581)
+Backlog item SIMPL-2581
 
 Create a policy that has Read or Write as an action and link it to attributes that are in the ABAC context of Authentication and Onboarding.
 
@@ -99,7 +99,7 @@ AC:
 
 ### User story 3: [UI] Access Policy multiple attributes per Permission
 
-**Status:** FOR SC TO RESPOND (backlog item SIMPL-3545)
+Backlog item SIMPL-3545
 
 #### Storycard
 
@@ -167,7 +167,7 @@ These screenshots replace the missing mock-up. The access-policy dialog shows a 
 
 ### User story 4: [UI] Provider selects an access policy template in the resource description wizard
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-31405)
+Backlog item SIMPL-31405
 
 #### Story card
 
@@ -232,7 +232,7 @@ These screenshots replace the missing mock-up. The access-policy dialog shows a 
 
 ### User story 5: [UI] Provider fills in the access policy template parameters in the resource description wizard
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-31406)
+Backlog item SIMPL-31406
 
 #### Story card
 
@@ -288,7 +288,7 @@ These screenshots replace the missing mock-up. The access-policy dialog shows a 
 
 ### User story 6: [UI] Provider sees inline validation feedback for access policy template parameters
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-31407)
+Backlog item SIMPL-31407
 
 #### Story card
 
@@ -352,7 +352,7 @@ These screenshots replace the missing mock-up. The access-policy dialog shows a 
 
 ### User story 7: [UI] Provider adds an access policy to a new Resource Description
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-31433)
+Backlog item SIMPL-31433
 
 #### Story card
 
@@ -412,7 +412,7 @@ These screenshots replace the missing mock-up. The access-policy dialog shows a 
 
 ### User story 8: [UI] Provider removes an access policy from the new resource description
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-31703)
+Backlog item SIMPL-31703
 
 #### Storycard:
 

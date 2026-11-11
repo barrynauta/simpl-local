@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.3 A Provider adds resource type specific metadata to a new Resource description](../bp5b2-provider-creates-new-resource-description.md#5b23-a-provider-adds-resource-type-specific-metadata-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.02 Add resource type specific metadata](../README.md#bp05b02-add-resource-type-specific-metadata).
 
-In the backlog it is item SIMPL-24800, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-24800. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -25,11 +25,11 @@ In the backlog it is item SIMPL-24800, status **Defined**. It has 1 user story, 
 
 ## User stories
 
-1. [[UI] Add infrastructure deployment script link](#user-story-1-ui-add-infrastructure-deployment-script-link) (DevTeam PBI is ready for Implementation check)
+1. [[UI] Add infrastructure deployment script link](#user-story-1-ui-add-infrastructure-deployment-script-link)
 
 ### User story 1: [UI] Add infrastructure deployment script link
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-28293)
+Backlog item SIMPL-28293
 
 **As a** Provider end user,\
 **I want to** link a deployment script to a new infrastructure resource description via UI,\

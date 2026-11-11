@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.5 The Governance Authority validates the syntax of a new Resource description or a new version of a Resource Description](../bp5b5-governance-authority-publishes-resource-description.md#5b55-the-governance-authority-validates-the-syntax-of-a-new-resource-description-or-a-new-version-of-a-resource-description), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.05 Validate the resource description](../README.md#bp05b05-validate-the-resource-description).
 
-In the backlog it is item SIMPL-18402, status **In Progress**. It has 2 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-18402. It has 2 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -30,12 +30,12 @@ then the syntax of the usage policies of the resource description is automatical
 
 ## User stories
 
-1. [[API] GA validates the syntax of access and usage policies of new RD version](#user-story-1-api-ga-validates-the-syntax-of-access-and-usage-policies-of-new-rd-version) (FOR SC TO RESPOND)
-2. [[UI] Provider sees the policy syntax validation outcome in the RD editor for new RD version](#user-story-2-ui-provider-sees-the-policy-syntax-validation-outcome-in-the-rd-editor-for-new-rd-version) (PBI INTERNAL QA)
+1. [[API] GA validates the syntax of access and usage policies of new RD version](#user-story-1-api-ga-validates-the-syntax-of-access-and-usage-policies-of-new-rd-version)
+2. [[UI] Provider sees the policy syntax validation outcome in the RD editor for new RD version](#user-story-2-ui-provider-sees-the-policy-syntax-validation-outcome-in-the-rd-editor-for-new-rd-version)
 
 ### User story 1: [API] GA validates the syntax of access and usage policies of new RD version
 
-**Status:** FOR SC TO RESPOND (backlog item SIMPL-31673)
+Backlog item SIMPL-31673
 
 #### Storycard
 
@@ -130,7 +130,7 @@ A sender without the required management identity attributes receives HTTP 403, 
 
 ### User story 2: [UI] Provider sees the policy syntax validation outcome in the RD editor for new RD version
 
-**Status:** PBI INTERNAL QA (backlog item SIMPL-31674)
+Backlog item SIMPL-31674
 
 #### Storycard
 

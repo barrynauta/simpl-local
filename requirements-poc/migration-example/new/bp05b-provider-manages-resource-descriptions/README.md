@@ -51,97 +51,97 @@ This business process covers the management of resource descriptions in the data
 
 The _Provider_ decides whether to create a new resource description, create a new version of an existing one, or revoke an existing one. This initiates resource description management.
 
-> **Requirements for this step:** [5B.1.1 A Provider consults an overview of its Resource descriptions](./bp5b1-provider-consults-its-own-resource-descriptions.md#5b11-a-provider-consults-an-overview-of-its-resource-descriptions), [5B.1.2 A Provider consults the details of one of its own resource descriptions](./bp5b1-provider-consults-its-own-resource-descriptions.md#5b12-a-provider-consults-the-details-of-one-of-its-own-resource-descriptions) and [5B.1.3 A Provider consults the version history of one of its own resource descriptions](./bp5b1-provider-consults-its-own-resource-descriptions.md#5b13-a-provider-consults-the-version-history-of-one-of-its-own-resource-descriptions), part of [5B.1 A Provider consults its own Resource descriptions](./bp5b1-provider-consults-its-own-resource-descriptions.md).
+> **Requirements for this step:** 5B.1.1 A Provider consults an overview of its Resource descriptions, 5B.1.2 A Provider consults the details of one of its own resource descriptions and 5B.1.3 A Provider consults the version history of one of its own resource descriptions, part of 5B.1 A Provider consults its own Resource descriptions.
 
 ### BP05B.01 Create a new resource description
 
 The _Provider_ selects the resource type (data, application, or infrastructure) and enters required and optional common metadata.
 
-> **Requirements for this step:** [5B.2.1 A provider retrieves a Resource type](./bp5b2-provider-creates-new-resource-description.md#5b21-a-provider-retrieves-a-resource-type) and [5B.2.2 A Provider adds common metadata to a new Resource description](./bp5b2-provider-creates-new-resource-description.md#5b22-a-provider-adds-common-metadata-to-a-new-resource-description), part of [5B.2 A Provider creates a new Resource description](./bp5b2-provider-creates-new-resource-description.md).
+> **Requirements for this step:** 5B.2.1 A provider retrieves a Resource type and 5B.2.2 A Provider adds common metadata to a new Resource description, part of 5B.2 A Provider creates a new Resource description.
 
 ### BP05B.02 Add resource type specific metadata
 
 Depending on the selected resource type, the _Provider_ adds the resource type specific required and optional metadata.
 
-> **Requirements for this step:** [5B.2.3 A Provider adds resource type specific metadata to a new Resource description](./bp5b2-provider-creates-new-resource-description.md#5b23-a-provider-adds-resource-type-specific-metadata-to-a-new-resource-description), part of [5B.2 A Provider creates a new Resource description](./bp5b2-provider-creates-new-resource-description.md).
+> **Requirements for this step:** 5B.2.3 A Provider adds resource type specific metadata to a new Resource description, part of 5B.2 A Provider creates a new Resource description.
 
 ### BP05B.03 Add policy and contract related metadata
 
 For access and usage control, the _Provider_ configures the policies that shall be applied to the new resource. The _Provider_ also adds required and optional metadata related to the usage contract for the specific resource.
 
-> **Requirements for this step:** [5B.2.4 A Provider assigns access policies to a new Resource description](./bp5b2-provider-creates-new-resource-description.md#5b24-a-provider-assigns-access-policies-to-a-new-resource-description), [5B.2.5 A Provider assigns usage policies to a new Resource description](./bp5b2-provider-creates-new-resource-description.md#5b25-a-provider-assigns-usage-policies-to-a-new-resource-description) and [5B.2.6 A Provider adds a set of contract clauses to a new resource description](./bp5b2-provider-creates-new-resource-description.md#5b26-a-provider-adds-a-set-of-contract-clauses-to-a-new-resource-description), part of [5B.2 A Provider creates a new Resource description](./bp5b2-provider-creates-new-resource-description.md).
+> **Requirements for this step:** 5B.2.4 A Provider assigns access policies to a new Resource description, 5B.2.5 A Provider assigns usage policies to a new Resource description and 5B.2.6 A Provider adds a set of contract clauses to a new resource description, part of 5B.2 A Provider creates a new Resource description.
 
 ### BP05B.04 Sign and submit the resource description
 
 The _Provider_ signs the new resource description with the _Provider_'s credentials and submits it to the _Governance Authority_.
 
-> **Requirements for this step:** [5B.4.1 A Provider signs and submits a new Resource description or a new version of a Resource description](./bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md#5b41-a-provider-signs-and-submits-a-new-resource-description-or-a-new-version-of-a-resource-description), part of [5B.4 A Provider signs and submits a new Resource description or a new version of a Resource description](./bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md).
+> **Requirements for this step:** 5B.4.1 A Provider signs and submits a new Resource description or a new version of a Resource description, part of 5B.4 A Provider signs and submits a new Resource description or a new version of a Resource description.
 
 ### BP05B.05 Validate the resource description
 
 When receiving a request to publish a new resource description (or a new version), the _Governance Authority_ performs syntactic validation, semantic validation against schema and vocabulary, and quality-rules validation.
 
-> **Requirements for this step:** [5B.5.1 The Governance Authority validates the schema of a new Resource description or a new version of a Resource Description](./bp5b5-governance-authority-publishes-resource-description.md#5b51-the-governance-authority-validates-the-schema-of-a-new-resource-description-or-a-new-version-of-a-resource-description), [5B.5.3 The Governance Authority validates the versioning of a new version of a Resource description](./bp5b5-governance-authority-publishes-resource-description.md#5b53-the-governance-authority-validates-the-versioning-of-a-new-version-of-a-resource-description), [5B.5.5 The Governance Authority validates the syntax of a new Resource description or a new version of a Resource Description](./bp5b5-governance-authority-publishes-resource-description.md#5b55-the-governance-authority-validates-the-syntax-of-a-new-resource-description-or-a-new-version-of-a-resource-description), [5B.5.7 The Governance Authority validates the semantics of a new Resource description or a new version of a Resource Description](./bp5b5-governance-authority-publishes-resource-description.md#5b57-the-governance-authority-validates-the-semantics-of-a-new-resource-description-or-a-new-version-of-a-resource-description), [5B.5.11 The Governance Authority evaluates the metadata quality of a new resource description or a new version of a resource description](./bp5b5-governance-authority-publishes-resource-description.md#5b511-the-governance-authority-evaluates-the-metadata-quality-of-a-new-resource-description-or-a-new-version-of-a-resource-description) and [5B.5.13 The Governance Authority approves/rejects the metadata of a new resource description or a new version of a resource description](./bp5b5-governance-authority-publishes-resource-description.md#5b513-the-governance-authority-approvesrejects-the-metadata-of-a-new-resource-description-or-a-new-version-of-a-resource-description), part of [5B.5 The Governance Authority publishes a Resource description](./bp5b5-governance-authority-publishes-resource-description.md).
+> **Requirements for this step:** 5B.5.1 The Governance Authority validates the schema of a new Resource description or a new version of a Resource Description, 5B.5.3 The Governance Authority validates the versioning of a new version of a Resource description, 5B.5.5 The Governance Authority validates the syntax of a new Resource description or a new version of a Resource Description, 5B.5.7 The Governance Authority validates the semantics of a new Resource description or a new version of a Resource Description, 5B.5.11 The Governance Authority evaluates the metadata quality of a new resource description or a new version of a resource description and 5B.5.13 The Governance Authority approves/rejects the metadata of a new resource description or a new version of a resource description, part of 5B.5 The Governance Authority publishes a Resource description.
 
 ### BP05B.06 Remediate validation issues
 
 In case of validation issues, the _Governance Authority_ informs the _Provider_. The _Provider_ must remediate and resubmit the resource description for publication.
 
-> **Requirements for this step:** [5B.5.2 The Governance Authority notifies a Provider about an inactive schema](./bp5b5-governance-authority-publishes-resource-description.md#5b52-the-governance-authority-notifies-a-provider-about-an-inactive-schema), [5B.5.4 The Governance Authority notifies a Provider about wrong versioning of new versions of a Resource description](./bp5b5-governance-authority-publishes-resource-description.md#5b54-the-governance-authority-notifies-a-provider-about-wrong-versioning-of-new-versions-of-a-resource-description), [5B.5.6 The Governance Authority provides feedback to a Provider about syntax validation errors](./bp5b5-governance-authority-publishes-resource-description.md#5b56-the-governance-authority-provides-feedback-to-a-provider-about-syntax-validation-errors), [5B.5.8 The Governance Authority provides feedback to a Provider about semantic validation errors](./bp5b5-governance-authority-publishes-resource-description.md#5b58-the-governance-authority-provides-feedback-to-a-provider-about-semantic-validation-errors) and [5B.5.12 The Governance Authority notifies the Provider about the metadata quality](./bp5b5-governance-authority-publishes-resource-description.md#5b512-the-governance-authority-notifies-the-provider-about-the-metadata-quality), part of [5B.5 The Governance Authority publishes a Resource description](./bp5b5-governance-authority-publishes-resource-description.md).
+> **Requirements for this step:** 5B.5.2 The Governance Authority notifies a Provider about an inactive schema, 5B.5.4 The Governance Authority notifies a Provider about wrong versioning of new versions of a Resource description, 5B.5.6 The Governance Authority provides feedback to a Provider about syntax validation errors, 5B.5.8 The Governance Authority provides feedback to a Provider about semantic validation errors and 5B.5.12 The Governance Authority notifies the Provider about the metadata quality, part of 5B.5 The Governance Authority publishes a Resource description.
 
 ### BP05B.07 Publish the resource description
 
 Upon successful validation, the new (or new version of the) resource description is published in the data space catalogue.
 
-> **Requirements for this step:** [5B.5.9 The Governance Authority publishes a new Resource description or a new version of a Resource description](./bp5b5-governance-authority-publishes-resource-description.md#5b59-the-governance-authority-publishes-a-new-resource-description-or-a-new-version-of-a-resource-description), part of [5B.5 The Governance Authority publishes a Resource description](./bp5b5-governance-authority-publishes-resource-description.md).
+> **Requirements for this step:** 5B.5.9 The Governance Authority publishes a new Resource description or a new version of a Resource description, part of 5B.5 The Governance Authority publishes a Resource description.
 
 ### BP05B.08 Create a new version of a resource description
 
 The _Provider_ selects a previously published resource description and initiates the creation of a new version, updating required and optional metadata.
 
-> **Requirements for this step:** [5B.3.1 A Provider updates the common metadata of a new version of a Resource description](./bp5b3-provider-creates-new-version-resource-description.md#5b31-a-provider-updates-the-common-metadata-of-a-new-version-of-a-resource-description), part of [5B.3 A Provider creates a new version of a Resource description](./bp5b3-provider-creates-new-version-resource-description.md).
+> **Requirements for this step:** 5B.3.1 A Provider updates the common metadata of a new version of a Resource description, part of 5B.3 A Provider creates a new version of a Resource description.
 
 ### BP05B.09 Update resource type specific metadata
 
 Resource-type-specific metadata can be updated for a new version of a resource description.
 
-> **Requirements for this step:** [5B.3.2 A Provider updates the resource type specific metadata of a new version of a Resource description](./bp5b3-provider-creates-new-version-resource-description.md#5b32-a-provider-updates-the-resource-type-specific-metadata-of-a-new-version-of-a-resource-description), part of [5B.3 A Provider creates a new version of a Resource description](./bp5b3-provider-creates-new-version-resource-description.md).
+> **Requirements for this step:** 5B.3.2 A Provider updates the resource type specific metadata of a new version of a Resource description, part of 5B.3 A Provider creates a new version of a Resource description.
 
 ### BP05B.10 Update policies and contract related metadata
 
 Policies and contract-related metadata can be updated for a new version of a resource description. After this step, creation of a new version continues with signing and submission, identical to the new-resource flow.
 
-> **Requirements for this step:** [5B.3.3 A Provider updates the access policies of a new version of a Resource description](./bp5b3-provider-creates-new-version-resource-description.md#5b33-a-provider-updates-the-access-policies-of-a-new-version-of-a-resource-description), [5B.3.4 A Provider updates the usage policies of a new version of a Resource description](./bp5b3-provider-creates-new-version-resource-description.md#5b34-a-provider-updates-the-usage-policies-of-a-new-version-of-a-resource-description) and [5B.3.5 A Provider updates the set of contract clauses of a new version of a resource description](./bp5b3-provider-creates-new-version-resource-description.md#5b35-a-provider-updates-the-set-of-contract-clauses-of-a-new-version-of-a-resource-description), part of [5B.3 A Provider creates a new version of a Resource description](./bp5b3-provider-creates-new-version-resource-description.md).
+> **Requirements for this step:** 5B.3.3 A Provider updates the access policies of a new version of a Resource description, 5B.3.4 A Provider updates the usage policies of a new version of a Resource description and 5B.3.5 A Provider updates the set of contract clauses of a new version of a resource description, part of 5B.3 A Provider creates a new version of a Resource description.
 
 ### BP05B.11 Revoke the previous version of the resource description
 
 If the new version of the resource description is valid, the _Governance Authority_ revokes the current (previous) resource description version.
 
-> **Requirements for this step:** [5B.5.10 The Governance Authority revokes the previous version of a Resource description](./bp5b5-governance-authority-publishes-resource-description.md#5b510-the-governance-authority-revokes-the-previous-version-of-a-resource-description), part of [5B.5 The Governance Authority publishes a Resource description](./bp5b5-governance-authority-publishes-resource-description.md).
+> **Requirements for this step:** 5B.5.10 The Governance Authority revokes the previous version of a Resource description, part of 5B.5 The Governance Authority publishes a Resource description.
 
 ### BP05B.12 Inform about new version
 
 If a resource description is updated, the _Consumers_ of this resource are informed about the new version in the data space catalogue.
 
-> **Requirements for this step:** [5B.6.1 A Provider notifies Consumers about a new version of a Resource description](./bp5b6-provider-notifies-consumers-about-new-version-resource-description.md#5b61-a-provider-notifies-consumers-about-a-new-version-of-a-resource-description), part of [5B.6 A Provider notifies Consumers about a new version of a Resource description](./bp5b6-provider-notifies-consumers-about-new-version-resource-description.md).
+> **Requirements for this step:** 5B.6.1 A Provider notifies Consumers about a new version of a Resource description, part of 5B.6 A Provider notifies Consumers about a new version of a Resource description.
 
 ### BP05B.13 Request resource description revocation
 
 The _Provider_ selects a previously published resource description and initiates the revocation of this resource description.
 
-> **Requirements for this step:** [5B.7.1 A Provider requests the revocation of a resource description](./bp5b7-provider-requests-revocation-resource-description.md#5b71-a-provider-requests-the-revocation-of-a-resource-description), part of [5B.7 A Provider requests the revocation of a Resource description](./bp5b7-provider-requests-revocation-resource-description.md).
+> **Requirements for this step:** 5B.7.1 A Provider requests the revocation of a resource description, part of 5B.7 A Provider requests the revocation of a Resource description.
 
 ### BP05B.14 Revoke a resource description
 
 Upon receiving a request for revocation, the _Governance Authority_ revokes the resource description from the data space catalogue.
 
-> **Requirements for this step:** [5B.8.1 The Governance Authority revokes a resource description](./bp5b8-governance-authority-revokes-resource-description.md#5b81-the-governance-authority-revokes-a-resource-description), part of [5B.8 The Governance Authority revokes a resource description](./bp5b8-governance-authority-revokes-resource-description.md).
+> **Requirements for this step:** 5B.8.1 The Governance Authority revokes a resource description, part of 5B.8 The Governance Authority revokes a resource description.
 
 ### BP05B.15 Inform about revocation
 
 If a resource description is revoked, the _Consumers_ of this resource are informed about the revocation.
 
-> **Requirements for this step:** [5B.9.1 A Provider notifies Consumers about the revocation of a resource description](./bp5b9-provider-notifies-consumers-about-revocation-resource-description.md#5b91-a-provider-notifies-consumers-about-the-revocation-of-a-resource-description), part of [5B.9 The Provider notifies Consumers about the revocation of a resource description](./bp5b9-provider-notifies-consumers-about-revocation-resource-description.md).
+> **Requirements for this step:** 5B.9.1 A Provider notifies Consumers about the revocation of a resource description, part of 5B.9 The Provider notifies Consumers about the revocation of a resource description.
 ## High-level requirements
 
 The requirements of BP05B are kept in the programme backlog (Jira, item SIMPL-10768 for the process as a whole). They go from the general to the concrete, in four levels:
@@ -151,19 +151,19 @@ The requirements of BP05B are kept in the programme backlog (Jira, item SIMPL-10
 - **Epic**: a feature that delivers a detailed requirement and can be tested as a whole, often one for the user interface and one for the API. BP05B has 69.
 - **User story**: one piece of work in an Epic, written as *As a ... I want to ... So that ...*, with acceptance criteria (*Given ... When ... Then ...*) that say when it is done. BP05B has 140.
 
-Each title in the table opens the page of that high-level requirement. That page explains which process steps it covers, lists its detailed requirements, and links to the Epics, where the user stories and their acceptance criteria are. The step numbers refer to the process steps above. The link in the last column opens the same requirement on the public requirements site. The status is the one in the backlog (Jira). The requirements site shows all requirements as Proposed.
+Each title in the table opens the page of that high-level requirement. That page explains which process steps it covers, lists its detailed requirements, and links to the Epics, where the user stories and their acceptance criteria are. The step numbers refer to the process steps above. The link in the last column opens the same requirement on the public requirements site.
 
-| ID | Title | Status | Process steps | Detailed requirements | Canonical source |
-|----|-------|--------|---------------|-----------------------|------------------|
-| 5B.1 | [A Provider consults its own Resource descriptions](./bp5b1-provider-consults-its-own-resource-descriptions.md) | Defined | Trigger | 3 | [5B.1 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b1-provider-consults-its-own-resource-descriptions) |
-| 5B.2 | [A Provider creates a new Resource description](./bp5b2-provider-creates-new-resource-description.md) | In Progress | BP05B.01 to BP05B.03 | 6 | [5B.2 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b2-provider-creates-new-resource-description) |
-| 5B.3 | [A Provider creates a new version of a Resource description](./bp5b3-provider-creates-new-version-resource-description.md) | In Progress | BP05B.08 to BP05B.10 | 5 | [5B.3 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b3-provider-creates-new-version-resource-description) |
-| 5B.4 | [A Provider signs and submits a new Resource description or a new version of a Resource description](./bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md) | Defined | BP05B.04 | 1 | [5B.4 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource) |
-| 5B.5 | [The Governance Authority publishes a Resource description](./bp5b5-governance-authority-publishes-resource-description.md) | In Progress | BP05B.05 to BP05B.07 and BP05B.11 | 13 | [5B.5 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b5-governance-authority-publishes-resource-description) |
-| 5B.6 | [A Provider notifies Consumers about a new version of a Resource description](./bp5b6-provider-notifies-consumers-about-new-version-resource-description.md) | In Progress | BP05B.12 | 1 | [5B.6 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b6-provider-notifies-consumers-about-new-version-resource-description) |
-| 5B.7 | [A Provider requests the revocation of a Resource description](./bp5b7-provider-requests-revocation-resource-description.md) | Defined | BP05B.13 | 1 | [5B.7 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b7-provider-requests-revocation-resource-description) |
-| 5B.8 | [The Governance Authority revokes a resource description](./bp5b8-governance-authority-revokes-resource-description.md) | Defined | BP05B.14 | 1 | [5B.8 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b8-governance-authority-revokes-resource-description) |
-| 5B.9 | [The Provider notifies Consumers about the revocation of a resource description](./bp5b9-provider-notifies-consumers-about-revocation-resource-description.md) | In Progress | BP05B.15 | 1 | [5B.9 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b9-provider-notifies-consumers-about-revocation-resource-description) |
+| ID | Title | Process steps | Detailed requirements | Canonical source |
+|----|-------|---------------|-----------------------|------------------|
+| 5B.1 | [A Provider consults its own Resource descriptions](./bp5b1-provider-consults-its-own-resource-descriptions.md) | Trigger | 3 | [5B.1 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b1-provider-consults-its-own-resource-descriptions) |
+| 5B.2 | [A Provider creates a new Resource description](./bp5b2-provider-creates-new-resource-description.md) | BP05B.01 to BP05B.03 | 6 | [5B.2 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b2-provider-creates-new-resource-description) |
+| 5B.3 | [A Provider creates a new version of a Resource description](./bp5b3-provider-creates-new-version-resource-description.md) | BP05B.08 to BP05B.10 | 5 | [5B.3 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b3-provider-creates-new-version-resource-description) |
+| 5B.4 | [A Provider signs and submits a new Resource description or a new version of a Resource description](./bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md) | BP05B.04 | 1 | [5B.4 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource) |
+| 5B.5 | [The Governance Authority publishes a Resource description](./bp5b5-governance-authority-publishes-resource-description.md) | BP05B.05 to BP05B.07 and BP05B.11 | 13 | [5B.5 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b5-governance-authority-publishes-resource-description) |
+| 5B.6 | [A Provider notifies Consumers about a new version of a Resource description](./bp5b6-provider-notifies-consumers-about-new-version-resource-description.md) | BP05B.12 | 1 | [5B.6 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b6-provider-notifies-consumers-about-new-version-resource-description) |
+| 5B.7 | [A Provider requests the revocation of a Resource description](./bp5b7-provider-requests-revocation-resource-description.md) | BP05B.13 | 1 | [5B.7 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b7-provider-requests-revocation-resource-description) |
+| 5B.8 | [The Governance Authority revokes a resource description](./bp5b8-governance-authority-revokes-resource-description.md) | BP05B.14 | 1 | [5B.8 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b8-governance-authority-revokes-resource-description) |
+| 5B.9 | [The Provider notifies Consumers about the revocation of a resource description](./bp5b9-provider-notifies-consumers-about-revocation-resource-description.md) | BP05B.15 | 1 | [5B.9 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b9-provider-notifies-consumers-about-revocation-resource-description) |
 
 ### Detailed requirements
 

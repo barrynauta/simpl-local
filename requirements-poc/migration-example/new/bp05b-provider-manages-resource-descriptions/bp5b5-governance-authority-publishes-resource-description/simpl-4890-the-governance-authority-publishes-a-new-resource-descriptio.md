@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.9 The Governance Authority publishes a new Resource description or a new version of a Resource description](../bp5b5-governance-authority-publishes-resource-description.md#5b59-the-governance-authority-publishes-a-new-resource-description-or-a-new-version-of-a-resource-description), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.07 Publish the resource description](../README.md#bp05b07-publish-the-resource-description).
 
-In the backlog it is item SIMPL-4890, status **Defined**. It has no user stories yet.
+In the backlog (Jira) it is item SIMPL-4890. It has no user stories yet.
 
 ## What this Epic delivers
 

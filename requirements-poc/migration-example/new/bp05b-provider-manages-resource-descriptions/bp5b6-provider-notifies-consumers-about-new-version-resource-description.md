@@ -9,7 +9,7 @@
 
 ## About this requirement
 
-This is high-level requirement 5B.6 of business process [BP05B - Provider manages resource descriptions](./README.md). In the backlog it is item SIMPL-21118, status **In Progress**. The status is the one in the backlog (Jira). The requirements site shows all requirements as Proposed.
+This is high-level requirement 5B.6 of business process [BP05B - Provider manages resource descriptions](./README.md). In the backlog (Jira) it is item SIMPL-21118.
 
 In the process it covers 1 step: [BP05B.12 Inform about new version](./README.md#bp05b12-inform-about-new-version). There is no dynamic view for it yet.
 
@@ -25,13 +25,12 @@ Simpl-Open shall support a Provider
 
 Select a title to jump to its section below.
 
-| ID | Detailed requirement | Status | Process step | Epics | User stories |
-| --- | --- | --- | --- | --- | --- |
-| 5B.6.1 | [A Provider notifies Consumers about a new version of a Resource description](#5b61-a-provider-notifies-consumers-about-a-new-version-of-a-resource-description) | In Progress | BP05B.12 Inform about new version | 1 | 1 |
+| ID | Detailed requirement | Process step | Epics | User stories |
+| --- | --- | --- | --- | --- |
+| 5B.6.1 | [A Provider notifies Consumers about a new version of a Resource description](#5b61-a-provider-notifies-consumers-about-a-new-version-of-a-resource-description) | BP05B.12 Inform about new version | 1 | 1 |
 
 ### 5B.6.1 A Provider notifies Consumers about a new version of a Resource description
 
-**Status:** In Progress (backlog item SIMPL-14755)<br>
 **Process step:** [BP05B.12 Inform about new version](./README.md#bp05b12-inform-about-new-version)<br>
 **Public text:** [5B.6.1 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b61-provider-notifies-consumers-about-new-version-resource-description)
 
@@ -42,4 +41,4 @@ Simpl-Open shall support a Provider
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: A Provider notifies Consumers about a new version of a Resource description](./bp5b6-provider-notifies-consumers-about-new-version-resource-description/simpl-17521-a-provider-notifies-consumers-about-a-new-version-of-a-resou.md)<br>
-  *As a Provider, I want to notify the Consumers of a resource about a published new version of a Resource description* · 1 user story · status In Progress
+  *As a Provider, I want to notify the Consumers of a resource about a published new version of a Resource description* · 1 user story

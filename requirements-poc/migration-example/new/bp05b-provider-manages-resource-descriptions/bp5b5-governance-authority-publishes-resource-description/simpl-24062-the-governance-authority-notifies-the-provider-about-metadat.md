@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.12 The Governance Authority notifies the Provider about the metadata quality](../bp5b5-governance-authority-publishes-resource-description.md#5b512-the-governance-authority-notifies-the-provider-about-the-metadata-quality), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.06 Remediate validation issues](../README.md#bp05b06-remediate-validation-issues).
 
-In the backlog it is item SIMPL-24062, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-24062. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -32,11 +32,11 @@ In the backlog it is item SIMPL-24062, status **Defined**. It has 1 user story, 
 
 ## User stories
 
-1. [Governance Authority and Provider access metadata quality assessment outcome through publication response](#user-story-1-governance-authority-and-provider-access-metadata-quality-assessment-outcome-through-publication-response) (DevTeam PBI is ready for Implementation check)
+1. [Governance Authority and Provider access metadata quality assessment outcome through publication response](#user-story-1-governance-authority-and-provider-access-metadata-quality-assessment-outcome-through-publication-response)
 
 ### User story 1: Governance Authority and Provider access metadata quality assessment outcome through publication response
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-28001)
+Backlog item SIMPL-28001
 
 **As a** Governance Authority\
 **I want to** return the metadata quality scores of a submitted resource description to the provider that submitted it\

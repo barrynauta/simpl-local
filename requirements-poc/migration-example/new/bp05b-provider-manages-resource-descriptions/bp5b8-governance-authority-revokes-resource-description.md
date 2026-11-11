@@ -9,7 +9,7 @@
 
 ## About this requirement
 
-This is high-level requirement 5B.8 of business process [BP05B - Provider manages resource descriptions](./README.md). In the backlog it is item SIMPL-14640, status **Defined**. The status is the one in the backlog (Jira). The requirements site shows all requirements as Proposed.
+This is high-level requirement 5B.8 of business process [BP05B - Provider manages resource descriptions](./README.md). In the backlog (Jira) it is item SIMPL-14640.
 
 In the process it covers 1 step: [BP05B.14 Revoke a resource description](./README.md#bp05b14-revoke-a-resource-description). The dynamic view shows it in [Revoke a self-description](bp05b-dynamic-view.md#revoke-a-self-description-sd).
 
@@ -26,13 +26,12 @@ Simpl-Open shall support the Governance Authority
 
 Select a title to jump to its section below.
 
-| ID | Detailed requirement | Status | Process step | Epics | User stories |
-| --- | --- | --- | --- | --- | --- |
-| 5B.8.1 | [The Governance Authority revokes a resource description](#5b81-the-governance-authority-revokes-a-resource-description) | Defined | BP05B.14 Revoke a resource description | 1 | 2 |
+| ID | Detailed requirement | Process step | Epics | User stories |
+| --- | --- | --- | --- | --- |
+| 5B.8.1 | [The Governance Authority revokes a resource description](#5b81-the-governance-authority-revokes-a-resource-description) | BP05B.14 Revoke a resource description | 1 | 2 |
 
 ### 5B.8.1 The Governance Authority revokes a resource description
 
-**Status:** Defined (backlog item SIMPL-14641)<br>
 **Process step:** [BP05B.14 Revoke a resource description](./README.md#bp05b14-revoke-a-resource-description)<br>
 **Public text:** [5B.8.1 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/tbp-5b61-governance-authority-revokes-resource-description)
 
@@ -43,4 +42,4 @@ Simpl-Open shall support the Governance authority
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: The Governance Authority revokes a resource description](./bp5b8-governance-authority-revokes-resource-description/simpl-18025-the-governance-authority-revokes-a-resource-description.md)<br>
-  *As Governance Authority, I want to revoke a resource description upon request of a provider* · 2 user stories · status Defined
+  *As Governance Authority, I want to revoke a resource description upon request of a provider* · 2 user stories

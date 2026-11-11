@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.3.5 A Provider updates the set of contract clauses of a new version of a resource description](../bp5b3-provider-creates-new-version-resource-description.md#5b35-a-provider-updates-the-set-of-contract-clauses-of-a-new-version-of-a-resource-description), under high-level requirement [5B.3 A Provider creates a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md). In the process it belongs to step [BP05B.10 Update policies and contract related metadata](../README.md#bp05b10-update-policies-and-contract-related-metadata).
 
-In the backlog it is item SIMPL-16252, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-16252. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -27,11 +27,11 @@ In the backlog it is item SIMPL-16252, status **Defined**. It has 1 user story, 
 
 ## User stories
 
-1. [A Provider updates the contract clauses, resulting in a new version of the resource description via UI](#user-story-1-a-provider-updates-the-contract-clauses-resulting-in-a-new-version-of-the-resource-description-via-ui) (DevTeam PBI is ready for Implementation check)
+1. [A Provider updates the contract clauses, resulting in a new version of the resource description via UI](#user-story-1-a-provider-updates-the-contract-clauses-resulting-in-a-new-version-of-the-resource-description-via-ui)
 
 ### User story 1: A Provider updates the contract clauses, resulting in a new version of the resource description via UI
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-26274)
+Backlog item SIMPL-26274
 
 **As a** Provider end user\
 **I want to** update the data of a contract clause via UI\

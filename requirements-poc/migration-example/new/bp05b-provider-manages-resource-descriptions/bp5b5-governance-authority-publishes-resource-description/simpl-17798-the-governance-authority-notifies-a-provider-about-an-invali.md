@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.2 The Governance Authority notifies a Provider about an inactive schema](../bp5b5-governance-authority-publishes-resource-description.md#5b52-the-governance-authority-notifies-a-provider-about-an-inactive-schema), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.06 Remediate validation issues](../README.md#bp05b06-remediate-validation-issues).
 
-In the backlog it is item SIMPL-17798, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-17798. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -34,11 +34,11 @@ In the backlog it is item SIMPL-17798, status **Defined**. It has 1 user story, 
 
 ## User stories
 
-1. [[API] The Governance Authority notifies a Provider about an invalid schema](#user-story-1-api-the-governance-authority-notifies-a-provider-about-an-invalid-schema) (Ready for DG Acceptance)
+1. [[API] The Governance Authority notifies a Provider about an invalid schema](#user-story-1-api-the-governance-authority-notifies-a-provider-about-an-invalid-schema)
 
 ### User story 1: [API] The Governance Authority notifies a Provider about an invalid schema
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-21597)
+Backlog item SIMPL-21597
 
 #### Storycard
 

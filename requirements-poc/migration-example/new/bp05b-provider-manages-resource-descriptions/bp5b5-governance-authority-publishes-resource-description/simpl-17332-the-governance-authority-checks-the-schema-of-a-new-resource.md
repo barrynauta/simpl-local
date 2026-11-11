@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.1 The Governance Authority validates the schema of a new Resource description or a new version of a Resource Description](../bp5b5-governance-authority-publishes-resource-description.md#5b51-the-governance-authority-validates-the-schema-of-a-new-resource-description-or-a-new-version-of-a-resource-description), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.05 Validate the resource description](../README.md#bp05b05-validate-the-resource-description).
 
-In the backlog it is item SIMPL-17332, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-17332. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -44,11 +44,11 @@ and schema type validation for the new version of the resource description has t
 
 ## User stories
 
-1. [[API] The Governance Authority checks the schema of a new resource description or a new version of a resource description](#user-story-1-api-the-governance-authority-checks-the-schema-of-a-new-resource-description-or-a-new-version-of-a-resource-description) (Ready for DG Acceptance)
+1. [[API] The Governance Authority checks the schema of a new resource description or a new version of a resource description](#user-story-1-api-the-governance-authority-checks-the-schema-of-a-new-resource-description-or-a-new-version-of-a-resource-description)
 
 ### User story 1: [API] The Governance Authority checks the schema of a new resource description or a new version of a resource description
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-21592)
+Backlog item SIMPL-21592
 
 #### Storycard
 

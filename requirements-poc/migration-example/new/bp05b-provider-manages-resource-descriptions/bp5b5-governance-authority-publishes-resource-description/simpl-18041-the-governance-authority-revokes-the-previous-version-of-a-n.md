@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.10 The Governance Authority revokes the previous version of a Resource description](../bp5b5-governance-authority-publishes-resource-description.md#5b510-the-governance-authority-revokes-the-previous-version-of-a-resource-description), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.11 Revoke the previous version of the resource description](../README.md#bp05b11-revoke-the-previous-version-of-the-resource-description).
 
-In the backlog it is item SIMPL-18041, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-18041. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -26,11 +26,11 @@ Then the previous version of the resource description is revoked.
 
 ## User stories
 
-1. [[API] The Governance Authority revokes the previous version of a new version of a resource description](#user-story-1-api-the-governance-authority-revokes-the-previous-version-of-a-new-version-of-a-resource-description) (Ready for DG Acceptance)
+1. [[API] The Governance Authority revokes the previous version of a new version of a resource description](#user-story-1-api-the-governance-authority-revokes-the-previous-version-of-a-new-version-of-a-resource-description)
 
 ### User story 1: [API] The Governance Authority revokes the previous version of a new version of a resource description
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-21644)
+Backlog item SIMPL-21644
 
 #### Storycard
 

@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.4.1 A Provider signs and submits a new Resource description or a new version of a Resource description](../bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md#5b41-a-provider-signs-and-submits-a-new-resource-description-or-a-new-version-of-a-resource-description), under high-level requirement [5B.4 A Provider signs and submits a new Resource description or a new version of a Resource description](../bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md). In the process it belongs to step [BP05B.04 Sign and submit the resource description](../README.md#bp05b04-sign-and-submit-the-resource-description).
 
-In the backlog it is item SIMPL-2292, status **Defined**. It has 12 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-2292. It has 12 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -31,22 +31,22 @@ In the backlog it is item SIMPL-2292, status **Defined**. It has 12 user stories
 
 ## User stories
 
-1. [Implement credential management logic](#user-story-1-implement-credential-management-logic) (DevTeam PBI is ready for Implementation check)
-2. [Sign created json-ld document with a signer](#user-story-2-sign-created-json-ld-document-with-a-signer) (Ready for DG Acceptance)
-3. [[UI] Create UI frontend for XFSC catalogue - Dialog add resource](#user-story-3-ui-create-ui-frontend-for-xfsc-catalogue---dialog-add-resource) (DevTeam PBI is ready for Implementation check)
-4. [Interactively Create a Service Self-Description](#user-story-4-interactively-create-a-service-self-description) (Ready for DG Acceptance)
-5. [Deploy signer service](#user-story-5-deploy-signer-service) (DevTeam PBI is ready for Implementation check)
-6. [[UI] User Interface for Sign created JSON-LD document](#user-story-6-ui-user-interface-for-sign-created-json-ld-document) (DevTeam PBI is ready for Implementation check)
-7. [Syntax Validation of Self-Description](#user-story-7-syntax-validation-of-self-description) (Ready for DG Acceptance)
-8. [Simpl Self-Description Frontend](#user-story-8-simpl-self-description-frontend) (Ready for DG Acceptance)
-9. [Integrating the asset registering of the connector in to the published process of SD](#user-story-9-integrating-the-asset-registering-of-the-connector-in-to-the-published-process-of-sd) (Ready for DG Acceptance)
-10. [Automatically populate the provider id on the resource description](#user-story-10-automatically-populate-the-provider-id-on-the-resource-description) (DevTeam PBI is ready for Implementation check)
-11. [[BE] Automatically populate the version number of a new resource description](#user-story-11-be-automatically-populate-the-version-number-of-a-new-resource-description) (Ready for DG Acceptance)
-12. [[BE] Automatically populate the version number of a new version of a resource description](#user-story-12-be-automatically-populate-the-version-number-of-a-new-version-of-a-resource-description) (Ready for DG Acceptance)
+1. [Implement credential management logic](#user-story-1-implement-credential-management-logic)
+2. [Sign created json-ld document with a signer](#user-story-2-sign-created-json-ld-document-with-a-signer)
+3. [[UI] Create UI frontend for XFSC catalogue - Dialog add resource](#user-story-3-ui-create-ui-frontend-for-xfsc-catalogue---dialog-add-resource)
+4. [Interactively Create a Service Self-Description](#user-story-4-interactively-create-a-service-self-description)
+5. [Deploy signer service](#user-story-5-deploy-signer-service)
+6. [[UI] User Interface for Sign created JSON-LD document](#user-story-6-ui-user-interface-for-sign-created-json-ld-document)
+7. [Syntax Validation of Self-Description](#user-story-7-syntax-validation-of-self-description)
+8. [Simpl Self-Description Frontend](#user-story-8-simpl-self-description-frontend)
+9. [Integrating the asset registering of the connector in to the published process of SD](#user-story-9-integrating-the-asset-registering-of-the-connector-in-to-the-published-process-of-sd)
+10. [Automatically populate the provider id on the resource description](#user-story-10-automatically-populate-the-provider-id-on-the-resource-description)
+11. [[BE] Automatically populate the version number of a new resource description](#user-story-11-be-automatically-populate-the-version-number-of-a-new-resource-description)
+12. [[BE] Automatically populate the version number of a new version of a resource description](#user-story-12-be-automatically-populate-the-version-number-of-a-new-version-of-a-resource-description)
 
 ### User story 1: Implement credential management logic
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-110)
+Backlog item SIMPL-110
 
 Implement Logic (see drawing) into newly created repository.
 
@@ -58,7 +58,7 @@ OCM service was substituted by Signer service ([https://gitlab.eclipse.org/vkala
 
 ### User story 2: Sign created json-ld document with a signer
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-226)
+Backlog item SIMPL-226
 
 '+**As a**+ service provider **I want** to sign my self declaration **so that** I can store them as VC in a wallet (OCM/PCM)
 
@@ -84,7 +84,7 @@ an internal page
 
 ### User story 3: [UI] Create UI frontend for XFSC catalogue - Dialog add resource
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-228)
+Backlog item SIMPL-228
 
 '**As a** service provider **I want** publish a SD of a service resource **so that** my service offering can be looked up and queried by Consumers.
 
@@ -113,7 +113,7 @@ mock up docu (internal page)\
 
 ### User story 4: Interactively Create a Service Self-Description
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-233)
+Backlog item SIMPL-233
 
 **As a** service provider\
 **I want** interactively fill a self-description for my dataset in the UI\
@@ -137,7 +137,7 @@ The UI Frontend for the SD-Tool should support the user in specifying the self-d
 
 ### User story 5: Deploy signer service
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-241)
+Backlog item SIMPL-241
 
 Create the helm charts for the deployment of the Gaia-X XSFC TSA signer service. Deploy the helm chart in the development kubernates cluster. Set up the token to sign SD
 
@@ -153,7 +153,7 @@ Create the helm charts for the deployment of the Gaia-X XSFC TSA signer service.
 
 ### User story 6: [UI] User Interface for Sign created JSON-LD document
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-314)
+Backlog item SIMPL-314
 
 '+**As a**+ service provider **I want** to use an UI to sign my self declaration **so that** I can store them as VC in a wallet (OCM/PCM)
 
@@ -182,7 +182,7 @@ mock up docu (internal page)
 
 ### User story 7: Syntax Validation of Self-Description
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-489)
+Backlog item SIMPL-489
 
 **As a** Provider Agent\
 **I want** validate the syntax of the self-description\
@@ -200,7 +200,7 @@ AC
 
 ### User story 8: Simpl Self-Description Frontend
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-1083)
+Backlog item SIMPL-1083
 
 **As a** provider user\
 **I want to** have an interface (using html forms) that I can use to define self-descriptions of various shape constraints defined using the SHACL ontology
@@ -225,7 +225,7 @@ Acceptance Criteria:
 
 ### User story 9: Integrating the asset registering of the connector in to the published process of SD
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-6287)
+Backlog item SIMPL-6287
 
 **As a** data provider\
 **I want to** during the process of publishing a resource to the catalogue, use an API
@@ -283,7 +283,7 @@ S5. Verify that the resource can be consumed using the asset ID in the descripti
 
 ### User story 10: Automatically populate the provider id on the resource description
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-15289)
+Backlog item SIMPL-15289
 
 #### Storycard
 
@@ -324,7 +324,7 @@ Properties in the schema to be set:
 
 ### User story 11: [BE] Automatically populate the version number of a new resource description
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-16825)
+Backlog item SIMPL-16825
 
 #### Storycard
 
@@ -363,7 +363,7 @@ We can assume thast the versioning algorithm has been developed and tested itsel
 
 ### User story 12: [BE] Automatically populate the version number of a new version of a resource description
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-24346)
+Backlog item SIMPL-24346
 
 #### Storycard
 

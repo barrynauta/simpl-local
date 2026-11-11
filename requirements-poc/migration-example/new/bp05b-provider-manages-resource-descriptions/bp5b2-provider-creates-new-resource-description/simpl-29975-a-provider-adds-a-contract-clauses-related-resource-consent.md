@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.6 A Provider adds a set of contract clauses to a new resource description](../bp5b2-provider-creates-new-resource-description.md#5b26-a-provider-adds-a-set-of-contract-clauses-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog it is item SIMPL-29975, status **Defined**. It has 2 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-29975. It has 2 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -26,12 +26,12 @@ In the backlog it is item SIMPL-29975, status **Defined**. It has 2 user stories
 
 ## User stories
 
-1. [[UI] Add Resource Consent Contract Clause to Resource Description](#user-story-1-ui-add-resource-consent-contract-clause-to-resource-description) (FOR SC TO RESPOND)
-2. [[UI] Enable Consent Management Contract Clauses Document Download in SDTooling UI](#user-story-2-ui-enable-consent-management-contract-clauses-document-download-in-sdtooling-ui) (FOR SC TO RESPOND)
+1. [[UI] Add Resource Consent Contract Clause to Resource Description](#user-story-1-ui-add-resource-consent-contract-clause-to-resource-description)
+2. [[UI] Enable Consent Management Contract Clauses Document Download in SDTooling UI](#user-story-2-ui-enable-consent-management-contract-clauses-document-download-in-sdtooling-ui)
 
 ### User story 1: [UI] Add Resource Consent Contract Clause to Resource Description
 
-**Status:** FOR SC TO RESPOND (backlog item SIMPL-34168)
+Backlog item SIMPL-34168
 
 ###### User Story
 
@@ -69,7 +69,7 @@ When a **Resource Consent Access Policy** is configured within the **Service Pol
 
 ### User story 2: [UI] Enable Consent Management Contract Clauses Document Download in SDTooling UI
 
-**Status:** FOR SC TO RESPOND (backlog item SIMPL-34485)
+Backlog item SIMPL-34485
 
 **As a** Provider,\
 **I want to** download the documents associated with Contract Clauses categories (Resource Consent) for the resources published on the Catalogue,\

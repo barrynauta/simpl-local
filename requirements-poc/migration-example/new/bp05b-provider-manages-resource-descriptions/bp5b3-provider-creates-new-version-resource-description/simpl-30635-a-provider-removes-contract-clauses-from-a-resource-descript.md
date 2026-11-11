@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.3.5 A Provider updates the set of contract clauses of a new version of a resource description](../bp5b3-provider-creates-new-version-resource-description.md#5b35-a-provider-updates-the-set-of-contract-clauses-of-a-new-version-of-a-resource-description), under high-level requirement [5B.3 A Provider creates a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md). In the process it belongs to step [BP05B.10 Update policies and contract related metadata](../README.md#bp05b10-update-policies-and-contract-related-metadata).
 
-In the backlog it is item SIMPL-30635, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-30635. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -27,11 +27,11 @@ In the backlog it is item SIMPL-30635, status **Defined**. It has 1 user story, 
 
 ## User stories
 
-1. [A Provider removes contract clauses from a resource description via UI, resulting in a new version of the resource description](#user-story-1-a-provider-removes-contract-clauses-from-a-resource-description-via-ui-resulting-in-a-new-version-of-the-resource-description) (PBI Defined)
+1. [A Provider removes contract clauses from a resource description via UI, resulting in a new version of the resource description](#user-story-1-a-provider-removes-contract-clauses-from-a-resource-description-via-ui-resulting-in-a-new-version-of-the-resource-description)
 
 ### User story 1: A Provider removes contract clauses from a resource description via UI, resulting in a new version of the resource description
 
-**Status:** PBI Defined (backlog item SIMPL-30641)
+Backlog item SIMPL-30641
 
 **As a** Provider end user\
 **I want to** remove contract clauses from a resource description via UI\

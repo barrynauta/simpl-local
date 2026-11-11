@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.1.2 A Provider consults the details of one of its own resource descriptions](../bp5b1-provider-consults-its-own-resource-descriptions.md#5b12-a-provider-consults-the-details-of-one-of-its-own-resource-descriptions), under high-level requirement [5B.1 A Provider consults its own Resource descriptions](../bp5b1-provider-consults-its-own-resource-descriptions.md). In the process it belongs to step [Trigger (resource description management)](../README.md#trigger--resource-description-management).
 
-In the backlog it is item SIMPL-30292, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-30292. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -33,11 +33,11 @@ In the backlog it is item SIMPL-30292, status **Defined**. It has 1 user story, 
 
 ## User stories
 
-1. [A Provider selects a resource description and triggers the update of the resource consent status](#user-story-1-a-provider-selects-a-resource-description-and-triggers-the-update-of-the-resource-consent-status) (PBI Defined)
+1. [A Provider selects a resource description and triggers the update of the resource consent status](#user-story-1-a-provider-selects-a-resource-description-and-triggers-the-update-of-the-resource-consent-status)
 
 ### User story 1: A Provider selects a resource description and triggers the update of the resource consent status
 
-**Status:** PBI Defined (backlog item SIMPL-36072)
+Backlog item SIMPL-36072
 
 **As a** Provider\
 **I want to** trigger the update of the resource consent assertion related to a selected resource description via UI\

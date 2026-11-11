@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.4.1 A Provider signs and submits a new Resource description or a new version of a Resource description](../bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md#5b41-a-provider-signs-and-submits-a-new-resource-description-or-a-new-version-of-a-resource-description), under high-level requirement [5B.4 A Provider signs and submits a new Resource description or a new version of a Resource description](../bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource.md). In the process it belongs to step [BP05B.04 Sign and submit the resource description](../README.md#bp05b04-sign-and-submit-the-resource-description).
 
-In the backlog it is item SIMPL-26078, status **For DG Connect Review**. It has no user stories yet.
+In the backlog (Jira) it is item SIMPL-26078. It has no user stories yet.
 
 ## What this Epic delivers
 

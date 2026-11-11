@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.3.1 A Provider updates the common metadata of a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md#5b31-a-provider-updates-the-common-metadata-of-a-new-version-of-a-resource-description), under high-level requirement [5B.3 A Provider creates a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md). In the process it belongs to step [BP05B.08 Create a new version of a resource description](../README.md#bp05b08-create-a-new-version-of-a-resource-description).
 
-In the backlog it is item SIMPL-19293, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-19293. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -28,11 +28,11 @@ In the backlog it is item SIMPL-19293, status **Defined**. It has 1 user story, 
 
 ## User stories
 
-1. [[UI] A Provider starts the creation of a new version of a Resource description via UI](#user-story-1-ui-a-provider-starts-the-creation-of-a-new-version-of-a-resource-description-via-ui) (Ready for DG Acceptance)
+1. [[UI] A Provider starts the creation of a new version of a Resource description via UI](#user-story-1-ui-a-provider-starts-the-creation-of-a-new-version-of-a-resource-description-via-ui)
 
 ### User story 1: [UI] A Provider starts the creation of a new version of a Resource description via UI
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-21651)
+Backlog item SIMPL-21651
 
 #### Storycard
 

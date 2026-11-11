@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.5 The Governance Authority validates the syntax of a new Resource description or a new version of a Resource Description](../bp5b5-governance-authority-publishes-resource-description.md#5b55-the-governance-authority-validates-the-syntax-of-a-new-resource-description-or-a-new-version-of-a-resource-description), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.05 Validate the resource description](../README.md#bp05b05-validate-the-resource-description).
 
-In the backlog it is item SIMPL-982, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-982. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -32,11 +32,11 @@ and the syntax validation for the resource description or new version of the res
 
 ## User stories
 
-1. [Syntax Validation Engine](#user-story-1-syntax-validation-engine) (DevTeam PBI is ready for Implementation check)
+1. [Syntax Validation Engine](#user-story-1-syntax-validation-engine)
 
 ### User story 1: Syntax Validation Engine
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-488)
+Backlog item SIMPL-488
 
 **As a** Governance Authority agent\
 **I want** integrate a validation engine that is able to validate the syntax of self-descriptions.\

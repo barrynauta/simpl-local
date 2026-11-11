@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.3.4 A Provider updates the usage policies of a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md#5b34-a-provider-updates-the-usage-policies-of-a-new-version-of-a-resource-description), under high-level requirement [5B.3 A Provider creates a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md). In the process it belongs to step [BP05B.10 Update policies and contract related metadata](../README.md#bp05b10-update-policies-and-contract-related-metadata).
 
-In the backlog it is item SIMPL-18030, status **In Progress**. It has 5 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-18030. It has 5 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -51,15 +51,15 @@ In the backlog it is item SIMPL-18030, status **In Progress**. It has 5 user sto
 
 ## User stories
 
-1. [[UI] Provider sees the usage policies carried over from the previous resource description version](#user-story-1-ui-provider-sees-the-usage-policies-carried-over-from-the-previous-resource-description-version) (PBI INTERNAL QA)
-2. [[UI] Provider selects a usage policy template in the new resource description version wizard](#user-story-2-ui-provider-selects-a-usage-policy-template-in-the-new-resource-description-version-wizard) (PBI INTERNAL QA)
-3. [[UI] Provider fills in the usage policy template parameters in the new resource description version wizard](#user-story-3-ui-provider-fills-in-the-usage-policy-template-parameters-in-the-new-resource-description-version-wizard) (PBI INTERNAL QA)
-4. [[UI] Provider removes a usage policy from the new resource description version](#user-story-4-ui-provider-removes-a-usage-policy-from-the-new-resource-description-version) (PBI INTERNAL QA)
-5. [[UI] Provider saves the updated usage policies on the new resource description version](#user-story-5-ui-provider-saves-the-updated-usage-policies-on-the-new-resource-description-version) (FOR SC TO RESPOND)
+1. [[UI] Provider sees the usage policies carried over from the previous resource description version](#user-story-1-ui-provider-sees-the-usage-policies-carried-over-from-the-previous-resource-description-version)
+2. [[UI] Provider selects a usage policy template in the new resource description version wizard](#user-story-2-ui-provider-selects-a-usage-policy-template-in-the-new-resource-description-version-wizard)
+3. [[UI] Provider fills in the usage policy template parameters in the new resource description version wizard](#user-story-3-ui-provider-fills-in-the-usage-policy-template-parameters-in-the-new-resource-description-version-wizard)
+4. [[UI] Provider removes a usage policy from the new resource description version](#user-story-4-ui-provider-removes-a-usage-policy-from-the-new-resource-description-version)
+5. [[UI] Provider saves the updated usage policies on the new resource description version](#user-story-5-ui-provider-saves-the-updated-usage-policies-on-the-new-resource-description-version)
 
 ### User story 1: [UI] Provider sees the usage policies carried over from the previous resource description version
 
-**Status:** PBI INTERNAL QA (backlog item SIMPL-31575)
+Backlog item SIMPL-31575
 
 #### Storycard
 
@@ -126,7 +126,7 @@ In the backlog it is item SIMPL-18030, status **In Progress**. It has 5 user sto
 
 ### User story 2: [UI] Provider selects a usage policy template in the new resource description version wizard
 
-**Status:** PBI INTERNAL QA (backlog item SIMPL-31576)
+Backlog item SIMPL-31576
 
 #### Storycard
 
@@ -191,7 +191,7 @@ This story covers selection. The field-entry story covers rendering. Policy conf
 
 ### User story 3: [UI] Provider fills in the usage policy template parameters in the new resource description version wizard
 
-**Status:** PBI INTERNAL QA (backlog item SIMPL-31577)
+Backlog item SIMPL-31577
 
 #### Storycard
 
@@ -252,7 +252,7 @@ Policy confirmation and final submission: SIMPL-31579 (internal page).
 
 ### User story 4: [UI] Provider removes a usage policy from the new resource description version
 
-**Status:** PBI INTERNAL QA (backlog item SIMPL-31578)
+Backlog item SIMPL-31578
 
 #### Storycard:
 
@@ -296,7 +296,7 @@ API definition ticket: (internal page)
 
 ### User story 5: [UI] Provider saves the updated usage policies on the new resource description version
 
-**Status:** FOR SC TO RESPOND (backlog item SIMPL-31579)
+Backlog item SIMPL-31579
 
 #### Storycard
 

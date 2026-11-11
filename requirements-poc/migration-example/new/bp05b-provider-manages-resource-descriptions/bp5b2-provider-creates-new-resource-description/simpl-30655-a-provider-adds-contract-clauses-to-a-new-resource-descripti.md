@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.6 A Provider adds a set of contract clauses to a new resource description](../bp5b2-provider-creates-new-resource-description.md#5b26-a-provider-adds-a-set-of-contract-clauses-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog it is item SIMPL-30655, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-30655. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -14,11 +14,11 @@ This epic extends the creation and association of contract clauses to a new reso
 
 ## User stories
 
-1. [A Provider removes contract clauses from a resource description via UI, when creating a new resource description](#user-story-1-a-provider-removes-contract-clauses-from-a-resource-description-via-ui-when-creating-a-new-resource-description) (PBI Defined)
+1. [A Provider removes contract clauses from a resource description via UI, when creating a new resource description](#user-story-1-a-provider-removes-contract-clauses-from-a-resource-description-via-ui-when-creating-a-new-resource-description)
 
 ### User story 1: A Provider removes contract clauses from a resource description via UI, when creating a new resource description
 
-**Status:** PBI Defined (backlog item SIMPL-30657)
+Backlog item SIMPL-30657
 
 **As a** Provider end user\
 **I want to** remove previously added contract clauses via UI before the submission of the resource description\

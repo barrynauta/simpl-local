@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.1.3 A Provider consults the version history of one of its own resource descriptions](../bp5b1-provider-consults-its-own-resource-descriptions.md#5b13-a-provider-consults-the-version-history-of-one-of-its-own-resource-descriptions), under high-level requirement [5B.1 A Provider consults its own Resource descriptions](../bp5b1-provider-consults-its-own-resource-descriptions.md). In the process it belongs to step [Trigger (resource description management)](../README.md#trigger--resource-description-management).
 
-In the backlog it is item SIMPL-29371, status **For DG Connect Review**. It has no user stories yet.
+In the backlog (Jira) it is item SIMPL-29371. It has no user stories yet.
 
 ## What this Epic delivers
 

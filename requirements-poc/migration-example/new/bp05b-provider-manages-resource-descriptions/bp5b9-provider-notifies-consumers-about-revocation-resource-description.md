@@ -9,7 +9,7 @@
 
 ## About this requirement
 
-This is high-level requirement 5B.9 of business process [BP05B - Provider manages resource descriptions](./README.md). In the backlog it is item SIMPL-21117, status **In Progress**. The status is the one in the backlog (Jira). The requirements site shows all requirements as Proposed.
+This is high-level requirement 5B.9 of business process [BP05B - Provider manages resource descriptions](./README.md). In the backlog (Jira) it is item SIMPL-21117.
 
 In the process it covers 1 step: [BP05B.15 Inform about revocation](./README.md#bp05b15-inform-about-revocation). There is no dynamic view for it yet.
 
@@ -25,13 +25,12 @@ Simpl-Open shall support a Provider
 
 Select a title to jump to its section below.
 
-| ID | Detailed requirement | Status | Process step | Epics | User stories |
-| --- | --- | --- | --- | --- | --- |
-| 5B.9.1 | [A Provider notifies Consumers about the revocation of a resource description](#5b91-a-provider-notifies-consumers-about-the-revocation-of-a-resource-description) | In Progress | BP05B.15 Inform about revocation | 1 | 2 |
+| ID | Detailed requirement | Process step | Epics | User stories |
+| --- | --- | --- | --- | --- |
+| 5B.9.1 | [A Provider notifies Consumers about the revocation of a resource description](#5b91-a-provider-notifies-consumers-about-the-revocation-of-a-resource-description) | BP05B.15 Inform about revocation | 1 | 2 |
 
 ### 5B.9.1 A Provider notifies Consumers about the revocation of a resource description
 
-**Status:** In Progress (backlog item SIMPL-14642)<br>
 **Process step:** [BP05B.15 Inform about revocation](./README.md#bp05b15-inform-about-revocation)<br>
 **Public text:** [5B.9.1 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b91-provider-notifies-consumers-about-revocation-resource-description)
 
@@ -42,4 +41,4 @@ Simpl-Open shall supporta Provider
 **Delivered through 1 Epic.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: A Provider notifies Consumers about the revocation of a resource description](./bp5b9-provider-notifies-consumers-about-revocation-resource-description/simpl-18026-a-provider-notifies-consumers-about-the-revocation-of-a-reso.md)<br>
-  *As a Provider, I want to notify Consumers about a revoked resource description* · 2 user stories · status In Progress
+  *As a Provider, I want to notify Consumers about a revoked resource description* · 2 user stories

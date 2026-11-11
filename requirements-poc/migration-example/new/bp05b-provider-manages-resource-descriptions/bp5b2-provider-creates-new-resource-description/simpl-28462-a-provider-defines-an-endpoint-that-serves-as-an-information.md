@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.6 A Provider adds a set of contract clauses to a new resource description](../bp5b2-provider-creates-new-resource-description.md#5b26-a-provider-adds-a-set-of-contract-clauses-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog it is item SIMPL-28462, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-28462. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -22,11 +22,11 @@ The Provider can define endpoints that are external to Simpl-Open, and that prov
 
 ## User stories
 
-1. [[Documentation][Credit status] Create Payment information point definition guide for Providers](#user-story-1-documentationcredit-status-create-payment-information-point-definition-guide-for-providers) (New Product Backlog Item)
+1. [[Documentation][Credit status] Create Payment information point definition guide for Providers](#user-story-1-documentationcredit-status-create-payment-information-point-definition-guide-for-providers)
 
 ### User story 1: [Documentation][Credit status] Create Payment information point definition guide for Providers
 
-**Status:** New Product Backlog Item (backlog item SIMPL-36086)
+Backlog item SIMPL-36086
 
 **Goal:**\
 Produce a guide that explains how a Provider defines a payment information point: an endpoint that determines from a system outside of Simpl-Open (e.g. account/billing system) whether all the invoices for a particular usage contract have been paid in time. The endpoint should only return true/false, and only consider contracts that are at or past their due date.

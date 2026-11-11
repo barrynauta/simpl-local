@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.3.2 A Provider updates the resource type specific metadata of a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md#5b32-a-provider-updates-the-resource-type-specific-metadata-of-a-new-version-of-a-resource-description), under high-level requirement [5B.3 A Provider creates a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md). In the process it belongs to step [BP05B.09 Update resource type specific metadata](../README.md#bp05b09-update-resource-type-specific-metadata).
 
-In the backlog it is item SIMPL-24801, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-24801. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -26,11 +26,11 @@ In the backlog it is item SIMPL-24801, status **Defined**. It has 1 user story, 
 
 ## User stories
 
-1. [[UI] Update infrastructure deployment script link](#user-story-1-ui-update-infrastructure-deployment-script-link) (DevTeam PBI is ready for Implementation check)
+1. [[UI] Update infrastructure deployment script link](#user-story-1-ui-update-infrastructure-deployment-script-link)
 
 ### User story 1: [UI] Update infrastructure deployment script link
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-28325)
+Backlog item SIMPL-28325
 
 **As a** Provider end user,\
 **I want to** update the link to the deployment script in a new version of an infrastructure resource description via UI,\

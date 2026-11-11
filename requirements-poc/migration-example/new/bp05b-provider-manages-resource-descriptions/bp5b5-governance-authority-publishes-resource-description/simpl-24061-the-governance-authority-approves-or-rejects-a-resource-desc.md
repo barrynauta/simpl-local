@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.13 The Governance Authority approves/rejects the metadata of a new resource description or a new version of a resource description](../bp5b5-governance-authority-publishes-resource-description.md#5b513-the-governance-authority-approvesrejects-the-metadata-of-a-new-resource-description-or-a-new-version-of-a-resource-description), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.05 Validate the resource description](../README.md#bp05b05-validate-the-resource-description).
 
-In the backlog it is item SIMPL-24061, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-24061. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -40,11 +40,11 @@ In the backlog it is item SIMPL-24061, status **Defined**. It has 1 user story, 
 
 ## User stories
 
-1. [Catalogue validates against the Quality Assesment Record and decides the publication before storing self-description](#user-story-1-catalogue-validates-against-the-quality-assesment-record-and-decides-the-publication-before-storing-self-description) (DevTeam PBI is ready for Implementation check)
+1. [Catalogue validates against the Quality Assesment Record and decides the publication before storing self-description](#user-story-1-catalogue-validates-against-the-quality-assesment-record-and-decides-the-publication-before-storing-self-description)
 
 ### User story 1: Catalogue validates against the Quality Assesment Record and decides the publication before storing self-description
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-27998)
+Backlog item SIMPL-27998
 
 **As a** Governance Authority,\
 **I want to** automatically approve or reject a resource description based on overall and per-dimension thresholds,\

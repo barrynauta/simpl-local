@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.5 A Provider assigns usage policies to a new Resource description](../bp5b2-provider-creates-new-resource-description.md#5b25-a-provider-assigns-usage-policies-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog it is item SIMPL-961, status **In Progress**. It has 6 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-961. It has 6 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -30,16 +30,16 @@ In the backlog it is item SIMPL-961, status **In Progress**. It has 6 user stori
 
 ## User stories
 
-1. [UI for definition of usage policies](#user-story-1-ui-for-definition-of-usage-policies) (DevTeam PBI is ready for Implementation check)
-2. [[UI] Provider selects a usage policy template in the resource description wizard](#user-story-2-ui-provider-selects-a-usage-policy-template-in-the-resource-description-wizard) (DevTeam PBI is ready for Implementation check)
-3. [[UI] Provider fills in the usage policy template parameters in the resource description wizard](#user-story-3-ui-provider-fills-in-the-usage-policy-template-parameters-in-the-resource-description-wizard) (DevTeam PBI is ready for Implementation check)
-4. [[UI] Provider sees inline validation feedback for usage policy template parameters](#user-story-4-ui-provider-sees-inline-validation-feedback-for-usage-policy-template-parameters) (DevTeam PBI is ready for Implementation check)
-5. [[UI] Provider adds a usage policy to a new Resource Description](#user-story-5-ui-provider-adds-a-usage-policy-to-a-new-resource-description) (DevTeam PBI is ready for Implementation check)
-6. [[UI] Provider removes a usage policy from the new resource description](#user-story-6-ui-provider-removes-a-usage-policy-from-the-new-resource-description) (DevTeam PBI is ready for Implementation check)
+1. [UI for definition of usage policies](#user-story-1-ui-for-definition-of-usage-policies)
+2. [[UI] Provider selects a usage policy template in the resource description wizard](#user-story-2-ui-provider-selects-a-usage-policy-template-in-the-resource-description-wizard)
+3. [[UI] Provider fills in the usage policy template parameters in the resource description wizard](#user-story-3-ui-provider-fills-in-the-usage-policy-template-parameters-in-the-resource-description-wizard)
+4. [[UI] Provider sees inline validation feedback for usage policy template parameters](#user-story-4-ui-provider-sees-inline-validation-feedback-for-usage-policy-template-parameters)
+5. [[UI] Provider adds a usage policy to a new Resource Description](#user-story-5-ui-provider-adds-a-usage-policy-to-a-new-resource-description)
+6. [[UI] Provider removes a usage policy from the new resource description](#user-story-6-ui-provider-removes-a-usage-policy-from-the-new-resource-description)
 
 ### User story 1: UI for definition of usage policies
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-424)
+Backlog item SIMPL-424
 
 **As a** Provider, creating a Self-Description through a UI,\
 **I want to** have an extension of the Self-description UI for creating a Usage Policy that will be assigned to the Self-Description\
@@ -77,7 +77,7 @@ It should be possible to add constraints and set the parameter. The backend will
 
 ### User story 2: [UI] Provider selects a usage policy template in the resource description wizard
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-31452)
+Backlog item SIMPL-31452
 
 #### Story card
 
@@ -142,7 +142,7 @@ It should be possible to add constraints and set the parameter. The backend will
 
 ### User story 3: [UI] Provider fills in the usage policy template parameters in the resource description wizard
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-31453)
+Backlog item SIMPL-31453
 
 #### Story card
 
@@ -198,7 +198,7 @@ It should be possible to add constraints and set the parameter. The backend will
 
 ### User story 4: [UI] Provider sees inline validation feedback for usage policy template parameters
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-31454)
+Backlog item SIMPL-31454
 
 #### Story card
 
@@ -262,7 +262,7 @@ It should be possible to add constraints and set the parameter. The backend will
 
 ### User story 5: [UI] Provider adds a usage policy to a new Resource Description
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-31455)
+Backlog item SIMPL-31455
 
 #### Story card
 
@@ -323,7 +323,7 @@ It should be possible to add constraints and set the parameter. The backend will
 
 ### User story 6: [UI] Provider removes a usage policy from the new resource description
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-31704)
+Backlog item SIMPL-31704
 
 #### Storycard:
 

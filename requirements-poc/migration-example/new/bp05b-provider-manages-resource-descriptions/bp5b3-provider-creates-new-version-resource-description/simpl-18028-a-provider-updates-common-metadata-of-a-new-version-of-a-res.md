@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.3.1 A Provider updates the common metadata of a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md#5b31-a-provider-updates-the-common-metadata-of-a-new-version-of-a-resource-description), under high-level requirement [5B.3 A Provider creates a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md). In the process it belongs to step [BP05B.08 Create a new version of a resource description](../README.md#bp05b08-create-a-new-version-of-a-resource-description).
 
-In the backlog it is item SIMPL-18028, status **Defined**. It has 5 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-18028. It has 5 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -29,15 +29,15 @@ In the backlog it is item SIMPL-18028, status **Defined**. It has 5 user stories
 
 ## User stories
 
-1. [[UI] Provider updates common metadata to a new version of Resource description](#user-story-1-ui-provider-updates-common-metadata-to-a-new-version-of-resource-description) (Ready for DG Acceptance)
-2. [[API] API for retrieving a resourceAddress info (EdcConnectorAdapter)](#user-story-2-api-api-for-retrieving-a-resourceaddress-info-edcconnectoradapter) (Ready for DG Acceptance)
-3. [[API] API for retrieving a resourceAddress info (sd-tooling-be)](#user-story-3-api-api-for-retrieving-a-resourceaddress-info-sd-tooling-be) (Ready for DG Acceptance)
-4. [[UI] Retrieve resourceAddress info for updating/visualizing resource description](#user-story-4-ui-retrieve-resourceaddress-info-for-updatingvisualizing-resource-description) (Ready for DG Acceptance)
-5. [[API] Implement API to atomically enrich and sign a resourceDescription (SD-Tooling))](#user-story-5-api-implement-api-to-atomically-enrich-and-sign-a-resourcedescription-sd-tooling) (Ready for DG Acceptance)
+1. [[UI] Provider updates common metadata to a new version of Resource description](#user-story-1-ui-provider-updates-common-metadata-to-a-new-version-of-resource-description)
+2. [[API] API for retrieving a resourceAddress info (EdcConnectorAdapter)](#user-story-2-api-api-for-retrieving-a-resourceaddress-info-edcconnectoradapter)
+3. [[API] API for retrieving a resourceAddress info (sd-tooling-be)](#user-story-3-api-api-for-retrieving-a-resourceaddress-info-sd-tooling-be)
+4. [[UI] Retrieve resourceAddress info for updating/visualizing resource description](#user-story-4-ui-retrieve-resourceaddress-info-for-updatingvisualizing-resource-description)
+5. [[API] Implement API to atomically enrich and sign a resourceDescription (SD-Tooling))](#user-story-5-api-implement-api-to-atomically-enrich-and-sign-a-resourcedescription-sd-tooling)
 
 ### User story 1: [UI] Provider updates common metadata to a new version of Resource description
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-18683)
+Backlog item SIMPL-18683
 
 #### Storycard
 
@@ -84,7 +84,7 @@ In the backlog it is item SIMPL-18028, status **Defined**. It has 5 user stories
 
 ### User story 2: [API] API for retrieving a resourceAddress info (EdcConnectorAdapter)
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-25147)
+Backlog item SIMPL-25147
 
 #### Storycard
 
@@ -136,7 +136,7 @@ The newly implemented EdcConnectorAdapter API must therefore:
 
 ### User story 3: [API] API for retrieving a resourceAddress info (sd-tooling-be)
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-25148)
+Backlog item SIMPL-25148
 
 #### Storycard
 
@@ -191,7 +191,7 @@ The SD‑ToolingBE API must therefore:
 
 ### User story 4: [UI] Retrieve resourceAddress info for updating/visualizing resource description
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-25170)
+Backlog item SIMPL-25170
 
 #### Storycard
 
@@ -279,7 +279,7 @@ After retrieving the JSON Schema the UI has to invoke AssetOrchestrator GET /wor
 
 ### User story 5: [API] Implement API to atomically enrich and sign a resourceDescription (SD-Tooling))
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-25713)
+Backlog item SIMPL-25713
 
 #### Storycard
 

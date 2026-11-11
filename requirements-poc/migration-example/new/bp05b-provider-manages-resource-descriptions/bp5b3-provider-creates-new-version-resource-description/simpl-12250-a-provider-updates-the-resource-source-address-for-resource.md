@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.3.1 A Provider updates the common metadata of a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md#5b31-a-provider-updates-the-common-metadata-of-a-new-version-of-a-resource-description), under high-level requirement [5B.3 A Provider creates a new version of a Resource description](../bp5b3-provider-creates-new-version-resource-description.md). In the process it belongs to step [BP05B.08 Create a new version of a resource description](../README.md#bp05b08-create-a-new-version-of-a-resource-description).
 
-In the backlog it is item SIMPL-12250, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-12250. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -62,11 +62,11 @@ In the backlog it is item SIMPL-12250, status **Defined**. It has 1 user story, 
 
 ## User stories
 
-1. [[UI] Selecting, Filling, and Submitting the Resource Source Template (Provider)](#user-story-1-ui-selecting-filling-and-submitting-the-resource-source-template-provider) (Ready for DG Acceptance)
+1. [[UI] Selecting, Filling, and Submitting the Resource Source Template (Provider)](#user-story-1-ui-selecting-filling-and-submitting-the-resource-source-template-provider)
 
 ### User story 1: [UI] Selecting, Filling, and Submitting the Resource Source Template (Provider)
 
-**Status:** Ready for DG Acceptance (backlog item SIMPL-13565)
+Backlog item SIMPL-13565
 
 **As a** provider,\
 **I want to** select a resource source template associated with a sharing method, fill in the required details, and submit it as part of the resource description,\

@@ -9,7 +9,7 @@
 
 ## About this requirement
 
-This is high-level requirement 5B.4 of business process [BP05B - Provider manages resource descriptions](./README.md). In the backlog it is item SIMPL-14729, status **Defined**. The status is the one in the backlog (Jira). The requirements site shows all requirements as Proposed.
+This is high-level requirement 5B.4 of business process [BP05B - Provider manages resource descriptions](./README.md). In the backlog (Jira) it is item SIMPL-14729.
 
 In the process it covers 1 step: [BP05B.04 Sign and submit the resource description](./README.md#bp05b04-sign-and-submit-the-resource-description). The dynamic view shows it in [Define and publish self-description](bp05b-dynamic-view.md#define-and-publish-self-description) and [the technology components view](bp05b-tcv-dynamic-view.md).
 
@@ -26,13 +26,12 @@ Simpl-Open shall allow a Provider
 
 Select a title to jump to its section below.
 
-| ID | Detailed requirement | Status | Process step | Epics | User stories |
-| --- | --- | --- | --- | --- | --- |
-| 5B.4.1 | [A Provider signs and submits a new Resource description or a new version of a Resource description](#5b41-a-provider-signs-and-submits-a-new-resource-description-or-a-new-version-of-a-resource-description) | Defined | BP05B.04 Sign and submit the resource description | 3 | 13 |
+| ID | Detailed requirement | Process step | Epics | User stories |
+| --- | --- | --- | --- | --- |
+| 5B.4.1 | [A Provider signs and submits a new Resource description or a new version of a Resource description](#5b41-a-provider-signs-and-submits-a-new-resource-description-or-a-new-version-of-a-resource-description) | BP05B.04 Sign and submit the resource description | 3 | 13 |
 
 ### 5B.4.1 A Provider signs and submits a new Resource description or a new version of a Resource description
 
-**Status:** Defined (backlog item SIMPL-14745)<br>
 **Process step:** [BP05B.04 Sign and submit the resource description](./README.md#bp05b04-sign-and-submit-the-resource-description)<br>
 **Public text:** [5B.4.1 on the requirements site](https://simpl-programme.ec.europa.eu/book-page/5b41-provider-signs-and-submits-new-resource-description-or-new-version-resource)
 
@@ -43,8 +42,8 @@ Simpl-Open shall allow a Provider via UI and API
 **Delivered through 3 Epics.** Each Epic page has the user stories and their acceptance criteria.
 
 - [Epic: A Provider receives notifications about validation errors via UI or API](./bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource/simpl-2282-a-provider-receives-notifications-about-validation-errors-vi.md)<br>
-  *As a Provider, I want to receive notifications about errors during validation on Governance Authority via UI or API* · 1 user story · status Defined
+  *As a Provider, I want to receive notifications about errors during validation on Governance Authority via UI or API* · 1 user story
 - [Epic: A Provider signs and submits a new Resource description or a new version of a Resource description](./bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource/simpl-2292-a-provider-signs-and-submits-a-new-resource-description-or-a.md)<br>
-  *As a Provider, I want to sign and submit a new resource description or a new version of a resource description to the Governance Authority using an API* · 12 user stories · status Defined
+  *As a Provider, I want to sign and submit a new resource description or a new version of a resource description to the Governance Authority using an API* · 12 user stories
 - [Epic: A Provider signs and submits a new Resource description or a new version of a Resource description [Improvement]](./bp5b4-provider-signs-and-submits-new-resource-description-or-new-version-resource/simpl-26078-a-provider-signs-and-submits-a-new-resource-description-or-a.md)<br>
-  no user stories yet · status For DG Connect Review
+  no user stories yet

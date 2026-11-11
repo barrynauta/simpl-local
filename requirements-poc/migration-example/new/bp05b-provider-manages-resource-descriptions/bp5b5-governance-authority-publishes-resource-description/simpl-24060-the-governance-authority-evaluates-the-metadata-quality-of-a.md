@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.11 The Governance Authority evaluates the metadata quality of a new resource description or a new version of a resource description](../bp5b5-governance-authority-publishes-resource-description.md#5b511-the-governance-authority-evaluates-the-metadata-quality-of-a-new-resource-description-or-a-new-version-of-a-resource-description), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.05 Validate the resource description](../README.md#bp05b05-validate-the-resource-description).
 
-In the backlog it is item SIMPL-24060, status **Defined**. It has 3 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-24060. It has 3 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -71,13 +71,13 @@ In mathematical terms the score of a dimension **d** for a resource descriptio
 
 ## User stories
 
-1. [Governance Authority evaluate metadata quality scores for submitted resource description](#user-story-1-governance-authority-evaluate-metadata-quality-scores-for-submitted-resource-description) (DevTeam PBI is ready for Implementation check)
-2. [Governance Authority assign metadata quality classifications to evaluation results](#user-story-2-governance-authority-assign-metadata-quality-classifications-to-evaluation-results) (DevTeam PBI is ready for Implementation check)
-3. [Governance Authority store metadata quality assessment as related metadata](#user-story-3-governance-authority-store-metadata-quality-assessment-as-related-metadata) (DevTeam PBI is ready for Implementation check)
+1. [Governance Authority evaluate metadata quality scores for submitted resource description](#user-story-1-governance-authority-evaluate-metadata-quality-scores-for-submitted-resource-description)
+2. [Governance Authority assign metadata quality classifications to evaluation results](#user-story-2-governance-authority-assign-metadata-quality-classifications-to-evaluation-results)
+3. [Governance Authority store metadata quality assessment as related metadata](#user-story-3-governance-authority-store-metadata-quality-assessment-as-related-metadata)
 
 ### User story 1: Governance Authority evaluate metadata quality scores for submitted resource description
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-27899)
+Backlog item SIMPL-27899
 
 **As a** Governance Authority\
 **I want to** Simpl-Open to automatically evaluate a submitted resource description against the active Metadata Quality Profile\
@@ -164,7 +164,7 @@ arq --data vocabulary/examples.ttl --data vocabulary/generated_shapes_from_examp
 
 ### User story 2: Governance Authority assign metadata quality classifications to evaluation results
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-27901)
+Backlog item SIMPL-27901
 
 **As a** Governance Authority\
 **I want to** Simpl-Open to assign classifications for overall and per-dimension scores\
@@ -223,7 +223,7 @@ The **metadata quality classification** and **quality score ranges** are define
 
 ### User story 3: Governance Authority store metadata quality assessment as related metadata
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-27904)
+Backlog item SIMPL-27904
 
 **As a** Governance Authority\
 **I want to** Simpl-Open to store the quality assessment as the validation report enriched with a link to the evaluated resource description\

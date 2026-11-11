@@ -17,29 +17,30 @@ Read the two side by side, for example the page of [5B.2 in the original](origin
 
 Everything that is not a requirement. The overview, actors, assumptions, prerequisites, diagrams and process steps of the BP05B page are unchanged, and so are the two dynamic views and the images. The file names are the same, so links from other pages still work.
 
-The one addition in the process steps: under each step, one line lists the detailed requirements that step needs, with the high-level requirement they belong to. A reader of the steps sees the requirements right there, without scrolling to the end of the page. Example: [BP05B.01 Create a new resource description](new/bp05b-provider-manages-resource-descriptions/README.md#bp05b01-create-a-new-resource-description).
+The one addition in the process steps: under each step, one line of plain text names the detailed requirements that step needs, with the high-level requirement they belong to. A reader of the steps sees the requirements right there. The line has no links, so the reader is not sent back and forth between the steps and the requirement pages. Example: [BP05B.01 Create a new resource description](new/bp05b-provider-manages-resource-descriptions/README.md#bp05b01-create-a-new-resource-description).
 
 ## What changed
 
 Only the requirements part. In the original it lists the 9 high-level requirements, and each of their pages lists its detailed requirements in one line each, with a link to the requirements site. In the new version:
 
-- **BP05B page, section High-level requirements.** It starts with a short explanation of the four levels (high-level requirement, detailed requirement, Epic, user story) and how to move between them. The table keeps the IDs 5B.1 to 5B.9 and the links to the requirements site. The titles now open the requirement pages, and new columns show the status, the process steps and the number of detailed requirements. The list under it shows, for each page, how many detailed requirements, Epics and user stories it has.
+- **BP05B page, section High-level requirements.** It starts with a short explanation of the four levels (high-level requirement, detailed requirement, Epic, user story) and how to move between them. The table keeps the IDs 5B.1 to 5B.9 and the links to the requirements site. The titles now open the requirement pages, and new columns show the process steps and the number of detailed requirements. The list under it shows, for each page, how many detailed requirements, Epics and user stories it has.
 - **The nine requirement pages** (`bp5b1-...md` to `bp5b9-...md`). The top of the page is unchanged. Under it:
   - *About this requirement*: which process steps it covers, with links to those steps, where the dynamic view shows it, and how many detailed requirements, Epics and user stories it has.
   - *Description*: the text from Jira.
-  - *Detailed requirements*: a table, then one section per detailed requirement with its text, status, process step, its link to the requirements site, and the Epics that deliver it.
+  - *Detailed requirements*: a table, then one section per detailed requirement with its text, process step, its link to the requirements site, and the Epics that deliver it.
   - Under each detailed requirement, its Epics, each with one line taken from its story card (for example *As a Provider, I want to retrieve a list of published resource types*), so a reader knows what an Epic is about before opening it.
 - **Epic pages, new.** One folder per requirement page, with one page per Epic (69 in total). An Epic page explains where it sits (detailed requirement, high-level requirement, process step), gives the Epic text, and then its user stories (140 in total), each with its story card and acceptance criteria. Long pages have a link back to the list of user stories after each story, and every page ends with links back up.
 - **A README in each Epic folder.** GitLab shows it when someone opens the folder, so a visitor who lands there sees which requirement the Epics belong to, grouped by detailed requirement.
 
-Links say where they go ("5B.2.1 on the requirements site", "Epic: ...", "BP05B.01 Create a new resource description"); step numbers in tables are plain text, not bare links. Jira keys are shown as text, not as links, because jira.simplprogramme.eu is closed to public visitors. Statuses are the ones in Jira.
+Links say where they go ("5B.2.1 on the requirements site", "Epic: ...", "BP05B.01 Create a new resource description"); step numbers in tables are plain text, not bare links. Jira keys are shown as text, not as links, because jira.simplprogramme.eu is closed to public visitors.
 
 ## Open points
 
 - **Process steps.** The link between a detailed requirement and a process step (for example 5B.2.3 to BP05B.02) is our reading; the items in Jira have no field for it. 5B.1 (a Provider consults its own descriptions) has no step of its own and is placed under the trigger. A field or a label in Jira would make these links repeatable.
 - **Dynamic view sections.** The same: the link from a requirement to a section of the dynamic view is made by hand.
 - **Requirements site numbers.** The IDs such as 5B.2.1 exist only on the requirements site. 12 of the 32 detailed requirements were matched to them by hand, all under 5B.5, because the site uses short titles there.
-- **Which text and which status.** The site shows every requirement as Proposed, Jira shows Defined or In Progress. The final publication must choose one.
+- **Which text.** The text comes from Jira. It is almost the same as on the requirements site,, with small differences in wording. The final publication must choose one source.
+- **No status.** The pages show no status: it changes often and means little to a visitor. The site shows every requirement as Proposed, Jira shows Defined or In Progress.
 - **Old story text.** A few older user stories (for example SIMPL-330) still have Jira formatting that the conversion does not handle, such as `+**As a**+`.
 
 Built with `example_bp05b.py` in the build folder, from the proof-of-concept tree of 10 November 2026.

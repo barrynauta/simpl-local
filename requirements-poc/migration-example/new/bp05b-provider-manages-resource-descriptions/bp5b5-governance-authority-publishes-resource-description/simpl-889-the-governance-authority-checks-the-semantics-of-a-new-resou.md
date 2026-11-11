@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.5.7 The Governance Authority validates the semantics of a new Resource description or a new version of a Resource Description](../bp5b5-governance-authority-publishes-resource-description.md#5b57-the-governance-authority-validates-the-semantics-of-a-new-resource-description-or-a-new-version-of-a-resource-description), under high-level requirement [5B.5 The Governance Authority publishes a Resource description](../bp5b5-governance-authority-publishes-resource-description.md). In the process it belongs to step [BP05B.05 Validate the resource description](../README.md#bp05b05-validate-the-resource-description).
 
-In the backlog it is item SIMPL-889, status **Defined**. It has 2 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-889. It has 2 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -32,12 +32,12 @@ and the semantic validation for the resource description or new version of a res
 
 ## User stories
 
-1. [Semantic Validation Engine](#user-story-1-semantic-validation-engine) (DevTeam PBI is ready for Implementation check)
-2. [Semantic Validation of Self-Description](#user-story-2-semantic-validation-of-self-description) (DevTeam PBI is ready for Implementation check)
+1. [Semantic Validation Engine](#user-story-1-semantic-validation-engine)
+2. [Semantic Validation of Self-Description](#user-story-2-semantic-validation-of-self-description)
 
 ### User story 1: Semantic Validation Engine
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-490)
+Backlog item SIMPL-490
 
 **As a** Governance Authority agent\
 **I want** integrate a validation engine that is able the validate the semantic of the self-description.\
@@ -59,7 +59,7 @@ Remark: the method `verifySelfDescription` provides several verification systems
 
 ### User story 2: Semantic Validation of Self-Description
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-491)
+Backlog item SIMPL-491
 
 **As a** Governance Authority\
 **I want to** validate the semantic of the self-description\

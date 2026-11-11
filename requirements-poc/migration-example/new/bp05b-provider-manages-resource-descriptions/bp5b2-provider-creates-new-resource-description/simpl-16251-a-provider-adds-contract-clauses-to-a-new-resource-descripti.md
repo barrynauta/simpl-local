@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.6 A Provider adds a set of contract clauses to a new resource description](../bp5b2-provider-creates-new-resource-description.md#5b26-a-provider-adds-a-set-of-contract-clauses-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog it is item SIMPL-16251, status **In Progress**. It has 9 user stories, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-16251. It has 9 user stories, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -26,19 +26,19 @@ In the backlog it is item SIMPL-16251, status **In Progress**. It has 9 user sto
 
 ## User stories
 
-1. [A Provider adds a licence agreement to a new resource description via UI](#user-story-1-a-provider-adds-a-licence-agreement-to-a-new-resource-description-via-ui) (DevTeam PBI is ready for Implementation check)
-2. [A Provider adds a billing schema to a new resource description via UI](#user-story-2-a-provider-adds-a-billing-schema-to-a-new-resource-description-via-ui) (DevTeam PBI is ready for Implementation check)
-3. [A Provider adds an SLA to a new resource description via UI](#user-story-3-a-provider-adds-an-sla-to-a-new-resource-description-via-ui) (DevTeam PBI is ready for Implementation check)
-4. [Store uploaded Contract Clauses documents and generate hash metadata](#user-story-4-store-uploaded-contract-clauses-documents-and-generate-hash-metadata) (DevTeam PBI is ready for Implementation check)
-5. [[API] - API to store Contract Clause document](#user-story-5-api---api-to-store-contract-clause-document) (DevTeam PBI is ready for Implementation check)
-6. [[API] - API to retrieve Contract Clause document (xfsc-adv-search)](#user-story-6-api---api-to-retrieve-contract-clause-document-xfsc-adv-search) (DevTeam PBI is ready for Implementation check)
-7. [A Provider adds a generic contract clause to a new resource description via UI](#user-story-7-a-provider-adds-a-generic-contract-clause-to-a-new-resource-description-via-ui) (DevTeam PBI is ready for Implementation check)
-8. [[UI] Enable Contract Clauses Document Download in SDTooling UI](#user-story-8-ui-enable-contract-clauses-document-download-in-sdtooling-ui) (PBI INTERNAL QA)
-9. [[UI] Enable Contract Clauses Document Download in CatalogueUI](#user-story-9-ui-enable-contract-clauses-document-download-in-catalogueui) (PBI INTERNAL QA)
+1. [A Provider adds a licence agreement to a new resource description via UI](#user-story-1-a-provider-adds-a-licence-agreement-to-a-new-resource-description-via-ui)
+2. [A Provider adds a billing schema to a new resource description via UI](#user-story-2-a-provider-adds-a-billing-schema-to-a-new-resource-description-via-ui)
+3. [A Provider adds an SLA to a new resource description via UI](#user-story-3-a-provider-adds-an-sla-to-a-new-resource-description-via-ui)
+4. [Store uploaded Contract Clauses documents and generate hash metadata](#user-story-4-store-uploaded-contract-clauses-documents-and-generate-hash-metadata)
+5. [[API] - API to store Contract Clause document](#user-story-5-api---api-to-store-contract-clause-document)
+6. [[API] - API to retrieve Contract Clause document (xfsc-adv-search)](#user-story-6-api---api-to-retrieve-contract-clause-document-xfsc-adv-search)
+7. [A Provider adds a generic contract clause to a new resource description via UI](#user-story-7-a-provider-adds-a-generic-contract-clause-to-a-new-resource-description-via-ui)
+8. [[UI] Enable Contract Clauses Document Download in SDTooling UI](#user-story-8-ui-enable-contract-clauses-document-download-in-sdtooling-ui)
+9. [[UI] Enable Contract Clauses Document Download in CatalogueUI](#user-story-9-ui-enable-contract-clauses-document-download-in-catalogueui)
 
 ### User story 1: A Provider adds a licence agreement to a new resource description via UI
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-26472)
+Backlog item SIMPL-26472
 
 **As a** Provider end user\
 **I want to** to add the data of the contract clause License Agreement to a new resource description via UI\
@@ -131,7 +131,7 @@ In the backlog it is item SIMPL-16251, status **In Progress**. It has 9 user sto
 
 ### User story 2: A Provider adds a billing schema to a new resource description via UI
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-28815)
+Backlog item SIMPL-28815
 
 **As a** Provider end user\
 **I want to** to add the data of the contract clause 'Billing Schema' to a new resource description via UI\
@@ -232,7 +232,7 @@ In the backlog it is item SIMPL-16251, status **In Progress**. It has 9 user sto
 
 ### User story 3: A Provider adds an SLA to a new resource description via UI
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-28816)
+Backlog item SIMPL-28816
 
 **As a** Provider end user\
 **I want to** to add the data of the contract clause 'SLA' to a new resource description via UI\
@@ -358,7 +358,7 @@ In the backlog it is item SIMPL-16251, status **In Progress**. It has 9 user sto
 
 ### User story 4: Store uploaded Contract Clauses documents and generate hash metadata
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-28846)
+Backlog item SIMPL-28846
 
 **Goal**
 
@@ -540,7 +540,7 @@ The upload API definition must clarify:
 
 ### User story 5: [API] - API to store Contract Clause document
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-29022)
+Backlog item SIMPL-29022
 
 **As a** Provider\
 **I want to** store a contract clause document\
@@ -590,7 +590,7 @@ The upload API definition must clarify:
 
 ### User story 6: [API] - API to retrieve Contract Clause document (xfsc-adv-search)
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-29049)
+Backlog item SIMPL-29049
 
 **As a** Provider or Consumer\
 **I want to** retrieve a contract clause document\
@@ -641,7 +641,7 @@ The upload API definition must clarify:
 
 ### User story 7: A Provider adds a generic contract clause to a new resource description via UI
 
-**Status:** DevTeam PBI is ready for Implementation check (backlog item SIMPL-29384)
+Backlog item SIMPL-29384
 
 **As a** Provider end user\
 **I want to** to add the data of a generic contract clause to a new resource description via UI\
@@ -734,7 +734,7 @@ The upload API definition must clarify:
 
 ### User story 8: [UI] Enable Contract Clauses Document Download in SDTooling UI
 
-**Status:** PBI INTERNAL QA (backlog item SIMPL-33065)
+Backlog item SIMPL-33065
 
 **As a** Provider,\
 **I want to** download the documents associated with Contract Clauses categories (SLA, License, Billing, and Generic) for the resources published on the Catalogue,\
@@ -787,7 +787,7 @@ This task aims to enhance the Contract Clauses section of the SDTooling UI by pr
 
 ### User story 9: [UI] Enable Contract Clauses Document Download in CatalogueUI
 
-**Status:** PBI INTERNAL QA (backlog item SIMPL-33084)
+Backlog item SIMPL-33084
 
 **As a** Provider or Consumer,\
 **I want to** download the documents associated with Contract Clauses categories (SLA, License, Billing, and Generic) for the resources published on the Catalogue,\

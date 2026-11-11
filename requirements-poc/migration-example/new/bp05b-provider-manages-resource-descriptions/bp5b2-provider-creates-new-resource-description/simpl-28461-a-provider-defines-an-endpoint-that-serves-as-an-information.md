@@ -6,7 +6,7 @@
 
 An Epic is a feature that can be tested as a whole. This one delivers part of detailed requirement [5B.2.6 A Provider adds a set of contract clauses to a new resource description](../bp5b2-provider-creates-new-resource-description.md#5b26-a-provider-adds-a-set-of-contract-clauses-to-a-new-resource-description), under high-level requirement [5B.2 A Provider creates a new Resource description](../bp5b2-provider-creates-new-resource-description.md). In the process it belongs to step [BP05B.03 Add policy and contract related metadata](../README.md#bp05b03-add-policy-and-contract-related-metadata).
 
-In the backlog it is item SIMPL-28461, status **Defined**. It has 1 user story, each with acceptance criteria that say when the work is done.
+In the backlog (Jira) it is item SIMPL-28461. It has 1 user story, each with acceptance criteria that say when the work is done.
 
 ## What this Epic delivers
 
@@ -22,11 +22,11 @@ The Provider can define endpoints that use aggregations of consumption logs and 
 
 ## User stories
 
-1. [[Documentation][Billing] Create Billing information point definition guide for Providers](#user-story-1-documentationbilling-create-billing-information-point-definition-guide-for-providers) (New Product Backlog Item)
+1. [[Documentation][Billing] Create Billing information point definition guide for Providers](#user-story-1-documentationbilling-create-billing-information-point-definition-guide-for-providers)
 
 ### User story 1: [Documentation][Billing] Create Billing information point definition guide for Providers
 
-**Status:** New Product Backlog Item (backlog item SIMPL-36085)
+Backlog item SIMPL-36085
 
 **Goal:**\
 Produce a guide that explains how a Provider defines a billing information point: an endpoint that aggregates consumption logs and other relevant logs to determine the consumed amount of billing units. This amount determines how the Consumer will be billed in the case of a pay-per-use billing model. The Provider can then reference this endpoint in the billing schema contract clause and check whether the amount of consumed billing units as a basis for billing.
