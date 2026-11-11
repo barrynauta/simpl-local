@@ -39,6 +39,7 @@ You can start anywhere. Pick the view that matches your question.
 | What do L0, L1, L2, Epic and Story mean? | [What the levels mean](levels.md) |
 | Does every item trace back to a business process? | [Trace gaps](trace-gaps.md) |
 | What does this proof of concept change compared with the first attempt? | [The proposal](proposal.md) |
+| What must the final publication do? | [Requirements for the publication](requirements.md) |
 | What would one business process look like in GitLab after a migration? | [Migration example: BP05B](migration-example/README.md) |
 
 ## Scope and limits

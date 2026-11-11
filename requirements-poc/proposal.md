@@ -40,19 +40,7 @@ A reader who opens a page in the first attempt sees a requirement item without c
 
 ## What the final publication should do
 
-A list of requirements for the generator that PSO will build.
-
-1. Generate the start page, the levels page and the process view, not only item pages.
-2. Give every item page a context line, a level, a trace line and a short description.
-3. Link each item to its public business process page and requirements site page.
-4. Put each item in a folder named after its level and key, for example `L1-SIMPL-10171`, inside the folder of its parent, from the business process down. Items without a parent would go in a `no-business-process` folder, tagged as a trace gap.
-5. Render user stories and acceptance criteria in one layout, whatever the source looks like: the keywords in bold with a capital first letter (not in capitals), the rest of the text plain, one numbered scenario per Given. Do not change the words.
-6. Put the content first. Show the level and status only, and leave out workflow fields such as priority, version and completion rate.
-7. Check every item against the handbook linking rules, and tag and list the items that fail.
-8. Publish a complete tree: keep every parent and child link from the source. When an item is not published, still show its key, level, title and status, marked "not published".
-9. State the publication criteria, so readers know why an item is in or out.
-10. Leave cancelled items out. Take the status from the source, never from where the generator put the item.
-11. Check the source text for obvious problems (typos, contradicting status fields, published flag) and report them, without changing the text.
+The requirements for the generator are on their own page now, in order of priority: [Requirements for the publication](requirements.md).
 
 ## Open points
 
