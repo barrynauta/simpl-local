@@ -17,6 +17,8 @@ Read the two side by side, for example the page of [5B.2 in the original](origin
 
 Everything that is not a requirement. The overview, actors, assumptions, prerequisites, diagrams and process steps of the BP05B page are unchanged, and so are the two dynamic views and the images. The file names are the same, so links from other pages still work.
 
+The one addition in the process steps: under each step, one line lists the detailed requirements that step needs, with the high-level requirement they belong to. A reader of the steps sees the requirements right there, without scrolling to the end of the page. Example: [BP05B.01 Create a new resource description](new/bp05b-provider-manages-resource-descriptions/README.md#bp05b01-create-a-new-resource-description).
+
 ## What changed
 
 Only the requirements part. In the original it lists the 9 high-level requirements, and each of their pages lists its detailed requirements in one line each, with a link to the requirements site. In the new version:
