@@ -2,45 +2,42 @@
 
 # Migration example: BP05B
 
-What one business process could look like in GitLab if its requirements move out of `business-processes` into their own repository. The example takes BP05B, the process with the largest tree here.
+What one business process page in GitLab could look like if its requirements came from the backlog (Jira), with all their levels: high-level requirements, detailed requirements, Epics, user stories and acceptance criteria. The example takes BP05B, the process with the largest tree.
 
-It has two folders, one per repository:
+There are two versions of the same folder of `foundations/business-processes`, side by side:
 
-| Folder | Stands for | What is in it |
+| Version | What it is | Start here |
 | --- | --- | --- |
-| [business-processes/bp05b-provider-manages-resource-descriptions](business-processes/bp05b-provider-manages-resource-descriptions/README.md) | the existing `foundations/business-processes` repository | The BP05B page and its two dynamic views, taken from the `develop` branch on 10 November 2026 (3bcdac9). |
-| [functional-requirements/bp05b-provider-manages-resource-descriptions](functional-requirements/bp05b-provider-manages-resource-descriptions/README.md) | a new `foundations/functional-requirements` repository | The BP05B requirements from this proof of concept: L0, 9 high-level requirements, 32 detailed requirements, Epics and user stories. |
+| **Original** | The BP05B folder as it is in GitLab, unchanged: `develop` branch, commit 3bcdac9 of 10 November 2026. Also [in GitLab at that commit](https://code.europa.eu/simpl/simpl-open/foundations/business-processes/-/tree/3bcdac9/bp05b-provider-manages-resource-descriptions). | [Original BP05B page](original/bp05b-provider-manages-resource-descriptions/README.md) |
+| **New** | The same folder with the requirements taken from Jira. | [New BP05B page](new/bp05b-provider-manages-resource-descriptions/README.md) |
 
-## What changed in business-processes
+Read the two side by side, for example the page of [5B.2 in the original](original/bp05b-provider-manages-resource-descriptions/bp5b2-provider-creates-new-resource-description.md) and [5B.2 in the new version](new/bp05b-provider-manages-resource-descriptions/bp5b2-provider-creates-new-resource-description.md).
 
-The process page is the page from GitLab, with its overview, actors, diagrams and steps. Nothing is removed from it except the copies of the requirements. What is added is marked with 📋.
+## What is the same
 
-- **Under each process step.** A box lists the detailed requirements that the step needs, with their status and the number of Epics and user stories under them. Each one opens its page in functional-requirements. Example: step [BP05B.05 Validate the resource description](business-processes/bp05b-provider-manages-resource-descriptions/README.md#bp05b05-validate-the-resource-description) needs six detailed requirements of 5B.5.
-- **High-level requirements.** The same table as before, with the same IDs (5B.1 to 5B.9) and the same links to the requirements site. The title now opens the requirement page. New columns show the status, the process steps and the dynamic view sections.
-- **Detailed requirements.** The nine pages `bp5b1-...md` to `bp5b9-...md` are gone. In their place, one fold-out per high-level requirement lists its detailed requirements, with status and counts.
-- **Dynamic views.** Each section of the [dynamic view](business-processes/bp05b-provider-manages-resource-descriptions/bp05b-dynamic-view.md) and the [TCV dynamic view](business-processes/bp05b-provider-manages-resource-descriptions/bp05b-tcv-dynamic-view.md) now starts with a line listing the high-level requirements it shows. The text and the diagrams are unchanged.
-- **Other links.** Links to other process folders point to GitLab, because those folders are not in this example.
+Everything that is not a requirement. The overview, actors, assumptions, prerequisites, diagrams and process steps of the BP05B page are unchanged, and so are the two dynamic views and the images. The file names are the same, so links from other pages still work.
 
-## What changed in functional-requirements
+## What changed
 
-- **Folder page.** One section per high-level requirement, in the order 5B.1 to 5B.9: its status, process steps and dynamic view, a table of its detailed requirements, and a fold-out with the Epics and user stories. The page links to the process page instead of repeating it.
-- **Links back.** Each high-level requirement page shows its ID on the requirements site, its process steps and its dynamic view sections, with links. Each detailed requirement page shows its ID on the requirements site, for example 5B.5.7. All 32 detailed requirements on the site were found in the tree; 12 of them were matched by hand, because the site uses short titles for 5B.5.
+Only the requirements part. In the original it lists the 9 high-level requirements, and each of their pages lists its detailed requirements in one line each, with a link to the requirements site. In the new version:
 
-## Links to the dynamic views
+- **BP05B page, section High-level requirements.** It starts with a short explanation of the four levels (high-level requirement, detailed requirement, Epic, user story) and how to move between them. The table keeps the IDs 5B.1 to 5B.9 and the links to the requirements site. The titles now open the requirement pages, and new columns show the status, the process steps and the number of detailed requirements. The list under it shows, for each page, how many detailed requirements, Epics and user stories it has.
+- **The nine requirement pages** (`bp5b1-...md` to `bp5b9-...md`). The top of the page is unchanged. Under it:
+  - *About this requirement*: which process steps it covers, with links to those steps, where the dynamic view shows it, and how many detailed requirements, Epics and user stories it has.
+  - *Description*: the text from Jira.
+  - *Detailed requirements*: a table, then one section per detailed requirement with its text, status, process step, its link to the requirements site, and the Epics that deliver it.
+  - Under each detailed requirement, its Epics, each with one line taken from its story card (for example *As a Provider, I want to retrieve a list of published resource types*), so a reader knows what an Epic is about before opening it.
+- **Epic pages, new.** One folder per requirement page, with one page per Epic (69 in total). An Epic page explains where it sits (detailed requirement, high-level requirement, process step), gives the Epic text, and then its user stories (140 in total), each with its story card and acceptance criteria. Long pages have a link back to the list of user stories after each story, and every page ends with links back up.
+- **A README in each Epic folder.** GitLab shows it when someone opens the folder, so a visitor who lands there sees which requirement the Epics belong to, grouped by detailed requirement.
 
-| Dynamic view section | High-level requirements |
-| --- | --- |
-| Define and publish self-description | 5B.2, 5B.3, 5B.4, 5B.5 |
-| Retrieve SD metadata | 5B.1 |
-| Retrieve full self-description | 5B.1 |
-| Revoke a self-description | 5B.7, 5B.8 |
-| TCV dynamic view (publication flow, schema synchronisation) | 5B.2, 5B.4, 5B.5 |
-
-5B.6 and 5B.9 (inform Consumers about a new version or a revocation) have no dynamic view yet. 
+Links say where they go ("5B.2.1 on the requirements site", "Epic: ...", "BP05B.01 Create a new resource description"); step numbers in tables are plain text, not bare links. Jira keys are shown as text, not as links, because jira.simplprogramme.eu is closed to public visitors. Statuses are the ones in Jira.
 
 ## Open points
 
-- **Process steps.** The link between a detailed requirement and a process step (for example 5B.2.3 to BP05B.02) is our reading. 5B.1 (consult own descriptions) has no step of its own; it is placed under the trigger. The items have no field for it. If it becomes a field, the generator can fill these links.
-- **Dynamic view sections.** The same: the link from a requirement to a section of the dynamic view is made by hand here. A field or a label on the item would make it repeatable.
-- **Requirements site numbers.** The IDs 5B.1 and 5B.2.1 exist only on the site. The generator needs them from the site, or as a field on the item.
-- **Which text and which status.** The site shows every requirement as Proposed. The items show Defined or In Progress. The final publication must choose one.
+- **Process steps.** The link between a detailed requirement and a process step (for example 5B.2.3 to BP05B.02) is our reading; the items in Jira have no field for it. 5B.1 (a Provider consults its own descriptions) has no step of its own and is placed under the trigger. A field or a label in Jira would make these links repeatable.
+- **Dynamic view sections.** The same: the link from a requirement to a section of the dynamic view is made by hand.
+- **Requirements site numbers.** The IDs such as 5B.2.1 exist only on the requirements site. 12 of the 32 detailed requirements were matched to them by hand, all under 5B.5, because the site uses short titles there.
+- **Which text and which status.** The site shows every requirement as Proposed, Jira shows Defined or In Progress. The final publication must choose one.
+- **Old story text.** A few older user stories (for example SIMPL-330) still have Jira formatting that the conversion does not handle, such as `+**As a**+`.
+
+Built with `example_bp05b.py` in the build folder, from the proof-of-concept tree of 10 November 2026.
