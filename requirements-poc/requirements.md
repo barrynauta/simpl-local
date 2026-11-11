@@ -12,7 +12,7 @@ What stays as in Model 1:
 
 - Jira stays the only source. GitLab is a publication, never edited by hand.
 - Levels L0, L1, L2, Epic and user story. Tasks are out of scope.
-- Items from status Defined up to Closed. Cancelled items are left out.
+- Only approved items are published. Cancelled items are left out. See requirement 5a for the status per level.
 - An automatic run once a week, updating pages without duplicates.
 
 ## Priority 0: the tree
@@ -26,6 +26,7 @@ The reader must see the hierarchy in the GitLab file tree itself, without going 
 | 3 | The top folders are the **business processes**, named as in [`foundations/business-processes`](https://code.europa.eu/simpl/simpl-open/foundations/business-processes) (for example `bp05b-provider-manages-resource-descriptions`). | Each business process page and its requirements can link to each other with one fixed path. |
 | 4 | An item with **two parents** is placed once, under its first parent; the other parent lists it as "also under". An item **without a parent** goes into a folder `no-business-process`. | No item is published twice; no item is missing. |
 | 5 | An item that is no longer eligible (cancelled, or out of the status range) is **removed** at the next run. | The tree only holds eligible items. The history stays in git. |
+| 5a | **Only approved items** are published, each on its own status: L0, L1, L2 and Epics from *Defined* onwards, user stories from *PBI Defined* onwards. An Epic or user story is published only when its own status is eligible **and** the L2 above it is published. Items still under discussion (for example *New*, *In Preparation*, *For DG Connect Review*, *New Product Backlog Item*, *PBI for SC review*) are not published at all. | No Epic or user story before approval appears, not even its title. |
 
 ## Priority 1: the content
 
@@ -37,7 +38,7 @@ The reader comes for the requirement. Workflow data means nothing to them.
 | 7 | **No links to Jira or Confluence.** Both need a login. Internal links in a text become plain text. | No link on any page asks for a login. |
 | 8 | **Content first**: the page opens with the title and the text. Parent and children come after. | The requirement is visible without scrolling. |
 | 9 | **One layout** for user stories and acceptance criteria, whatever the source looks like: *As a* / *I want to* / *So that* on three lines; one numbered scenario per *Given*, with *When*, *Then*, *And* on their own lines. Words are never changed. Jira markup is converted, so no raw HTML or Jira codes remain. | A sample of 20 user stories from different teams reads the same way. |
-| 10 | Only items published on the requirements site show their text (for an Epic or user story, the L2 above it decides). Other items show title, level and key only. Comments and attachments are never published. | Nothing unpublished leaks. |
+| 10 | An L0, L1 or L2 that is approved but not published on the requirements site shows its title, level and key only, without its text. Comments and attachments are never published. | Nothing unpublished leaks. |
 
 ## Priority 2: context for the reader
 
@@ -62,6 +63,8 @@ A first-time reader must understand where they are, from any page.
 - **Location.** A `requirements` folder in `foundations` (Model 1), a separate repository, or inside each business process folder (as in the example below).
 - **Process steps.** Linking a detailed requirement to a process step (for example 5B.2.3 to BP05B.02) needs a field in Jira. Today it is done by hand.
 - **One text.** Jira and the requirements site have almost the same texts, with small differences. The publication should use one source.
+- **Status of user stories.** Since only approved items are published, an approval status adds nothing. What a reader could still want is the *implementation* status of a user story: is it built or not. A possible mapping to three labels: *Planned* (PBI Defined), *In development* (DevTeam PBI In Progress, PBI INTERNAL QA, DevTeam PBI blocked), *Developed* (DevTeam PBI is ready for Implementation check, Ready for DG Acceptance, PBI Closed with resolution Done). Developed is not the same as released. To decide later; requirement 6 leaves status out for now.
+- **FOR SC TO RESPOND.** This user story status can come after PBI Defined as well. PSO to confirm where it sits in the workflow, so the story is not dropped by mistake.
 
 ## Examples
 
