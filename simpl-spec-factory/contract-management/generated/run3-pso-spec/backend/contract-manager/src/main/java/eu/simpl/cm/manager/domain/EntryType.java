@@ -1,0 +1,7 @@
+package eu.simpl.cm.manager.domain;
+
+/** History entry types (D61). */
+public enum EntryType {
+    TRANSITION, VALIDATION, NOTIFICATION_SENT, NOTIFICATION_SKIPPED, NOTIFICATION_FAILED,
+    COUNTERPARTY_MESSAGE_REJECTED, CONNECTOR_CALLBACK
+}

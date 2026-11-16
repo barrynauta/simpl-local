@@ -1,0 +1,464 @@
+diff -ruN -x reports -x .venv -x __pycache__ tests/PSO-RUN.md /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/PSO-RUN.md
+--- tests/PSO-RUN.md	1970-01-01 01:00:00
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/PSO-RUN.md	2026-11-16 10:31:42
+@@ -0,0 +1,66 @@
++# PSO run: suite changes
++
++The suite was written from `input/spec-digest-run1.1.md`. This run updates it to
++`input/spec-digest.md`, where the PSO scenarios are the highest source (digest
++section 1.1 and section 8). Every changed or added scenario carries `@pso-spec`
++and its decision tags. The PSO scenarios were not copied; the scenarios below
++check the decisions they caused.
++
++Run only these scenarios: `behave --tags=@pso-spec`.
++
++## Changed scenarios
++
++| Feature file | Scenario | Decision | Before | After |
++|---|---|---|---|---|
++| `api/health_and_conventions.feature` | The provider CM health check without an API key is refused with 401 (was: answers without authentication) | D13, D65, D11 | no key: 200, status UP | no key: 401 `unauthorized`, problem body per D11 |
++| `api/health_and_conventions.feature` | The consumer CM health check without an API key is refused with 401 (was: answers without authentication) | D13, D65, D11 | no key: 200, status UP | no key: 401 `unauthorized` |
++| `api/agreements.feature` | A status change for an unknown agreement gives 404 (was: is refused with 400) | D12, D32 | 400 `validationFailure` | 404 `notFound`, detail "Unknown contractAgreementId" |
++| `api/contract_offers_cm.feature` | A new presentation for an unknown negotiation gives 404 (was: is refused with 400) | D12, D33 | 400 `validationFailure` | 404 `notFound`, detail "Unknown contractNegotiationId" |
++| `api/contract_offers_cm.feature` | A status update for an unknown negotiation gives 404 (was: is refused with 400) | D12, D33 | 400 `validationFailure` | 404 `notFound`, detail "Unknown contractNegotiationId" |
++| `api/consumer_verification_direct.feature` | Verification for an unknown negotiation id gives 404 (was: is refused with 400) | D12, D31 | 400 `validationFailure` | 404 `notFound`, detail "Unknown contractNegotiationId" |
++| `api/offer_decision.feature` | CM answers 404 for a decision on an unknown negotiation id (was: CM refuses ... with 400) | D12, D23, D84 | 400 `validationFailure` | 404 `notFound`, detail "Unknown contractNegotiationId" |
++| `api/provider_issue_direct.feature` | validate-and-sign without a body and without a Provider record gives 404 (was: is refused with 400) | D25, D12 | 400 `validationFailure` | 404 `notFound`, detail "Unknown contractAgreementId", no record created |
++
++## Added scenarios
++
++| Feature file | Scenario | Decision | Before | After |
++|---|---|---|---|---|
++| `api/health_and_conventions.feature` | The provider CM health check with a wrong API key is refused with 401 | D13, D65 | no scenario | 401 `unauthorized` |
++| `api/health_and_conventions.feature` | The provider CM health check answers with the API key | D13 | no scenario (health was checked without a key) | 200, actuator content type, status UP |
++| `api/health_and_conventions.feature` | The consumer CM health check answers with the API key | D13 | no scenario | 200, actuator content type, status UP |
++| `api/health_and_conventions.feature` | The 404 for an unknown agreement follows the error rules | D11, D12, D34 | no scenario for the explicit D11 points | 404 `notFound`; type an absolute URI, status equals HTTP status, instance absent, null or the request path |
++| `api/health_and_conventions.feature` | The 401 of a POST without an API key carries a full problem body | D11, D65, D25 | no scenario for the explicit D11 points | 401 `unauthorized` with a problem body per D11 |
++| `api/auth_cm.feature` | A bearer token without an API key is refused with 401 | D65, D85 | no scenario | 401: CM does not read `Authorization` |
++| `api/auth_cm.feature` | With the API key an extra Authorization header changes nothing | D65, D85, D12 | no scenario | 404 `notFound` for an unknown aid, not 401 |
++| `api/provider_issue_direct.feature` | validate-and-sign with an empty JSON object and without a Provider record gives 404 | D25, D12, D84 | no scenario | `{}` counts as no body: 404 `notFound`, no record created |
++| `api/provider_validation.feature` | validate-and-sign with an empty JSON object uses the Provider record of the existence check | D25 | no scenario | `{}` behaves as no body: 201 `INITIATED`, record reaches SIGNED |
++| `api/check_order.feature` (new) | A create call at the Provider with an empty body and no API key gives 401, not 400 | D84, D65, D20, D11 | no scenario | 401 before `wrongParty` and body checks |
++| `api/check_order.feature` | A validate-and-sign call for unknown ids gives 401 without a key and 404 with it | D84, D65, D25, D12 | no scenario | 401, then 404 for the same ids with the key |
++| `api/check_order.feature` | An existence check with an empty body gives 401 without a key and 400 with it | D84, D65, D19, D11 | no scenario | 401, then 400 `validationFailure` with the key, no record |
++| `api/check_order.feature` | A path id that is not a UUID gives 401 when the API key is missing | D84, D65, D16 | no scenario | 401 before `argumentTypeMismatch` |
++| `api/check_order.feature` | A status change with an empty body for an unknown agreement gives 404, not 400 | D84, D12, D32 | no scenario | 404 before body fields |
++| `api/check_order.feature` | A verification with an empty body for an unknown negotiation at the Provider gives 404, not 400 | D84, D12, D31 | no scenario | 404 before body fields and party |
++| `api/check_order.feature` | A status update with an empty body for an unknown negotiation at the Provider gives 404, not 400 | D84, D12, D33 | no scenario | 404 before body fields and party |
++
++## Support code
++
++- `features/steps/http_steps.py`: new step `the problem body follows the error rules of D11`; new step `I send ... to the ... CM at ... without an API key and with header ... set to ...`.
++- `features/steps/domain_steps.py`: new step `the connector asks the ... CM to validate and sign with an empty JSON object`.
++- Feature descriptions of `auth_cm`, `health_and_conventions`, `provider_issue_direct` and `consumer_verification_direct` updated to the new rules.
++
++## Not changed, on purpose
++
++- UIBE health stays open (D13 reach: CM only).
++- Scenarios that already agreed with the confirmed rows (D19, D20, D34, the 404 reads of D12) stay as they were.
++- Scenarios that check 405, 406 or 415 already send a valid key (D84).
++
++## Totals
++
++| | Scenarios |
++|---|---|
++| Changed | 8 |
++| Added | 16 |
++| Unchanged | 375 |
++| Total now | 399 (383 before) |
++
++Dry run (`behave --dry-run`): 0 undefined steps.
+diff -ruN -x reports -x .venv -x __pycache__ tests/README.md /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/README.md
+--- tests/README.md	2026-11-03 13:39:31
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/README.md	2026-11-16 10:31:15
+@@ -35,6 +35,7 @@
+ | `@bp07` | a BP07 process step or outcome |
+ | `@openapi-only` | an OpenAPI or digest rule with no story behind it |
+ | `@Dnn` | the digest decisions the scenario depends on |
++| `@pso-spec` | changed or added in the PSO run: it checks a digest row marked "(revised, PSO run)" or "(new, PSO run)". The list is in `PSO-RUN.md` |
+ | `@E1` to `@E11`, `@P1` to `@P4`, `@L1` to `@L7` | the D37 state machine row it covers |
+ | `@rbac` | access control (API key, token, role) |
+ | `@oidc` | needs Keycloak tokens; skipped with `AUTH_MODE=none` |
+diff -ruN -x reports -x .venv -x __pycache__ tests/features/api/agreements.feature /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/agreements.feature
+--- tests/features/api/agreements.feature	2026-11-03 13:39:31
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/agreements.feature	2026-11-16 10:30:54
+@@ -74,11 +74,11 @@
+     When the connector sets the provider agreement status to "SUSPENDED"
+     Then the response is a problem with status 400 and type "validationFailure"
+ 
+-  @openapi-only @D12
+-  Scenario: A status change for an unknown agreement is refused with 400
++  @openapi-only @pso-spec @D12 @D32
++  Scenario: A status change for an unknown agreement gives 404
+     Given fresh negotiation ids
+     When the connector sets the provider agreement status to "TERMINATED"
+-    Then the response is a problem with status 400 and type "validationFailure"
++    Then the response is a problem with status 404 and type "notFound"
+     And the problem detail contains "Unknown contractAgreementId"
+ 
+   @openapi-only @D34 @D38
+diff -ruN -x reports -x .venv -x __pycache__ tests/features/api/auth_cm.feature /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/auth_cm.feature
+--- tests/features/api/auth_cm.feature	2026-11-03 13:39:31
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/auth_cm.feature	2026-11-16 10:30:38
+@@ -1,6 +1,7 @@
+ Feature: API key authentication of the contract manager backend
+-  Every CM operation except the health check needs the CM's X-Api-Key.
+-  Missing or wrong key: 401. CM never answers 403 (D65).
++  Every CM operation, the health check included, needs the CM's X-Api-Key.
++  Missing or wrong key: 401. CM never answers 403 and does not read the
++  Authorization header (D65, D85, PSO run).
+ 
+   Background:
+     Given fresh negotiation ids
+@@ -93,3 +94,15 @@
+     Then the response is a problem with status 401 and type "unauthorized"
+     And the consumer contract stays in status "REQUESTED"
+     And the consumer contract field "consumerSignatureDate" is null
++
++  @openapi-only @pso-spec @D65 @D85 @rbac
++  Scenario: A bearer token without an API key is refused with 401
++    Given fresh negotiation ids
++    When I send "GET" to the provider CM at "/agreements/${aid}" without an API key and with header "Authorization" set to "Bearer not-a-jwt"
++    Then the response is a problem with status 401 and type "unauthorized"
++
++  @openapi-only @pso-spec @D65 @D85 @D12 @rbac
++  Scenario: With the API key an extra Authorization header changes nothing
++    Given fresh negotiation ids
++    When I send "GET" to the provider CM at "/agreements/${aid}" with header "Authorization" set to "Bearer not-a-jwt"
++    Then the response is a problem with status 404 and type "notFound"
+diff -ruN -x reports -x .venv -x __pycache__ tests/features/api/check_order.feature /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/check_order.feature
+--- tests/features/api/check_order.feature	1970-01-01 01:00:00
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/check_order.feature	2026-11-16 10:31:09
+@@ -0,0 +1,66 @@
++Feature: Order of checks on the contract manager backend
++  CM answers with the first failed check: API key (401) first, then the
++  format of path ids, then media type and JSON syntax, then the record the
++  operation needs (404), then body fields, party and state (D84, PSO run).
++  Only the order the digest fixes is tested: 401 before everything else, and
++  404 before body fields and party.
++
++  Background:
++    Given fresh negotiation ids
++
++  @openapi-only @pso-spec @D84 @D65 @D20 @D11 @rbac
++  Scenario: A create call at the Provider with an empty body and no API key gives 401, not 400
++    When I send "POST" to the provider CM at "/credentials/agreements/${aid}/definitions/${did}/create" without an API key
++    Then the response is a problem with status 401 and type "unauthorized"
++    And the problem body follows the error rules of D11
++
++  @openapi-only @pso-spec @D84 @D65 @D25 @D12 @rbac
++  Scenario: A validate-and-sign call for unknown ids gives 401 without a key and 404 with it
++    When I send "POST" to the provider CM at "/credentials/agreements/${aid}/definitions/${did}/issue" without an API key
++    Then the response is a problem with status 401 and type "unauthorized"
++    When I send "POST" to the provider CM at "/credentials/agreements/${aid}/definitions/${did}/issue" with JSON:
++      """
++      {}
++      """
++    Then the response is a problem with status 404 and type "notFound"
++
++  @openapi-only @pso-spec @D84 @D65 @D19 @D11 @rbac
++  Scenario: An existence check with an empty body gives 401 without a key and 400 with it
++    When I send "POST" to the provider CM at "/agreements/${nid}/search" without an API key
++    Then the response is a problem with status 401 and type "unauthorized"
++    And the problem body follows the error rules of D11
++    When I send "POST" to the provider CM at "/agreements/${nid}/search" with JSON:
++      """
++      {}
++      """
++    Then the response is a problem with status 400 and type "validationFailure"
++    And the provider has no contract for the negotiation
++
++  @openapi-only @pso-spec @D84 @D65 @D16 @rbac
++  Scenario: A path id that is not a UUID gives 401 when the API key is missing
++    When I send "GET" to the provider CM at "/agreements/not-a-uuid" without an API key
++    Then the response is a problem with status 401 and type "unauthorized"
++
++  @openapi-only @pso-spec @D84 @D12 @D32
++  Scenario: A status change with an empty body for an unknown agreement gives 404, not 400
++    When I send "PATCH" to the provider CM at "/agreements/${aid}/definitions/${did}/status" with JSON:
++      """
++      {}
++      """
++    Then the response is a problem with status 404 and type "notFound"
++
++  @openapi-only @pso-spec @D84 @D12 @D31
++  Scenario: A verification with an empty body for an unknown negotiation at the Provider gives 404, not 400
++    When I send "PUT" to the provider CM at "/verifications/${nid}" with JSON:
++      """
++      {}
++      """
++    Then the response is a problem with status 404 and type "notFound"
++
++  @openapi-only @pso-spec @D84 @D12 @D33
++  Scenario: A status update with an empty body for an unknown negotiation at the Provider gives 404, not 400
++    When I send "PUT" to the provider CM at "/contractOffers/${nid}/update" with JSON:
++      """
++      {}
++      """
++    Then the response is a problem with status 404 and type "notFound"
+diff -ruN -x reports -x .venv -x __pycache__ tests/features/api/consumer_verification_direct.feature /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/consumer_verification_direct.feature
+--- tests/features/api/consumer_verification_direct.feature	2026-11-03 13:39:31
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/consumer_verification_direct.feature	2026-11-16 10:30:54
+@@ -1,12 +1,13 @@
+ Feature: Verification trigger outside the SIGNED state
+   PUT /verifications needs a known Consumer record in SIGNED (D31, D12).
++  An unknown negotiation id gives 404 (PSO run).
+ 
+-  @SIMPL-35677 @D12 @consumer
+-  Scenario: Verification for an unknown negotiation id is refused with 400
++  @SIMPL-35677 @pso-spec @D12 @D31 @consumer
++  Scenario: Verification for an unknown negotiation id gives 404
+     Given a fresh unregistered asset id
+     And fresh negotiation ids
+     When the connector sends a credential to the consumer CM for the negotiation
+-    Then the response is a problem with status 400 and type "validationFailure"
++    Then the response is a problem with status 404 and type "notFound"
+     And the problem detail contains "Unknown contractNegotiationId"
+ 
+   @SIMPL-35677 @D31 @consumer @stub
+diff -ruN -x reports -x .venv -x __pycache__ tests/features/api/contract_offers_cm.feature /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/contract_offers_cm.feature
+--- tests/features/api/contract_offers_cm.feature	2026-11-03 13:39:31
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/contract_offers_cm.feature	2026-11-16 10:30:54
+@@ -29,11 +29,12 @@
+     When the consumer CM forwards a new offer presentation "<p>Too late</p>"
+     Then the response is a problem with status 400 and type "offerNotPending"
+ 
+-  @openapi-only @D33 @D12 @consumer
+-  Scenario: A new presentation for an unknown negotiation is refused with 400
++  @openapi-only @pso-spec @D33 @D12 @consumer
++  Scenario: A new presentation for an unknown negotiation gives 404
+     Given fresh negotiation ids
+     When the consumer CM forwards a new offer presentation "<p>x</p>"
+-    Then the response is a problem with status 400 and type "validationFailure"
++    Then the response is a problem with status 404 and type "notFound"
++    And the problem detail contains "Unknown contractNegotiationId"
+ 
+   @openapi-only @D33 @D2
+   Scenario: A new presentation sent to the Provider CM is refused with 400
+@@ -94,11 +95,11 @@
+       | SIGNED   |
+       | ACCEPTED |
+ 
+-  @openapi-only @D33 @D12 @consumer
+-  Scenario: A status update for an unknown negotiation is refused with 400
++  @openapi-only @pso-spec @D33 @D12 @consumer
++  Scenario: A status update for an unknown negotiation gives 404
+     Given fresh negotiation ids
+     When the connector reports the offer status "REJECTED" to the consumer CM
+-    Then the response is a problem with status 400 and type "validationFailure"
++    Then the response is a problem with status 404 and type "notFound"
+     And the problem detail contains "Unknown contractNegotiationId"
+ 
+   @openapi-only @D11 @consumer
+diff -ruN -x reports -x .venv -x __pycache__ tests/features/api/health_and_conventions.feature /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/health_and_conventions.feature
+--- tests/features/api/health_and_conventions.feature	2026-11-03 13:39:31
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/health_and_conventions.feature	2026-11-16 10:30:38
+@@ -1,17 +1,34 @@
+ Feature: Health, error format and common HTTP conventions
+   Both backends expose a health check and answer errors as RFC 9457 problem
+-  details (digest D11 to D16).
++  details (digest D11 to D16). The CM health check needs the API key, the
++  UIBE health check stays open (D13, PSO run).
+ 
+-  @openapi-only @D13
+-  Scenario: The provider CM health check answers without authentication
++  @openapi-only @pso-spec @D13 @D65 @D11 @rbac
++  Scenario: The provider CM health check without an API key is refused with 401
+     When I send "GET" to the provider CM at "/health" without an API key
++    Then the response is a problem with status 401 and type "unauthorized"
++    And the problem body follows the error rules of D11
++
++  @openapi-only @pso-spec @D13 @D65 @D11 @rbac @consumer
++  Scenario: The consumer CM health check without an API key is refused with 401
++    When I send "GET" to the consumer CM at "/health" without an API key
++    Then the response is a problem with status 401 and type "unauthorized"
++
++  @openapi-only @pso-spec @D13 @D65 @rbac
++  Scenario: The provider CM health check with a wrong API key is refused with 401
++    When I send "GET" to the provider CM at "/health" with the API key "wrong-key"
++    Then the response is a problem with status 401 and type "unauthorized"
++
++  @openapi-only @pso-spec @D13
++  Scenario: The provider CM health check answers with the API key
++    When I send "GET" to the provider CM at "/health"
+     Then the response status is 200
+     And the response content type is "application/vnd.spring-boot.actuator.v3+json"
+     And the response field "status" is "UP"
+ 
+-  @openapi-only @D13 @consumer
+-  Scenario: The consumer CM health check answers without authentication
+-    When I send "GET" to the consumer CM at "/health" without an API key
++  @openapi-only @pso-spec @D13 @consumer
++  Scenario: The consumer CM health check answers with the API key
++    When I send "GET" to the consumer CM at "/health"
+     Then the response status is 200
+     And the response content type is "application/vnd.spring-boot.actuator.v3+json"
+     And the response field "status" is "UP"
+@@ -74,6 +91,20 @@
+   Scenario: An unknown path is answered with a problem body
+     When I send "GET" to the provider CM at "/no-such-path"
+     Then the response is a problem with status 404 and type "notFound"
++
++  @openapi-only @pso-spec @D11 @D12 @D34
++  Scenario: The 404 for an unknown agreement follows the error rules
++    Given fresh negotiation ids
++    When I send "GET" to the provider CM at "/agreements/${aid}"
++    Then the response is a problem with status 404 and type "notFound"
++    And the problem body follows the error rules of D11
++
++  @openapi-only @pso-spec @D11 @D65 @D25
++  Scenario: The 401 of a POST without an API key carries a full problem body
++    Given fresh negotiation ids
++    When I send "POST" to the provider CM at "/credentials/agreements/${aid}/definitions/${did}/issue" without an API key
++    Then the response is a problem with status 401 and type "unauthorized"
++    And the problem body follows the error rules of D11
+ 
+   @openapi-only @D14
+   Scenario: A given correlation id is echoed on the response
+diff -ruN -x reports -x .venv -x __pycache__ tests/features/api/offer_decision.feature /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/offer_decision.feature
+--- tests/features/api/offer_decision.feature	2026-11-03 13:39:31
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/offer_decision.feature	2026-11-16 10:30:54
+@@ -182,11 +182,11 @@
+     Then the response is a problem with status 400 and type "offerNotPending"
+     And the consumer contract stays in status "SIGNED"
+ 
+-  @SIMPL-35660 @D12
+-  Scenario: CM refuses a decision for an unknown negotiation id with 400
++  @SIMPL-35660 @pso-spec @D12 @D23 @D84
++  Scenario: CM answers 404 for a decision on an unknown negotiation id
+     Given fresh negotiation ids
+     When the consumer UIBE sends the offer decision "accept" to the provider CM
+-    Then the response is a problem with status 400 and type "validationFailure"
++    Then the response is a problem with status 404 and type "notFound"
+     And the problem detail contains "Unknown contractNegotiationId"
+ 
+   @SIMPL-35660 @D2
+diff -ruN -x reports -x .venv -x __pycache__ tests/features/api/provider_issue_direct.feature /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/provider_issue_direct.feature
+--- tests/features/api/provider_issue_direct.feature	2026-11-03 13:39:31
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/provider_issue_direct.feature	2026-11-16 10:30:54
+@@ -1,12 +1,22 @@
+ Feature: Validate-and-sign trigger without a prior negotiation at the stub
+   The /issue trigger runs at the Provider only and needs a Provider record,
+-  either from the existence check or from its body (D25, D12).
++  either from the existence check or from its body (D25, D12). Without one
++  the answer is 404, and an empty JSON object counts as no body (PSO run).
+ 
+-  @SIMPL-35584 @D25 @D12
+-  Scenario: validate-and-sign without a body and without a Provider record is refused with 400
++  @SIMPL-35584 @pso-spec @D25 @D12
++  Scenario: validate-and-sign without a body and without a Provider record gives 404
+     Given fresh negotiation ids
+     When the connector asks the provider CM to validate and sign without a body
+-    Then the response is a problem with status 400 and type "validationFailure"
++    Then the response is a problem with status 404 and type "notFound"
++    And the problem detail contains "Unknown contractAgreementId"
++    And the provider has no contract for the negotiation
++
++  @SIMPL-35584 @pso-spec @D25 @D12 @D84
++  Scenario: validate-and-sign with an empty JSON object and without a Provider record gives 404
++    Given fresh negotiation ids
++    When the connector asks the provider CM to validate and sign with an empty JSON object
++    Then the response is a problem with status 404 and type "notFound"
++    And the problem detail contains "Unknown contractAgreementId"
+     And the provider has no contract for the negotiation
+ 
+   @SIMPL-35584 @SIMPL-21963 @D25 @D26 @D27 @stub @two-party
+diff -ruN -x reports -x .venv -x __pycache__ tests/features/api/provider_validation.feature /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/provider_validation.feature
+--- tests/features/api/provider_validation.feature	2026-11-03 13:39:31
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/api/provider_validation.feature	2026-11-16 10:30:54
+@@ -307,3 +307,10 @@
+     Then the response status is 201
+     And the response field "status" is "INITIATED"
+     And the provider contract reaches status "SIGNED"
++
++  @SIMPL-35584 @pso-spec @D25
++  Scenario: validate-and-sign with an empty JSON object uses the Provider record of the existence check
++    When the connector asks the provider CM to validate and sign with an empty JSON object
++    Then the response status is 201
++    And the response field "status" is "INITIATED"
++    And the provider contract reaches status "SIGNED"
+diff -ruN -x reports -x .venv -x __pycache__ tests/features/steps/domain_steps.py /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/steps/domain_steps.py
+--- tests/features/steps/domain_steps.py	2026-11-03 13:39:31
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/steps/domain_steps.py	2026-11-16 10:30:22
+@@ -226,6 +226,15 @@
+                                       v["aid"], v["did"])))
+ 
+ 
++@step('the connector asks the {party:Party} CM to validate and sign with an empty JSON object')
++def connector_issue_empty(context, party):
++    # D25 (PSO run): an empty JSON object counts as no body.
++    v = context.vars
++    _store(context, W(context).cm(party, "POST",
++                                  "/credentials/agreements/%s/definitions/%s/issue" % (
++                                      v["aid"], v["did"]), json_body={}))
++
++
+ @step('the connector sets the {party:Party} agreement status to {status:Q}')
+ def connector_status(context, party, status):
+     v = context.vars
+diff -ruN -x reports -x .venv -x __pycache__ tests/features/steps/http_steps.py /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/steps/http_steps.py
+--- tests/features/steps/http_steps.py	2026-11-03 13:39:31
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/features/steps/http_steps.py	2026-11-16 10:30:22
+@@ -1,6 +1,7 @@
+ """Generic HTTP request and response steps."""
+ import json
+ import re
++from urllib.parse import urlparse
+ 
+ from behave import step
+ 
+@@ -42,6 +43,14 @@
+                                      api_key=key))
+ 
+ 
++@step('I send {method:Method} to the {party:Party} CM at {path:Q} without an API key and with header {name:Q} set to {value:Q}')
++def send_cm_nokey_header(context, method, party, path, name, value):
++    _store(context, context.world.cm(party, method, render(path, context.vars),
++                                     json_body=_body_for(method, None, context),
++                                     headers={name: render(value, context.vars)},
++                                     api_key=None))
++
++
+ @step('I send {method:Method} to the {party:Party} CM at {path:Q} with content type {ct:Q} and body {body:Q}')
+ def send_cm_ct(context, method, party, path, ct, body):
+     _store(context, context.world.cm(party, method, render(path, context.vars),
+@@ -150,6 +159,31 @@
+ @step('the response is a problem with status {code:d}')
+ def problem_any(context, code):
+     check_problem(context.response, code, None)
++
++
++@step('the problem body follows the error rules of D11')
++def problem_rules(context):
++    """D11 (PSO run): a JSON object; type an absolute URI; title and detail
++    strings; status an integer from 400 to 599 equal to the HTTP status;
++    instance absent, null, or the request path (never an absolute URL)."""
++    resp = context.response
++    body = _json(context)
++    assert isinstance(body, dict), "problem body is not a JSON object: %r" % body
++    ptype = body.get("type")
++    assert isinstance(ptype, str) and re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:\S+$", ptype), \
++        "problem type is not an absolute URI: %r" % ptype
++    for field in ("title", "detail"):
++        assert isinstance(body.get(field), str), "problem %s is not a string: %r" % (field, body)
++    status = body.get("status")
++    assert isinstance(status, int) and not isinstance(status, bool) and 400 <= status <= 599, \
++        "problem status is not an integer from 400 to 599: %r" % status
++    assert status == resp.status_code, "problem status %r != HTTP status %d" % (
++        status, resp.status_code)
++    instance = body.get("instance")
++    if instance is not None:
++        req_path = urlparse(resp.request.url).path
++        assert instance == req_path, "problem instance %r is not the request path %r" % (
++            instance, req_path)
+ 
+ 
+ @step('the problem detail contains {text:Q}')
+diff -ruN -x reports -x .venv -x __pycache__ tests/progress.output /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/progress.output
+--- tests/progress.output	1970-01-01 01:00:00
++++ /Users/barrynauta/src/spec-factory-tests-cm-pso/tests/progress.output	2026-11-16 11:13:03
+@@ -0,0 +1,4 @@
++features/ui/consent.feature  ....
++features/ui/details_and_offer.feature  ..........
++features/ui/lifecycle_actions.feature  ..............
++features/ui/overview.feature  ..........

@@ -1,0 +1,58 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /contract/v1
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: never
+    include-message: never
+  shutdown: graceful
+
+spring:
+  application:
+    name: contract-manager
+  datasource:
+    url: ${CM_DB_URL:jdbc:postgresql://postgres:5432/cm_provider}
+    username: ${CM_DB_USER:simpl}
+    password: ${CM_DB_PASSWORD:simpl}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 64MB
+      max-request-size: 64MB
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    listener:
+      ack-mode: record
+  mvc:
+    problemdetails:
+      enabled: false
+
+cm:
+  participant-id: ${CM_PARTICIPANT_ID:provider-01}
+  api-key: ${CM_API_KEY:test-cm-provider-key}
+  stub-base-url: ${STUB_BASE_URL:http://stubs:8080}
+  stub-edc-api-key: ${STUB_EDC_API_KEY:test-edc-key}
+  uibe-base-url: ${UIBE_BASE_URL:http://uibe-provider:8080/contract-ui/v1}
+  uibe-api-key: ${UIBE_API_KEY:test-uibe-provider-key}
+  ui-public-url: ${UI_PUBLIC_URL:http://localhost:19103}
+  contract-vc-validity: ${CONTRACT_VC_VALIDITY:P365D}
+  clause-max-bytes: ${CLAUSE_MAX_BYTES:5242880}
+  kafka-enabled: ${CM_KAFKA_ENABLED:true}
+
+logging:
+  pattern:
+    level: "%5p [cid:%X{correlationId:-}]"

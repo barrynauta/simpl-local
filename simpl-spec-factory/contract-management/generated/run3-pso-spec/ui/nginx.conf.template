@@ -1,0 +1,32 @@
+server {
+    listen 8080;
+    server_name _;
+    root /usr/share/nginx/html;
+    server_tokens off;
+
+    location = /health {
+        default_type application/json;
+        return 200 '{"status":"UP"}';
+    }
+
+    location = /config.js {
+        default_type application/javascript;
+        add_header Cache-Control "no-store";
+        return 200 'window.__CONFIG__ = {"keycloakUrl":"${KEYCLOAK_URL}","realm":"${KEYCLOAK_REALM}","clientId":"${KEYCLOAK_CLIENT_ID}","partyRole":"${PARTY_ROLE}","partyName":"${PARTY_NAME}"};';
+    }
+
+    # Docker DNS, re-resolved so that a recreated UIBE container is found again.
+    resolver 127.0.0.11 valid=10s ipv6=off;
+
+    location /contract-ui/v1/ {
+        set $uibe_upstream ${UIBE_UPSTREAM};
+        proxy_pass $uibe_upstream;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

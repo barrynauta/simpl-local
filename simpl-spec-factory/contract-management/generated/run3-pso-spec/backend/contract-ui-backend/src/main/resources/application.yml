@@ -1,0 +1,41 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /contract-ui/v1
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: never
+  shutdown: graceful
+
+spring:
+  application:
+    name: contract-ui-backend
+  datasource:
+    url: ${UIBE_DB_URL:jdbc:postgresql://postgres:5432/uibe_provider}
+    username: ${UIBE_DB_USER:simpl}
+    password: ${UIBE_DB_PASSWORD:simpl}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  mvc:
+    problemdetails:
+      enabled: false
+
+uibe:
+  participant-id: ${UIBE_PARTICIPANT_ID:provider-01}
+  party-role: ${UIBE_PARTY_ROLE:PROVIDER}
+  api-key: ${UIBE_API_KEY:test-uibe-provider-key}
+  cm-base-url: ${CM_BASE_URL:http://cm-provider:8080/contract/v1}
+  cm-api-key: ${CM_API_KEY:test-cm-provider-key}
+  oidc-issuer: ${OIDC_ISSUER:http://localhost:19080/realms/provider}
+  oidc-jwks-uri: ${OIDC_JWKS_URI:http://keycloak:8080/realms/provider/protocol/openid-connect/certs}
+  offer-expiry-cron: ${OFFER_EXPIRY_CRON:0 0 1 * * *}
+  offer-expiry-timeout: ${OFFER_EXPIRY_TIMEOUT:P7D}
+  consent-manager-url: ${CONSENT_MANAGER_URL:http://localhost:19090/consent}
+  ui-public-url: ${UI_PUBLIC_URL:http://localhost:19103}
+
+logging:
+  pattern:
+    level: "%5p [cid:%X{correlationId:-}]"

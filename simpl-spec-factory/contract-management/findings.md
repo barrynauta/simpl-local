@@ -81,3 +81,39 @@ The 8 failures of run 1 (6 API, 2 UI) each pointed at one unclear decision or on
 The code writer applied C1, C2, C4 and C6 in its isolated workspace (`BUILD-LOG.md`, "Run 1.1"); the tests took C3 and C5 (two .feature lines and one step, tagged `@C3` and `@C5`).
 
 **Run 1.1: 383 of 383** (345 API, 38 UI). As for the Vocabulary Manager's D18, a small number of written clarifications closed every remaining gap between two writers who never saw each other's work. The build in `generated/run1/` is the run 1.1 state.
+
+## 2026-11-04: clarification round, run 1.2 (PSO tests as a source)
+
+Step 2 of [`../tests-as-spec.md`](../tests-as-spec.md). The PSO suite became a source of the digest, below the specifications (digest section 1.1, with the precedence rule). One row changed: **D13**. Both OpenAPI files put the whole API under `ApiKeyAuth`, `/health` included. Run 1 had decided the health check is open, which contradicted the OpenAPI. PSO scenario TC_CB_07 follows the OpenAPI, so the digest was wrong (rule 3). D13 now puts the health check behind the API key, and D65 and D66 say the same. The PSO scenario checks only CM; UIBE follows because its OpenAPI has the same global scheme.
+
+As in run 1.1, the digest change came first. Then the test-writer side changed the four health scenarios (401 without the key, 200 with it, tagged `@pso-source`) and the correlation id scenario on UIBE. The code-writer side changed the two API key filters and the container health probes (`generated/run1/BUILD-LOG.md`, "Run 1.2"). In this round both sides were done by one agent, from the digest row only, so the separation of the two writers is weaker than in run 1.
+
+| Suite | Before | After |
+|---|---|---|
+| Own API scenarios | 345 of 345 | 345 of 345 |
+| Own UI scenarios | 38 of 38 | 38 of 38 |
+| `mvn verify` | green | green |
+| PSO, with the echo stand-in | 8 of 14 | **9 of 14** |
+
+TC_CB_07 passes now. Nothing that passed before fails now.
+
+The 5 PSO failures that remain are not build defects. They are questions for the spec owners (digest section 5):
+
+- 3 scenarios, question 18 (rule 2): random ids on search, issue and create in bodies without `assetId` or `contractNegotiationId`. PSO expects 404, the OpenAPI makes such a body a 400 first (D12).
+- 2 scenarios, question 19 (rule 1, but without a confirmed source): `GET /agreements/{aid}/definitions/{did}/status`. The OpenAPI has only `PATCH` on this path. Not built until the spec owners confirm the `GET`.
+
+Result file: `experiments/pso/results/pso-on-build-run1.2.json`.
+
+## 2026-11-16: run 3, the PSO tests as the highest specification
+
+Barry asked to treat the PSO scenarios as bullet-proof: above the OpenAPI, the stories and the digest. Hold-out split (seed 20261116): 8 scenarios visible to the writers, 6 hidden. Base: the run 1.1 digest, because the current one names hidden scenarios. Three fresh agents in isolated workspaces: digest, test writer, code writer (a build from scratch). Details: [`experiments/pso-as-spec/`](./experiments/pso-as-spec/README.md).
+
+| Suite | run 1.2 | run 3 |
+|---|---|---|
+| Own suite | 383 of 383 | **399 of 399** (16 new scenarios) |
+| PSO visible half | 7 of 8 | **8 of 8** |
+| PSO hidden half | 2 of 6 | **2 of 6** |
+
+- The tests as a specification lifted only the scenarios the builder saw. The hidden half stays at 2 of 6, the same 4 failures as every earlier build and upstream.
+- Two of them hang on how far "404 for an unknown id" reaches (the digest writer kept it to operations on an existing record, so not `/search` and `/create`); two test a `GET` that is in no specification.
+- 8 scenarios gave 2 new rows and 10 changed ones, all about error codes, the order of checks and authentication. Three new questions for the spec owners (18 to 20), where the tests override the OpenAPI.
