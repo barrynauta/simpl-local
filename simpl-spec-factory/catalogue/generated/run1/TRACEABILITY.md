@@ -123,3 +123,14 @@ How each decision is built is in [docs/decisions.md](docs/decisions.md). Tests p
 | D64 to D67 | CIT and QIT role checks with mocked JWT claims; realm files checked by SMOKE |
 | D70 to D75 | no automated UI test (manual headless walkthrough) |
 | D80, D82 | SMOKE follows D80; D82 log lines not asserted, as decided |
+
+Run 1.2 (4 Nov 2026):
+
+| Decision | Code | Own tests |
+|---|---|---|
+| D10 (revised) | `cat/api/OutOfScopeController` | black-box `cat_schemas.feature` |
+| D84, D88 | `cat/api/QueryController`, `cat/graph/ClaimsGraph.query` | black-box `cat_query.feature` |
+| D85 | `cat/graph/ClaimsMapping`, `cat/graph/ClaimsGraph`, hooks in `PublicationService`, `RdService` | `ClaimsMappingTest`, black-box `cat_query.feature` |
+| D86 | `cat/api/SchemaController.latest`, `ShapeService.latestShapes` | black-box `cat_query.feature` |
+| D87 | `cat/api/VerificationController.page` | black-box `cat_query.feature` |
+| D89 | `common/Problems.withErrorMembers`, `RdService.delete` | black-box `cat_query.feature` |

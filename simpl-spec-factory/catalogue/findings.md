@@ -77,3 +77,34 @@ The API tests of the PSO test team, run unchanged through a small stand-in for t
 - **None of the other 10 build failures is a build defect:** 5 hit operations the factory left out (D10) or never saw (`/query/search`, in no spec), 4 decisions the digest took differently (D2 Problem JSON against the older `message` field, D66 roles against the IAA role `T2IAA_M`), 1 seed data (the Gaia-X Core ontology, missing on both).
 - **PSO partly tests the older contract:** the error shape with `message` and a role the catalogue OpenAPI does not name. As for the Schema Manager, where PSO and the factory differ, PSO follows the running system.
 - **Upstream's 35 failures are mostly the local stack:** 12 because it runs without Keycloak, 11 because the May stack has no client backend.
+
+## 2026-11-04: clarification round, run 1.2 (PSO tests as a source)
+
+Step 2 of [`../tests-as-spec.md`](../tests-as-spec.md). The PSO suite became a source of the digest, below the specifications (digest section 1, with the precedence rule). Changes:
+
+- **D10 revised (rule 3).** Run 1 left out `GET/POST /query`, `GET /verification` and `GET /schemas/latest`, although the OpenAPI has them. That was the factory's own scope choice, so it was corrected. New rows D84 (openCypher query), D85 (claims graph mapping and lifecycle, marked "to validate"), D86 (latest schemas), D87 (verification page).
+- **D88 (rule 1).** `POST /query/search` is in no specification; PSO TC_FC_09 shows 400 for an empty body. The build gives it the contract of `POST /query`.
+- **D89 (rule 2 with a partial way out).** Every Problem also carries `message`; verification failures also carry `code` `verification_error`. A first version added `code` to every Problem. PSO then failed two scenarios that passed before (TCFC_SV03, TCFC_SV08): PSO validates error bodies with a JSON schema that is `oneOf` Problem or `Error`, and a body with both shapes matches both branches. So one body cannot fully meet both shapes. The error shape stays a question for the spec owners.
+
+How `/query` works now: each catalogue (cat-a, cat-b) has its own Neo4j Community 5.26 in the compose file (no authentication, no host port, no volume). On publish, catalogue-be expands the `credentialSubject` to RDF (the same graph SHACL validates) and writes it as a property graph: one `Resource` node per IRI or blank node, scoped to the RD, with `uri` and `claimsGraphUri`; one extra label per `rdf:type` (local name); literals as properties named after the predicate's local name; links as relationships named the same way. Revoke, delete and a new version remove the claims, so the graph holds active RDs only, as search does. PostgreSQL stays the record of truth, and the graph is rebuilt from it at startup. `POST /query` runs one statement in a read-only transaction with the `timeout` of the request and returns `{totalCount, items}`, one item per row. The mapping is not in any specification and is marked "to validate" in D85 and in `tests-as-spec.md`.
+
+As before, the digest came first. Then the test-writer side added `cat_query.feature` (28 scenarios) and dropped the four D10 rows that are now in scope. The code-writer side changed the build (`generated/run1/BUILD-LOG.md`, "Run 1.2"). In this round both sides were done by one agent, from the digest rows only, so the separation of the two writers is weaker than in run 1.
+
+| Suite | Before | After |
+|---|---|---|
+| Own API scenarios of run 1 (455 after dropping four D10 rows; 459 before) | 454 of 455 (458 of 459 recorded) | 454 of 455 |
+| Own API scenarios, new (`cat_query.feature`) | 1 of 28 on the old build | 28 of 28 |
+| Own UI scenarios | 26 of 26 | 26 of 26 |
+| `mvn verify` | green | green (one test updated for D10, one added) |
+| PSO, with the stand-ins | 39 of 52 | **46 of 52** |
+
+The one own failure is the known D14 order deviation of run 1 (403 `providerMismatch` before 422 `invalidSignature`).
+
+Newly passing in PSO: TC_FC_03, TC_FC_08, TC_FC_09, TC_FC_10, TCC02, TCC09, TCCAT_SV12. Nothing that passed before fails now. The 6 that remain:
+
+- TCC11: the `code` is right now, but PSO expects the exact message "Semantic Error: no proper CredentialSubject found". The build rejects the same body one step earlier, at the signature check (D14 order), with another message. Not taken over.
+- 2 times TCC06: PSO sends `simpl:offeringType` "DATA", the seed shape allows lowercase values (question 15).
+- TC_FC_06 and TCFC_SV04: the IAA role `T2IAA_M` (question 14).
+- TCC03: the Gaia-X Core ontology. The build stores no ontologies (D58, D86); this did not fall out of the graph work, because the graph holds RD claims, not schemas (question 16).
+
+Result file: `experiments/pso/results/pso-on-build-run1.2.json`.

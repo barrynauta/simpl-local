@@ -51,3 +51,45 @@ docker rm -f pso-gateway-cat pso-gateway-cat-up
 - **Independent agreement:** of the 42 scenarios that can run outside a full environment (52 minus the 10 signing scenarios), 32 pass on the build. None of the 10 others is a build defect: 5 hit operations the factory left out or never saw (D10, `/query/search`), 4 decisions the digest took differently (D2 twice, D66 twice), 1 seed data.
 - **PSO tests partly against an older contract.** The `message` field is the older error shape; the role `T2IAA_M` is not in the catalogue OpenAPI. Where PSO and the factory differ, PSO follows the running system, as for the Schema Manager.
 - **Upstream on a local stack is a weak baseline here.** 23 of its 35 failures come from what the May stack lacks (Keycloak, client backend), not from what it does.
+
+## Environment stand-ins (4 Nov 2026)
+
+A second run, to see how the 11 environment failures behave when the environment is there. No PSO test file and no build code was changed. Two things were added, both outside the build.
+
+`stand-ins/sd-tooling.mjs` fakes SD Tooling and the signer of the data provider, for the five operations the suite calls to prepare a signed self-description: the access and usage policies, the synced Data schema (`GET /v2/schemas`), the resource address templates and `POST /v1/selfDescriptions/finalized`. It enriches the description with `dct:conformsTo` (D59, schema `DataOfferingShape` version 1) and the four EDC registration ids, wraps it as a VC and signs it with the fixed test key `provider-a` (D22, D23) through the build's own `tools/sign-rd.mjs`. The assumption: the real SD Tooling adds the schema link the catalogue needs, and the provider signs with a key the catalogue's key registry knows. The build checks the signature as before; the stand-in does not make it trust anything new. The policies are built from the request without checks, and the resource address is not put into the description. `stand-ins/gateway.conf` is `gateway.conf` plus routes for those five operations.
+
+`profiles/factorycat-stand-ins.properties` is the old profile plus the values the suite's `CatalogueConstants` class reads when it loads (participant host names, and placeholder S3 keys that only end up in the text of a test body). Without them the class does not initialise.
+
+```
+$X/run-stand-ins.sh                   # 18500, gateway plus SD Tooling stand-in
+$F/pipeline/run_pso.sh $PSO $X/profiles/factorycat-stand-ins.properties out.json <the same nine feature folders>
+docker rm -f pso-gateway-cat pso-sd-tooling-cat; docker network rm pso-cat
+```
+
+| Target | Passed |
+|---|---|
+| Factory build, data space A (29 Oct) | 32 of 52 |
+| Factory build, data space A, with the stand-ins | **39 of 52** |
+
+Result file: `results/pso-on-build-stand-ins.json`. No scenario that passed before fails now.
+
+| Scenarios | Before | With the stand-ins | Reading |
+|---|---|---|---|
+| 2 | TCC06, signing step | pass (verifySchema false) | The build verifies the stand-in's signature and returns the verification fields |
+| 2 | TCC06, signing step | 422, SHACL violation (verifySchema true) | PSO's description has `simpl:offeringType` "DATA"; the seed shape of the digest allows "data", "application", "infrastructure". A difference in test data, not environment. Left for the next step |
+| 5 | TCC07, signing step | pass, 422 | The 422 comes from the same SHACL violation. The five cases send the same valid description with all flags on, so they pass only because of the "DATA" mismatch. With a shape that accepts "DATA" the build would answer 200 and they would fail |
+| 1 | TCC11, constants class | 422, then no `code` field | Now runs. The build rejects the invalid description with 422, as PSO expects, but answers in Problem JSON (D2), not `{code, message}`. Joins the error shape failures |
+| 1 | Gaia-X Core ontology | not there | **Not seed data after all.** The build has no ontology store: `GET /schemas` always returns an empty `ontologies` list (`SchemaController`). Loading it would need a build change, so it stays open and moves to the decision step |
+
+So of the 11, 7 pass, and none of the 4 others is still an environment failure: 2 hit the seed shape's casing, 1 the error shape of D2, 1 a part of the catalogue the build does not have.
+
+## Run 1.2: the PSO tests as a source (4 Nov 2026)
+
+The build after D10 revised and D84 to D89: `/query` with openCypher over a Neo4j graph of the RD claims, `GET /schemas/latest`, `GET /verification`, `POST /query/search`, and `message` (plus `code` on verification failures) in every Problem. See the digest and `findings.md`. Same commands as for the stand-ins above. No PSO test file changed.
+
+| Target | Passed |
+|---|---|
+| Factory build, data space A, with the stand-ins (4 Nov) | 39 of 52 |
+| The same after run 1.2 | **46 of 52** |
+
+Result file: `results/pso-on-build-run1.2.json`. A first run 1.2 build added `code` to every Problem and reached 44 of 52: PSO's error schema is `oneOf` Problem or `Error`, so TCFC_SV03 and TCFC_SV08 failed on a body that had both. With `code` only on verification failures, nothing that passed before fails. The 6 that remain: the exact message of TCC11, the "DATA" spelling (TCC06, twice), the role `T2IAA_M` (TC_FC_06, TCFC_SV04) and the Gaia-X Core ontology (TCC03).

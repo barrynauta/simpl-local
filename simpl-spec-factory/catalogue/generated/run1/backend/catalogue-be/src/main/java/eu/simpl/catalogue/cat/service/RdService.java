@@ -3,6 +3,7 @@ package eu.simpl.catalogue.cat.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import eu.simpl.catalogue.cat.graph.ClaimsGraph;
 import eu.simpl.catalogue.cat.quality.Qar;
 import eu.simpl.catalogue.cat.store.RdRecord;
 import eu.simpl.catalogue.cat.store.RdRepository;
@@ -27,10 +28,12 @@ import java.util.List;
 public class RdService {
     private final RdRepository repo;
     private final QualityGate gate;
+    private final ClaimsGraph graph;
 
-    public RdService(RdRepository repo, QualityGate gate) {
+    public RdService(RdRepository repo, QualityGate gate, ClaimsGraph graph) {
         this.repo = repo;
         this.gate = gate;
+        this.graph = graph;
     }
 
     public RdRecord get(String id) {
@@ -48,6 +51,7 @@ public class RdService {
         owner(caller, r);
         if (r.active()) {
             repo.setStatus(id, "revoked", System.currentTimeMillis());
+            graph.remove(id); // D85
             r = get(id);
         }
         return r;
@@ -57,9 +61,10 @@ public class RdService {
     public synchronized void delete(Caller caller, String hash) {
         caller.requireAny(Roles.PUBLISHER);
         RdRecord r = repo.byHash(hash).orElseThrow(() -> new ApiException(ProblemTypes.RESOURCE_NOT_FOUND,
-                "No resource description with hash " + hash + " was found."));
+                "no self-description found for hash " + hash + "."));
         owner(caller, r);
         repo.delete(r.id());
+        graph.remove(r.id()); // D85
     }
 
     private static void owner(Caller caller, RdRecord r) {

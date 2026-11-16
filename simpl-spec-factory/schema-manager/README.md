@@ -22,7 +22,7 @@ The Vocabulary Manager was well specified: paired API and UI stories, 30 decisio
 | Path | What |
 |---|---|
 | [`specs/`](./specs/README.md) | Frozen input set and story index |
-| [`spec-digest.md`](./spec-digest.md) | Step 1: scope, enhancement pairs, decisions D1 to D63, open questions |
+| [`spec-digest.md`](./spec-digest.md) | Step 1: scope, enhancement pairs, decisions D1 to D64 (D64 from the PSO tests, run 1.2), open questions |
 | [`tests/`](./tests/README.md) | Steps 2 and 4: 291 API and 36 UI scenarios (behave, requests, Playwright), webhook receiver, fixtures, reports |
 | [`generated/run1/`](./generated/run1/) | Step 3: the build, with `TRACEABILITY.md` and `BUILD-LOG.md` |
 | [`pipeline/`](./pipeline/) | The briefs for steps 2 to 4 as used |
@@ -33,3 +33,5 @@ The Vocabulary Manager was well specified: paired API and UI stories, 30 decisio
 Swap tests (28 Oct): the same API walk on both backends gives the same status for 33 of 41 calls; each UI works for every user action on the other backend, with a few empty columns and one blank page. The schema files are not interchangeable: the rules for a valid file differ and neither is published. See [`experiments/swap/`](./experiments/swap/README.md).
 
 PSO tests (29 Oct): the API tests of the PSO test team pass 20 of 27 on the build (upstream 14 of 27); none of the 7 failures is a build defect. See [`experiments/pso/`](./experiments/pso/README.md).
+
+Run 1.2 (4 Nov): with the PSO tests as a source below the specifications, one decision was added (D64, a RESOURCE schema declares its resource type). Own suites 293 of 293 API and 36 of 36 UI; PSO 23 of 27 with the environment stand-ins (was 21). See [`findings.md`](./findings.md).

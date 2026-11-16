@@ -88,3 +88,24 @@ The API tests of the PSO test team, run unchanged against the build and upstream
 - **Build: 20 of 27** with an empty default property list (15 of 27 as built: PSO's schema file carries none of the D31 default properties). **Upstream: 14 of 27.**
 - **None of the 7 failures is a build defect:** 4 hit decisions the digest took differently (D5 twice, D16, the out-of-scope vocabulary operations), 2 the resource type rule of step 2, 1 the environment (a Tier 1 user created through IAA).
 - **The unstated rule is in PSO's test case** (SIMPL-18293), so it is known to the testers but not written in any story. The OpenAPI lists no 401 where PSO expects 400 without a token: PSO follows the letter of the contract, the digest chose 401.
+
+## 2026-11-04: clarification round, run 1.2 (PSO tests as a source)
+
+Step 2 of [`../tests-as-spec.md`](../tests-as-spec.md). The PSO suite became a source of the digest, below the specifications (digest section 1.1, with the precedence rule). One row came from it: **D64**, a RESOURCE schema must declare its resource type (an `sh:NodeShape` with an `sh:targetClass`). The source is PSO scenario TC_SM_22 and its fixture, which cites PSO test case SIMPL-18293. No story says this (rule 1, the test fills the gap). SEARCH schemas are not checked. The class is not compared with `resourceType`, because nothing says it should be.
+
+As before, the digest change came first. Then the test-writer side added two scenarios (`@D64 @pso-source`) and a fixture, and gave the RESOURCE fixtures an `sh:targetClass`. The code-writer side added the check to `SchemaValidator` (`generated/run1/BUILD-LOG.md`, "Run 1.2"). In this round both sides were done by one agent, from the digest row only, so the separation of the two writers is weaker than in run 1.
+
+| Suite | Before | After |
+|---|---|---|
+| Own API scenarios | 291 of 291 | **293 of 293** (2 new) |
+| Own UI scenarios | 36 of 36 | 36 of 36 |
+| PSO, with the stand-ins | 21 of 27 | **23 of 27** |
+
+TC_SM_22 passes now. TC_SM_19 passes too, as a side effect: it tests the same rule on a new version, but PSO marks it `@bug`, so it was not used as a source. Nothing that passed before fails now.
+
+The 4 PSO failures that remain are not build defects:
+
+- 2 conflicts (rule 2, open question 16): no token on `GET /schemas` and `GET /schemas/{schemaName}/versions`. PSO expects 400, the build answers 401 (D5). The OpenAPI lists neither.
+- 2 scenarios PSO marks `@bug` (rule 4, not used): TC_SM_08 (`GET /vocabularies`, out of scope) and TC_SM_23 (the slot rule of D16).
+
+Result file: `experiments/pso/results/pso-on-build-run1.2.json`. The build ran with `no-default-properties.override.yml` and the stand-ins, as on 4 Nov.

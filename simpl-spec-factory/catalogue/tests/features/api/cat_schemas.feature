@@ -243,6 +243,7 @@ Feature: catalogue-be stores the SHACL shapes used at publication
     Then the response is a problem with status 401
 
   # ------------------------------------------------------------------ out of scope (D10)
+  # Since run 1.2, /query, GET /verification and /schemas/latest are in scope: see cat_query.feature.
 
   @D10 @openapi-only
   Scenario Outline: An out-of-scope operation exists but does not succeed (<method> <path>)
@@ -251,10 +252,6 @@ Feature: catalogue-be stores the SHACL shapes used at publication
 
     Examples:
       | method | path                     |
-      | GET    | /query                   |
-      | POST   | /query                   |
       | GET    | /session                 |
       | DELETE | /session                 |
-      | GET    | /verification            |
-      | GET    | /schemas/latest?type=SHAPE |
       | PUT    | /schemas/NoSuch{token}Shape |

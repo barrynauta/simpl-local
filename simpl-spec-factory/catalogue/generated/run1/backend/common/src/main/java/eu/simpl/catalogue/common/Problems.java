@@ -9,7 +9,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-/** Builds Problem bodies and responses. The content type is preset so Accept negotiation never blocks an error. */
+/**
+ * Builds Problem bodies and responses. The content type is preset so Accept negotiation never blocks an error.
+ * D89 (run 1.2): every Problem also carries the members of the older {@code Error {code, message}} shape as
+ * RFC 9457 extension members, so one body meets both shapes the OpenAPI uses.
+ */
 public final class Problems {
     public static final String PROBLEM_JSON = "application/problem+json";
 
@@ -34,7 +38,25 @@ public final class Problems {
         return response(type.status, body(type, type.status, detail));
     }
 
+    /** The publication pipeline's verification failures share one code (PSO scenario TCC11, D89). */
+    private static final java.util.Set<String> VERIFICATION_TYPES = java.util.Set.of(
+            ProblemTypes.INVALID_SIGNATURE.uri, ProblemTypes.SCHEMA_NOT_SUPPORTED.uri, ProblemTypes.SHACL_VIOLATION.uri);
+
+    /**
+     * D89: adds {@code message} (the detail) when absent, and {@code code} only for the verification failures,
+     * where PSO checks it. A body with both {@code code} and {@code message} matches both branches of PSO's
+     * {@code oneOf} error schema and fails it, so {@code code} is not added elsewhere.
+     */
+    public static ObjectNode withErrorMembers(ObjectNode body) {
+        if (!body.has("message")) body.put("message", body.path("detail").asText(body.path("title").asText("")));
+        if (!body.has("code") && VERIFICATION_TYPES.contains(body.path("type").asText(""))) {
+            body.put("code", "verification_error");
+        }
+        return body;
+    }
+
     public static ResponseEntity<String> response(int status, ObjectNode body) {
+        withErrorMembers(body);
         return ResponseEntity.status(status)
                 .header(HttpHeaders.CONTENT_TYPE, PROBLEM_JSON)
                 .body(Json.write(body));
@@ -44,6 +66,6 @@ public final class Problems {
         res.setStatus(type.status);
         res.setContentType(PROBLEM_JSON);
         res.setCharacterEncoding("UTF-8");
-        res.getOutputStream().write(Json.write(body(type, type.status, detail)).getBytes(StandardCharsets.UTF_8));
+        res.getOutputStream().write(Json.write(withErrorMembers(body(type, type.status, detail))).getBytes(StandardCharsets.UTF_8));
     }
 }

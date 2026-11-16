@@ -68,7 +68,8 @@ log lines, Keycloak users and clients, seed shapes and seed schemas.
 | `@bp05b`, `@bp06` | Business process |
 | `@openapi-only` | Operation without a story |
 | `@Dnn` | Digest decision the scenario depends on |
-| `@health`, `@publication`, `@lifecycle`, `@verification`, `@schemas`, `@search`, `@detail` | Area |
+| `@health`, `@publication`, `@lifecycle`, `@verification`, `@schemas`, `@search`, `@detail`, `@query` | Area (`@query`: `cat_query.feature`, run 1.2) |
+| `@pso-source` | The decision comes from a PSO scenario (run 1.2, digest section 1, "Existing tests as a source") |
 
 No scenario needs to run serially: all data is scoped by the run token and by unique ids.
 

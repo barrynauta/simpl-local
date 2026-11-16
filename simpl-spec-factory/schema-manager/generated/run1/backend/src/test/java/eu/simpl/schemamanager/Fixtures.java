@@ -13,12 +13,14 @@ public final class Fixtures {
 
     public static final String VALID = PREFIXES + """
             <urn:shape:Test> a sh:NodeShape ;
+              sh:targetClass <urn:class:Test> ;
               sh:property [ sh:path simpl:uuid ; sh:datatype xsd:string ] ;
               sh:property [ sh:path simpl:version ; sh:datatype xsd:string ] .
             """;
 
     public static final String NO_VERSION = PREFIXES + """
             <urn:shape:Test> a sh:NodeShape ;
+              sh:targetClass <urn:class:Test> ;
               sh:property [ sh:path simpl:uuid ; sh:datatype xsd:string ] .
             """;
 
@@ -28,12 +30,21 @@ public final class Fixtures {
 
     public static final String BROKEN = PREFIXES + """
             <urn:shape:Test> a sh:NodeShape ;
+              sh:targetClass <urn:class:Test> ;
               sh:property [ sh:path simpl:uuid
+            """;
+
+    /** D64: valid, but no sh:NodeShape declares an sh:targetClass. */
+    public static final String NO_RESOURCE_TYPE = PREFIXES + """
+            <urn:shape:Test> a sh:NodeShape ;
+              sh:property [ sh:path simpl:uuid ; sh:datatype xsd:string ] ;
+              sh:property [ sh:path simpl:version ; sh:datatype xsd:string ] .
             """;
 
     public static String withLocal(String base, String vocab, String term) {
         return PREFIXES + "@prefix v: <" + base + vocab + "#> .\n" + """
                 <urn:shape:Test> a sh:NodeShape ;
+                  sh:targetClass <urn:class:Test> ;
                   sh:property [ sh:path simpl:uuid ; sh:datatype xsd:string ] ;
                   sh:property [ sh:path simpl:version ; sh:datatype xsd:string ] ;
                   sh:property [ sh:path v:%s ; sh:datatype xsd:string ] .

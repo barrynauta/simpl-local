@@ -1,7 +1,8 @@
 Feature: Syntax, structure and default property validation
   SIMPL-14703 and SIMPL-26105 (validation), SIMPL-14795 (syntax error message)
   and SIMPL-14796 (default property message). Decisions D30 to D33: Turtle
-  with at least one sh:NodeShape; for RESOURCE, one shape must carry simpl:uuid
+  with at least one sh:NodeShape; for RESOURCE, a shape must declare its resource
+  type with sh:targetClass (D64, from PSO test case SIMPL-18293) and one shape must carry simpl:uuid
   and simpl:version as sh:path; exact detail prefixes; the first failing stage
   stops processing.
 
@@ -31,6 +32,21 @@ Feature: Syntax, structure and default property validation
     When I create the RESOURCE schema "$A" for resource type "$RT" from "no-nodeshape.ttl"
     Then the response is a "badRequest" problem with status 400
     And the problem detail starts with "Syntax Error: "
+
+  @SIMPL-18293 @D64 @pso-source
+  Scenario: A RESOURCE schema that declares no resource type is rejected and creates nothing
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "no-resource-type.ttl"
+    Then the response is a "badRequest" problem with status 400
+    And the problem detail starts with "Syntax Error: "
+    And listing "resourceType=$RT" is empty
+
+  @SIMPL-18293 @D64 @pso-source
+  Scenario: A new RESOURCE version that declares no resource type is not created
+    Given the RESOURCE schema "$A" exists for resource type "$RT"
+    When I add a new version to schema "$A" from "no-resource-type.ttl"
+    Then the response is a "badRequest" problem with status 400
+    And the problem detail starts with "Syntax Error: "
+    And schema "$A" has the versions "1"
 
   @SIMPL-14703 @SIMPL-14795 @D30 @D33
   Scenario: A new version with a syntax error is not created

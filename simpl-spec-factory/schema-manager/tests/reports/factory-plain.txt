@@ -1,0 +1,2498 @@
+Feature: Access control (Tier 1) on schema operations
+  Background: 
+
+  Scenario Outline: Viewers and admins may read -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.068s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I call the operation "list schemas" on schema "$A" ... passed in 0.037s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: Viewers and admins may read -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.010s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I call the operation "get latest content" on schema "$A" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: Viewers and admins may read -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.009s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I call the operation "list versions" on schema "$A" ... passed in 0.005s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: Viewers and admins may read -- @1.4 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.008s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I call the operation "get version" on schema "$A" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: Viewers and admins may read -- @1.5 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.008s
+    Given I am "ga-admin" ... passed in 0.000s
+    When I call the operation "list schemas" on schema "$A" ... passed in 0.005s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: Viewers and admins may read -- @1.6 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-admin" ... passed in 0.000s
+    When I call the operation "get latest content" on schema "$A" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: Viewers and admins may read -- @1.7 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.010s
+    Given I am "ga-admin" ... passed in 0.000s
+    When I call the operation "list versions" on schema "$A" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: Viewers and admins may read -- @1.8 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-admin" ... passed in 0.000s
+    When I call the operation "get version" on schema "$A" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: A user without a schema role may not read -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-norole" ... passed in 0.000s
+    When I call the operation "list schemas" on schema "$A" ... passed in 0.027s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+
+  Scenario Outline: A user without a schema role may not read -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.008s
+    Given I am "ga-norole" ... passed in 0.000s
+    When I call the operation "get latest content" on schema "$A" ... passed in 0.004s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+
+  Scenario Outline: A user without a schema role may not read -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.008s
+    Given I am "ga-norole" ... passed in 0.000s
+    When I call the operation "list versions" on schema "$A" ... passed in 0.003s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+
+  Scenario Outline: A user without a schema role may not read -- @1.4 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-norole" ... passed in 0.000s
+    When I call the operation "get version" on schema "$A" ... passed in 0.003s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+
+  Scenario Outline: Only admins may change schemas -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I call the operation "create schema" on schema "$A" ... passed in 0.004s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.005s
+    And schema "$A" has the versions "1" ... passed in 0.005s
+
+  Scenario Outline: Only admins may change schemas -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.009s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I call the operation "create version" on schema "$A" ... passed in 0.004s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.004s
+    And schema "$A" has the versions "1" ... passed in 0.004s
+
+  Scenario Outline: Only admins may change schemas -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I call the operation "revoke schema" on schema "$A" ... passed in 0.003s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.004s
+    And schema "$A" has the versions "1" ... passed in 0.004s
+
+  Scenario Outline: Only admins may change schemas -- @1.4 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.008s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I call the operation "publish schema" on schema "$A" ... passed in 0.003s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.004s
+    And schema "$A" has the versions "1" ... passed in 0.005s
+
+  Scenario Outline: Only admins may change schemas -- @1.5 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-norole" ... passed in 0.000s
+    When I call the operation "create schema" on schema "$A" ... passed in 0.003s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.004s
+    And schema "$A" has the versions "1" ... passed in 0.004s
+
+  Scenario Outline: Only admins may change schemas -- @1.6 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-norole" ... passed in 0.000s
+    When I call the operation "create version" on schema "$A" ... passed in 0.003s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.005s
+    And schema "$A" has the versions "1" ... passed in 0.004s
+
+  Scenario Outline: Only admins may change schemas -- @1.7 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-norole" ... passed in 0.000s
+    When I call the operation "revoke schema" on schema "$A" ... passed in 0.003s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.003s
+    And schema "$A" has the versions "1" ... passed in 0.004s
+
+  Scenario Outline: Only admins may change schemas -- @1.8 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-norole" ... passed in 0.000s
+    When I call the operation "publish schema" on schema "$A" ... passed in 0.004s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.004s
+    And schema "$A" has the versions "1" ... passed in 0.004s
+
+  Scenario: A schema refused with 403 is not created
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.010s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I create the RESOURCE schema "$B" for resource type "$RT2" ... passed in 0.003s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+    And listing "resourceType=$RT2" is empty ... passed in 0.004s
+
+  Scenario: Authorisation is checked before validation
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I create the RESOURCE schema "$B" for resource type "data" from "syntax-error.ttl" ... passed in 0.003s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+
+  Scenario: Authorisation is checked before the existence check
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.008s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I add a new version to the unknown schema "NonExistent$A" with schema type "RESOURCE" ... passed in 0.003s
+    Then the response is a "forbidden" problem with status 403 ... passed in 0.000s
+
+  Scenario: An admin may revoke and publish
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.009s
+    Given I am "ga-admin" ... passed in 0.000s
+    When I call the operation "revoke schema" on schema "$A" ... passed in 0.010s
+    Then the response status is 200 ... passed in 0.000s
+    When I call the operation "publish schema" on schema "$A" ... passed in 0.007s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: Any authenticated caller may manage webhook subscriptions -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.009s
+    Given I am "ga-norole" ... passed in 0.000s
+    When I subscribe the webhook "hook" to "SchemaPublished" ... passed in 0.008s
+    Then the response status is 201 ... passed in 0.000s
+    When I list the webhooks ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the webhook list contains "hook" with the events "SchemaPublished" ... passed in 0.000s
+    When I delete the webhook "hook" ... passed in 0.006s
+    Then the response status is 204 ... passed in 0.000s
+
+  Scenario Outline: Any authenticated caller may manage webhook subscriptions -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.009s
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I subscribe the webhook "hook" to "SchemaPublished" ... passed in 0.004s
+    Then the response status is 201 ... passed in 0.000s
+    When I list the webhooks ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the webhook list contains "hook" with the events "SchemaPublished" ... passed in 0.000s
+    When I delete the webhook "hook" ... passed in 0.005s
+    Then the response status is 204 ... passed in 0.000s
+
+  Scenario Outline: Any authenticated caller may manage webhook subscriptions -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.009s
+    Given I am "ga-admin" ... passed in 0.000s
+    When I subscribe the webhook "hook" to "SchemaPublished" ... passed in 0.004s
+    Then the response status is 201 ... passed in 0.000s
+    When I list the webhooks ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the webhook list contains "hook" with the events "SchemaPublished" ... passed in 0.000s
+    When I delete the webhook "hook" ... passed in 0.005s
+    Then the response status is 204 ... passed in 0.000s
+
+  Scenario Outline: Without a token every operation answers 401 -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am not authenticated ... passed in 0.000s
+    When I call the operation "list schemas" on schema "$A" ... passed in 0.002s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: Without a token every operation answers 401 -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am not authenticated ... passed in 0.000s
+    When I call the operation "get latest content" on schema "$A" ... passed in 0.002s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: Without a token every operation answers 401 -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am not authenticated ... passed in 0.000s
+    When I call the operation "list versions" on schema "$A" ... passed in 0.002s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: Without a token every operation answers 401 -- @1.4 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am not authenticated ... passed in 0.000s
+    When I call the operation "get version" on schema "$A" ... passed in 0.002s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: Without a token every operation answers 401 -- @1.5 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am not authenticated ... passed in 0.000s
+    When I call the operation "create schema" on schema "$A" ... passed in 0.002s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: Without a token every operation answers 401 -- @1.6 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am not authenticated ... passed in 0.000s
+    When I call the operation "create version" on schema "$A" ... passed in 0.003s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: Without a token every operation answers 401 -- @1.7 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.010s
+    Given I am not authenticated ... passed in 0.000s
+    When I call the operation "revoke schema" on schema "$A" ... passed in 0.003s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: Without a token every operation answers 401 -- @1.8 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am not authenticated ... passed in 0.000s
+    When I call the operation "publish schema" on schema "$A" ... passed in 0.003s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: Without a token the webhook operations answer 401 -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am not authenticated ... passed in 0.000s
+    When I call the operation "list webhooks" on schema "$A" ... passed in 0.002s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: Without a token the webhook operations answer 401 -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am not authenticated ... passed in 0.000s
+    When I call the operation "create webhook" on schema "$A" ... passed in 0.002s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: Without a token the webhook operations answer 401 -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am not authenticated ... passed in 0.000s
+    When I call the operation "delete webhook" on schema "$A" ... passed in 0.002s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario: A malformed token answers 401
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I send the malformed bearer token "not-a-jwt" ... passed in 0.000s
+    When I call the operation "list schemas" on schema "$A" ... passed in 0.003s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: A token that the realm did not sign answers 401, whatever roles it claims -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am "ga-admin" with a token whose signature was altered ... passed in 0.000s
+    When I call the operation "list schemas" on schema "$A" ... passed in 0.002s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: A token that the realm did not sign answers 401, whatever roles it claims -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-admin" with an unsigned token ... passed in 0.000s
+    When I call the operation "list schemas" on schema "$A" ... passed in 0.003s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: A token that the realm did not sign answers 401, whatever roles it claims -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am "ga-admin" with a token signed by another issuer ... passed in 0.000s
+    When I call the operation "list schemas" on schema "$A" ... passed in 0.003s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: A token that the realm did not sign answers 401, whatever roles it claims -- @1.4 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am "ga-admin" with an expired token ... passed in 0.000s
+    When I call the operation "list schemas" on schema "$A" ... passed in 0.002s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: A token that the realm did not sign answers 401, whatever roles it claims -- @1.5 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-admin" with a token whose signature was altered ... passed in 0.000s
+    When I call the operation "create schema" on schema "$A" ... passed in 0.003s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: A token that the realm did not sign answers 401, whatever roles it claims -- @1.6 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Given I am "ga-admin" with an unsigned token ... passed in 0.000s
+    When I call the operation "revoke schema" on schema "$A" ... passed in 0.002s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+  Scenario Outline: A token that the realm did not sign answers 401, whatever roles it claims -- @1.7 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    Given I am "ga-admin" with a token signed by another issuer ... passed in 0.000s
+    When I call the operation "list webhooks" on schema "$A" ... passed in 0.003s
+    Then the response is a "unauthorized" problem with status 401 ... passed in 0.000s
+
+Feature: Content negotiation and media types
+  Background: 
+
+  Scenario Outline: JSON operations accept JSON, problem JSON and */* -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas" with header "Accept" set to "application/json" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: JSON operations accept JSON, problem JSON and */* -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas" with header "Accept" set to "application/problem+json" ... passed in 0.005s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: JSON operations accept JSON, problem JSON and */* -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas" with header "Accept" set to "*/*" ... passed in 0.006s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: JSON operations accept JSON, problem JSON and */* -- @1.4 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    When I send a GET request to "/schemas/$A/versions" with header "Accept" set to "application/json" ... passed in 0.005s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: JSON operations accept JSON, problem JSON and */* -- @1.5 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/webhooks" with header "Accept" set to "application/json" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+
+  Scenario Outline: JSON operations refuse an Accept header they cannot satisfy -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas" with header "Accept" set to "text/csv" ... passed in 0.003s
+    Then the response is a "notAcceptable" problem with status 406 ... passed in 0.000s
+
+  Scenario Outline: JSON operations refuse an Accept header they cannot satisfy -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas" with header "Accept" set to "application/xml" ... passed in 0.002s
+    Then the response is a "notAcceptable" problem with status 406 ... passed in 0.000s
+
+  Scenario Outline: JSON operations refuse an Accept header they cannot satisfy -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas/$A/versions" with header "Accept" set to "text/html" ... passed in 0.003s
+    Then the response is a "notAcceptable" problem with status 406 ... passed in 0.000s
+
+  Scenario Outline: JSON operations refuse an Accept header they cannot satisfy -- @1.4 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a GET request to "/webhooks" with header "Accept" set to "application/xml" ... passed in 0.004s
+    Then the response is a "notAcceptable" problem with status 406 ... passed in 0.000s
+
+  Scenario Outline: The latest content refuses an Accept header other than Turtle -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas/$A" with header "Accept" set to "application/xml" ... passed in 0.004s
+    Then the response is a "notAcceptable" problem with status 406 ... passed in 0.000s
+
+  Scenario Outline: The latest content refuses an Accept header other than Turtle -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas/$A" with header "Accept" set to "text/html" ... passed in 0.003s
+    Then the response is a "notAcceptable" problem with status 406 ... passed in 0.000s
+
+  Scenario Outline: A version refuses an Accept header other than Turtle or JSON -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    When I send a GET request to "/schemas/$A/1" with header "Accept" set to "application/xml" ... passed in 0.003s
+    Then the response is a "notAcceptable" problem with status 406 ... passed in 0.000s
+
+  Scenario Outline: A version refuses an Accept header other than Turtle or JSON -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas/$A/1" with header "Accept" set to "text/csv" ... passed in 0.003s
+    Then the response is a "notAcceptable" problem with status 406 ... passed in 0.000s
+
+  Scenario: A webhook subscription that is not JSON is rejected with 415
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a POST request to "/webhooks" with content type "application/x-www-form-urlencoded" and body ... passed in 0.004s
+      """
+      targetUrl=https%3A%2F%2Fexample.org%2Fhook&events=SchemaPublished
+      """
+    Then the response is a "unsupportedMediaType" problem with status 415 ... passed in 0.000s
+
+  Scenario Outline: Out-of-scope operations of the OpenAPI are not served -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/vocabularies" ... passed in 0.004s
+    Then the response status is 404 ... passed in 0.000s
+
+  Scenario Outline: Out-of-scope operations of the OpenAPI are not served -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas/$A/qualityProfiles/active" ... passed in 0.004s
+    Then the response status is 404 ... passed in 0.000s
+
+Feature: Create a schema through the API
+
+  Scenario: An admin creates a RESOURCE schema without a schemaType
+    Given I am "ga-admin" ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.006s
+    Then the response status is 201 ... passed in 0.000s
+    And the response content type is "application/json" ... passed in 0.000s
+    And the response header "Location" is an absolute URI ending with "/schemas/$A" ... passed in 0.000s
+    And the JSON field "schemaName" is "$A" ... passed in 0.000s
+    And the JSON field "schemaVersion" is "1" ... passed in 0.000s
+    And the JSON field "validationWarnings" is an empty list ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And the JSON field "schemaType" is "RESOURCE" ... passed in 0.000s
+    And the JSON field "resourceType" is "$RT" ... passed in 0.000s
+    And schema "$A" is listed with ... passed in 0.004s
+      | field        | value             |
+      | name         | $A                |
+      | title        | Title of $A       |
+      | description  | Description of $A |
+      | resourceType | $RT               |
+      | schemaType   | RESOURCE          |
+      | version      | 1                 |
+      | status       | PUBLISHED         |
+      | created      | <timestamp>       |
+
+  Scenario: An explicit schemaType RESOURCE behaves like the default
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.006s
+      | field      | value    |
+      | schemaType | RESOURCE |
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "schemaType" is "RESOURCE" ... passed in 0.000s
+
+  Scenario: The first version gets the changelog "Initial version."
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    Then version "1" of schema "$A" has the changelog "Initial version." ... passed in 0.003s
+    And schema "$A" has the versions "1" ... passed in 0.003s
+
+  Scenario: The stored content is the uploaded file, byte for byte
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    When I request version "1" of schema "$A" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "1" of schema "$A" ... passed in 0.000s
+
+  Scenario: A client-supplied version field is ignored on create
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.007s
+      | field   | value |
+      | version | 1.0.0 |
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "schemaVersion" is "1" ... passed in 0.000s
+
+  Scenario: A second schema with the same name is rejected, whatever its resource type
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I create the RESOURCE schema "$A" for resource type "$RT2" ... passed in 0.003s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+    And the problem detail is "A schema with that name already exists." ... passed in 0.000s
+    And listing "schemaType=RESOURCE&resourceType=$RT2" is empty ... passed in 0.003s
+
+  Scenario: A second schema with the same name and resource type is rejected
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.003s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+    And schema "$A" has the versions "1" ... passed in 0.004s
+
+  Scenario: The name of a revoked schema cannot be reused
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    And schema "$A" has been revoked ... passed in 0.005s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.004s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+
+  Scenario: Names are case-sensitive
+    Given I am "ga-admin" ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.010s
+      | field | value      |
+      | name  | CaseTest$A |
+    Then the response status is 201 ... passed in 0.000s
+    When I create the RESOURCE schema "$B" for resource type "$RT2" with ... passed in 0.007s
+      | field | value      |
+      | name  | Casetest$A |
+    Then the response status is 201 ... passed in 0.000s
+
+  Scenario Outline: An invalid name is rejected -- @1.1 
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.004s
+      | field | value       |
+      | name  | lowerCase$A |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid name is rejected -- @1.2 
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.003s
+      | field | value |
+      | name  | Ab    |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid name is rejected -- @1.3 
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.003s
+      | field | value        |
+      | name  | Data Asset$A |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid name is rejected -- @1.4 
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.003s
+      | field | value        |
+      | name  | Data-Asset$A |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid name is rejected -- @1.5 
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.003s
+      | field | value                                                             |
+      | name  | Abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcde |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid resourceType is rejected -- @1.1 
+    When I create the RESOURCE schema "$A" for resource type "data" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid resourceType is rejected -- @1.2 
+    When I create the RESOURCE schema "$A" for resource type "data-schema" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid resourceType is rejected -- @1.3 
+    When I create the RESOURCE schema "$A" for resource type "Da" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid resourceType is rejected -- @1.4 
+    When I create the RESOURCE schema "$A" for resource type "Data Type" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: A RESOURCE schema without resourceType is rejected
+    When I create the RESOURCE schema "$A" without a resource type ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: A SEARCH schema with a resourceType is rejected
+    When I create the SEARCH schema "$S" with ... passed in 0.003s
+      | field        | value |
+      | resourceType | $RT   |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And schema "$S" is not listed as a SEARCH schema ... passed in 0.004s
+
+  Scenario: An unknown schemaType is rejected
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.003s
+      | field      | value |
+      | schemaType | OTHER |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: A missing or blank required field is rejected -- @1.1 
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.003s
+      | field | value  |
+      | name  | <omit> |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.003s
+
+  Scenario Outline: A missing or blank required field is rejected -- @1.2 
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.003s
+      | field | value  |
+      | title | <omit> |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.003s
+
+  Scenario Outline: A missing or blank required field is rejected -- @1.3 
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.003s
+      | field       | value  |
+      | description | <omit> |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.002s
+
+  Scenario Outline: A missing or blank required field is rejected -- @1.4 
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.003s
+      | field      | value  |
+      | schemaFile | <omit> |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.002s
+
+  Scenario Outline: A missing or blank required field is rejected -- @1.5 
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.005s
+      | field | value |
+      | title |       |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.004s
+
+  Scenario Outline: A missing or blank required field is rejected -- @1.6 
+    When I create the RESOURCE schema "$A" for resource type "$RT" with ... passed in 0.004s
+      | field       | value |
+      | description |       |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.003s
+
+  Scenario: A create that is not multipart is rejected with 415
+    When I send a POST request to "/schemas" with content type "application/json" and body ... passed in 0.003s
+      """
+      {"name": "$A", "title": "T", "description": "D", "resourceType": "$RT"}
+      """
+    Then the response is a "unsupportedMediaType" problem with status 415 ... passed in 0.000s
+
+  Scenario: A create with an unacceptable Accept header gives 406
+    When I create the RESOURCE schema "$A" for resource type "$RT" with header "Accept" set to "application/xml" ... passed in 0.003s
+    Then the response is a "notAcceptable" problem with status 406 ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.003s
+
+  Scenario: A name conflict is reported before content validation
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.009s
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "syntax-error.ttl" ... passed in 0.004s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+
+  Scenario: Metadata validation comes before content validation
+    When I create the RESOURCE schema "$A" for resource type "data" from "syntax-error.ttl" ... passed in 0.004s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail does not start with "Syntax Error: " ... passed in 0.000s
+
+Feature: List schemas through the API
+
+  Scenario: A viewer lists schemas and each item carries the metadata
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And I am "ga-viewer" ... passed in 0.000s
+    When I list schemas with "resourceType=$RT" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the response content type is "application/json" ... passed in 0.000s
+    And the JSON field "metadata" is a list of 1 items ... passed in 0.000s
+    And every item of "metadata" has the fields "name,title,description,resourceType,schemaType,version,changelog,status,created,modified,createdBy" ... passed in 0.000s
+    And the JSON field "metadata[0].name" is "$A" ... passed in 0.000s
+    And the JSON field "metadata[0].title" is "Title of $A" ... passed in 0.000s
+    And the JSON field "metadata[0].description" is "Description of $A" ... passed in 0.000s
+    And the JSON field "metadata[0].resourceType" is "$RT" ... passed in 0.000s
+    And the JSON field "metadata[0].schemaType" is "RESOURCE" ... passed in 0.000s
+    And the JSON field "metadata[0].version" is "1" ... passed in 0.000s
+    And the JSON field "metadata[0].changelog" is "Initial version." ... passed in 0.000s
+    And the JSON field "metadata[0].status" is "PUBLISHED" ... passed in 0.000s
+    And the JSON field "metadata[0].created" is an ISO timestamp ... passed in 0.000s
+    And the JSON field "metadata[0].modified" is an ISO timestamp ... passed in 0.000s
+    And the JSON field "metadata[0].createdBy" is "ga-admin" ... passed in 0.000s
+
+  Scenario: The list item shows the version and changelog of the highest version
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And schema "$A" has a new version ... passed in 0.007s
+    When I list schemas with "resourceType=$RT" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the JSON field "metadata[0].version" is "2" ... passed in 0.000s
+    And the JSON field "metadata[0].changelog" is "Change number 2 of $A" ... passed in 0.000s
+
+  Scenario: The list uses the Belgif paging envelope with 20 items per page by default
+    Given I am "ga-admin" ... passed in 0.000s
+    When I list schemas ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the JSON object has the fields "page,totalPages,total,pageSize,next,metadata" ... passed in 0.000s
+    And the JSON field "page" is the number 1 ... passed in 0.000s
+    And the JSON field "pageSize" is the number 20 ... passed in 0.000s
+
+  Scenario: Pages follow the requested size and the next link keeps the filters
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.006s
+    And the RESOURCE schema "$C" exists for resource type "$RT" ... passed in 0.005s
+    When I list schemas with "resourceType=$RT&pageSize=2" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the JSON field "page" is the number 1 ... passed in 0.000s
+    And the JSON field "pageSize" is the number 2 ... passed in 0.000s
+    And the JSON field "total" is the number 3 ... passed in 0.000s
+    And the JSON field "totalPages" is the number 2 ... passed in 0.000s
+    And the names in "metadata" are "$A,$B" ... passed in 0.000s
+    And the JSON field "next" contains "resourceType=$RT" ... passed in 0.000s
+    And the JSON field "next" contains "page=2" ... passed in 0.000s
+    When I follow the "next" link ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the JSON field "page" is the number 2 ... passed in 0.000s
+    And the names in "metadata" are "$C" ... passed in 0.000s
+    And the JSON field "next" is null ... passed in 0.000s
+
+  Scenario: A page past the end of the schema list is empty
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I list schemas with "resourceType=$RT&page=5" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the JSON field "metadata" is an empty list ... passed in 0.000s
+
+  Scenario: The schema list is ordered by name
+    Given the RESOURCE schema "$C" exists for resource type "$RT" ... passed in 0.006s
+    And the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.005s
+    When I list schemas with "resourceType=$RT" ... passed in 0.004s
+    Then the names in "metadata" are "$A,$B,$C" ... passed in 0.000s
+
+  Scenario Outline: Invalid paging parameters are rejected -- @1.1 
+    When I list schemas with "page=0" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid paging parameters are rejected -- @1.2 
+    When I list schemas with "page=abc" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid paging parameters are rejected -- @1.3 
+    When I list schemas with "pageSize=0" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid paging parameters are rejected -- @1.4 
+    When I list schemas with "pageSize=101" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid paging parameters are rejected -- @1.5 
+    When I list schemas with "pageSize=x" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: Status and resourceType filters combine with AND
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.006s
+    And the RESOURCE schema "$C" exists for resource type "$RT2" ... passed in 0.005s
+    When I list schemas with "status=REVOKED&resourceType=$RT" ... passed in 0.005s
+    Then the response status is 200 ... passed in 0.000s
+    And the names in "metadata" are "$B" ... passed in 0.000s
+    When I list schemas with "status=PUBLISHED&resourceType=$RT" ... passed in 0.004s
+    Then the names in "metadata" are "$A" ... passed in 0.000s
+
+  Scenario: Without schemaType the list returns RESOURCE schemas only
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I list schemas with "resourceType=$RT" ... passed in 0.003s
+    Then every item of "metadata" has "schemaType" equal to "RESOURCE" ... passed in 0.000s
+    When I list schemas with "schemaType=RESOURCE&resourceType=$RT" ... passed in 0.003s
+    Then the names in "metadata" are "$A" ... passed in 0.000s
+
+  Scenario: The schemaType filter SEARCH returns SEARCH schemas only
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I list schemas with "schemaType=SEARCH&pageSize=100" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And no item of "metadata" has "schemaType" other than "SEARCH" ... passed in 0.000s
+
+  Scenario Outline: Invalid filter values give a problem -- @1.1 
+    When I list schemas with "status=INVALID_STATUS" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid filter values give a problem -- @1.2 
+    When I list schemas with "status=published" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid filter values give a problem -- @1.3 
+    When I list schemas with "schemaType=OTHER" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid filter values give a problem -- @1.4 
+    When I list schemas with "resourceType=data-schema" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid filter values give a problem -- @1.5 
+    When I list schemas with "resourceType=data" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid filter values give a problem -- @1.6 
+    When I list schemas with "resourceType=Ab" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: resourceType together with schemaType SEARCH is rejected
+    When I list schemas with "schemaType=SEARCH&resourceType=Data" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: Unknown query parameters are ignored
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.010s
+    When I list schemas with "resourceType=$RT&colour=blue" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the names in "metadata" are "$A" ... passed in 0.000s
+
+Feature: Create a new version of a schema through the API
+
+  Scenario: An admin adds a version to a published RESOURCE schema without a schemaType
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    And I am "ga-admin" ... passed in 0.000s
+    When I add a new version to schema "$A" ... passed in 0.005s
+    Then the response status is 201 ... passed in 0.000s
+    And the response header "Location" is an absolute URI ending with "/schemas/$A/2" ... passed in 0.000s
+    And the JSON field "name" is "$A" ... passed in 0.000s
+    And the JSON field "title" is "Title of $A" ... passed in 0.000s
+    And the JSON field "description" is "Description of $A" ... passed in 0.000s
+    And the JSON field "resourceType" is "$RT" ... passed in 0.000s
+    And the JSON field "schemaType" is "RESOURCE" ... passed in 0.000s
+    And the JSON field "version" is "2" ... passed in 0.000s
+    And the JSON field "changelog" is "Change number 2 of $A" ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And the JSON field "validationWarnings" is an empty list ... passed in 0.000s
+    And version "2" of schema "$A" has status "PUBLISHED" ... passed in 0.004s
+    And version "1" of schema "$A" has status "REVOKED" ... passed in 0.005s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.003s
+
+  Scenario: An explicit schemaType RESOURCE behaves like the default
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I add a new version to schema "$A" with ... passed in 0.006s
+      | field      | value    |
+      | schemaType | RESOURCE |
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "version" is "2" ... passed in 0.000s
+    And the JSON field "schemaType" is "RESOURCE" ... passed in 0.000s
+
+  Scenario: Each new version is the highest number plus one
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    And schema "$A" has 2 new versions ... passed in 0.013s
+    When I add a new version to schema "$A" ... passed in 0.006s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "version" is "4" ... passed in 0.000s
+    And schema "$A" has the versions "1,2,3,4" ... passed in 0.004s
+
+  Scenario: A client-supplied version field is ignored and never causes 409
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I add a new version to schema "$A" with ... passed in 0.006s
+      | field   | value |
+      | version | 1     |
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "version" is "2" ... passed in 0.000s
+    When I add a new version to schema "$A" with ... passed in 0.006s
+      | field   | value |
+      | version | 1.1.0 |
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "version" is "3" ... passed in 0.000s
+
+  Scenario: The new version stores the uploaded content
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I add a new version to schema "$A" ... passed in 0.006s
+    And I request version "2" of schema "$A" ... passed in 0.003s
+    Then the response body is the content uploaded for version "2" of schema "$A" ... passed in 0.000s
+
+  Scenario: A version for an unknown RESOURCE schema gives 404
+    Given I am "ga-admin" ... passed in 0.000s
+    When I add a new version to the unknown schema "NonExistent$A" with schema type "RESOURCE" ... passed in 0.004s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: A version for a RESOURCE name with schemaType SEARCH gives 404
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I add a new version to schema "$A" with ... passed in 0.003s
+      | field      | value  |
+      | schemaType | SEARCH |
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+    And schema "$A" has the versions "1" ... passed in 0.004s
+
+  Scenario: A version for an unknown SEARCH schema gives 404
+    When I add a new version to the unknown schema "NonExistent$S" with schema type "SEARCH" ... passed in 0.004s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario Outline: Missing or blank metadata is rejected -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I add a new version to schema "$A" with ... passed in 0.003s
+      | field     | value  |
+      | changelog | <omit> |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And schema "$A" has the versions "1" ... passed in 0.003s
+
+  Scenario Outline: Missing or blank metadata is rejected -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    When I add a new version to schema "$A" with ... passed in 0.003s
+      | field     | value |
+      | changelog |       |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And schema "$A" has the versions "1" ... passed in 0.003s
+
+  Scenario Outline: Missing or blank metadata is rejected -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I add a new version to schema "$A" with ... passed in 0.003s
+      | field      | value  |
+      | schemaFile | <omit> |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And schema "$A" has the versions "1" ... passed in 0.003s
+
+  Scenario: A different resourceType on a new version is rejected
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I add a new version to schema "$A" with ... passed in 0.004s
+      | field        | value |
+      | resourceType | $RT2  |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And schema "$A" has the versions "1" ... passed in 0.003s
+
+  Scenario: The same resourceType on a new version is accepted
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I add a new version to schema "$A" with ... passed in 0.005s
+      | field        | value |
+      | resourceType | $RT   |
+    Then the response status is 201 ... passed in 0.000s
+
+  Scenario: An invalid SHACL file is rejected and the history is unchanged
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I add a new version to schema "$A" from "syntax-error.ttl" ... passed in 0.005s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Syntax Error: " ... passed in 0.000s
+    And schema "$A" has the versions "1" ... passed in 0.003s
+    And version "1" of schema "$A" has status "PUBLISHED" ... passed in 0.003s
+
+  Scenario: An invalid schema name in the path gives 400 before the lookup
+    When I add a new version to the unknown schema "lowercase" with schema type "RESOURCE" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: An unknown schema gives 404 before content validation
+    When I add a new version to schema "$NOPE" from "syntax-error.ttl" ... passed in 0.003s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: A new version that is not multipart is rejected with 415
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a POST request to "/schemas/$A/versions" with content type "application/json" and body ... passed in 0.003s
+      """
+      {"changelog": "A change."}
+      """
+    Then the response is a "unsupportedMediaType" problem with status 415 ... passed in 0.000s
+
+Feature: E-mail notification to Providers
+
+  Scenario: Creating a published RESOURCE schema notifies the Providers
+    Given I am "ga-admin" ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.006s
+    Then the response status is 201 ... passed in 0.000s
+    And a provider e-mail with the subject "Schema published: $A (version 1)" arrives ... passed in 0.005s
+    And the e-mail body has the line "Name: $A" ... passed in 0.000s
+    And the e-mail body has the line "Title: Title of $A" ... passed in 0.000s
+    And the e-mail body has the line "Description: Description of $A" ... passed in 0.000s
+    And the e-mail body has the line "Resource type: $RT" ... passed in 0.000s
+    And the e-mail body has the line "Version: 1" ... passed in 0.000s
+    And the e-mail body has the line "Change description: Initial version." ... passed in 0.000s
+    And the e-mail body has a timestamp line ... passed in 0.000s
+    And the e-mail body has a line starting with "Instructions: " ... passed in 0.000s
+    And the e-mail went to every configured provider address ... passed in 0.000s
+    And exactly 1 provider e-mail mentions schema "$A" ... passed in 3.013s
+
+  Scenario: A new published version of a RESOURCE schema notifies the Providers
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.020s
+    And I am "ga-admin" ... passed in 0.000s
+    When I add a new version to schema "$A" ... passed in 0.012s
+    Then the response status is 201 ... passed in 0.000s
+    And a provider e-mail with the subject "Schema new version published: $A (version 2)" arrives ... passed in 0.007s
+    And the e-mail body has the line "Name: $A" ... passed in 0.000s
+    And the e-mail body has the line "Version: 2" ... passed in 0.000s
+    And the e-mail body has the line "Change description: Change number 2 of $A" ... passed in 0.000s
+    And the e-mail body has a timestamp line ... passed in 0.000s
+    And the e-mail body has a line starting with "Instructions: " ... passed in 0.000s
+    And the e-mail went to every configured provider address ... passed in 0.000s
+
+  Scenario: A superseded version does not cause a revocation e-mail
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    When I add a new version to schema "$A" ... passed in 0.006s
+    Then the response status is 201 ... passed in 0.000s
+    And no provider e-mail with the subject "Schema revoked: $A" arrives ... passed in 3.012s
+
+  Scenario: Revoking a RESOURCE schema notifies the Providers
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.025s
+    And I am "ga-admin" ... passed in 0.000s
+    When I revoke schema "$A" ... passed in 0.010s
+    Then the response status is 200 ... passed in 0.000s
+    And a provider e-mail with the subject "Schema revoked: $A" arrives ... passed in 0.007s
+    And the e-mail body has the line "Name: $A" ... passed in 0.000s
+    And the e-mail body has a timestamp line ... passed in 0.000s
+    And the e-mail body has a line starting with "Instructions: " ... passed in 0.000s
+    And the e-mail went to every configured provider address ... passed in 0.000s
+
+  Scenario: Publishing a revoked RESOURCE schema notifies the Providers
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.008s
+    And schema "$A" has been revoked ... passed in 0.007s
+    When I publish schema "$A" ... passed in 0.006s
+    Then the response status is 200 ... passed in 0.000s
+    And a provider e-mail with the subject "Schema published: $A (version 1)" arrives ... passed in 0.006s
+    And exactly 3 provider e-mail mentions schema "$A" ... passed in 3.013s
+
+  Scenario: A schema that is revoked on create causes no e-mail
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.022s
+    When I create the RESOURCE schema "$B" for resource type "$RT" ... passed in 0.015s
+    Then the JSON field "status" is "REVOKED" ... passed in 0.000s
+    And no provider e-mail mentions schema "$B" ... passed in 3.014s
+
+  Scenario: A new version that stays revoked causes no e-mail
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.024s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.014s
+    When I add a new version to schema "$B" ... passed in 0.011s
+    Then the JSON field "status" is "REVOKED" ... passed in 0.000s
+    And no provider e-mail mentions schema "$B" ... passed in 3.011s
+
+  Scenario: A failed create causes no e-mail
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "syntax-error.ttl" ... passed in 0.013s
+    Then the response status is 400 ... passed in 0.000s
+    And no provider e-mail mentions schema "$A" ... passed in 3.014s
+
+  Scenario: A failed new version causes no new e-mail
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.030s
+    When I add a new version to schema "$A" from "missing-defaults.ttl" ... passed in 0.011s
+    Then the response status is 400 ... passed in 0.000s
+    And exactly 1 provider e-mail mentions schema "$A" ... passed in 3.019s
+
+  Scenario: A new version refused with 403 causes no e-mail
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.032s
+    And I am "ga-viewer" ... passed in 0.000s
+    When I add a new version to schema "$A" ... passed in 0.008s
+    Then the response status is 403 ... passed in 0.000s
+    And no provider e-mail with the subject "Schema new version published: $A (version 2)" arrives ... passed in 3.014s
+
+  Scenario: A failed revocation causes no e-mail
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.025s
+    And schema "$A" has been revoked ... passed in 0.012s
+    When I revoke schema "$A" ... passed in 0.008s
+    Then the response status is 409 ... passed in 0.000s
+    And exactly 2 provider e-mail mentions schema "$A" ... passed in 3.015s
+
+  Scenario: A publish refused with 409 causes no e-mail
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.023s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.013s
+    When I publish schema "$B" ... passed in 0.009s
+    Then the response status is 409 ... passed in 0.000s
+    And no provider e-mail mentions schema "$B" ... passed in 3.010s
+
+  Scenario: SEARCH schema changes never notify the Providers
+    Given no SEARCH schema is published ... passed in 0.019s
+    And I am "ga-admin" ... passed in 0.000s
+    When I create the SEARCH schema "$S" ... passed in 0.023s
+    Then the response status is 201 ... passed in 0.000s
+    When I add a new version to schema "$S" ... passed in 0.012s
+    Then the response status is 201 ... passed in 0.000s
+    When I revoke schema "$S" ... passed in 0.009s
+    Then the response status is 200 ... passed in 0.000s
+    When I publish schema "$S" ... passed in 0.008s
+    Then the response status is 200 ... passed in 0.000s
+    And no provider e-mail mentions schema "$S" ... passed in 3.014s
+
+Feature: Revoked schemas are retained
+
+  Scenario: A revoked schema and its properties are still returned
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.015s
+    And schema "$A" has a new version ... passed in 0.015s
+    And schema "$A" has been revoked ... passed in 0.009s
+    And I am "ga-admin" ... passed in 0.000s
+    When I list schemas with "status=REVOKED&resourceType=$RT" ... passed in 0.008s
+    Then the response status is 200 ... passed in 0.000s
+    And the names in "metadata" are "$A" ... passed in 0.000s
+    And the JSON field "metadata[0].title" is "Title of $A" ... passed in 0.000s
+    And the JSON field "metadata[0].version" is "2" ... passed in 0.000s
+    When I request the versions of schema "$A" ... passed in 0.005s
+    Then the response status is 200 ... passed in 0.000s
+    And the versions in "metadata" are "1,2" ... passed in 0.000s
+    And every item of "metadata" has "status" equal to "REVOKED" ... passed in 0.000s
+
+  Scenario: The versioned URI of a revoked schema still resolves
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.012s
+    And schema "$A" has a new version ... passed in 0.011s
+    And schema "$A" has been revoked ... passed in 0.009s
+    And I am "ga-viewer" ... passed in 0.000s
+    When I request version "1" of schema "$A" ... passed in 0.005s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "1" of schema "$A" ... passed in 0.000s
+    When I request version "2" of schema "$A" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "2" of schema "$A" ... passed in 0.000s
+    When I request the latest content of schema "$A" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the response header "Content-Location" is an absolute URI ending with "/schemas/$A/2" ... passed in 0.000s
+
+  Scenario: A superseded version stays retrievable after a new version
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    And schema "$A" has a new version ... passed in 0.005s
+    When I request version "1" of schema "$A" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "1" of schema "$A" ... passed in 0.000s
+
+  Scenario: A schema revoked on create is retained too
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.006s
+    When I request version "1" of schema "$B" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "1" of schema "$B" ... passed in 0.000s
+
+Feature: Raw schema content through the API
+
+  Scenario: The latest content is the raw content of the highest version
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And schema "$A" has a new version ... passed in 0.005s
+    And I am "ga-viewer" ... passed in 0.000s
+    When I request the latest content of schema "$A" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the response content type is "text/turtle" ... passed in 0.000s
+    And the response header "Content-Location" is an absolute URI ending with "/schemas/$A/2" ... passed in 0.000s
+    And the response body is the content uploaded for version "2" of schema "$A" ... passed in 0.000s
+
+  Scenario: An explicit schemaType RESOURCE gives the same content
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a GET request to "/schemas/$A?schemaType=RESOURCE" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "1" of schema "$A" ... passed in 0.000s
+
+  Scenario: A matching resourceType selects the concept, a different one gives 404
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas/$A?resourceType=$RT" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    When I send a GET request to "/schemas/$A?resourceType=$RT2" ... passed in 0.003s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: A RESOURCE schema is not found as SEARCH
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a GET request to "/schemas/$A?schemaType=SEARCH" ... passed in 0.003s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: The latest content of an unknown schema gives 404
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I send a GET request to "/schemas/NonExistentSchema$A" ... passed in 0.002s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: An invalid schema name gives 400 before any lookup
+    When I send a GET request to "/schemas/nonPascal" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: resourceType with schemaType SEARCH is rejected on the latest content
+    When I send a GET request to "/schemas/AnySchema?schemaType=SEARCH&resourceType=Data" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: A specific version returns its own raw content
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And schema "$A" has a new version ... passed in 0.005s
+    And I am "ga-viewer" ... passed in 0.000s
+    When I request version "1" of schema "$A" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the response content type is "text/turtle" ... passed in 0.000s
+    And the response body is the content uploaded for version "1" of schema "$A" ... passed in 0.000s
+    And the response header "Content-Location" is an absolute URI ending with "/schemas/$A/1" ... passed in 0.000s
+    And the response header "Location" is an absolute URI ending with "/schemas/$A/1" ... passed in 0.000s
+    When I request version "2" of schema "$A" ... passed in 0.002s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "2" of schema "$A" ... passed in 0.000s
+
+  Scenario: Accept text/turtle or */* gives the content
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I send a GET request to "/schemas/$A/1" with header "Accept" set to "text/turtle" ... passed in 0.002s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "1" of schema "$A" ... passed in 0.000s
+    When I send a GET request to "/schemas/$A/1" with header "Accept" set to "*/*" ... passed in 0.002s
+    Then the response status is 200 ... passed in 0.000s
+    And the response content type is "text/turtle" ... passed in 0.000s
+
+  Scenario: Accept application/json gives the metadata of the version
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And schema "$A" has a new version ... passed in 0.004s
+    When I request version "2" of schema "$A" as JSON ... passed in 0.002s
+    Then the response status is 200 ... passed in 0.000s
+    And the response content type is "application/json" ... passed in 0.000s
+    And the JSON field "name" is "$A" ... passed in 0.000s
+    And the JSON field "version" is "2" ... passed in 0.000s
+    And the JSON field "changelog" is "Change number 2 of $A" ... passed in 0.000s
+    And the JSON field "schemaType" is "RESOURCE" ... passed in 0.000s
+    And the JSON field "resourceType" is "$RT" ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And the JSON field "createdBy" is "ga-admin" ... passed in 0.000s
+    And the JSON field "created" is an ISO timestamp ... passed in 0.000s
+    And the JSON field "graphName" is an absolute URI ending with "/schemas/$A/2" ... passed in 0.000s
+
+  Scenario: The metadata of a superseded version shows it as revoked
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    And schema "$A" has a new version ... passed in 0.005s
+    When I request version "1" of schema "$A" as JSON ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the JSON field "version" is "1" ... passed in 0.000s
+    And the JSON field "status" is "REVOKED" ... passed in 0.000s
+
+  Scenario Outline: A version that does not exist gives 404 and no content -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a GET request to "/schemas/$A/9.9.9" ... passed in 0.006s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario Outline: A version that does not exist gives 404 and no content -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a GET request to "/schemas/$A/2" ... passed in 0.003s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario Outline: A version that does not exist gives 404 and no content -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a GET request to "/schemas/$A/0" ... passed in 0.003s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario Outline: A version that does not exist gives 404 and no content -- @1.4 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a GET request to "/schemas/$A/-1" ... passed in 0.002s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario Outline: A version that does not exist gives 404 and no content -- @1.5 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a GET request to "/schemas/$A/abc" ... passed in 0.003s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario Outline: A version that does not exist gives 404 and no content -- @1.6 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas/$A/1.0.0" ... passed in 0.003s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: A version of an unknown schema gives 404
+    When I send a GET request to "/schemas/NeverCreated$A/1" ... passed in 0.004s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: The version endpoint selects by schemaType and resourceType
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas/$A/1?schemaType=RESOURCE&resourceType=$RT" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    When I send a GET request to "/schemas/$A/1?schemaType=SEARCH" ... passed in 0.002s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+    When I send a GET request to "/schemas/$A/1?resourceType=$RT2" ... passed in 0.002s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: resourceType with schemaType SEARCH is rejected on the version endpoint
+    When I send a GET request to "/schemas/AnySchema/1?schemaType=SEARCH&resourceType=Data" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+Feature: Version history of a schema through the API
+
+  Scenario: A viewer lists the versions of a schema with all metadata
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And schema "$A" has a new version ... passed in 0.006s
+    And I am "ga-viewer" ... passed in 0.000s
+    When I request the versions of schema "$A" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the response content type is "application/json" ... passed in 0.000s
+    And the JSON object has the fields "page,totalPages,total,pageSize,next,metadata" ... passed in 0.000s
+    And the JSON field "total" is the number 2 ... passed in 0.000s
+    And every item of "metadata" has the fields "name,version,changelog,created,createdBy,schemaType,resourceType,status,graphName" ... passed in 0.000s
+    And the versions in "metadata" are "1,2" ... passed in 0.000s
+    And the JSON field "metadata[0].name" is "$A" ... passed in 0.000s
+    And the JSON field "metadata[0].changelog" is "Initial version." ... passed in 0.000s
+    And the JSON field "metadata[1].changelog" is "Change number 2 of $A" ... passed in 0.000s
+    And the JSON field "metadata[0].schemaType" is "RESOURCE" ... passed in 0.000s
+    And the JSON field "metadata[0].resourceType" is "$RT" ... passed in 0.000s
+    And the JSON field "metadata[0].createdBy" is "ga-admin" ... passed in 0.000s
+    And the JSON field "metadata[0].created" is an ISO timestamp ... passed in 0.000s
+    And the JSON field "metadata[0].graphName" is an absolute URI ending with "/schemas/$A/1" ... passed in 0.000s
+    And the JSON field "metadata[1].graphName" is an absolute URI ending with "/schemas/$A/2" ... passed in 0.000s
+
+  Scenario: Version status is derived from the concept
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And schema "$A" has a new version ... passed in 0.006s
+    When I request the versions of schema "$A" ... passed in 0.003s
+    Then the JSON field "metadata[0].status" is "REVOKED" ... passed in 0.000s
+    And the JSON field "metadata[1].status" is "PUBLISHED" ... passed in 0.000s
+
+  Scenario: Versions are ordered numerically, so version 10 comes after version 2
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And schema "$A" has 10 new versions ... passed in 0.069s
+    When I request the versions of schema "$A" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the versions in "metadata" are "1,2,3,4,5,6,7,8,9,10,11" ... passed in 0.000s
+
+  Scenario: Versions are paged and the next link keeps the schema type
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    And schema "$A" has 2 new versions ... passed in 0.012s
+    When I send a GET request to "/schemas/$A/versions?pageSize=2" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the JSON field "totalPages" is the number 2 ... passed in 0.000s
+    And the versions in "metadata" are "1,2" ... passed in 0.000s
+    And the JSON field "next" contains "page=2" ... passed in 0.000s
+    When I follow the "next" link ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the versions in "metadata" are "3" ... passed in 0.000s
+    And the JSON field "next" is null ... passed in 0.000s
+
+  Scenario: A versions page past the end gives 404
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.007s
+    When I send a GET request to "/schemas/$A/versions?page=3" ... passed in 0.003s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: An explicit schemaType RESOURCE selects the same versions as the default
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas/$A/versions?schemaType=RESOURCE" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the versions in "metadata" are "1" ... passed in 0.000s
+
+  Scenario: A matching resourceType filter selects the RESOURCE concept
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I send a GET request to "/schemas/$A/versions?resourceType=$RT" ... passed in 0.002s
+    Then the response status is 200 ... passed in 0.000s
+    And the versions in "metadata" are "1" ... passed in 0.000s
+
+  Scenario: A different resourceType gives 404
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a GET request to "/schemas/$A/versions?resourceType=$RT2" ... passed in 0.002s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: A RESOURCE schema is not found with schemaType SEARCH
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I send a GET request to "/schemas/$A/versions?schemaType=SEARCH" ... passed in 0.002s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: resourceType with schemaType SEARCH is rejected on the versions list
+    When I send a GET request to "/schemas/AnySchema/versions?schemaType=SEARCH&resourceType=Data" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid schema name in the path gives 400 -- @1.1 
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I send a GET request to "/schemas/Infrastructure%24chema%21/versions" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid schema name in the path gives 400 -- @1.2 
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I send a GET request to "/schemas/infrastructureSchema/versions" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid schema name in the path gives 400 -- @1.3 
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I send a GET request to "/schemas/Ab/versions" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid schema name in the path gives 400 -- @1.4 
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I send a GET request to "/schemas/Infrastructure%20Schema/versions" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: An invalid schema name in the path gives 400 -- @1.5 
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I send a GET request to "/schemas/Abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcde/versions" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: An unknown schema gives 404
+    Given I am "ga-viewer" ... passed in 0.000s
+    When I send a GET request to "/schemas/UnknownSchema$A/versions" ... passed in 0.002s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario Outline: Invalid paging parameters on the versions list are rejected -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.008s
+    When I send a GET request to "/schemas/$A/versions?page=0" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid paging parameters on the versions list are rejected -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a GET request to "/schemas/$A/versions?pageSize=0" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid paging parameters on the versions list are rejected -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I send a GET request to "/schemas/$A/versions?pageSize=101" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Invalid paging parameters on the versions list are rejected -- @1.4 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a GET request to "/schemas/$A/versions?schemaType=X" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+Feature: The federated search (SEARCH) schema
+
+  Scenario: The first SEARCH schema is created and published
+    Given no SEARCH schema is published ... passed in 0.010s
+    And I am "ga-admin" ... passed in 0.000s
+    When I create the SEARCH schema "$S" ... passed in 0.005s
+    Then the response status is 201 ... passed in 0.000s
+    And the response header "Location" is an absolute URI ending with "/schemas/$S?schemaType=SEARCH" ... passed in 0.000s
+    And the JSON field "schemaName" is "$S" ... passed in 0.000s
+    And the JSON field "schemaVersion" is "1" ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And the JSON field "schemaType" is "SEARCH" ... passed in 0.000s
+    And the JSON field "resourceType" is null ... passed in 0.000s
+    And the JSON field "validationWarnings" is an empty list ... passed in 0.000s
+    And schema "$S" is listed with ... passed in 0.003s
+      | field        | value     |
+      | schemaType   | SEARCH    |
+      | resourceType | <null>    |
+      | status       | PUBLISHED |
+      | version      | 1         |
+    And listing "schemaType=SEARCH&status=PUBLISHED" returns exactly "$S" ... passed in 0.002s
+
+  Scenario: A second SEARCH schema is refused while one is published
+    Given no SEARCH schema is published ... passed in 0.009s
+    And the SEARCH schema "$S" exists ... passed in 0.004s
+    When I create the SEARCH schema "$T" ... passed in 0.002s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+    And the problem detail is "A published federated search schema already exists." ... passed in 0.000s
+    And schema "$T" is not listed as a SEARCH schema ... passed in 0.003s
+    And listing "schemaType=SEARCH&status=PUBLISHED" returns exactly "$S" ... passed in 0.003s
+
+  Scenario: A name clash inside SEARCH is reported before the slot conflict
+    Given no SEARCH schema is published ... passed in 0.008s
+    And the SEARCH schema "$S" exists ... passed in 0.004s
+    When I create the SEARCH schema "$S" ... passed in 0.003s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+    And the problem detail is "A schema with that name already exists." ... passed in 0.000s
+
+  Scenario: The name of a revoked SEARCH schema cannot be reused within SEARCH
+    Given no SEARCH schema is published ... passed in 0.009s
+    And the SEARCH schema "$S" exists ... passed in 0.005s
+    And schema "$S" has been revoked ... passed in 0.004s
+    When I create the SEARCH schema "$S" ... passed in 0.003s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+    And the problem detail is "A schema with that name already exists." ... passed in 0.000s
+
+  Scenario: A revoked SEARCH schema does not block a new one
+    Given no SEARCH schema is published ... passed in 0.005s
+    And the SEARCH schema "$S" exists ... passed in 0.004s
+    And schema "$S" has been revoked ... passed in 0.004s
+    When I create the SEARCH schema "$T" ... passed in 0.004s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And schema "$S" has status "REVOKED" ... passed in 0.003s
+    And listing "schemaType=SEARCH&status=PUBLISHED" returns exactly "$T" ... passed in 0.003s
+
+  Scenario: Revoking the SEARCH schema leaves no published SEARCH schema and keeps it visible
+    Given no SEARCH schema is published ... passed in 0.007s
+    And the SEARCH schema "$S" exists ... passed in 0.004s
+    And I am "ga-admin" ... passed in 0.000s
+    When I revoke schema "$S" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the JSON field "status" is "REVOKED" ... passed in 0.000s
+    And the JSON field "schemaType" is "SEARCH" ... passed in 0.000s
+    And the JSON field "resourceType" is null ... passed in 0.000s
+    And listing "schemaType=SEARCH&status=PUBLISHED" is empty ... passed in 0.002s
+    And schema "$S" has status "REVOKED" ... passed in 0.005s
+    When I request the latest content of schema "$S" ... passed in 0.002s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "1" of schema "$S" ... passed in 0.000s
+    When I request the versions of schema "$S" ... passed in 0.002s
+    Then the response status is 200 ... passed in 0.000s
+    And the versions in "metadata" are "1" ... passed in 0.000s
+
+  Scenario: A revoked SEARCH schema is published again with 200 when the slot is free
+    Given no SEARCH schema is published ... passed in 0.003s
+    And the SEARCH schema "$S" exists ... passed in 0.004s
+    And schema "$S" has been revoked ... passed in 0.003s
+    When I publish schema "$S" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And listing "schemaType=SEARCH&status=PUBLISHED" returns exactly "$S" ... passed in 0.002s
+
+  Scenario: Publishing a SEARCH schema while another is published gives 409
+    Given no SEARCH schema is published ... passed in 0.007s
+    And the SEARCH schema "$S" exists ... passed in 0.004s
+    And schema "$S" has been revoked ... passed in 0.004s
+    And the SEARCH schema "$T" exists ... passed in 0.005s
+    When I publish schema "$S" ... passed in 0.002s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+    And the problem detail is "A published federated search schema already exists." ... passed in 0.000s
+    And schema "$S" has status "REVOKED" ... passed in 0.006s
+
+  Scenario: A new version of the published SEARCH schema stays published
+    Given no SEARCH schema is published ... passed in 0.009s
+    And the SEARCH schema "$S" exists ... passed in 0.005s
+    And I am "ga-admin" ... passed in 0.000s
+    When I add a new version to schema "$S" ... passed in 0.004s
+    Then the response status is 201 ... passed in 0.000s
+    And the response header "Location" is an absolute URI ending with "/schemas/$S/2?schemaType=SEARCH" ... passed in 0.000s
+    And the JSON field "version" is "2" ... passed in 0.000s
+    And the JSON field "schemaType" is "SEARCH" ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And version "1" of schema "$S" has status "REVOKED" ... passed in 0.002s
+    And version "2" of schema "$S" has status "PUBLISHED" ... passed in 0.002s
+
+  Scenario: A new version of a revoked SEARCH schema is published when the slot is free
+    Given no SEARCH schema is published ... passed in 0.008s
+    And the SEARCH schema "$S" exists ... passed in 0.005s
+    And schema "$S" has been revoked ... passed in 0.007s
+    When I add a new version to schema "$S" ... passed in 0.004s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And schema "$S" has status "PUBLISHED" ... passed in 0.005s
+
+  Scenario: A new version of a revoked SEARCH schema stays revoked while another is published
+    Given no SEARCH schema is published ... passed in 0.009s
+    And the SEARCH schema "$S" exists ... passed in 0.004s
+    And schema "$S" has been revoked ... passed in 0.004s
+    And the SEARCH schema "$T" exists ... passed in 0.006s
+    When I add a new version to schema "$S" ... passed in 0.009s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "status" is "REVOKED" ... passed in 0.000s
+    And listing "schemaType=SEARCH&status=PUBLISHED" returns exactly "$T" ... passed in 0.003s
+
+  Scenario: A resourceType on a new SEARCH version is rejected
+    Given no SEARCH schema is published ... passed in 0.008s
+    And the SEARCH schema "$S" exists ... passed in 0.004s
+    When I add a new version to schema "$S" with ... passed in 0.004s
+      | field        | value |
+      | resourceType | $RT   |
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: A SEARCH name without schemaType is not found as RESOURCE
+    Given no SEARCH schema is published ... passed in 0.010s
+    And the SEARCH schema "$S" exists ... passed in 0.005s
+    When I send a GET request to "/schemas/$S" ... passed in 0.002s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+    When I send a GET request to "/schemas/$S/versions" ... passed in 0.003s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+    When I add a new version to schema "$S" with ... passed in 0.003s
+      | field      | value  |
+      | schemaType | <omit> |
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: Content, version and version history of a SEARCH schema
+    Given no SEARCH schema is published ... passed in 0.010s
+    And the SEARCH schema "$S" exists ... passed in 0.005s
+    And schema "$S" has a new version ... passed in 0.004s
+    And I am "ga-viewer" ... passed in 0.000s
+    When I request the latest content of schema "$S" ... passed in 0.002s
+    Then the response status is 200 ... passed in 0.000s
+    And the response content type is "text/turtle" ... passed in 0.000s
+    And the response body is the content uploaded for version "2" of schema "$S" ... passed in 0.000s
+    And the response header "Content-Location" contains "/schemas/$S/2" ... passed in 0.000s
+    When I request version "1" of schema "$S" ... passed in 0.003s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "1" of schema "$S" ... passed in 0.000s
+    When I request the versions of schema "$S" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the versions in "metadata" are "1,2" ... passed in 0.000s
+    And every item of "metadata" has "schemaType" equal to "SEARCH" ... passed in 0.000s
+    And the JSON field "metadata[0].resourceType" is null ... passed in 0.000s
+    When I request version "2" of schema "$S" as JSON ... passed in 0.002s
+    Then the JSON field "schemaType" is "SEARCH" ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+
+  Scenario: The SEARCH list holds only SEARCH schemas and the default list holds none
+    Given no SEARCH schema is published ... passed in 0.009s
+    And the SEARCH schema "$S" exists ... passed in 0.005s
+    And I am "ga-viewer" ... passed in 0.000s
+    When I list schemas with "schemaType=SEARCH&status=PUBLISHED" ... passed in 0.002s
+    Then the response status is 200 ... passed in 0.000s
+    And the names in "metadata" are "$S" ... passed in 0.000s
+    And every item of "metadata" has "schemaType" equal to "SEARCH" ... passed in 0.000s
+    And schema "$S" is not listed as a RESOURCE schema ... passed in 0.056s
+
+  Scenario: The same name can exist once as RESOURCE and once as SEARCH
+    Given no SEARCH schema is published ... passed in 0.010s
+    And the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And I am "ga-admin" ... passed in 0.000s
+    When I create the SEARCH schema "$A" ... passed in 0.005s
+    Then the response status is 201 ... passed in 0.000s
+    When I send a GET request to "/schemas/$A?schemaType=SEARCH" ... passed in 0.002s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "1" of the SEARCH schema "$A" ... passed in 0.000s
+    When I send a GET request to "/schemas/$A" ... passed in 0.002s
+    Then the response status is 200 ... passed in 0.000s
+    And the response body is the content uploaded for version "1" of the RESOURCE schema "$A" ... passed in 0.000s
+
+  Scenario: A SEARCH schema needs no default properties but may carry them
+    Given no SEARCH schema is published ... passed in 0.008s
+    And I am "ga-admin" ... passed in 0.000s
+    When I create the SEARCH schema "$S" from "valid-search-with-defaults.ttl" ... passed in 0.005s
+    Then the response status is 201 ... passed in 0.000s
+    When I revoke schema "$S" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    When I create the SEARCH schema "$T" from "missing-defaults.ttl" ... passed in 0.004s
+    Then the response status is 201 ... passed in 0.000s
+
+  Scenario: An invalid SEARCH schema is not created
+    Given no SEARCH schema is published ... passed in 0.009s
+    And I am "ga-admin" ... passed in 0.000s
+    When I create the SEARCH schema "$S" from "syntax-error.ttl" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Syntax Error: " ... passed in 0.000s
+    And listing "schemaType=SEARCH&status=PUBLISHED" is empty ... passed in 0.002s
+
+  Scenario: Two concurrent SEARCH creates leave exactly one published SEARCH schema
+    Given no SEARCH schema is published ... passed in 0.004s
+    When two admins create the SEARCH schemas "$S" and "$T" at the same time ... passed in 0.008s
+    Then one request succeeded with status 201 and the other got 409 ... passed in 0.000s
+    And exactly one of the schemas "$S,$T" has status "PUBLISHED" ... passed in 0.051s
+
+Feature: Change the status of a schema through the API
+
+  Scenario: An admin revokes a published schema
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    And I am "ga-admin" ... passed in 0.000s
+    When I revoke schema "$A" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the response content type is "application/json" ... passed in 0.000s
+    And the JSON field "name" is "$A" ... passed in 0.000s
+    And the JSON field "status" is "REVOKED" ... passed in 0.000s
+    And the JSON field "schemaType" is "RESOURCE" ... passed in 0.000s
+    And the JSON field "resourceType" is "$RT" ... passed in 0.000s
+    And the JSON field "latestVersion" is "1" ... passed in 0.000s
+    And the JSON field "title" is "Title of $A" ... passed in 0.000s
+    And the JSON field "created" is an ISO timestamp ... passed in 0.000s
+    And the JSON field "modified" is an ISO timestamp ... passed in 0.000s
+    And schema "$A" has status "REVOKED" ... passed in 0.003s
+    And version "1" of schema "$A" has status "REVOKED" ... passed in 0.002s
+
+  Scenario: An admin publishes a revoked schema when no other schema of its slot is published
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And schema "$A" has been revoked ... passed in 0.005s
+    When I publish schema "$A" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the JSON field "name" is "$A" ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.003s
+
+  Scenario: Publishing is refused while another schema of the same resource type is published
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.004s
+    When I publish schema "$B" ... passed in 0.003s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+    And the problem detail is "Another schema is in PUBLISHED state for the resource type." ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.002s
+    And schema "$B" has status "REVOKED" ... passed in 0.003s
+
+  Scenario: Revoking a revoked schema gives 409
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    And schema "$A" has been revoked ... passed in 0.004s
+    When I revoke schema "$A" ... passed in 0.003s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+
+  Scenario: Publishing a published schema gives 409
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I publish schema "$A" ... passed in 0.003s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+
+  Scenario Outline: An invalid status value is rejected -- @1.1 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I set the status of schema "$A" to "ARCHIVED" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.002s
+
+  Scenario Outline: An invalid status value is rejected -- @1.2 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I set the status of schema "$A" to "revoked" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.002s
+
+  Scenario Outline: An invalid status value is rejected -- @1.3 
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I set the status of schema "$A" to "" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.002s
+
+  Scenario: A body without status is rejected
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I send a PATCH request to "/schemas/$A" with JSON body ... passed in 0.002s
+      """
+      {"state": "REVOKED"}
+      """
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: Changing the status of an unknown schema gives 404
+    When I send a PATCH request to "/schemas/NonExistent$A" with JSON body ... passed in 0.002s
+      """
+      {"status": "REVOKED"}
+      """
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: A resourceType that does not match the schema gives 404
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I send a PATCH request to "/schemas/$A?resourceType=$RT2" with JSON body ... passed in 0.002s
+      """
+      {"status": "REVOKED"}
+      """
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.002s
+
+  Scenario: A RESOURCE schema is not found with schemaType SEARCH
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I send a PATCH request to "/schemas/$A?schemaType=SEARCH" with JSON body ... passed in 0.002s
+      """
+      {"status": "REVOKED"}
+      """
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario: A matching resourceType selects the schema
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I send a PATCH request to "/schemas/$A?resourceType=$RT&schemaType=RESOURCE" with JSON body ... passed in 0.004s
+      """
+      {"status": "REVOKED"}
+      """
+    Then the response status is 200 ... passed in 0.000s
+    And the JSON field "status" is "REVOKED" ... passed in 0.000s
+
+  Scenario: resourceType with schemaType SEARCH is rejected on PATCH
+    When I send a PATCH request to "/schemas/AnySchema?schemaType=SEARCH&resourceType=Data" with JSON body ... passed in 0.003s
+      """
+      {"status": "REVOKED"}
+      """
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: An invalid schema name gives 400
+    When I send a PATCH request to "/schemas/bad-name" with JSON body ... passed in 0.002s
+      """
+      {"status": "REVOKED"}
+      """
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: An Accept header other than JSON or problem JSON gives 406
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I send a PATCH request to "/schemas/$A" with JSON body and header "Accept" set to "text/plain" ... passed in 0.002s
+      """
+      {"status": "REVOKED"}
+      """
+    Then the response is a "notAcceptable" problem with status 406 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.002s
+
+  Scenario: A PATCH body that is not JSON is rejected with 415
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I send a PATCH request to "/schemas/$A" with content type "text/plain" and body ... passed in 0.003s
+      """
+      status=REVOKED
+      """
+    Then the response is a "unsupportedMediaType" problem with status 415 ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.003s
+
+Feature: One published RESOURCE schema per resource type (the slot rule)
+
+  Scenario: The first schema of a resource type is published
+    Given I am "ga-admin" ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.005s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.005s
+
+  Scenario: A new schema is revoked when its resource type already has a published one
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I create the RESOURCE schema "$B" for resource type "$RT" ... passed in 0.005s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "status" is "REVOKED" ... passed in 0.000s
+    And schema "$B" has status "REVOKED" ... passed in 0.002s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.003s
+
+  Scenario: A new schema is published when all schemas of its resource type are revoked
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.004s
+    And schema "$A" has been revoked ... passed in 0.004s
+    When I create the RESOURCE schema "$C" for resource type "$RT" ... passed in 0.005s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And listing "status=PUBLISHED&resourceType=$RT" returns exactly "$C" ... passed in 0.005s
+
+  Scenario: Slots of different resource types are independent
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I create the RESOURCE schema "$B" for resource type "$RT2" ... passed in 0.005s
+    Then the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.002s
+
+  Scenario: A new version of a published schema stays published and supersedes the previous version
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    When I add a new version to schema "$A" ... passed in 0.005s
+    Then the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.003s
+    And version "1" of schema "$A" has status "REVOKED" ... passed in 0.002s
+    And version "2" of schema "$A" has status "PUBLISHED" ... passed in 0.002s
+
+  Scenario: A new version of a revoked schema becomes published when the slot is free
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    And schema "$A" has been revoked ... passed in 0.004s
+    When I add a new version to schema "$A" ... passed in 0.005s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "status" is "PUBLISHED" ... passed in 0.000s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.002s
+    And version "2" of schema "$A" has status "PUBLISHED" ... passed in 0.002s
+    And version "1" of schema "$A" has status "REVOKED" ... passed in 0.002s
+
+  Scenario: A new version of a revoked schema stays revoked when another schema of the slot is published
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.004s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.004s
+    When I add a new version to schema "$B" ... passed in 0.004s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "status" is "REVOKED" ... passed in 0.000s
+    And schema "$B" has status "REVOKED" ... passed in 0.002s
+    And version "2" of schema "$B" has status "REVOKED" ... passed in 0.002s
+    And schema "$A" has status "PUBLISHED" ... passed in 0.002s
+
+  Scenario: Revoke one and publish the other within a slot
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.006s
+    And schema "$A" has been revoked ... passed in 0.004s
+    When I publish schema "$B" ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And listing "status=PUBLISHED&resourceType=$RT" returns exactly "$B" ... passed in 0.003s
+    When I publish schema "$A" ... passed in 0.003s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+
+  Scenario: Two concurrent creates in one empty slot leave exactly one published schema
+    When two admins create the RESOURCE schemas "$A" and "$B" for resource type "$RT" at the same time ... passed in 0.009s
+    Then both requests succeeded with status 201 ... passed in 0.000s
+    And exactly one of the schemas "$A,$B" has status "PUBLISHED" ... passed in 0.005s
+
+Feature: Semantic validation against self-managed vocabularies
+
+  Scenario: References to existing local vocabulary terms pass
+    Given the vocabulary "$VOC" defines the terms "Asset,owner,Party,kind,Open,Closed" ... passed in 0.005s
+    And I am "ga-admin" ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "semantic-local-valid.ttl" ... passed in 0.021s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "validationWarnings" is an empty list ... passed in 0.000s
+
+  Scenario: A new version with valid local references passes
+    Given the vocabulary "$VOC" defines the terms "Asset,owner,Party,kind,Open,Closed" ... passed in 0.003s
+    And the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I add a new version to schema "$A" from "semantic-local-valid.ttl" ... passed in 0.007s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "version" is "2" ... passed in 0.000s
+    And the JSON field "validationWarnings" is an empty list ... passed in 0.000s
+
+  Scenario: A reference to a local vocabulary that does not exist is an error
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "semantic-unknown-vocabulary.ttl" ... passed in 0.007s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Semantic Validation Error: " ... passed in 0.000s
+    And the problem lists the issue "localReferenceUnavailable" mentioning "$NS$VOCX#owner" ... passed in 0.000s
+    And every problem issue has a code, a description and a location ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.003s
+
+  Scenario: References to terms the vocabulary does not define are errors
+    Given the vocabulary "$VOC" defines the terms "owner" ... passed in 0.002s
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "semantic-unknown-term.ttl" ... passed in 0.007s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Semantic Validation Error: " ... passed in 0.000s
+    And the problem lists the issue "unknownVocabularyTerm" mentioning "$NS$VOC#missingProperty" ... passed in 0.000s
+    And the problem lists the issue "unknownVocabularyTerm" mentioning "$NS$VOC#MissingClass" ... passed in 0.000s
+    And the problem lists 2 issues with code "unknownVocabularyTerm" ... passed in 0.000s
+
+  Scenario: sh:node and sh:qualifiedValueShape must point to shapes of the same document
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "semantic-unresolved-shape.ttl" ... passed in 0.004s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Semantic Validation Error: " ... passed in 0.000s
+    And the problem lists the issue "unresolvedShapeReference" mentioning "urn:simpl:test:NowhereShape" ... passed in 0.000s
+    And the problem lists the issue "unresolvedShapeReference" mentioning "urn:simpl:test:AlsoNowhereShape" ... passed in 0.000s
+    And the problem lists 2 issues with code "unresolvedShapeReference" ... passed in 0.000s
+
+  Scenario: A shape reference defined in the same document passes
+    Given I am "ga-admin" ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "semantic-resolved-shape.ttl" ... passed in 0.006s
+    Then the response status is 201 ... passed in 0.000s
+
+  Scenario: All semantic errors are returned at once
+    Given the vocabulary "$VOC" defines the terms "owner" ... passed in 0.002s
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "semantic-many-errors.ttl" ... passed in 0.005s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Semantic Validation Error: " ... passed in 0.000s
+    And the problem lists the issue "localReferenceUnavailable" mentioning "$NS$VOCX#owner" ... passed in 0.000s
+    And the problem lists the issue "unknownVocabularyTerm" mentioning "$NS$VOC#missingProperty" ... passed in 0.000s
+    And the problem lists the issue "unresolvedShapeReference" mentioning "urn:simpl:test:NowhereShape" ... passed in 0.000s
+
+  Scenario: A new version with semantic errors is not created and the schema is unchanged
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.011s
+    When I add a new version to schema "$A" from "semantic-unknown-vocabulary.ttl" ... passed in 0.006s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Semantic Validation Error: " ... passed in 0.000s
+    And schema "$A" has the versions "1" ... passed in 0.004s
+    And version "1" of schema "$A" has status "PUBLISHED" ... passed in 0.003s
+
+  Scenario: An external namespace gives a warning, not an error
+    Given I am "ga-admin" ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "semantic-external-prefix.ttl" ... passed in 0.006s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "validationWarnings" is a list of 1 items ... passed in 0.000s
+    And the JSON field "validationWarnings[0].code" is "externalReferenceSkipped" ... passed in 0.000s
+    And the JSON field "validationWarnings[0].location" is "prefix 'ex' -> 'https://example.org/vocab/'" ... passed in 0.000s
+
+  Scenario: A new version with an external namespace returns the warning
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.006s
+    When I add a new version to schema "$A" from "semantic-external-prefix.ttl" ... passed in 0.005s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "validationWarnings[0].code" is "externalReferenceSkipped" ... passed in 0.000s
+
+  Scenario: Semantic validation also runs for SEARCH schemas
+    Given no SEARCH schema is published ... passed in 0.011s
+    When I create the SEARCH schema "$S" from "semantic-search-unknown-vocabulary.ttl" ... passed in 0.005s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Semantic Validation Error: " ... passed in 0.000s
+    And the problem lists the issue "localReferenceUnavailable" mentioning "$NS$VOCX#title" ... passed in 0.000s
+    And listing "schemaType=SEARCH&status=PUBLISHED" is empty ... passed in 0.002s
+
+Feature: Syntax, structure and default property validation
+
+  Scenario: A valid schema passes without any error
+    Given I am "ga-admin" ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.009s
+    Then the response status is 201 ... passed in 0.000s
+    And the JSON field "validationWarnings" is an empty list ... passed in 0.000s
+
+  Scenario Outline: Content that is not valid Turtle gives a syntax error and creates nothing -- @1.1 
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "syntax-error.ttl" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Syntax Error: " ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.002s
+
+  Scenario Outline: Content that is not valid Turtle gives a syntax error and creates nothing -- @1.2 
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "not-turtle.json" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Syntax Error: " ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.002s
+
+  Scenario Outline: Content that is not valid Turtle gives a syntax error and creates nothing -- @1.3 
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "not-turtle.png" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Syntax Error: " ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.002s
+
+  Scenario Outline: Content that is not valid Turtle gives a syntax error and creates nothing -- @1.4 
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "empty.ttl" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Syntax Error: " ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.002s
+
+  Scenario: Turtle without any sh:NodeShape gives a syntax error
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "no-nodeshape.ttl" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Syntax Error: " ... passed in 0.000s
+
+  Scenario: A RESOURCE schema that declares no resource type is rejected and creates nothing
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "no-resource-type.ttl" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Syntax Error: " ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.002s
+
+  Scenario: A new RESOURCE version that declares no resource type is not created
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I add a new version to schema "$A" from "no-resource-type.ttl" ... passed in 0.004s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Syntax Error: " ... passed in 0.000s
+    And schema "$A" has the versions "1" ... passed in 0.003s
+
+  Scenario: A new version with a syntax error is not created
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I add a new version to schema "$A" from "syntax-error.ttl" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Syntax Error: " ... passed in 0.000s
+    And schema "$A" has the versions "1" ... passed in 0.002s
+
+  Scenario: A RESOURCE schema without simpl:uuid is rejected with one issue
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "missing-uuid.ttl" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Default Properties Error: " ... passed in 0.000s
+    And the problem lists the issue "missingDefaultProperty" at "$DPuuid" ... passed in 0.000s
+    And the problem lists 1 issues with code "missingDefaultProperty" ... passed in 0.000s
+    And listing "resourceType=$RT" is empty ... passed in 0.002s
+
+  Scenario: A RESOURCE schema without simpl:version is rejected with one issue
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "missing-version.ttl" ... passed in 0.004s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Default Properties Error: " ... passed in 0.000s
+    And the problem lists the issue "missingDefaultProperty" at "$DPversion" ... passed in 0.000s
+    And the problem lists 1 issues with code "missingDefaultProperty" ... passed in 0.000s
+
+  Scenario: A RESOURCE schema without any default property gets one issue per property
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "missing-defaults.ttl" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Default Properties Error: " ... passed in 0.000s
+    And the problem lists the issue "missingDefaultProperty" at "$DPuuid" ... passed in 0.000s
+    And the problem lists the issue "missingDefaultProperty" at "$DPversion" ... passed in 0.000s
+    And the problem lists 2 issues with code "missingDefaultProperty" ... passed in 0.000s
+
+  Scenario: Default properties split over two shapes do not pass
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "defaults-split-over-shapes.ttl" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Default Properties Error: " ... passed in 0.000s
+
+  Scenario: A default property IRI that is not an sh:path does not count
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "defaults-not-as-path.ttl" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Default Properties Error: " ... passed in 0.000s
+    And the problem lists the issue "missingDefaultProperty" at "$DPuuid" ... passed in 0.000s
+
+  Scenario: A new version without default properties is not created
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.005s
+    When I add a new version to schema "$A" from "missing-defaults.ttl" ... passed in 0.002s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Default Properties Error: " ... passed in 0.000s
+    And schema "$A" has the versions "1" ... passed in 0.002s
+
+  Scenario: A syntax error is reported before missing default properties
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "syntax-error.ttl" ... passed in 0.003s
+    Then the problem detail starts with "Syntax Error: " ... passed in 0.000s
+    And the problem has no issue with code "missingDefaultProperty" ... passed in 0.000s
+
+  Scenario: Missing default properties are reported before semantic errors
+    When I create the RESOURCE schema "$A" for resource type "$RT" from "missing-defaults-and-unresolved-shape.ttl" ... passed in 0.003s
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+    And the problem detail starts with "Default Properties Error: " ... passed in 0.000s
+    And the problem has no issue with code "unresolvedShapeReference" ... passed in 0.000s
+
+Feature: Webhook delivery of SchemaPublished and SchemaRevoked
+
+  Scenario: Creating a published RESOURCE schema delivers SchemaPublished
+    Given the webhook "hook" is subscribed to "SchemaPublished,SchemaRevoked" ... passed in 0.004s
+    And I am "ga-admin" ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.004s
+    Then the response status is 201 ... passed in 0.000s
+    And the webhook "hook" receives a "SchemaPublished" event for schema "$A" ... passed in 0.305s
+    And the event was posted as JSON with the header "X-Simpl-Event" set to "SchemaPublished" ... passed in 0.000s
+    And the event field "eventId" is a UUID ... passed in 0.000s
+    And the event field "eventType" is "SchemaPublished" ... passed in 0.000s
+    And the event field "occurredAt" is an ISO timestamp ... passed in 0.000s
+    And the event field "schemaName" is "$A" ... passed in 0.000s
+    And the event field "schemaType" is "RESOURCE" ... passed in 0.000s
+    And the event field "resourceType" is "$RT" ... passed in 0.000s
+    And the event field "version" is "1" ... passed in 0.000s
+    And the event field "status" is "PUBLISHED" ... passed in 0.000s
+    And the event field "schemaUri" is an absolute URI containing "/schemas/$A/1" ... passed in 0.000s
+
+  Scenario: A schema revoked on create delivers nothing
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.014s
+    And the webhook "hook" is subscribed to "SchemaPublished,SchemaRevoked" ... passed in 0.012s
+    When I create the RESOURCE schema "$B" for resource type "$RT" ... passed in 0.011s
+    Then the JSON field "status" is "REVOKED" ... passed in 0.000s
+    And the webhook "hook" receives no event for schema "$B" ... passed in 3.005s
+
+  Scenario: A new published version delivers SchemaPublished and no SchemaRevoked for the superseded one
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.011s
+    And the webhook "hook" is subscribed to "SchemaPublished,SchemaRevoked" ... passed in 0.006s
+    When I add a new version to schema "$A" ... passed in 0.007s
+    Then the response status is 201 ... passed in 0.000s
+    And the webhook "hook" receives a "SchemaPublished" event for schema "$A" ... passed in 0.305s
+    And the event field "version" is "2" ... passed in 0.000s
+    And the event field "schemaUri" is an absolute URI containing "/schemas/$A/2" ... passed in 0.000s
+    And the webhook "hook" receives no "SchemaRevoked" event for schema "$A" ... passed in 3.005s
+
+  Scenario: A new version that stays revoked delivers nothing
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.015s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.013s
+    And the webhook "hook" is subscribed to "SchemaPublished,SchemaRevoked" ... passed in 0.009s
+    When I add a new version to schema "$B" ... passed in 0.010s
+    Then the JSON field "status" is "REVOKED" ... passed in 0.000s
+    And the webhook "hook" receives no event for schema "$B" ... passed in 3.001s
+
+  Scenario: Revoking delivers SchemaRevoked
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.016s
+    And the webhook "hook" is subscribed to "SchemaPublished,SchemaRevoked" ... passed in 0.009s
+    When I revoke schema "$A" ... passed in 0.008s
+    Then the response status is 200 ... passed in 0.000s
+    And the webhook "hook" receives a "SchemaRevoked" event for schema "$A" ... passed in 0.304s
+    And the event was posted as JSON with the header "X-Simpl-Event" set to "SchemaRevoked" ... passed in 0.000s
+    And the event field "status" is "REVOKED" ... passed in 0.000s
+    And the event field "version" is "1" ... passed in 0.000s
+
+  Scenario: Publishing a revoked schema delivers SchemaPublished
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.016s
+    And schema "$A" has been revoked ... passed in 0.009s
+    And the webhook "hook" is subscribed to "SchemaPublished" ... passed in 0.009s
+    When I publish schema "$A" ... passed in 0.007s
+    Then the response status is 200 ... passed in 0.000s
+    And the webhook "hook" receives a "SchemaPublished" event for schema "$A" ... passed in 0.303s
+    And the event field "status" is "PUBLISHED" ... passed in 0.000s
+
+  Scenario: Only subscribed event types are delivered
+    Given the webhook "hook" is subscribed to "SchemaRevoked" ... passed in 0.011s
+    And I am "ga-admin" ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.014s
+    Then the response status is 201 ... passed in 0.000s
+    And the webhook "hook" receives no "SchemaPublished" event for schema "$A" ... passed in 3.004s
+    When I revoke schema "$A" ... passed in 0.020s
+    Then the response status is 200 ... passed in 0.000s
+    And the webhook "hook" receives a "SchemaRevoked" event for schema "$A" ... passed in 0.000s
+
+  Scenario: Every matching subscription gets the event once
+    Given the webhook "hook" is subscribed to "SchemaPublished" ... passed in 0.007s
+    And the webhook "hook2" is subscribed to "SchemaPublished,SchemaRevoked" ... passed in 0.005s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.009s
+    Then the response status is 201 ... passed in 0.000s
+    And the webhook "hook" receives exactly 1 "SchemaPublished" event for schema "$A" ... passed in 3.303s
+    And the webhook "hook2" receives exactly 1 "SchemaPublished" event for schema "$A" ... passed in 3.005s
+
+  Scenario: Failed requests deliver nothing
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.014s
+    And the webhook "hook" is subscribed to "SchemaPublished,SchemaRevoked" ... passed in 0.008s
+    When I publish schema "$A" ... passed in 0.008s
+    Then the response status is 409 ... passed in 0.000s
+    When I add a new version to schema "$A" from "syntax-error.ttl" ... passed in 0.007s
+    Then the response status is 400 ... passed in 0.000s
+    And the webhook "hook" receives no event for schema "$A" ... passed in 3.003s
+
+  Scenario: A deleted subscription receives nothing
+    Given the webhook "hook" is subscribed to "SchemaPublished" ... passed in 0.009s
+    When I delete the webhook "hook" ... passed in 0.006s
+    Then the response status is 204 ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.012s
+    Then the response status is 201 ... passed in 0.000s
+    And the webhook "hook" receives no event for schema "$A" ... passed in 3.001s
+
+  Scenario: A delivery answered with an error is retried with the same event
+    Given the webhook "hook" is subscribed to "SchemaPublished" ... passed in 0.017s
+    And the webhook "hook" fails the first 1 deliveries ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.014s
+    Then the response status is 201 ... passed in 0.000s
+    And the webhook "hook" receives the same "SchemaPublished" event for schema "$A" 2 times ... passed in 1.218s
+
+  Scenario: A delivery that keeps failing is tried three times in total
+    Given the webhook "hook" is subscribed to "SchemaPublished" ... passed in 0.009s
+    And the webhook "hook" fails the first 5 deliveries ... passed in 0.000s
+    When I create the RESOURCE schema "$A" for resource type "$RT" ... passed in 0.013s
+    Then the response status is 201 ... passed in 0.000s
+    And the webhook "hook" receives exactly 3 delivery attempts for schema "$A" ... passed in 9.081s
+
+  Scenario: SEARCH schema changes deliver webhooks too
+    Given no SEARCH schema is published ... passed in 0.017s
+    And the webhook "hook" is subscribed to "SchemaPublished,SchemaRevoked" ... passed in 0.008s
+    And I am "ga-admin" ... passed in 0.000s
+    When I create the SEARCH schema "$S" ... passed in 0.010s
+    Then the response status is 201 ... passed in 0.000s
+    And the webhook "hook" receives a "SchemaPublished" event for schema "$S" ... passed in 0.305s
+    And the event field "schemaType" is "SEARCH" ... passed in 0.000s
+    And the event field "resourceType" is null ... passed in 0.000s
+    And the event field "schemaUri" is an absolute URI containing "/schemas/$S/1" ... passed in 0.000s
+    When I revoke schema "$S" ... passed in 0.015s
+    Then the response status is 200 ... passed in 0.000s
+    And the webhook "hook" receives a "SchemaRevoked" event for schema "$S" ... passed in 0.305s
+    And the event field "schemaType" is "SEARCH" ... passed in 0.000s
+
+Feature: Webhook subscriptions
+
+  Scenario: Subscribe to both events
+    Given I am "ga-admin" ... passed in 0.000s
+    When I subscribe the webhook "hook" to "SchemaPublished,SchemaRevoked" ... passed in 0.011s
+    Then the response status is 201 ... passed in 0.000s
+    And the response content type is "application/json" ... passed in 0.000s
+    And the response describes the webhook "hook" with the events "SchemaPublished,SchemaRevoked" ... passed in 0.000s
+
+  Scenario: The list of subscriptions is a plain array that includes mine
+    Given the webhook "hook" is subscribed to "SchemaRevoked" ... passed in 0.009s
+    When I list the webhooks ... passed in 0.004s
+    Then the response status is 200 ... passed in 0.000s
+    And the webhook list contains "hook" with the events "SchemaRevoked" ... passed in 0.000s
+
+  Scenario: Delete a subscription
+    Given the webhook "hook" is subscribed to "SchemaPublished" ... passed in 0.005s
+    When I delete the webhook "hook" ... passed in 0.004s
+    Then the response status is 204 ... passed in 0.000s
+    When I list the webhooks ... passed in 0.003s
+    Then the webhook list does not contain "hook" ... passed in 0.000s
+    When I delete the webhook "hook" ... passed in 0.003s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario Outline: Deleting an unknown subscription gives 404 -- @1.1 
+    When I send a DELETE request to "/webhooks/0b6f2c8e-7b1d-4c55-9a0e-000000000999" ... passed in 0.002s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario Outline: Deleting an unknown subscription gives 404 -- @1.2 
+    When I send a DELETE request to "/webhooks/wh_999" ... passed in 0.002s
+    Then the response is a "notFound" problem with status 404 ... passed in 0.000s
+
+  Scenario Outline: A target URL that is not an absolute http or https URL is rejected -- @1.1 
+    When I create a webhook subscription with JSON body ... passed in 0.003s
+      """
+      {"targetUrl": "url", "events": ["SchemaPublished"]}
+      """
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: A target URL that is not an absolute http or https URL is rejected -- @1.2 
+    When I create a webhook subscription with JSON body ... passed in 0.002s
+      """
+      {"targetUrl": "not-a-url", "events": ["SchemaPublished"]}
+      """
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: A target URL that is not an absolute http or https URL is rejected -- @1.3 
+    When I create a webhook subscription with JSON body ... passed in 0.003s
+      """
+      {"targetUrl": "http://", "events": ["SchemaPublished"]}
+      """
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: A target URL that is not an absolute http or https URL is rejected -- @1.4 
+    When I create a webhook subscription with JSON body ... passed in 0.003s
+      """
+      {"targetUrl": "ftp://invalid.com", "events": ["SchemaPublished"]}
+      """
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: A target URL that is not an absolute http or https URL is rejected -- @1.5 
+    When I create a webhook subscription with JSON body ... passed in 0.002s
+      """
+      {"targetUrl": "/relative/path", "events": ["SchemaPublished"]}
+      """
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: A missing target URL is rejected
+    When I create a webhook subscription with JSON body ... passed in 0.002s
+      """
+      {"events": ["SchemaPublished"]}
+      """
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Missing or empty events are rejected -- @1.1 
+    When I create a webhook subscription with JSON body ... passed in 0.002s
+      """
+      {"targetUrl": "$RECEIVER"}
+      """
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario Outline: Missing or empty events are rejected -- @1.2 
+    When I create a webhook subscription with JSON body ... passed in 0.002s
+      """
+      {"targetUrl": "$RECEIVER", "events": []}
+      """
+    Then the response is a "badRequest" problem with status 400 ... passed in 0.000s
+
+  Scenario: An unknown event type is rejected with 406
+    When I create a webhook subscription with JSON body ... passed in 0.002s
+      """
+      {"targetUrl": "$RECEIVER", "events": ["SchemaExploded"]}
+      """
+    Then the response is a "notAcceptable" problem with status 406 ... passed in 0.000s
+    And the problem detail is "'SchemaExploded' is not a valid event type. Valid event types are: SchemaPublished, SchemaRevoked" ... passed in 0.000s
+
+  Scenario: The same target URL with the same events is a conflict
+    Given the webhook "hook" is subscribed to "SchemaPublished,SchemaRevoked" ... passed in 0.004s
+    When I subscribe the webhook "hook" to "SchemaRevoked,SchemaPublished" ... passed in 0.002s
+    Then the response is a "conflict" problem with status 409 ... passed in 0.000s
+
+  Scenario: The same target URL with other events is a separate subscription
+    Given the webhook "hook" is subscribed to "SchemaPublished" ... passed in 0.003s
+    And the webhook "hook2" uses the same target URL as "hook" ... passed in 0.000s
+    When I subscribe the webhook "hook2" to "SchemaRevoked" ... passed in 0.003s
+    Then the response status is 201 ... passed in 0.000s
+
+Feature: Create Schema form
+
+  Scenario: The form defaults to RESOURCE with the resource type enabled
+    Given I am signed in to the UI as "ga-admin" ... passed in 2.351s
+    When I open the page "/schemas/new" ... passed in 1.081s
+    Then "field-schema-type" has the value "RESOURCE" ... passed in 0.022s
+    And "field-schema-type" offers the options "RESOURCE,SEARCH" ... passed in 0.006s
+    And "field-resource-type" offers the options "Data,Application,Infrastructure" ... passed in 0.005s
+    And "field-resource-type" is enabled ... passed in 0.003s
+    And "submit-button" is disabled ... passed in 0.002s
+
+  Scenario: Choosing SEARCH disables and clears the resource type
+    Given I am signed in to the UI as "ga-admin" ... passed in 2.060s
+    When I open the page "/schemas/new" ... passed in 1.053s
+    And I select "Data" in "field-resource-type" ... passed in 0.336s
+    And I select "SEARCH" in "field-schema-type" ... passed in 0.319s
+    Then "field-resource-type" is disabled ... passed in 0.008s
+    And "field-resource-type" is empty ... passed in 0.012s
+
+  Scenario: An invalid name keeps the submit button disabled
+    Given I am signed in to the UI as "ga-admin" ... passed in 2.063s
+    When I open the page "/schemas/new" ... passed in 1.059s
+    And I fill the create form for the RESOURCE schema "$A" with resource type "Data" and file "valid-resource.ttl" ... passed in 0.887s
+    And I fill "field-name" with "lower case" ... passed in 0.214s
+    Then "submit-button" is disabled ... passed in 0.003s
+
+  Scenario: A successful create shows the success text and opens the details page
+    Given I am signed in to the UI as "ga-admin" ... passed in 2.066s
+    When I open the page "/schemas/new" ... passed in 1.051s
+    And I fill the create form for the RESOURCE schema "$A" with resource type "Data" and file "valid-resource.ttl" ... passed in 0.887s
+    And I click "submit-button" ... passed in 0.524s
+    Then "notification-success" shows 'Schema "$A" created successfully.' ... passed in 0.010s
+    And the browser shows the page "/schemas/$A?schemaType=RESOURCE" ... passed in 0.000s
+
+  Scenario: Creating a SEARCH schema sends no resource type
+    Given no SEARCH schema is published ... passed in 0.012s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.070s
+    When I open the page "/schemas/new" ... passed in 1.050s
+    And I fill the create form for the SEARCH schema "$S" with file "valid-search.ttl" ... passed in 0.570s
+    And I click "submit-button" ... passed in 0.526s
+    Then the UI sent the request "POST /schemas" ... passed in 0.000s
+    And "notification-success" shows 'Schema "$S" created successfully.' ... passed in 0.008s
+
+  Scenario: A name clash shows the fixed text and stays on the form
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.008s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.053s
+    When I open the page "/schemas/new" ... passed in 1.051s
+    And I fill the create form for the RESOURCE schema "$A" with resource type "Data" and file "valid-resource.ttl" ... passed in 0.882s
+    And I click "submit-button" ... passed in 0.531s
+    Then "notification-error" shows "A schema with that name already exists." ... passed in 0.006s
+    And the browser shows the page "/schemas/new" ... passed in 0.000s
+
+  Scenario: A second SEARCH schema shows the fixed text
+    Given no SEARCH schema is published ... passed in 0.032s
+    And the SEARCH schema "$S" exists ... passed in 0.009s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.053s
+    When I open the page "/schemas/new" ... passed in 1.039s
+    And I fill the create form for the SEARCH schema "$T" with file "valid-search.ttl" ... passed in 0.538s
+    And I click "submit-button" ... passed in 0.537s
+    Then "notification-error" shows "A published federated search schema already exists." ... passed in 0.002s
+
+  Scenario: A syntax error shows the problem detail
+    Given I am signed in to the UI as "ga-admin" ... passed in 2.001s
+    When I open the page "/schemas/new" ... passed in 1.046s
+    And I fill the create form for the RESOURCE schema "$A" with resource type "Data" and file "syntax-error.ttl" ... passed in 0.890s
+    And I click "submit-button" ... passed in 0.522s
+    Then "notification-error" shows "Syntax Error: " ... passed in 0.007s
+    And the browser shows the page "/schemas/new" ... passed in 0.000s
+
+  Scenario: Missing default properties show the problem detail
+    Given I am signed in to the UI as "ga-admin" ... passed in 2.051s
+    When I open the page "/schemas/new" ... passed in 1.055s
+    And I fill the create form for the RESOURCE schema "$A" with resource type "Data" and file "missing-defaults.ttl" ... passed in 0.870s
+    And I click "submit-button" ... passed in 0.522s
+    Then "notification-error" shows "Default Properties Error: " ... passed in 0.006s
+
+  Scenario: A semantic error shows the problem detail
+    Given I am signed in to the UI as "ga-admin" ... passed in 2.047s
+    When I open the page "/schemas/new" ... passed in 1.050s
+    And I fill the create form for the RESOURCE schema "$A" with resource type "Data" and file "semantic-unresolved-shape.ttl" ... passed in 0.890s
+    And I click "submit-button" ... passed in 0.535s
+    Then "notification-error" shows "Semantic Validation Error: " ... passed in 0.004s
+
+  Scenario: A valid schema shows no validation error
+    Given I am signed in to the UI as "ga-admin" ... passed in 2.050s
+    When I open the page "/schemas/new" ... passed in 1.047s
+    And I fill the create form for the RESOURCE schema "$A" with resource type "Infrastructure" and file "valid-resource.ttl" ... passed in 0.881s
+    And I click "submit-button" ... passed in 0.528s
+    Then "notification-error" is not rendered ... passed in 1.007s
+
+Feature: Create New Version form
+
+  Scenario: The form has changelog and file, a read-only schema type and no version field
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.016s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.057s
+    When I open the page "/schemas/$A/versions/new?schemaType=RESOURCE" ... passed in 1.049s
+    Then "field-changelog" is visible ... passed in 0.017s
+    And "field-file" is visible ... passed in 0.002s
+    And "field-schema-type" is read-only and shows "RESOURCE" ... passed in 0.018s
+    And "submit-button" is disabled ... passed in 0.002s
+
+  Scenario: A blank changelog or no file keeps the submit button disabled
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.018s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.049s
+    When I open the page "/schemas/$A/versions/new?schemaType=RESOURCE" ... passed in 1.050s
+    And I fill "field-changelog" with "A change." ... passed in 0.226s
+    Then "submit-button" is disabled ... passed in 0.006s
+    When I choose the file "valid-resource-v2.ttl" in "field-file" ... passed in 0.214s
+    Then "submit-button" is enabled ... passed in 0.007s
+    When I clear "field-changelog" ... passed in 0.212s
+    Then "submit-button" is disabled ... passed in 0.005s
+
+  Scenario: A new version is submitted without a version field and shown on the details page
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.015s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.052s
+    When I open the page "/schemas/$A/versions/new?schemaType=RESOURCE" ... passed in 1.045s
+    And I fill "field-changelog" with "A change." ... passed in 0.228s
+    And I choose the file "valid-resource-v2.ttl" in "field-file" ... passed in 0.215s
+    And I click "submit-button" ... passed in 0.529s
+    Then the UI sent the request "POST /schemas/$A/versions" ... passed in 0.000s
+    And the browser shows the page "/schemas/$A?schemaType=RESOURCE" ... passed in 0.000s
+    And "version-row-2" is visible ... passed in 0.002s
+
+  Scenario: A new version of a SEARCH schema keeps the schema type SEARCH
+    Given no SEARCH schema is published ... passed in 0.020s
+    And the SEARCH schema "$S" exists ... passed in 0.009s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.023s
+    When I open the page "/schemas/$S/versions/new?schemaType=SEARCH" ... passed in 1.043s
+    Then "field-schema-type" is read-only and shows "SEARCH" ... passed in 0.028s
+
+  Scenario: An API error keeps me on the form with the detail at the top
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.018s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.058s
+    When I open the page "/schemas/$A/versions/new?schemaType=RESOURCE" ... passed in 1.038s
+    And I fill "field-changelog" with "A change." ... passed in 0.224s
+    And I choose the file "syntax-error.ttl" in "field-file" ... passed in 0.215s
+    And I click "submit-button" ... passed in 0.523s
+    Then "notification-error" shows "Syntax Error: " ... passed in 0.005s
+    And the browser shows the page "/schemas/$A/versions/new?schemaType=RESOURCE" ... passed in 0.000s
+
+Feature: Schema details page with the versions table
+
+  Scenario: The details page shows the header and the versions table
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.022s
+    And schema "$A" has a new version ... passed in 0.011s
+    And I am signed in to the UI as "ga-viewer" ... passed in 2.027s
+    When I open the page "/schemas/$A?schemaType=RESOURCE" ... passed in 1.053s
+    Then the UI sent the request "GET /schemas/$A/versions?schemaType=RESOURCE" ... passed in 0.000s
+    And "versions-table" has the column headers "Version,Status,Schema Type,Resource Type,Creation Date,Creator,Latest Change" ... passed in 0.030s
+    And the rows of "versions-table" are ordered by "Version" descending ... passed in 0.027s
+    And the row "version-row-2" shows "PUBLISHED" in the column "Status" ... passed in 0.013s
+    And the row "version-row-1" shows "REVOKED" in the column "Status" ... passed in 0.012s
+    And the row "version-row-1" shows "Initial version." in the column "Latest Change" ... passed in 0.012s
+    And the row "version-row-1" shows "RESOURCE" in the column "Schema Type" ... passed in 0.010s
+
+  Scenario: The versions table sorts by Version and by Creation Date in the browser
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.022s
+    And schema "$A" has a new version ... passed in 0.011s
+    And I am signed in to the UI as "ga-viewer" ... passed in 2.026s
+    When I open the page "/schemas/$A?schemaType=RESOURCE" ... passed in 1.055s
+    And I click the column header "Version" ... passed in 0.534s
+    Then the rows of "versions-table" are ordered by "Version" ascending ... passed in 0.036s
+    When I click the column header "Creation Date" ... passed in 0.520s
+    Then the rows of "versions-table" are ordered by "Creation Date" ascending ... passed in 0.029s
+    And the UI sent no request to the API ... passed in 1.003s
+
+  Scenario: The details page of a SEARCH schema asks for SEARCH versions
+    Given no SEARCH schema is published ... passed in 0.026s
+    And the SEARCH schema "$S" exists ... passed in 0.010s
+    And I am signed in to the UI as "ga-viewer" ... passed in 2.045s
+    When I open the page "/schemas/$S?schemaType=SEARCH" ... passed in 1.051s
+    Then the UI sent the request "GET /schemas/$S/versions?schemaType=SEARCH" ... passed in 0.000s
+    And the row "version-row-1" shows "SEARCH" in the column "Schema Type" ... passed in 0.036s
+
+  Scenario: Download a version from the versions table
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.018s
+    And schema "$A" has a new version ... passed in 0.011s
+    And I am signed in to the UI as "ga-viewer" ... passed in 2.023s
+    When I open the page "/schemas/$A?schemaType=RESOURCE" ... passed in 1.054s
+    And I click "action-download-version-1" ... passed in 0.567s
+    Then the UI sent the request "GET /schemas/$A/1?schemaType=RESOURCE" ... passed in 0.000s
+    And a file named "$A-1.ttl" is downloaded with the content uploaded for version "1" of schema "$A" ... passed in 0.022s
+    And "notification-success" shows "Schema version 1 downloaded successfully." ... passed in 0.007s
+
+  Scenario: The download page has no schema type selection box
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.018s
+    And I am signed in to the UI as "ga-viewer" ... passed in 2.030s
+    When I open the page "/schemas/$A?schemaType=RESOURCE" ... passed in 1.044s
+    Then "field-schema-type" is not rendered ... passed in 1.015s
+
+  Scenario: The New Version button is shown to admins only
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.016s
+    And I am signed in to the UI as "ga-viewer" ... passed in 2.046s
+    When I open the page "/schemas/$A?schemaType=RESOURCE" ... passed in 1.049s
+    Then "action-new-version-$A" is not rendered ... passed in 1.015s
+
+Feature: Schemas list page
+
+  Scenario: The list shows the columns of D53 and calls GET /schemas
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.014s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.019s
+    When I open the page "/schemas" ... passed in 1.053s
+    Then "schema-list-table" is visible ... passed in 0.013s
+    And "schema-list-table" has the column headers "Schema Name,Title,Description,Schema Type,Resource Type,Latest Version,Status,Creation Date,Creator,Actions" ... passed in 0.021s
+    And the UI sent the request "GET /schemas?schemaType=RESOURCE&page=1&pageSize=20" ... passed in 0.000s
+    And "filter-schema-type" has the value "RESOURCE" ... passed in 0.004s
+
+  Scenario: Changing a filter reloads page 1 with the matching query
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.015s
+    And I am signed in to the UI as "ga-viewer" ... passed in 2.016s
+    When I open the page "/schemas" ... passed in 1.054s
+    And I select "PUBLISHED" in "filter-status" ... passed in 0.329s
+    Then the UI sent the request "GET /schemas?status=PUBLISHED&schemaType=RESOURCE&page=1&pageSize=20" ... passed in 0.000s
+    When I select "Data" in "filter-resource-type" ... passed in 0.316s
+    Then the UI sent the request "GET /schemas?status=PUBLISHED&resourceType=Data&schemaType=RESOURCE&page=1&pageSize=20" ... passed in 0.000s
+
+  Scenario: The SEARCH filter disables the resource type filter
+    Given I am signed in to the UI as "ga-viewer" ... passed in 2.057s
+    When I open the page "/schemas" ... passed in 1.054s
+    And I select "SEARCH" in "filter-schema-type" ... passed in 0.328s
+    Then "filter-resource-type" is disabled ... passed in 0.006s
+    And the UI sent the request "GET /schemas?schemaType=SEARCH&page=1&pageSize=20" ... passed in 0.000s
+
+  Scenario: Sorting by name happens in the browser
+    Given I am signed in to the UI as "ga-viewer" ... passed in 2.058s
+    When I open the page "/schemas" ... passed in 1.054s
+    And I click the column header "Schema Name" ... passed in 0.555s
+    Then the rows of "schema-list-table" are ordered by "Schema Name" ascending ... passed in 0.184s
+    And the UI sent no request to the API ... passed in 1.003s
+
+  Scenario: Clicking a name opens the details page
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.023s
+    And I am signed in to the UI as "ga-viewer" ... passed in 2.053s
+    When I open the page "/schemas" ... passed in 1.060s
+    And I click "schema-row-$A" ... passed in 7.417s
+    Then the browser shows the page "/schemas/$A?schemaType=RESOURCE" ... passed in 0.000s
+
+  Scenario: No match for the filters shows the empty state
+    Given no SEARCH schema is published ... passed in 0.029s
+    And I am signed in to the UI as "ga-viewer" ... passed in 2.053s
+    When I open the page "/schemas" ... passed in 1.059s
+    And I select "SEARCH" in "filter-schema-type" ... passed in 0.336s
+    And I select "PUBLISHED" in "filter-status" ... passed in 0.318s
+    Then "empty-state" shows "No schemas match the selected filters." ... passed in 0.007s
+    And "pagination-next" is not rendered ... passed in 1.006s
+
+  Scenario: A user without a schema role sees no table
+    Given I am signed in to the UI as "ga-norole" ... passed in 2.044s
+    When I open the page "/schemas" ... passed in 1.051s
+    Then "error-state" shows "You do not have permission to view this page." ... passed in 0.017s
+    And "schema-list-table" is not rendered ... passed in 1.006s
+
+  Scenario: A viewer sees downloads but no create or status actions
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.025s
+    And I am signed in to the UI as "ga-viewer" ... passed in 2.061s
+    When I open the page "/schemas" ... passed in 1.051s
+    Then "action-download-$A" is visible ... passed in 6.911s
+    And "create-schema-button" is not rendered ... passed in 1.005s
+    And "action-revoke-$A" is not rendered ... passed in 1.215s
+    And "action-new-version-$A" is not rendered ... passed in 1.213s
+
+  Scenario: Download the latest content from the list
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.019s
+    And schema "$A" has a new version ... passed in 0.008s
+    And I am signed in to the UI as "ga-viewer" ... passed in 2.044s
+    When I open the page "/schemas" ... passed in 1.056s
+    Then the first action of "schema-row-$A" is "action-download-$A" ... passed in 6.863s
+    When I click "action-download-$A" ... passed in 0.739s
+    Then the UI sent the request "GET /schemas/$A" ... passed in 0.000s
+    And a file named "$A-2.ttl" is downloaded with the content uploaded for version "2" of schema "$A" ... passed in 0.005s
+
+Feature: Revoke and publish from the schemas list
+
+  Scenario: Revoke asks for confirmation and Cancel sends nothing
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.013s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.049s
+    When I open the page "/schemas" ... passed in 1.054s
+    And I click "action-revoke-$A" ... passed in 7.416s
+    Then "confirm-dialog" is visible ... passed in 0.005s
+    When I click "cancel-button" ... passed in 0.528s
+    Then "confirm-dialog" is not rendered ... passed in 1.006s
+    And the UI sent no request to the API ... passed in 1.003s
+
+  Scenario: Confirmed revoke shows the success text and the row shows REVOKED
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.023s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.060s
+    When I open the page "/schemas" ... passed in 1.054s
+    And I click "action-revoke-$A" ... passed in 7.465s
+    And I click "confirm-button" ... passed in 0.517s
+    Then the UI sent the request "PATCH /schemas/$A" ... passed in 0.000s
+    And "notification-success" shows 'Schema "$A" revoked successfully.' ... passed in 0.007s
+    And the row "schema-row-$A" shows "REVOKED" in the column "Status" ... passed in 0.028s
+    And "action-publish-$A" is visible ... passed in 0.207s
+
+  Scenario: Publish a revoked schema
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.015s
+    And schema "$A" has been revoked ... passed in 0.009s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.026s
+    When I open the page "/schemas" ... passed in 1.061s
+    And I click "action-publish-$A" ... passed in 7.447s
+    Then "confirm-dialog" is not rendered ... passed in 1.004s
+    And "notification-success" shows "Schema $A published successfully!" ... passed in 0.005s
+    And the row "schema-row-$A" shows "PUBLISHED" in the column "Status" ... passed in 0.029s
+
+  Scenario: Publishing while another schema of the resource type is published shows the 409 detail
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.021s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.008s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.049s
+    When I open the page "/schemas" ... passed in 1.053s
+    And I click "action-publish-$B" ... passed in 7.450s
+    Then "notification-error" shows "Another schema is in PUBLISHED state for the resource type." ... passed in 0.010s
+    And the row "schema-row-$B" shows "REVOKED" in the column "Status" ... passed in 0.034s
+
+  Scenario: Revoke is offered only on published rows and Publish only on revoked rows
+    Given the RESOURCE schema "$A" exists for resource type "$RT" ... passed in 0.014s
+    And the RESOURCE schema "$B" exists for resource type "$RT" ... passed in 0.007s
+    And I am signed in to the UI as "ga-admin" ... passed in 2.031s
+    When I open the page "/schemas" ... passed in 1.047s
+    Then "action-revoke-$A" is visible ... passed in 6.913s
+    And "action-publish-$A" is not rendered ... passed in 1.211s
+    And "action-publish-$B" is visible ... passed in 0.209s
+    And "action-revoke-$B" is not rendered ... passed in 1.212s
+

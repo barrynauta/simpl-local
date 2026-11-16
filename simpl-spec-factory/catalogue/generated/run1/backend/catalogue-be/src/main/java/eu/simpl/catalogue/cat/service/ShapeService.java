@@ -108,6 +108,26 @@ public class ShapeService implements ApplicationRunner {
 
     public boolean exists(String id) { return repo.byId(id).isPresent(); }
 
+    /**
+     * D86: the composite of the stored shapes that are not REVOKED, as Turtle. With a term, only the shapes whose
+     * sh:targetClass is that term. Each stored shape has one version, so it is its own latest version.
+     */
+    public String latestShapes(String term) {
+        Graph out = org.apache.jena.sparql.graph.GraphFactory.createDefaultGraph();
+        org.apache.jena.graph.Node target = org.apache.jena.graph.NodeFactory.createURI("http://www.w3.org/ns/shacl#targetClass");
+        for (String id : repo.ids()) {
+            ShapeRepository.Shape shape = repo.byId(id).orElse(null);
+            if (shape == null || "REVOKED".equals(shape.status())) continue;
+            Graph g = ShapeSupport.parseTurtle(shape.content());
+            if (term != null && !term.isBlank()
+                    && !g.contains(org.apache.jena.graph.Node.ANY, target, org.apache.jena.graph.NodeFactory.createURI(term))) {
+                continue;
+            }
+            g.find().forEachRemaining(out::add);
+        }
+        return ShapeSupport.toTurtle(out);
+    }
+
     @Transactional
     public synchronized void event(String type, String name, String version) {
         String status = "SchemaRevoked".equals(type) ? "REVOKED" : "PUBLISHED";

@@ -1,6 +1,6 @@
 # Traceability
 
-Each in-scope story and each decision D1 to D63, mapped to the code and to the own tests.
+Each in-scope story and each decision D1 to D64, mapped to the code and to the own tests.
 
 Code paths are relative to `backend/src/main/java/eu/simpl/schemamanager/` or start with `ui/`.
 Test abbreviations:
@@ -145,3 +145,4 @@ See `docs/decisions.md` for how each one is implemented.
 | D61 | (test-side convention) | n/a |
 | D62 | `SecurityConfig` (permitAll), `ErrorAdvice.notFound` | IT.outOfScopePathsAnswer404 |
 | D63 | `web/Problems` | IT.missingTokenGives401ProblemJson, IT.roleMatrix, IT.createValidation |
+| D64 | `SchemaValidator.resourceTypeDeclared` (run 1.2) | VT.resourceSchemaWithoutTargetClassIsRejected, VT.searchSchemaNeedsNoTargetClass |

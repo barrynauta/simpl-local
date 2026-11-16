@@ -268,7 +268,14 @@ class CatalogueIT {
                 .andExpect(status().isOk());
         mvc.perform(post("/webhooks/schema-events").contentType(MediaType.APPLICATION_JSON).content("{\"eventId\":\"e1\"}"))
                 .andExpect(status().isBadRequest());
-        mvc.perform(get("/query")).andExpect(status().isNotImplemented());
+        // D10 as revised in run 1.2: /query needs a token now; the session stays out of scope.
+        mvc.perform(get("/query")).andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").doesNotExist())
+                .andExpect(jsonPath("$.message").exists());
+        mvc.perform(get("/session")).andExpect(status().isNotImplemented());
+        // Without GRAPH_URL the claims graph is off (D84).
+        mvc.perform(post("/query").with(CONSUMER).contentType(MediaType.APPLICATION_JSON).content("{\"statement\":\"RETURN 1\"}"))
+                .andExpect(status().isServiceUnavailable());
         mvc.perform(post("/schemas/DataOfferingShape/recalcQualityScore").with(NOBODY).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"profileVersion\":\"1.0.0\"}")).andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.status").value("ACCEPTED"));

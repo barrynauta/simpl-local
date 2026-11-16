@@ -79,6 +79,19 @@ class SchemaValidatorTest {
     }
 
     @Test
+    void resourceSchemaWithoutTargetClassIsRejected() {
+        ApiException e = fail(Fixtures.NO_RESOURCE_TYPE, SchemaType.RESOURCE);
+        assertThat(e.status().value()).isEqualTo(400);
+        assertThat(e.detail()).isEqualTo("Syntax Error: no resource type declared (no sh:NodeShape with sh:targetClass)");
+        assertThat(e.issues().get(0).code()).isEqualTo("noResourceType");
+    }
+
+    @Test
+    void searchSchemaNeedsNoTargetClass() {
+        assertThat(validator.validate(bytes(Fixtures.NO_RESOURCE_TYPE), SchemaType.SEARCH)).isEmpty();
+    }
+
+    @Test
     void searchSchemasNeedNoDefaultProperties() {
         assertThat(validator.validate(bytes(Fixtures.NO_VERSION), SchemaType.SEARCH)).isEmpty();
     }

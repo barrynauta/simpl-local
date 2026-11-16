@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import eu.simpl.catalogue.cat.crypto.Jcs;
 import eu.simpl.catalogue.cat.crypto.KeyRegistry;
 import eu.simpl.catalogue.cat.crypto.SignatureVerifier;
+import eu.simpl.catalogue.cat.graph.ClaimsGraph;
 import eu.simpl.catalogue.cat.store.RdRecord;
 import eu.simpl.catalogue.cat.store.RdRepository;
 import eu.simpl.catalogue.cat.store.ShapeRepository;
@@ -26,12 +27,14 @@ public class PublicationService {
     private final KeyRegistry keys;
     private final RdRepository repo;
     private final QualityGate gate;
+    private final ClaimsGraph graph;
 
-    public PublicationService(VcChecks checks, KeyRegistry keys, RdRepository repo, QualityGate gate) {
+    public PublicationService(VcChecks checks, KeyRegistry keys, RdRepository repo, QualityGate gate, ClaimsGraph graph) {
         this.checks = checks;
         this.keys = keys;
         this.repo = repo;
         this.gate = gate;
+        this.graph = graph;
     }
 
     @Transactional
@@ -93,6 +96,9 @@ public class PublicationService {
                 q.overall(), q.classification());
         if (prev != null) repo.setStatus(prev.id(), "revoked", now);
         repo.insert(rec);
+        // D85: the claims graph holds active RDs only
+        if (prev != null) graph.remove(prev.id());
+        graph.load(id, vc);
         return new Published(rec, q.summary());
     }
 

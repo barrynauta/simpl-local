@@ -22,8 +22,7 @@ public class CatApplication {
 
     @Bean
     SecurityFilterChain security(HttpSecurity http, SecurityProps props) throws Exception {
-        return SecuritySupport.chain(http, props, List.of("/health", "/webhooks/schema-events", "/query", "/session",
-                "/error"));
+        return SecuritySupport.chain(http, props, List.of("/health", "/webhooks/schema-events", "/session", "/error"));
     }
 
     @Bean

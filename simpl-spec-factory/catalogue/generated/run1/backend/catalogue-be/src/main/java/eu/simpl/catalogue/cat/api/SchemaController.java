@@ -59,6 +59,25 @@ public class SchemaController {
                 .body(Json.write(Json.object().put("schemaId", id)));
     }
 
+    /** D86: GET /schemas/latest. Only shapes are stored (D58): ontology and vocabulary give an empty RDF/XML graph. */
+    @GetMapping("/schemas/latest")
+    public ResponseEntity<String> latest(@org.springframework.web.bind.annotation.RequestParam(required = false) String type,
+                                         @org.springframework.web.bind.annotation.RequestParam(required = false) String term) {
+        Caller.current().requireAny(Roles.SCHEMA_READ);
+        if (type == null || type.isEmpty()) throw ApiException.invalidInput("Required query parameter 'type' is missing.");
+        return switch (type) {
+            case "shape" -> ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, "text/turtle").body(shapes.latestShapes(term));
+            case "ontology", "vocabulary" -> ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, "application/rdf+xml")
+                    .body(EMPTY_RDF_XML);
+            default -> throw ApiException.invalidInput("Parameter 'type' must be ontology, shape or vocabulary.");
+        };
+    }
+
+    private static final String EMPTY_RDF_XML = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+            """;
+
     @GetMapping(value = "/schemas/{schemaId}", produces = "text/turtle")
     public ResponseEntity<String> get(@PathVariable String schemaId) {
         Caller.current().requireAny(Roles.SCHEMA_READ);

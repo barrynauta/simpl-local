@@ -24,7 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 /**
- * The three validation stages: syntax (D30), default properties (D31, D32) and
+ * The three validation stages: syntax (D30, and for RESOURCE the declared resource type of D64),
+ * default properties (D31, D32) and
  * semantic validation (D34 to D36). Stages run in that order; the first failing
  * stage stops processing (D33).
  */
@@ -62,6 +63,7 @@ public class SchemaValidator {
     public List<Issue> validate(byte[] content, SchemaType type) {
         Model model = syntax(content);
         if (type == SchemaType.RESOURCE) {
+            resourceTypeDeclared(model);
             defaultProperties(model);
         }
         return semantic(model);
@@ -87,6 +89,19 @@ public class SchemaValidator {
                     List.of(new Issue("noNodeShape", "The document contains no sh:NodeShape.", "document")));
         }
         return model;
+    }
+
+    // ---- Stage 1, RESOURCE only: the schema declares its resource type (D64, run 1.2)
+
+    void resourceTypeDeclared(Model model) {
+        for (Resource shape : model.listSubjectsWithProperty(Rdf.RDF_TYPE, Rdf.NODE_SHAPE).toList()) {
+            if (shape.hasProperty(Rdf.SH_TARGET_CLASS)) {
+                return;
+            }
+        }
+        throw new ApiException(HttpStatus.BAD_REQUEST,
+                SYNTAX_PREFIX + "no resource type declared (no sh:NodeShape with sh:targetClass)",
+                List.of(new Issue("noResourceType", "No sh:NodeShape declares an sh:targetClass.", "document")));
     }
 
     private static String position(String msg) {

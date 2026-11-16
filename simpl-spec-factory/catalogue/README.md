@@ -13,7 +13,7 @@ Chosen as the biggest one: the whole catalogue, with three backends (catalogue-b
 | Path | What |
 |---|---|
 | [`specs/`](./specs/README.md) | Frozen input set and story index |
-| [`spec-digest.md`](./spec-digest.md) | Step 1: component map, scope, decisions D1 to D83, notes N1 to N13, environment contract |
+| [`spec-digest.md`](./spec-digest.md) | Step 1: component map, scope, decisions D1 to D89 (D84 to D89 and D10 revised from the PSO tests, run 1.2), notes N1 to N13, environment contract |
 | [`tests/`](./tests/README.md) | Step 2: 459 API and 26 UI scenarios (behave, requests), signing helper, fixtures, reports |
 | [`pipeline/`](./pipeline/) | The briefs for steps 1 to 3 as used |
 | [`generated/run1/`](./generated/run1/) | Step 3: the build (backends, UI, stubs, Keycloak realms, federation and seed files), with `TRACEABILITY.md`, `BUILD-LOG.md` and `docs/`. The keys, passwords and client secrets in it are the throwaway test values of the digest (D23, section 5) |
@@ -22,5 +22,7 @@ Chosen as the biggest one: the whole catalogue, with three backends (catalogue-b
 | [`findings.md`](./findings.md) | Findings per step |
 
 PSO tests (29 Oct): the API tests of the PSO test team pass 32 of 52 on the build (upstream 17 of 52); 10 need live signing, none of the other 10 is a build defect. See [`experiments/pso/`](./experiments/pso/README.md).
+
+Run 1.2 (4 Nov): with the PSO tests as a source, the OpenAPI operations left out under D10 were built, among them `/query` with openCypher over a Neo4j graph of the RD claims (mapping marked to validate). Own suites 482 of 483 API (the known D14 deviation) and 26 of 26 UI; PSO 46 of 52 with the stand-ins (was 39). See [`findings.md`](./findings.md).
 
 Run the build with `cd generated/run1 && docker compose -p simpl-catalogue-factory up -d --build --wait`.

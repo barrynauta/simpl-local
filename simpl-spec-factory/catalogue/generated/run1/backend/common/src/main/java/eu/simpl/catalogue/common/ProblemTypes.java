@@ -13,6 +13,8 @@ public enum ProblemTypes {
     UNSUPPORTED_MEDIA_TYPE("urn:problem-type:simpl:unsupportedMediaType", "Unsupported Media Type", 415),
     INTERNAL("urn:problem-type:simpl:internalServerError", "Internal Server Error", 500),
     NOT_IMPLEMENTED("urn:problem-type:simpl:notImplemented", "Not Implemented", 501),
+    SERVICE_UNAVAILABLE("urn:problem-type:simpl:serviceUnavailable", "Service Unavailable", 503),
+    QUERY_TIMEOUT("urn:problem-type:simpl:catalogue:queryTimeout", "Query timeout", 408),
     PROVIDER_MISMATCH("urn:problem-type:simpl:catalogue:providerMismatch", "Provider mismatch", 403),
     DISCOVERY_POLICY_DENIED("urn:problem-type:simpl:catalogue:discoveryPolicyDenied", "Discovery policy denied", 403),
     ALREADY_EXISTS("urn:problem-type:simpl:catalogue:alreadyExists", "Already exists", 409),

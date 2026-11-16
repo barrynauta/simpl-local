@@ -19,6 +19,15 @@ The earlier rule (OpenAPI > stories > business process) holds only partly. The c
 
 Public standards used as tie-breakers: W3C VC Data Model 1.1, JSON-LD 1.1, SHACL Core, RFC 9457 (problem details), RFC 8785 (JCS), RFC 8037 (EdDSA in JOSE), the did:jwk method.
 
+**Existing tests as a source (added 4 Nov 2026, run 1.2).** The API tests of the PSO test team are a source too: code.europa.eu `simpl/pso/pso-test/pso-test-automation-unified`, commit `ec7a546`, the regression and schema-validation features of `fc-catalogue`, `xfsc-catalogue`, `xfsc-advsearch`, `catalogue-search` and `fc-proxy`. They rank below the five sources above and enter this digest only through a decision row. The rule (from [`../tests-as-spec.md`](../tests-as-spec.md)):
+
+1. Where the specifications are silent, a PSO scenario fills the gap. The behaviour it checks becomes a decision row, with the scenario named as source.
+2. Where a PSO scenario contradicts a higher source (the OpenAPI on the wire, a story on behaviour), the higher source wins. The conflict is an open question for the spec owners (section 8), and the scenario is expected to fail.
+3. Where this digest contradicted a higher source and a PSO scenario follows that source, the digest was wrong and the row is corrected.
+4. A scenario that PSO itself marks `@bug` is not used as a specification.
+
+Rows taken under this rule: D10 revised and D84 to D87 (rule 3: operations of the OpenAPI that the factory had left out), D88 (rule 1), D89 (rule 2 with a way out: one body meets both shapes). Conflicts kept as questions: section 8, questions 13 to 18.
+
 ---
 
 ## 2. Component map
@@ -74,11 +83,11 @@ Overlaps settled:
 | SIMPL-31815, SIMPL-31817 | Create and version a SEARCH schema: Schema Manager API. Only the result (a `schemaType` attribute, one SEARCH schema) is consumed, from the stub |
 | SIMPL-31816, SIMPL-30850 | Schema management UI: Schema Manager UI |
 
-### 3.2 Operations: 45 in the OpenAPI files, 37 in, 8 out, plus 3 defined here
+### 3.2 Operations: 45 in the OpenAPI files, 37 in, 8 out, plus 3 defined here (41 in, 4 out since run 1.2)
 
 catalogue-be (25 operations): 18 in.
 - In: `GET/POST /self-descriptions`, `POST /self-descriptions/resource`, `GET /self-descriptions/{selfDescriptionId}`, `GET/POST /self-descriptions/{selfDescriptionId}/qualityAssessmentRecord`, `POST /self-descriptions/{selfDescriptionId}/revoke`, `GET /self-descriptions/{selfDescriptionId}/versions`, `DELETE /self-descriptions/{self_description_hash}`, `GET /selfDescriptions/quickSearch`, `POST /selfDescriptions/advancedSearch`, `GET/POST /schemas`, `GET/DELETE /schemas/{schemaId}`, `POST /schemas/{schemaName}/recalcQualityScore`, `POST /verification`, `POST /webhooks/schema-events`.
-- Out (respond `501` with a Problem, D10): `GET/POST /query` (needs an openCypher engine; quick and advanced search are the query surface), `GET/DELETE /session` (review notes call it SSO-dependent), `GET /verification` (HTML page), `GET /schemas/latest` and `PUT /schemas/{schemaId}` (only SHACL shapes are stored in this run).
+- Out (respond `501` with a Problem, D10): `GET/DELETE /session` (review notes call it SSO-dependent) and `PUT /schemas/{schemaId}` (only SHACL shapes are stored in this run). Until run 1.2 also `GET/POST /query`, `GET /verification` and `GET /schemas/latest`; they are in scope since (D10 revised, D84 to D87).
 
 query-mapper-adapter (9 operations): 9 in, including the tier-1 draft `POST /governanceAuthority/selfDescriptions/advancedSearch` that the root does not compose (D6).
 
@@ -127,7 +136,7 @@ The 13 `#!!` notes are in `fc_openapi-itb.yaml` only. Per note:
 | N8 | `Session.seed` (commented out) | Seed for pagination | No seed. Deterministic ordering instead (D31) |
 | N9 | `SelfDescription.id` | Added id / credentialSubject | `id` = `credentialSubject.@id` (D11) |
 | N10 | `GET /selfDescriptions` parameters | Filters for all metadata fields | Implement the filter set of the composed root, with its names (D18) |
-| N11 | `/query` | Singular, one query | Path is `/query`; operation out of scope |
+| N11 | `/query` | Singular, one query | Path is `/query`; in scope since run 1.2 (D84) |
 | N12 | `/session` | Singular | Out of scope |
 | N13 | `DELETE /session` | Logout is SSO-dependent | Out of scope |
 
@@ -135,7 +144,7 @@ The 13 `#!!` notes are in `fc_openapi-itb.yaml` only. Per note:
 
 **D1 Two catalogue-be roots.** `fc_openapi.yaml` uses `/self-descriptions/...`, query names `issuers`, `validators`, `statuses`, `ids`, `hashes`, path `{self_description_hash}`, `/webhooks/schema-events`, server `.../fc`. `fc_openapi-itb.yaml` uses `/selfDescriptions/...`, `issuer`, `validatorDids`, `status`, `id`, `sdHash`, `{selfDescriptionHash}`, `/webhooks/schemaEvents`, server `.../fc/v1`. The layout README calls both "active root specs". Decision: the composed root wins on every path and name. Search paths stay `/selfDescriptions/quickSearch` and `/selfDescriptions/advancedSearch` (camel case in both). No aliases.
 
-**D2 Error body format.** Composed `common` maps most responses to `Error {code, message}` with `application/json`; QAR responses, search 400s, the itb file and the adapter and cbe use RFC 9457 `Problem` with `application/problem+json`. Decision: every error response of every backend is a `Problem` with `application/problem+json`, with at least `type`, `title`, `status`, `detail`. Problem types are listed in section 6.6.
+**D2 Error body format.** Composed `common` maps most responses to `Error {code, message}` with `application/json`; QAR responses, search 400s, the itb file and the adapter and cbe use RFC 9457 `Problem` with `application/problem+json`. Decision: every error response of every backend is a `Problem` with `application/problem+json`, with at least `type`, `title`, `status`, `detail`. Problem types are listed in section 6.6. Since run 1.2 every Problem also carries `message` as an extension member, and verification failures also `code` (D89).
 
 **D3 Base paths.** Servers: cat `.../fc` (gateway prefix), qma `/v1`, cbe `/v1` and `/v2`. Decision: cat serves at the root of its port (no `/fc`), qma under `/v1`, cbe under `/v1` and `/v2`. Every service also answers `GET /health` with `200 {"status":"UP"}` without authentication.
 
@@ -151,7 +160,7 @@ The 13 `#!!` notes are in `fc_openapi-itb.yaml` only. Per note:
 
 **D9 Content negotiation.** 406 and 415 appear in many operations. Decision: if an `Accept` header is present and accepts neither the operation's media type nor `*/*`, answer `406`. If a request body has a `Content-Type` other than the listed ones, answer `415`. A missing `Accept` is fine.
 
-**D10 Out-of-scope operations.** Decision: they exist and answer `501` with Problem type `urn:problem-type:simpl:notImplemented`. Tests only check that they are not `2xx`.
+**D10 Out-of-scope operations (revised 4 Nov 2026, run 1.2).** Decision: they exist and answer `501` with Problem type `urn:problem-type:simpl:notImplemented`. Tests only check that they are not `2xx`. Revision: run 1 also left out `GET/POST /query`, `GET /verification` and `GET /schemas/latest`, although the OpenAPI defines them. That was a scope choice of the factory, not a gap in the specs, and PSO scenarios TC_FC_03, TC_FC_10, TCC09 and TCCAT_SV12 test them (section 1, rule 3). They are in scope now (D84 to D87). Still out: `GET/DELETE /session`, `PUT /schemas/{schemaId}`.
 
 ### 4.3 Resource description lifecycle
 
@@ -365,6 +374,30 @@ The Trustor side (`GET /federated/resourceDescriptions/{id}`) answers 401 or 403
 
 **D83 DOME.** BP06.12, HLR 6.8 to 6.10, the DOME prerequisite. Decision: out. No DOME scope option in the UI.
 
+### 4.12 Query, latest schemas, verification page and error members (added 4 Nov 2026, run 1.2)
+
+**D84 openCypher query.** Sources: OpenAPI `POST /query` (body `Statement {statement, parameters}`, `queryLanguage` `OPENCYPHER` by default, also `SPARQL` and `GRAPHQL`; `timeout` default 5; `withTotalCount` default true; 200 `Results {totalCount, items}`; 400, 408, 500), `GET /query` ("HTML website to send openCypher queries"), roles: the searcher set. No story. PSO TCC09 (malformed statement: 400), TCCAT_SV12 (no token: 401). Decision: only `OPENCYPHER` is supported; `SPARQL` or `GRAPHQL` give 400 `invalidInput`, as does any other value. The body must be a JSON object with a non-empty string `statement`; `parameters`, if present, must be an object; else 400 `badRequest`. The statement runs in a read-only transaction on the claims graph of D85 with a limit of `timeout` seconds (1 to 300). A statement that would change the graph, or that does not parse or type-check, gives 400 `badRequest` with the engine's first message line in `detail`. Past the limit: 408 `catalogue:queryTimeout`. 200: one item per row, keyed by the `RETURN` column names; a node is shown as its properties, a relationship as its properties plus `type`, a path as the list of its nodes. `totalCount` is the number of rows; it is left out when `withTotalCount=false`. No paging. No discovery-policy filter (to validate, see D85). `GET /query` returns a small HTML page, searcher set. Missing token 401, other role 403. Environment choice: Neo4j Community 5.26, one database per catalogue, no host port.
+Finding: the OpenAPI does not say which data the query runs on, nor how rows are shaped.
+
+**D85 Claims graph mapping and lifecycle (to validate).** Sources: none for the mapping. Tag text: RDs are "JSON-LD files"; search items carry `claimsGraphUri` (a list holding the RD id). BP05b and D13, D16, D17 define the lifecycle. Decision: the claims of an RD are its `credentialSubject`, expanded to RDF with the bundled contexts only (D24), the same graph that SHACL validates (D14). The mapping into the property graph:
+- Every IRI or blank node of the claims is one node with label `Resource`, scoped to the RD (the same IRI in two RDs gives two nodes). Property `uri` holds the IRI (absent for blank nodes), `claimsGraphUri` a list with the RD id.
+- Each `rdf:type` adds a label: the local name of the type IRI, for example `DataOffering`.
+- A literal becomes a node property named after the local name of the predicate (`simpl:name` becomes `name`). Integer types become integers, `xsd:decimal`, `xsd:double` and `xsd:float` become floats, `xsd:boolean` a boolean, anything else its lexical form; several values give a list.
+- An IRI or blank node object becomes a relationship typed with the local name of the predicate, from subject to object, with property `claimsGraphUri`.
+- The local name is the part after the last `#`, else after the last `/` or `:`. Two predicates with the same local name in different namespaces meet in one name.
+Lifecycle: the claims of an RD are loaded when it is published with status `active`, and removed when it is revoked (D16), deleted (D17), or replaced by a new version (D13, which revokes the previous one). So the graph holds active RDs only, as search does. PostgreSQL stays the record of truth; the graph is rebuilt from it at startup.
+To validate with the spec owners: is openCypher over the claims the intended query surface; is this mapping meant (or, for example, full IRIs as labels and keys, a shared node per IRI across RDs, or an RDF import with namespace prefixes); do revoked RDs belong in the graph for existing contracts (BP05b keeps them inspectable); does the discovery access policy (D30) apply to `/query`; and does the result shape fit the consumers of the query API.
+
+**D86 Latest schemas.** Sources: OpenAPI `GET /schemas/latest` (`type` required: `ontology`, `shape`, `vocabulary`; `term` optional, the URI of a term; 200 `application/rdf+xml` for an ontology or vocabulary, `text/turtle` for SHACL; 400, 403, 500; roles `GA_SCHEMA_VIEWER` or `GA_SCHEMA_ADMIN`). PSO TC_FC_03 (`type=ontology`, 200). Decision: `type` is required and case-sensitive, else 400 `invalidInput`. `shape`: the union of all stored shapes that are not `REVOKED`, as Turtle; each stored shape has one version, so it is its own latest. With `term`, only the shapes whose graph has `sh:targetClass` equal to the term; none gives 200 with an empty Turtle document. `ontology` and `vocabulary`: only shapes are stored (D58), so the answer is 200 with an empty RDF/XML graph.
+Finding: no seed ontology (for example Gaia-X Core, which PSO TCC03 expects in `GET /schemas`) is part of the published input, so the build stores none. Open question 16.
+
+**D87 Verification page.** Sources: OpenAPI `GET /verification` ("HTML page to verify (portions of) a signed Self-Description", roles N/A). PSO TC_FC_10 (200). Decision: a small HTML page that explains `POST /verification` (D25). A valid token of the realm, no role (D67).
+
+**D88 Query search.** Sources: no specification has `POST /query/search`. PSO TC_FC_09 posts an empty JSON object and expects 400 (rule 1). Decision: the operation exists with the same contract and roles as `POST /query` (D84), so a body without `statement` gives 400 `badRequest`. Finding: the operation is tested but not specified; either add it to the OpenAPI or drop it from the tests.
+
+**D89 Error members of both shapes (meets both sides of a conflict).** Sources: D2 (Problem). The composed `common` file's `Error {code, message}` (both required). PSO TC_FC_08 and TCC02 check `message` ("was not found", "no self-description found for hash"); TCC11 checks `code` `verification_error` and an exact `message`. Rule 2: the two shapes conflict and the digest keeps Problem. Way out: RFC 9457 allows extension members. Decision: every Problem of every backend also carries `message` (the same text as `detail`). The verification failures of publication and verification (`invalidSignature`, `schemaNotSupported`, `shaclViolation`) also carry `code` `verification_error`. Other Problems carry no `code`: PSO validates error bodies against a JSON schema with `oneOf` Problem or `Error`, and a body with `type`, `code` and `message` matches both branches and fails it (found in the first run 1.2 PSO run: TCFC_SV03 and TCFC_SV08 regressed). So "meet both shapes" holds only partly: a body can carry the Problem members plus `message`, not both full shapes. The `detail` of a delete by an unknown hash reads `no self-description found for hash <hash>.` (wording from TCC02, rule 1). Exact message texts beyond these are not taken from PSO.
+Still a question for the spec owners (question 13): which error shape is the target.
+
 ---
 
 ## 5. Identity and environment contract
@@ -421,7 +454,9 @@ Token endpoint (tests): `http://localhost:18080/realms/<realm>/protocol/openid-c
 | cat search, `GET /self-descriptions`, `GET /{id}`, `GET /{id}/versions`, `GET` QAR | searcher set |
 | cat `POST /self-descriptions`, `POST /resource`, revoke, delete | publisher set, plus ownership |
 | cat `GET /schemas`, `GET /schemas/{id}` | `GA_SCHEMA_VIEWER` or `GA_SCHEMA_ADMIN` |
-| cat `POST /schemas`, `DELETE /schemas/{id}`, recalc, `POST /verification`, `POST` QAR | valid token, no role (D67) |
+| cat `POST /schemas`, `DELETE /schemas/{id}`, recalc, `GET` and `POST /verification`, `POST` QAR | valid token, no role (D67, D87) |
+| cat `GET` and `POST /query`, `POST /query/search` | searcher set (D84, D88) |
+| cat `GET /schemas/latest` | `GA_SCHEMA_VIEWER` or `GA_SCHEMA_ADMIN` (D86) |
 | cat webhook | no token |
 | qma local search, `/governanceAuthority/...` | searcher set |
 | qma `/participants/...` | publisher set, plus ownership |
@@ -555,7 +590,7 @@ schema-stub endpoints (no auth):
 
 ### 6.6 Problem types
 
-`urn:problem-type:simpl:badRequest` (400 syntax), `urn:problem-type:simpl:catalogue:invalidInput` (400 parameters), `urn:problem-type:simpl:unauthorized` (401), `urn:problem-type:simpl:forbidden` (403 role), `urn:problem-type:simpl:resourceNotFound` (404 cat), `urn:problem-type:simpl:notFound` (404 qma, cbe), `urn:problem-type:simpl:notAcceptable` (406), `urn:problem-type:simpl:unsupportedMediaType` (415), `urn:problem-type:simpl:internalServerError` (500), `urn:problem-type:simpl:notImplemented` (501), and under `urn:problem-type:simpl:catalogue:`: `providerMismatch` (403), `discoveryPolicyDenied` (403), `alreadyExists` (409), `versionConflict` (409), `invalidSignature` (422), `schemaNotSupported` (422), `shaclViolation` (422), `qualityBelowThreshold` (422), `qualityConfigurationError` (500), `qualityAssessmentFailed` (502), `federationUnauthenticated` (502), `federationUnavailable` (502), `federationTimeout` (504), `schemaNotFound` (404), `activeQualityProfileNotFound` (404).
+`urn:problem-type:simpl:badRequest` (400 syntax), `urn:problem-type:simpl:catalogue:invalidInput` (400 parameters), `urn:problem-type:simpl:unauthorized` (401), `urn:problem-type:simpl:forbidden` (403 role), `urn:problem-type:simpl:resourceNotFound` (404 cat), `urn:problem-type:simpl:notFound` (404 qma, cbe), `urn:problem-type:simpl:notAcceptable` (406), `urn:problem-type:simpl:unsupportedMediaType` (415), `urn:problem-type:simpl:internalServerError` (500), `urn:problem-type:simpl:notImplemented` (501), `urn:problem-type:simpl:serviceUnavailable` (503, query store not configured), and under `urn:problem-type:simpl:catalogue:`: `providerMismatch` (403), `discoveryPolicyDenied` (403), `alreadyExists` (409), `versionConflict` (409), `invalidSignature` (422), `schemaNotSupported` (422), `shaclViolation` (422), `qualityBelowThreshold` (422), `qualityConfigurationError` (500), `qualityAssessmentFailed` (502), `federationUnauthenticated` (502), `federationUnavailable` (502), `federationTimeout` (504), `schemaNotFound` (404), `activeQualityProfileNotFound` (404), `queryTimeout` (408, D84).
 
 ### 6.7 Minimal valid RD (before signing)
 
@@ -609,6 +644,15 @@ Login: standard Keycloak form (fields `username`, `password`, button `kc-login`)
 10. **Advanced search mapping.** How request node names relate to RD properties, and how a SHACL shape drives the form when shapes are flat and RDs are nested (D29, D74).
 11. **Roles.** "N/A" roles on write operations of cat; no roles at all on qma and cbe (D66, D67).
 12. **Smaller gaps.** Default `statuses` on the list (D18), sorting (D33), "search all federated catalogues" (D45), linkage stories with their own criteria (section 1), log requirements (D82), the `409 Config` case of SIMPL-31817 (D62).
+
+Added on 4 Nov 2026 from the PSO tests (section 1, rule 2) and the query work of run 1.2:
+
+13. **Error shape.** The composed `common` file uses `Error {code, message}`, the newer parts RFC 9457 Problem; PSO checks `message` and `code`, and validates error bodies with `oneOf` the two shapes, so one body cannot be both. The build sends Problem plus `message`, and `code` only on verification failures (D89). Which shape is the target, and which `code` values are meant?
+14. **IAA role `T2IAA_M`.** PSO posts resources and reads schemas as `T2IAA_M`; the catalogue OpenAPI names the publisher roles and `GA_SCHEMA_*` for these operations (D66). Mapping IAA roles onto catalogue roles is configuration. Is `T2IAA_M` meant to have these rights?
+15. **Spelling of `simpl:offeringType`.** PSO sends `"DATA"`; the seed shape of this digest allows `data`, `application`, `infrastructure` (section 6.4). Which spelling is the target? Until settled, the passing TCC07 scenarios pass for the wrong reason (tests-as-spec.md, step 1).
+16. **Seed ontologies.** PSO TCC03 expects the Gaia-X Core ontology in `GET /schemas`. No ontology is in the published input, and the build stores shapes only (D58, D86). Which ontologies belong in a catalogue, and from where?
+17. **Query surface and mapping (D84, D85).** Is openCypher over the claims the intended surface, which graph mapping is meant, does the discovery policy apply, and what result shape do consumers expect?
+18. **`POST /query/search` (D88).** Tested by PSO, in no OpenAPI. Should it exist?
 
 ---
 

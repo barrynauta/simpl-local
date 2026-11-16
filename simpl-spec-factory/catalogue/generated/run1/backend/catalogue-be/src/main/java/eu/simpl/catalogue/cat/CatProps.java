@@ -11,6 +11,7 @@ public class CatProps {
     private String qualityStubUrl = "http://quality-stub:8000";
     private List<String> seedDirs = new ArrayList<>();
     private String keyRegistry;
+    private String graphUrl;
 
     public String getQualityStubUrl() { return qualityStubUrl; }
     public void setQualityStubUrl(String v) { qualityStubUrl = v.endsWith("/") ? v.substring(0, v.length() - 1) : v; }
@@ -18,4 +19,6 @@ public class CatProps {
     public void setSeedDirs(List<String> v) { seedDirs = v; }
     public String getKeyRegistry() { return keyRegistry; }
     public void setKeyRegistry(String v) { keyRegistry = v; }
+    public String getGraphUrl() { return graphUrl; }
+    public void setGraphUrl(String v) { graphUrl = v; }
 }

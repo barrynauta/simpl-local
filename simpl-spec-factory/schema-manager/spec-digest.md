@@ -4,7 +4,7 @@ Second candidate of the spec-driven factory. This document is the single working
 
 Input read: `specs/README.md`, the 55 stories in `specs/stories/`, `specs/api/schema_openapi.yaml` (1.1.0, commit `f9e5205`), `specs/functional/bp02c-manage-resource-description-schemas.md`, and [`findings.md`](./findings.md). Nothing else.
 
-Date: 2026-10-28.
+Date: 2026-10-28. Section 1.1 and D64 added on 2026-11-04 (step 2 of `tests-as-spec.md`, run 1.2).
 
 ---
 
@@ -21,6 +21,17 @@ When sources disagree, the higher rank wins.
 | 5 | BP02C | Intent and vocabulary | High level; every requirement still has status *Proposed*. Used only where nothing above speaks. |
 
 Examples in stories (hostnames such as `api.simpl.space`, values such as `data-schema` or `"1.0.0"`) are illustrations. They never override a field format defined by rank 3 or a decision.
+
+### 1.1 Existing tests as a source (added 4 Nov 2026)
+
+The API tests of the PSO test team are a source too: code.europa.eu `simpl/pso/pso-test/pso-test-automation-unified`, commit `ec7a546`, features `regression/schema-manager` and `schema-validation/schema-manager`. They rank below ranks 2 to 5 and enter this digest only through a decision row. The rule (from [`../tests-as-spec.md`](../tests-as-spec.md)):
+
+1. Where the specifications are silent, a PSO scenario fills the gap. The behaviour it checks becomes a decision row, with the scenario named as source.
+2. Where a PSO scenario contradicts a higher source (the OpenAPI on the wire, a story on behaviour), the higher source wins. The conflict is an open question for the spec owners (section 5), and the scenario is expected to fail.
+3. Where this digest contradicted a higher source and a PSO scenario follows that source, the digest was wrong and the row is corrected.
+4. A scenario that PSO itself marks `@bug` is not used as a specification.
+
+Rows taken under this rule: D64 (rule 1). Conflicts kept as questions: question 16 (rule 2). Not used: TC_SM_08 and TC_SM_23 (rule 4, marked `@bug`).
 
 ---
 
@@ -488,6 +499,13 @@ Finding (F-MQP): either add the stories and a create operation, or move these op
 Sources: OpenAPI uses both `urn:problem-type:iana:notFound` and `urn:problem-type:simpl:notFound`.
 Decision: `urn:problem-type:simpl:` + `badRequest`, `unauthorized`, `forbidden`, `notFound`, `notAcceptable`, `conflict`, `unsupportedMediaType`, `internalServerError`. `status` in the body equals the HTTP status. Tests assert `status` and the detail prefixes and fixed texts given in this digest, not other `detail` wording.
 
+### 4.8 Decisions from the PSO tests (added 4 Nov 2026, run 1.2)
+
+**D64. A RESOURCE schema declares its resource type.**
+Sources: no story and no OpenAPI text. PSO scenario TC_SM_22 (SIMPL-20417) creates a Data schema from PSO's fixture `invalid.ttl` and expects 400 with a problem body. The fixture is valid Turtle with one `sh:NodeShape` and no `sh:targetClass`; its comment cites PSO test case SIMPL-18293: "it declares no resource type, so the Schema Manager must reject it". TC_SM_19 tests the same on a new version, but PSO marks it `@bug`, so it is not a source (section 1.1, rule 4). Rule 1: the specifications are silent, the test fills the gap.
+Decision: a RESOURCE schema (create and new version) must have at least one `sh:NodeShape` with an `sh:targetClass`. The check is part of the structure check of D30, after the `sh:NodeShape` check and before default properties (D33 order). Failure gives 400 with detail `Syntax Error: no resource type declared (no sh:NodeShape with sh:targetClass)` and one issue with code `noResourceType`, location `document`. The `sh:targetClass` value is not compared with the `resourceType` form field. SEARCH schemas are not checked (they have no resource type, D13).
+Finding: write the rule into a story, and say whether the declared class must match `resourceType` and whether exactly one class is expected.
+
 ---
 
 ## 5. Open questions for the spec owners
@@ -509,6 +527,8 @@ Ordered by impact on buildability.
 13. **Name reuse after revocation (D12).** The stories ask the question themselves.
 14. **UI texts (D51, D52)** and the "public" URI (D6).
 15. **Quality profile operations (D62)**: owner and missing create operation.
+16. **No token on `GET /schemas` and `GET /schemas/{schemaName}/versions` (D5, from the PSO tests).** The OpenAPI lists neither 400 nor 401 for these operations. The digest answers 401 (HTTP semantics); PSO expects 400. Should the OpenAPI list 401?
+17. **Declared resource type (D64, from the PSO tests).** The rule exists only in a PSO test case (SIMPL-18293). Please write it into a story, with the matching rule against `resourceType`.
 
 ---
 

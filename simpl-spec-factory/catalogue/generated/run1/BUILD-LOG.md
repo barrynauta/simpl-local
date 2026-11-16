@@ -138,3 +138,14 @@ catalogue list request).
   (D55).
 - Quality recalculation only acknowledges (D56); nothing is rescored.
 - The search does not scale beyond test sizes (in-memory filtering, see above).
+
+## Run 1.2 (D10 revised, D84 to D89, 4 Nov 2026)
+
+- **D84, D88**: `QueryController` serves `GET /query` (HTML), `POST /query` and `POST /query/search` with one contract: OPENCYPHER only, `statement` required, `parameters` an object, `timeout` 1 to 300 seconds, `withTotalCount`. `/query` is no longer an open path, so a missing token gives 401.
+- **D85**: `graph/ClaimsMapping` turns the claims graph of `JsonLdSupport.subjectGraph` into nodes and relationships; `graph/ClaimsGraph` writes them to Neo4j with the Java driver and runs queries in a read transaction with a timeout. `PublicationService` loads the new RD and removes the previous version; `RdService` removes on revoke and delete. At startup the graph is cleared and rebuilt from the active RDs in PostgreSQL. A graph write that fails makes the request fail (500) and rolls back the database change.
+- Environment: `graph-a` and `graph-b` (Neo4j Community 5.26, no authentication, no host port, no volume) in `docker-compose.yml`; `GRAPH_URL` on cat-a and cat-b. Without `GRAPH_URL` (the build's own Spring tests) the projection is off and `/query` answers 503 `serviceUnavailable`. Spring Boot's Neo4j auto-configuration is excluded, so nothing connects to a default `localhost:7687`.
+- **D86**: `GET /schemas/latest` in `SchemaController` and `ShapeService.latestShapes`. **D87**: `GET /verification` in `VerificationController`. `OutOfScopeController` keeps only the session operations and `PUT /schemas/{schemaId}`.
+- **D89**: `Problems.withErrorMembers` adds `message` to every Problem, also to the 401 and 403 bodies written by the security filters, and `code` `verification_error` to the three verification failure types only. A first version added `code` everywhere; PSO's `oneOf` error schema then failed on two scenarios, so it was narrowed. The delete by an unknown hash now says `no self-description found for hash <hash>.`
+- New problem types: `serviceUnavailable` (503) and `catalogue:queryTimeout` (408).
+- Tests: `ClaimsMappingTest` (labels, properties, lists, relationships, local names).
+- Choices inside the decisions: a relationship in a result also carries its `type`; a path is the list of its node property maps; reserved node keys (`uri`, `claimsGraphUri`) win over a predicate with the same local name.

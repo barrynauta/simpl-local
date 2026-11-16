@@ -28,6 +28,7 @@ cat > "$TMP/schema.ttl" <<'TTL'
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <urn:shape:Smoke> a sh:NodeShape ;
+  sh:targetClass <urn:class:Smoke> ;
   sh:property [ sh:path simpl:uuid ; sh:datatype xsd:string ] ;
   sh:property [ sh:path simpl:version ; sh:datatype xsd:string ] .
 TTL

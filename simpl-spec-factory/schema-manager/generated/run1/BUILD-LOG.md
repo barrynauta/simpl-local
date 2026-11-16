@@ -144,3 +144,10 @@ Each entry: where the specs and the digest still left a choice, and what this bu
 - The data volume persists between `docker compose up` runs. Use `docker compose down -v` for an
   empty store. At hand-over the stack was restarted from a clean volume and only `smoke.sh` ran
   against it.
+
+## Run 1.2 (decision D64, 4 Nov 2026)
+
+- **D64**: `SchemaValidator.resourceTypeDeclared` runs for RESOURCE schemas, on create and on new version, after the `sh:NodeShape` check and before the default properties. With no `sh:NodeShape` that has an `sh:targetClass`, the answer is 400 with detail `Syntax Error: no resource type declared (no sh:NodeShape with sh:targetClass)` and one issue `noResourceType`. SEARCH schemas are not checked. The class is not compared with `resourceType`.
+- `smoke.sh`: its schema now declares `sh:targetClass`.
+- Tests: two new unit tests in `SchemaValidatorTest` (RESOURCE rejected, SEARCH accepted); the test fixtures in `Fixtures` declare `sh:targetClass`. `mvn test` green.
+- Unclear: D64 does not say whether a `sh:targetClass` on a shape that is only reached through `sh:node` counts. Any `sh:NodeShape` with a `sh:targetClass` counts.

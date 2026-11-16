@@ -27,6 +27,7 @@ Written by the test writer of the spec-driven factory, from `../specs/`, `../spe
 | `@Dnn` | Digest decision the scenario depends on |
 | `@openapi-only` | Behaviour defined by the OpenAPI only (406, 415, 409 on duplicate webhooks, warnings, out-of-scope paths) |
 | `@rbac` | Role checks (D4, D5, D7) |
+| `@pso-source` | The decision comes from a PSO scenario (run 1.2, precedence rule of the digest, section 1.1) |
 | `@mail` | Needs mail capture (`MAIL_API_URL`) |
 | `@webhook` | Needs the webhook receiver to be reachable from the service |
 | `@search-serial` | Touches the single global SEARCH slot. Run these one after another, never in parallel (D61) |
