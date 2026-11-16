@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
-/** D66: machine operations need x-api-key equal to the UIBE key. */
+/** D66: machine operations need x-api-key equal to the UIBE key. Since run 1.2 the health check is one (D13). */
 @Component
 public class ApiKeyFilter extends OncePerRequestFilter {
     private final UibeSettings settings;
@@ -23,7 +23,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
     static boolean isMachine(HttpServletRequest request) {
         String path = request.getRequestURI().substring(request.getContextPath().length());
-        if (path.startsWith("/admin/")) {
+        if (path.startsWith("/admin/") || path.equals("/health") || path.equals("/health/")) {
             return true;
         }
         return "POST".equals(request.getMethod()) && path.matches("/contractOffers/[^/]+");

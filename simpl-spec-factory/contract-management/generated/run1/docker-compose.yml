@@ -116,7 +116,7 @@ services:
       - "19101:8080"
     healthcheck:
       <<: *java-health
-      test: ["CMD", "curl", "-fsS", "http://localhost:8080/contract/v1/health"]
+      test: ["CMD-SHELL", "curl -fsS -H \"X-Api-Key: $$CM_API_KEY\" http://localhost:8080/contract/v1/health"]
 
   cm-consumer:
     build:
@@ -146,7 +146,7 @@ services:
       - "19201:8080"
     healthcheck:
       <<: *java-health
-      test: ["CMD", "curl", "-fsS", "http://localhost:8080/contract/v1/health"]
+      test: ["CMD-SHELL", "curl -fsS -H \"X-Api-Key: $$CM_API_KEY\" http://localhost:8080/contract/v1/health"]
 
   uibe-provider:
     build:
@@ -175,7 +175,7 @@ services:
       - "19102:8080"
     healthcheck:
       <<: *java-health
-      test: ["CMD", "curl", "-fsS", "http://localhost:8080/contract-ui/v1/health"]
+      test: ["CMD-SHELL", "curl -fsS -H \"x-api-key: $$UIBE_API_KEY\" http://localhost:8080/contract-ui/v1/health"]
 
   uibe-consumer:
     build:
@@ -205,7 +205,7 @@ services:
       - "19202:8080"
     healthcheck:
       <<: *java-health
-      test: ["CMD", "curl", "-fsS", "http://localhost:8080/contract-ui/v1/health"]
+      test: ["CMD-SHELL", "curl -fsS -H \"x-api-key: $$UIBE_API_KEY\" http://localhost:8080/contract-ui/v1/health"]
 
   ui-provider:
     build:

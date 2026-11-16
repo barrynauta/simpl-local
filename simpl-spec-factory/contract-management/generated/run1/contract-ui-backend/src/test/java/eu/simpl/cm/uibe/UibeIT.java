@@ -67,7 +67,8 @@ class UibeIT {
 
     @Test
     void authentication() throws Exception {
-        mvc.perform(get("/health")).andExpect(status().isOk());
+        mvc.perform(get("/health")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/health").header("x-api-key", "ui-key")).andExpect(status().isOk());
         mvc.perform(get("/contracts")).andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.type").value("urn:problem-type:simpl:unauthorized"));
         mvc.perform(get("/contracts").header("x-api-key", "ui-key")).andExpect(status().isUnauthorized());

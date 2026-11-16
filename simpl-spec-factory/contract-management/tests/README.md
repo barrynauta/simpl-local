@@ -35,6 +35,7 @@ and never assumes an empty database.
 | `@bp07` | a BP07 process step or outcome |
 | `@openapi-only` | an OpenAPI or digest rule with no story behind it |
 | `@Dnn` | the digest decisions the scenario depends on |
+| `@pso-source` | the decision was set or corrected from a PSO scenario (run 1.2, digest section 1.1) |
 | `@E1` to `@E11`, `@P1` to `@P4`, `@L1` to `@L7` | the D37 state machine row it covers |
 | `@rbac` | access control (API key, token, role) |
 | `@oidc` | needs Keycloak tokens; skipped with `AUTH_MODE=none` |

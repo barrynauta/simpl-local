@@ -1,5 +1,5 @@
 Feature: API key authentication of the contract manager backend
-  Every CM operation except the health check needs the CM's X-Api-Key.
+  Every CM operation, the health check included (D13 as revised in run 1.2), needs the CM's X-Api-Key.
   Missing or wrong key: 401. CM never answers 403 (D65).
 
   Background:

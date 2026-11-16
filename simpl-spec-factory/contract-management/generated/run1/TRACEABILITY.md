@@ -120,3 +120,5 @@ Where each decision lives in the code is in `docs/decisions.md`. Tests per decis
 | C4 | `SigningService` triggers | PIT (P1 and P2 triggers), live check |
 | C5 | no change | SMOKE, UI-RUN (run 1) |
 | C6 | `UI/views/Overview.vue` | UI build only |
+
+Run 1.2 (4 Nov 2026): D13 as revised (health behind the API key) is in `manager/web/ApiKeyFilter` and `uibe/ApiKeyFilter`, tested by PIT (`healthAndApiKey`) and UIT (`authentication`).

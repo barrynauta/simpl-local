@@ -125,7 +125,8 @@ class ProviderFlowIT {
 
     @Test
     void healthAndApiKey() throws Exception {
-        mvc.perform(get("/health")).andExpect(status().isOk())
+        mvc.perform(get("/health")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/health").header("X-Api-Key", "key-p")).andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith("application/vnd.spring-boot.actuator.v3+json"))
                 .andExpect(jsonPath("$.status").value("UP"));
         mvc.perform(get("/contracts")).andExpect(status().isUnauthorized())

@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
 
-/** D65: every CM operation except /health needs X-Api-Key equal to the configured key, else 401. */
+/** D65: every CM operation, /health included (D13, run 1.2), needs X-Api-Key equal to the configured key, else 401. */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class ApiKeyFilter extends OncePerRequestFilter {
@@ -23,12 +23,6 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
     public ApiKeyFilter(CmSettings settings) {
         this.settings = settings;
-    }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI().substring(request.getContextPath().length());
-        return path.equals("/health") || path.equals("/health/");
     }
 
     @Override

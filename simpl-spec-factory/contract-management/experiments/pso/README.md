@@ -41,3 +41,39 @@ Upstream fails the same 7 scenarios with the same status codes: 400 on the three
 - **Build and upstream agree on all 14 scenarios.** Where PSO fails, it fails on both, so the gap is between PSO's expectations and the running system, not between the build and upstream.
 - **None of the 7 failures is a build defect.** 3 come from the order of checks on bodies the OpenAPI calls invalid, 2 from places where PSO and the OpenAPI disagree (an extra `GET`, the health check), 2 from the environment.
 - **The same pattern as for the Schema Manager and the Catalogue:** where PSO and the factory differ, PSO follows the letter of the OpenAPI or what it expects of the running system. Here it differs from the running system too. Both are signals for the spec owners: the OpenAPI should list the 404s that PSO and the stories expect, and say whether health is behind the key.
+
+## Environment stand-ins (4 Nov 2026)
+
+A second run, for the 2 environment failures: the schema validation scenarios that first need a participant onboarded through IAA (TCCB_SV07, TCCB_SV08). No PSO test file and no build code was changed.
+
+Before it onboards a new participant, the suite asks the participant agent of the data provider for its echo (`GET /authApi/tier1/v2/echo`, with an ONBOARDER_M token). If the agent says `CONNECTED` and gives a participant id, the suite reuses that participant and skips the onboarding. The stand-in answers that echo: `gateway.conf` now returns a fixed body (`connectionStatus` CONNECTED, id `factory-provider`, no identity attributes) for any request with a token, and 401 without one. The assumption: the Provider of the build is an onboarded participant, as it would be in a real data space. Nothing of IAA is behind it, and the contract manager never sees it. `profiles/factorycm.properties` maps ONBOARDER_M to the build user `provider-admin`, so the suite can fetch that token.
+
+```
+$X/run-gateway.sh                     # 19500, now with the echo stand-in
+$F/pipeline/run_pso.sh $PSO $X/profiles/factorycm.properties out.json \
+  regression/contract-billing schema-validation/contract-billing
+docker rm -f pso-gateway-cm
+```
+
+| Target | Passed |
+|---|---|
+| Factory build, Provider (29 Oct) | 7 of 14 |
+| Factory build, Provider, with the echo stand-in | **8 of 14** |
+
+Result file: `results/pso-on-build-stand-ins.json`. No scenario that passed before fails now.
+
+| Scenario | With the stand-in | Reading |
+|---|---|---|
+| TCCB_SV07, `GET /agreements/{id}` by random id | pass | 404, and the error body conforms to PSO's schema |
+| TCCB_SV08, `GET .../definitions/{id}/status` by random ids | 405 | Past the onboarding, it hits the same `GET` the OpenAPI does not have, as TC_CB_08 above. Not environment any more |
+
+## Run 1.2: the PSO tests as a source (4 Nov 2026)
+
+The build after the corrected D13 (health behind the API key, as the OpenAPI says; see the digest and `findings.md`). Same commands as for the echo stand-in above. No PSO test file changed.
+
+| Target | Passed |
+|---|---|
+| Factory build, Provider, with the echo stand-in (4 Nov) | 8 of 14 |
+| The same after run 1.2 | **9 of 14** |
+
+Result file: `results/pso-on-build-run1.2.json`. TC_CB_07 passes. The 5 that remain are questions for the spec owners: the three 404s on bodies the OpenAPI calls invalid, and the `GET .../status` the OpenAPI does not have (two scenarios).

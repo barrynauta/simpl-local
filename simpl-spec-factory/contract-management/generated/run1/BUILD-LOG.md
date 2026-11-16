@@ -70,3 +70,10 @@ Fix iterations: about seven, all listed above. The compose stack and the smoke t
 - **C6**: overview column headers and the matching filter labels changed to the story wording; the counterparty header depends on the party of the UI.
 - Tests: `ProviderFlowIT` now checks that a duplicate leaves the stored result and `validatedAt` unchanged and writes the history entry, that P1 and the P2 failure carry `CONNECTOR`, and that both credential ids are present. `mvn verify` green (61 tests). Stack rebuilt with `up -d --build --wait`; `smoke.sh` passes. The C6 headers were checked only by a successful UI build, not in a browser.
 - Unclear: C4 says "every transition the table attributes to the connector". I read the actor column literally, so E5 and E6 (actor "system") were left as `SYSTEM`.
+
+## Run 1.2 (D13 revised, 4 Nov 2026)
+
+- **D13, D65, D66**: the health check is no longer open. CM `ApiKeyFilter` now covers `/health` too (missing or wrong `X-Api-Key`: 401). The UIBE `ApiKeyFilter` treats `/health` as a machine operation (missing or wrong `x-api-key`: 401).
+- `docker-compose.yml`: the CM and UIBE container health probes send the key from the container's own `CM_API_KEY` or `UIBE_API_KEY` variable.
+- Tests: `ProviderFlowIT.healthAndApiKey` and `UibeIT.authentication` now expect 401 without the key and 200 with it.
+- Unclear: D13 names "both" backends. The PSO scenario checks only CM; UIBE follows because its OpenAPI has the same global `ApiKeyAuth`.

@@ -2,23 +2,29 @@ Feature: Health, error format and common HTTP conventions
   Both backends expose a health check and answer errors as RFC 9457 problem
   details (digest D11 to D16).
 
-  @openapi-only @D13
-  Scenario: The provider CM health check answers without authentication
+  @openapi-only @D13 @pso-source
+  Scenario: The provider CM health check needs the API key
     When I send "GET" to the provider CM at "/health" without an API key
+    Then the response is a problem with status 401 and type "unauthorized"
+    When I send "GET" to the provider CM at "/health"
     Then the response status is 200
     And the response content type is "application/vnd.spring-boot.actuator.v3+json"
     And the response field "status" is "UP"
 
-  @openapi-only @D13 @consumer
-  Scenario: The consumer CM health check answers without authentication
+  @openapi-only @D13 @consumer @pso-source
+  Scenario: The consumer CM health check needs the API key
     When I send "GET" to the consumer CM at "/health" without an API key
+    Then the response is a problem with status 401 and type "unauthorized"
+    When I send "GET" to the consumer CM at "/health"
     Then the response status is 200
     And the response content type is "application/vnd.spring-boot.actuator.v3+json"
     And the response field "status" is "UP"
 
-  @openapi-only @D13 @uibe
-  Scenario Outline: The <party> UIBE health check answers without authentication
+  @openapi-only @D13 @uibe @pso-source
+  Scenario Outline: The <party> UIBE health check needs the UIBE API key
     When I send "GET" to the <party> UIBE at "/health" without credentials
+    Then the response is a problem with status 401 and type "unauthorized"
+    When I send "GET" to the <party> UIBE at "/health" with the UIBE API key
     Then the response status is 200
     And the response content type is "application/vnd.spring-boot.actuator.v3+json"
     And the response field "status" is "UP"
@@ -111,6 +117,6 @@ Feature: Health, error format and common HTTP conventions
 
   @openapi-only @D14 @uibe
   Scenario: UIBE echoes the correlation id too
-    When I send "GET" to the provider UIBE at "/health" without credentials
+    When I send "GET" to the provider UIBE at "/health" with the UIBE API key
     Then the response status is 200
     And the response header "X-Correlation-Id" is a UUID
