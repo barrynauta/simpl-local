@@ -1,0 +1,4608 @@
+{
+ "summary": {
+  "component": ".",
+  "stories": 35,
+  "stories_replaced": 0,
+  "stories_without_ac": 2,
+  "acs_live": 91,
+  "acs_struck": 0,
+  "acs_label_derived": 58,
+  "acs_incomplete": 3,
+  "apis": 1,
+  "operations": 19,
+  "processes": 0,
+  "bp_requirements": 0,
+  "stories_naming_an_operation": 1,
+  "processes_naming_a_story": 0,
+  "extraction_issues": 6
+ },
+ "stories": [
+  {
+   "key": "SIMPL-393",
+   "title": "Provide CPS (Core Public Services) vocabulary",
+   "kind": "",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-393 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-393.md",
+   "user_story": {
+    "as a": "governance authority agent",
+    "i want": "to include the [Core public services vocabulary](https://github.com/SEMICeu/CPSV/tree/master)",
+    "so that": "I can use the vocabulary for semantic validation and to check search parameter."
+   },
+   "acs": [],
+   "refs": {
+    "stories": [
+     "SIMPL-390",
+     "SIMPL-395"
+    ],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-395",
+   "title": "Provide UI for additional vocabulary",
+   "kind": "UI",
+   "replaced": false,
+   "status": "DevTeam PBI is ready for Implementation check",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-395 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-395.md",
+   "user_story": {
+    "as a": "governance authority agent",
+    "i want": "to include additional vocabularies if needed",
+    "so that": "I can use the vocabulary for semantic validation and to check search parameter."
+   },
+   "acs": [],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18161",
+   "title": "View All vocabularies and their definitions via UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18161 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18161.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to view a list of all vocabularies and their current versions in the UI",
+    "so that": "I can review them and check their current status and other related data"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "Positive Scenario",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with a role authorizing vocabulary management",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I navigate to the Vocabulary Management screen in the UI",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "I see a list of all vocabularies, with each row showing: an expandable three-dot menu named actions, vocabulary name, description, current version, vocabulary status (`Active`, `Deprecated`), date created, last updated, and creator",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18161/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with a role authorizing vocabulary management",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "an error occurs while Simpl-Open processes my request to retrieve vocabularies in the UI",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "I am informed that the vocabulary list could not be loaded",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the UI displays the details about the error that occurred",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Notes:",
+      "* This story covers listing vocabularies in the Vocabulary Management UI.",
+      "* The minimum actions shown in the row-level three-dot menu are _View vocabulary details_ and {_}Download vocabulary{_}. (these are not functional until their respective functionality is implemented SIMPL-18452)",
+      "* The detailed behaviour of each action is covered in separate user stories.",
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18161/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [
+     "SIMPL-18452"
+    ],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18162",
+   "title": "Retrieve metadata of all vocabularies via API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18162 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18162.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to retrieve the metadata of all vocabularies via the API",
+    "so that": "I can use this data in external systems and reports"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with a valid authentication token granting vocabulary management role",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request the metadata of all vocabularies via API",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open answers with success message 200 OK",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the response body shall contain a paginated list of vocabularies",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "each resource in the list shall include all the relevant metadata (name, version, description, status, creationDate, lastUpdateDate)",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "|",
+      "|Scenario|The Governance Authority requests the metadata of each vocabularies - negative case: wrong pagination|"
+     ],
+     "id": "SIMPL-18162/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with a valid authentication token granting vocabulary management role",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I request the metadata of all vocabularies via API",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I ask with wrong query parameter for pagination",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open answers with error message 400 Bad request",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the response body shall contain the detail of the error",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "metadata shouldn't be returned",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "|",
+      "|Scenario|The Governance Authority requests the metadata of each vocabularies - negative case: forbidden user|"
+     ],
+     "id": "SIMPL-18162/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with a valid authentication token and without vocabulary management role",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I request the metadata of all vocabularies via API",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open answers with error message 403 Forbidden",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the response body shall contain the detail of the error",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "metadata shouldn't be returned",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "|",
+      "|Scenario|The Governance Authority requests the metadata of each vocabularies - negative case: internal error|"
+     ],
+     "id": "SIMPL-18162/AC3"
+    },
+    {
+     "label": "AC4",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with a valid authentication token granting vocabulary management role",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I request the metadata of all vocabularies via API",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "my the request is not processed bacause of an internal error",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open answers with error message 500 Internal error",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the response body shall contain the detail of the error",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "metadata shouldn't be returned",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Technical Description:",
+      "* [https://confluence.simplprogramme.eu/spaces/SIMPL/pages/137235370/R07.02+Vocabulary+Management+-+Tech+Description](https://confluence.simplprogramme.eu/spaces/SIMPL/pages/137235370/R07.02+Vocabulary+Management+-+Tech+Description)",
+      "* [https://confluence.simplprogramme.eu/spaces/SIMPL/pages/83199459/BP02B+-+Manage+vocabularies](https://confluence.simplprogramme.eu/spaces/SIMPL/pages/83199459/BP02B+-+Manage+vocabularies) - BP Definition",
+      "* Figma UI: [https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f)",
+      "* In scope: Pagination"
+     ],
+     "id": "SIMPL-18162/AC4"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18163",
+   "title": "Sort and filter vocabulary list via UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18163 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18163.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to filter and sort the vocabulary list in the UI",
+    "so that": "I can quickly find vocabularies based on status, name, or creation date"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority and viewing the vocabulary list",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I apply a filter (e.g., \"Vocabulary Status = Deprecated\" or \"Name contains 'shacl'\")",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the list updates to show only vocabularies that match the filter",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18163/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I click on a sortable column header",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the list is reloaded",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "vocabularies are ordered according to that column in ascending or descending order",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18163/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18164",
+   "title": "Apply filters and sorting via vocabulary list API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18164 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18164.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to apply sorting and filtering when retrieving vocabularies via the API",
+    "so that": "I can focus on the records relevant to my needs"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "Positive Scenario - Filter and sort vocabularies using supported fields",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority and have API access",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request vocabularies using supported filter and sort options on `name`, `status`, `creationDate` and `lastUpdated`",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "I receive only vocabularies matching the requested filter criteria",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the results are ordered according to the requested sort field and direction",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18164/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "Positive Scenario - Filter returns no matching vocabularies",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority and have API access",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request vocabularies using supported filter options and no vocabularies match the criteria",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API returns an empty result set",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the request is handled successfully without returning an error",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18164/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": false,
+     "struck": false,
+     "heading": "Positive Scenario - Pagination is applied together with sorting",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority and have API access",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request a paginated vocabulary list using supported sort options on `name`, `status`, `creationDate` and `lastUpdated`",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API returns only the requested page of results",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the returned page preserves the requested sort order consistently",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18164/AC3"
+    },
+    {
+     "label": "AC4",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario - Filter or sort parameters are not supported or invalid",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority and have API access",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request vocabularies using an unsupported filter or sort field, or an invalid filter value",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API rejects the request with a validation error",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "no filtered result set is returned",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18164/AC4"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18165",
+   "title": "Download and view full details of the newest vocabulary version in the UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18165 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18165.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to download and view the complete details of the newest vocabulary version in the UI",
+    "so that": "I can review the latest content"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with permission to manage vocabularies",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am on the Vocabulary Management page",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I choose the download action for a vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "I can download the newest version of that vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I can review its full details",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18165/AC1"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18166",
+   "title": "Retrieve full details of a vocabulary version via API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18166 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18166.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to retrieve the complete details of a specific vocabulary version via the API",
+    "so that": "I can inspect or reuse its structure programmatically"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "Positive Scenario - Existing vocabulary version is retrieved successfully",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with API access and authorized for vocabulary management",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I have identified an existing vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request full details for that vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API returns the complete structure and metadata in a machine-readable format",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18166/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario - Requested vocabulary version does not exist",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with API access and authorized for vocabulary management",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request full details for a vocabulary version that does not exist",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API returns an error indicating that the requested vocabulary version could not be found",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Note:",
+      "- authorization and authentication are handled in [https://jira.simplprogramme.eu/browse/SIMPL-16635](https://jira.simplprogramme.eu/browse/SIMPL-16635)",
+      "- Endpoint would be: `/vocabularies/{vocabularyName}/versions/{version}`"
+     ],
+     "id": "SIMPL-18166/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [
+     "SIMPL-16635"
+    ],
+    "paths": [
+     "/vocabularies/{vocabularyName}/versions/{version}"
+    ],
+    "operations": [
+     "vocabulary_openapi-tier1:GET /vocabularies/{vocabularyName}/versions/{version}",
+     "vocabulary_openapi-tier1:PATCH /vocabularies/{vocabularyName}/versions/{version}"
+    ]
+   }
+  },
+  {
+   "key": "SIMPL-18167",
+   "title": "View version history of a vocabulary in the UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18167 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18167.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to view the version history of a selected vocabulary in the UI",
+    "so that": "I can understand how it has evolved over time"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I have navigated to a vocabulary management page in the UI",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I open the history of a selected vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "I am redirected to the vocabulary details page",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I see a chronological list of all versions of the vocabulary including:",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "* Name (in the header)",
+      "* Actions (Download)",
+      "* Version (Version number)",
+      "* Status (Active, Deprecated)",
+      "* Date created",
+      "* Description",
+      "* Change log",
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18167/AC1"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18168",
+   "title": "Retrieve version history of a vocabulary via API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18168 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18168.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to retrieve the full version history of a specific vocabulary via the API",
+    "so that": "I can review how that vocabulary has evolved over time and use that history in external integrations or audits"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority via API with valid credentials",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I have identified an existing vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request the full version history of a vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API returns a structured list of all versions with metadata needed for comparison",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18168/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario - Requested vocabulary does not exist",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority via API with valid credentials",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I request the version history of a vocabulary that does not exist",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the API processes my request",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API returns an error indicating that the requested vocabulary could not be found",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Note:",
+      "Authentication and authorization are handled in this epic: [https://jira.simplprogramme.eu/browse/SIMPL-16635](https://jira.simplprogramme.eu/browse/SIMPL-16635)"
+     ],
+     "id": "SIMPL-18168/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [
+     "SIMPL-16635"
+    ],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18169",
+   "title": "Create a new vocabulary via UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "DevTeam PBI is ready for Implementation check",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18169 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18169.md",
+   "user_story": {
+    "as a": "Governance Authority user,",
+    "i want": "to create a new vocabulary by entering metadata into the UI",
+    "so that": "I can register a new controlled vocabulary for use in the data space"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC1 – Access to creation form and required fields",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorized as a Governance Authority user with vocabulary management permissions",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I navigate to the Vocabulary Management UI",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I click the “New Vocabulary +” button",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "I am presented with a vocabulary creation form",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the following required fields are available:",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "no field for version or change log is displayed",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "* Name",
+      "* Description",
+      "* File upload"
+     ],
+     "id": "SIMPL-18169/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC2 – Validation of input data",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorized as a Governance Authority user with vocabulary management permissions",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I have completed the vocabulary creation form",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit the form",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open validates that:",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "if validation fails, I am informed with appropriate error messages in the UI",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "* All required fields are provided",
+      "* Field formats are correct",
+      "* The vocabulary name is unique",
+      "* The uploaded file format is supported",
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18169/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18170",
+   "title": "Create a new vocabulary via API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18170 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18170.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to create a new vocabulary by submitting its metadata via the API",
+    "so that": "I can automate vocabulary creation"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with valid API credentials and authorised for vocabulary management",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit metadata and content for a new vocabulary through the API",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API validates the request",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "if validation succeeds, returns the newly created vocabulary identifier, metadata, and initial version details",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the system automatically creates version `1` as the latest version with status `ACTIVE`",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary is created with default vocabulary status `ACTIVE`",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18170/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "the vocabulary is created via API",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I retrieve the created vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the response includes all provided metadata and version `1` with status `ACTIVE`",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary status is `ACTIVE` by default and can later be manually changed to `DEPRECATED` or back to `ACTIVE`",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18170/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario - Request contains invalid or incomplete vocabulary data",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with valid API credentials and authorised for vocabulary management",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit metadata and content for a new vocabulary through the API with invalid or incomplete data",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API rejects the request with a validation error",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "no new vocabulary is created",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Technical description:",
+      "- [https://confluence.simplprogramme.eu/spaces/SIMPL/pages/137235370/R07.02+Vocabulary+Management+-+Tech+Description](https://confluence.simplprogramme.eu/spaces/SIMPL/pages/137235370/R07.02+Vocabulary+Management+-+Tech+Description)",
+      "- [https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management) - design",
+      "- [https://confluence.simplprogramme.eu/spaces/SIMPL/pages/83199459/BP02B+-+Manage+vocabularies](https://confluence.simplprogramme.eu/spaces/SIMPL/pages/83199459/BP02B+-+Manage+vocabularies) - Functional Description - Manage Vocabularies",
+      "- Use same persistance layer as Schema Management - Fuseki DB"
+     ],
+     "id": "SIMPL-18170/AC3"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18172",
+   "title": "Create a new version of a vocabulary via UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18172 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18172.md",
+   "user_story": {
+    "as a": "Governance Authority user,",
+    "i want": "to create a new version of an existing vocabulary via the UI",
+    "so that": "I can maintain and adapt vocabulary content according to evolving requirements"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC1 – Open update form with pre-filled data",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user with vocabulary management permissions",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am viewing an existing vocabulary management page",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I click the three dots menu",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I click the \"Update\" button",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "I am presented with a form pre-filled with the existing vocabulary metadata and content",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18172/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC2 – Successfully create a new vocabulary version",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am editing the vocabulary update form",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I update the metadata and/or vocabulary content, including providing a change summary and uploading an updated file",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I submit the form with all validations passing",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open creates a new vocabulary version linked to the previous versions",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the new version is automatically marked as ACTIVE",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "all previous versions are automatically marked as DEPRECATED",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "a notification is displayed confirming that the new version was successfully created",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18172/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC3 – Handle unexpected system error during version creation (negative scenario)",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I have submitted the vocabulary update form",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "an unexpected error occurs during the creation of the new version",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open does not create a new version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am presented with an error notification indicating that the operation failed",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am advised to retry or contact support",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18172/AC3"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18173",
+   "title": "Create a new version of a vocabulary via API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18173 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18173.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to create a new version of an existing vocabulary via the API",
+    "so that": "I can automate versioning or integrate it into workflows"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised as a Governance Authority",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit updated metadata and content for an existing vocabulary via the API",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the submitted vocabulary passes the required validation",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API creates a new version linked to the existing vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the system automatically assigns the next version identifier",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the newly created version is set to ACTIVE",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "all previous versions of the same vocabulary are set to DEPRECATED",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the response contains the new version details",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18173/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "Negative Scenarios",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit invalid or incomplete vocabulary data",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the request is rejected with validation feedback",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18173/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "Negative Scenarios",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request creation of a version for a vocabulary that does not exist",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the request is rejected",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18173/AC3"
+    },
+    {
+     "label": "AC4",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "Negative Scenarios",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated but not authorised as a Governance Authority",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I attempt to create a new version",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the request is rejected due to insufficient permissions",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18173/AC4"
+    },
+    {
+     "label": "AC5",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "Negative Scenarios",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am not authenticated",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I attempt to create a new version without being authenticated",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the request is rejected",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18173/AC5"
+    },
+    {
+     "label": "AC6",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "Negative Scenarios",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I submit the request in an unsupported format",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the system cannot process the request",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the request is rejected",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Technical Info:",
+      "- the versioning should be incremental using the same versioning library as schema management"
+     ],
+     "id": "SIMPL-18173/AC6"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18174",
+   "title": "Update vocabulary status via UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "DevTeam PBI is ready for Implementation check",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18174 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18174.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to update a vocabulary status via the UI",
+    "so that": "I can manually mark a vocabulary as `DEPRECATED` or restore it to `ACTIVE`"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised as a Governance Authority",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am viewing a vocabulary management page",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I select the status-change action for a vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I choose `ACTIVE` or `DEPRECATED`",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system updates the vocabulary status accordingly",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "shows the updated status in the UI",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "displays a notification confirming the vocabulary status was successfully updated",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18174/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario - Selected vocabulary is no longer available",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised as a Governance Authority",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am viewing a vocabulary management page",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I select the status-change action for a vocabulary that is no longer available",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system informs me that the vocabulary could not be found",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "no status change is applied",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18174/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario - Error occurs while updating the vocabulary status",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised as a Governance Authority",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am viewing a vocabulary management page",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I select the status-change action for a vocabulary and the update fails during processing",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system informs me that the vocabulary status could not be updated",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary status remains unchanged in the UI",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18174/AC3"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18175",
+   "title": "Update vocabulary status via API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18175 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18175.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to update a vocabulary status via the API",
+    "so that": "I can manually set it to `ACTIVE` or `DEPRECATED`"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised as a Governance Authority",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request a status change for a specific vocabulary via the API",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API updates the vocabulary status to the requested value (`ACTIVE` or `DEPRECATED`)",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "responds with the updated vocabulary metadata",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18175/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario - Requested vocabulary does not exist",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised as a Governance Authority",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary I want to update does not exist",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request a status change for that vocabulary via the API",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API returns an error indicating that the requested vocabulary could not be found",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18175/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario - Requested vocabulary status is not supported",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised as a Governance Authority",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary I want to update exists",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I request a status change using a value other than `ACTIVE` or `DEPRECATED`",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API rejects the request with a validation error",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary status remains unchanged",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18175/AC3"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18176",
+   "title": "Access deprecated vocabulary versions in UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18176 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18176.md",
+   "user_story": {
+    "as a": "Governance Authority,",
+    "i want": "to access deprecated vocabulary versions in the UI",
+    "so that": "I can review or audit historical versions and understand how they affect current resources"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC1 – Authentication and authorization",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am an authenticated Governance Authority user",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I have a role authorizing read access to the vocabulary history",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I access the vocabulary management or history interface",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "I am authorized to view vocabulary versions, including deprecated ones",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18176/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC2 – Display deprecated versions",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "there are vocabulary versions marked as *DEPRECATED*",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I search, filter, or browse vocabulary versions",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system displays the deprecated versions",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "each deprecated version is clearly labeled as *DEPRECATED*",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18176/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC3 – View metadata of deprecated versions",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "a deprecated vocabulary version is displayed",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I select or open that version",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "I can view all associated metadata (e.g., version identifier, creation date, creator, change summary)",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18176/AC3"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18178",
+   "title": "Warning on deprecated vocabularies in Vocabulary Management UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "DevTeam PBI is ready for Implementation check",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18178 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18178.md",
+   "user_story": {
+    "as a": "Governance Authority,",
+    "i want": "to see a warning when deprecated vocabularies are present on the vocabulary management page",
+    "so that": "I am discouraged from using them in future resources"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "a vocabulary is deprecated",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I see a deprecated vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system shows a clear warning message indicating deprecation",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18178/AC1"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18180",
+   "title": "Validate vocabulary syntax and structure via UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "DevTeam PBI is ready for Implementation check",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18180 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18180.md",
+   "user_story": {
+    "as a": "Governance Authority with vocabulary management permissions",
+    "i want": "syntax and structure validation to run automatically when I upload or submit a vocabulary in the UI",
+    "so that": "I ensure vocabularies conform to required formats before being stored"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC1 – Validation Trigger on File Upload",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with vocabulary management permissions",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I upload a vocabulary file in the UI",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system automatically performs syntax and structure validation on the uploaded file",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18180/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC2 – Validation Trigger on Submit (Creation)",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with vocabulary management permissions",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit a new vocabulary via the UI",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system performs syntax and structure validation as part of the submission flow",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18180/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC3 – Validation Trigger on Submit (Version Update)",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with vocabulary management permissions",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit a new version of an existing vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system performs syntax and structure validation as part of the version submission flow",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18180/AC3"
+    },
+    {
+     "label": "AC4",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC4 – Successful Validation",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with vocabulary management permissions",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the uploaded or submitted vocabulary file contains no syntax or structure errors",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "validation is completed",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system:",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "- Marks the validation as successful",
+      "- Displays a clear confirmation message indicating that syntax and structure validation passed",
+      "- Allows the user to proceed with the flow"
+     ],
+     "id": "SIMPL-18180/AC4"
+    },
+    {
+     "label": "AC5",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC5 – Syntax Errors Detected",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with vocabulary management permissions",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the uploaded or submitted vocabulary file contains syntax errors",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "validation is performed",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system:",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "- Displays a list of all detected syntax errors",
+      "- Indicates the exact location of each error (e.g. line number, element, or path)",
+      "- Prevents completion of the current flow"
+     ],
+     "id": "SIMPL-18180/AC5"
+    },
+    {
+     "label": "AC6",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC6 – Structure Errors Detected",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with vocabulary management permissions",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the uploaded or submitted vocabulary file violates required structure rules",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "validation is performed",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system:",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "- Displays a list of all detected structure validation errors",
+      "- Indicates the exact location of each error",
+      "- Prevents completion of the current flow"
+     ],
+     "id": "SIMPL-18180/AC6"
+    },
+    {
+     "label": "AC7",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC7 – Multiple Errors Handling",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with vocabulary management permissions",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the uploaded or submitted vocabulary file contains multiple syntax and/or structure errors",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "validation is performed",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system:",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "- Displays all detected errors in a single response",
+      "- Does not stop validation after the first error",
+      "- Prevents completion of the current flow"
+     ],
+     "id": "SIMPL-18180/AC7"
+    },
+    {
+     "label": "AC8",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC8 – Error Resolution Requirement",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with vocabulary management permissions",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "validation errors have been detected",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I attempt to proceed without fixing the errors",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system prevents continuation until all blocking syntax and structure errors are resolved",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18180/AC8"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18181",
+   "title": "Validate vocabulary syntax via API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18181 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18181.md",
+   "user_story": {
+    "as a": "user with the _Vocabulary Management_ role",
+    "i want": "the API to validate vocabulary syntax when I submit a vocabulary creation or new version creation request",
+    "so that": "syntactically invalid vocabularies are rejected before semantic validation and version creation continue"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "Positive Scenario – Submitted vocabulary passes validation",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised with the Vocabulary Management role",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I submit a vocabulary creation or new version creation request via the API",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the submitted vocabulary has valid syntax",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the API processes the request",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API validates the vocabulary syntax",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the request passes the syntax validation step",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the request is allowed to proceed to semantic validation",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "no syntax validation errors are returned",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the API response or processing state indicates that syntax validation has passed",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18181/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario – Submitted vocabulary contains syntax errors",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised with the Vocabulary Management role",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I submit a vocabulary creation or new version creation request via the API",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the submitted vocabulary has invalid syntax",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the API processes the request",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API validates the vocabulary syntax",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the request is rejected at the syntax validation step",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "semantic validation is not performed",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary is not created as an ACTIVE vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "no new ACTIVE version is created",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "no previous versions are deprecated",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the API returns a structured error response",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the error response includes a list of syntax validation errors with precise locations and descriptions",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Notes:",
+      "This story covers syntax validation only.",
+      "Semantic validation is covered in a separate story."
+     ],
+     "id": "SIMPL-18181/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18182",
+   "title": "Validate vocabulary semantics via UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "DevTeam PBI is ready for Implementation check",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18182 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18182.md",
+   "user_story": {
+    "as a": "Governance Authority,",
+    "i want": "Simpl-Open to perform semantic validation automatically when I submit a vocabulary or a new vocabulary version via the UI",
+    "so that": "I can ensure terms are unique, consistent, and logically coherent"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC1 – Semantic validation triggered after syntax validation",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "a vocabulary or vocabulary version has passed syntax validation",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the vocabulary version is submitted via the UI",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open performs semantic validation",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18182/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC2 – Successful semantic validation",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "a vocabulary version is semantically valid",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "Simpl-Open completes semantic validation",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the validation result is successful",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18182/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC3 – Semantic validation failure reporting",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "a vocabulary version contains semantic issues",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "Simpl-Open completes semantic validation",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open provides a structured report detailing semantic errors",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18182/AC3"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18183",
+   "title": "Validate vocabulary semantics via API",
+   "kind": "API",
+   "replaced": false,
+   "status": "DevTeam PBI is ready for Implementation check",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18183 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18183.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "semantic validation to be performed when I submit a vocabulary creation or new version request via the API",
+    "so that": "I can integrate semantic checks into automated vocabulary pipelines without a separate validation endpoint"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "Positive Scenario – Semantic validation passes",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am an authenticated Governance Authority user",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I have a role allowing vocabulary management",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary has correct semantics",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit a vocabulary creation or new version creation request via the API",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the submitted vocabulary passes syntax validation",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "semantic validation is performed",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary or vocabulary version is created",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18183/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario – Semantic validation fails",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am an authenticated Governance Authority user",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I have a role allowing vocabulary management",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary contains semantic issues",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit a vocabulary creation or new version creation request via the API",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the submitted vocabulary passes syntax validation",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "semantic validation is performed",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "a structured list of semantic errors or warnings is returned",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary or vocabulary version is not created",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Note:",
+      "- we can only validate against self managed vocabularies as it wouldn't be safe to fetch external vocabularies",
+      "- we issue warnings for external vocabularies that cannot be resolved",
+      "- when doing semantic validation don't fail on first issue - perform a full semantic validation and return all semantic errors"
+     ],
+     "id": "SIMPL-18183/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18184",
+   "title": "Automatic check for deprecated vocabularies during new version creation in UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "DevTeam PBI is ready for Implementation check",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18184 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18184.md",
+   "user_story": {
+    "as a": "Governance Authority,",
+    "i want": "Simpl-Open to automatically check the status of vocabulary versions I reuse when creating a new version",
+    "so that": "I avoid reusing deprecated versions"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised as a Governance Authority user with vocabulary management admin rights",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am creating a new vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I reference one or more existing vocabulary versions",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "all referenced vocabulary versions have status _ACTIVE_",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit the new vocabulary version for creation",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open validates the status of each referenced vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the validation passes",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the new vocabulary version creation process can continue",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "no deprecated-version warning or error is returned",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18184/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised as a Governance Authority user with vocabulary management admin rights",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am creating a new vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I reference one or more existing vocabulary versions",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "at least one referenced vocabulary version has status _DEPRECATED_",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit the new vocabulary version for creation",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open validates the status of each referenced vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the validation fails for each referenced version with status _DEPRECATED_",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the new vocabulary version is not created",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "no existing vocabulary versions are changed",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the API/UI returns a clear validation error identifying each deprecated vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the error message recommends using the latest _ACTIVE_ version where available",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18184/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised as a Governance Authority user with vocabulary management admin rights",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am creating a new vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I reference a vocabulary version that does not exist",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit the new vocabulary version for creation",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open validates the referenced vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the validation fails",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the new vocabulary version is not created",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the API/UI returns a clear validation error identifying the missing vocabulary version",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18184/AC3"
+    },
+    {
+     "label": "AC4",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorised as a Governance Authority user with vocabulary management admin rights",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am creating a new vocabulary version in the Vocabulary Management UI",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I select or reference a vocabulary version with status _DEPRECATED_",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open displays a clear warning that the selected version is deprecated",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the warning identifies the deprecated vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the warning recommends selecting the latest _ACTIVE_ version where available",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Notes:",
+      "* this is only for INTERNAL vocabularies (managed by vocabulary management), a vocabulary may reference external vocabularies but we cannot enforce their versioning and deprecation status",
+      "* so we check vocabularies against internally created vocabularies",
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18184/AC4"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18186",
+   "title": "Automatic publication of vocabularies UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18186 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18186.md",
+   "user_story": {
+    "as a": "Governance Authority user,",
+    "i want": "to have a new vocabulary or vocabulary version automatically become available after successful validation",
+    "so that": "I do not require a manual publication action"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC1 - Automatic publication after successful validation",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "a newly submitted vocabulary or vocabulary version has passed all required validations",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the vocabulary is stored in the system",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system automatically sets its status to ACTIVE",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18186/AC1"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18187",
+   "title": "Publish vocabulary via API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18187 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18187.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "validated vocabulary creation or version creation requests submitted via the API to be automatically persisted and made available",
+    "so that": "no separate publish endpoint or workflow is required"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC1 – Create New Vocabulary",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "a new vocabulary is submitted through the API",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary passes all validation rules",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the API processes the request",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the vocabulary is persisted in the vocabulary repository",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the API response confirms successful creation",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the response includes an identifier indicating the vocabulary is available in the vocabulary registry",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18187/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC2 – Create New Vocabulary Version",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "an existing vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "a new version of that vocabulary is submitted through the API",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the new version passes all validation rules",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the API processes the request",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the new version is persisted",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the new version is linked to the existing vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the API response confirms successful creation of the new version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the response includes an identifier indicating the new version is available in the vocabulary registry",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Technical Description / Notes:",
+      "- this story is about persisting the Vocabulary to the persistance after validation - but we'll setup persistance from the start as part of API for creating a vocabulary and have validation in separate stories.",
+      "- this does require testing!"
+     ],
+     "id": "SIMPL-18187/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18189",
+   "title": "Automatic versioning of vocabularies via UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18189 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18189.md",
+   "user_story": {
+    "as a": "Governance Authority user,",
+    "i want": "to have the UI automatically assign the next version identifier when I create a new version of an existing vocabulary,",
+    "so that": "version numbering remains consistent and traceable without manual input."
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC1 – Automatic version assignment on successful creation",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user with vocabulary management rights",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am accessing an existing vocabulary in the UI",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I initiate the creation of a new version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I submit the new vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open automatically generates and assigns the next version identifier based on the versioning algorithm",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "Simpl-Open stores this version together with the vocabulary",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18189/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC2 – No manual input required for versioning",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am creating a new version of a vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I fill in and submit the form",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "I am not required to enter or modify the version identifier manually",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18189/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC3 – UI feedback on assigned version",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "a new version has been successfully created",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the operation completes",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the UI displays a confirmation message including the newly assigned version identifier",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18189/AC3"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18190",
+   "title": "Automatic versioning of vocabularies via API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18190 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18190.md",
+   "user_story": {
+    "as a": "Governance Authority,",
+    "i want": "to have the API automatically assign the next version identifier when I create a new version of an existing vocabulary,",
+    "so that": "version numbering remains consistent and traceable without manual input."
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user with a role authorising vocabulary management",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary I want to update exists",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit a new version request with updated content via the API",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system automatically assigns the subsequent version number based on the applicable versioning algorithm as part of that request",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the API response confirms the assigned version number",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "no manual version number is required in the request",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18190/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario - Manual version number is provided in the request",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user with a role authorising vocabulary management",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the vocabulary I want to update exists",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit a new version request via the API and include a manual version number",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API rejects the request because version numbers are assigned automatically",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "no new version is created",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Technical Info:",
+      "- the versioning should be incremental using the same versioning library as schema management"
+     ],
+     "id": "SIMPL-18190/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18191",
+   "title": "Automatic deprecation of previous vocabulary version UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18191 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18191.md",
+   "user_story": {
+    "as a": "Governance Authority user,",
+    "i want": "to automatically deprecate previous vocabulary versions when I create a new version,",
+    "so that": "outdated vocabularies are no longer actively used but remain referenceable for backward compatibility."
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC1 – Automatic deprecation and activation",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am an authenticated Governance Authority user with permissions to manage vocabularies",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I create a new version of an existing vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the new version is successfully created",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system sets the newly created version status to ACTIVE",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "the system sets all previous versions of that vocabulary to DEPRECATED",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18191/AC1"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18193",
+   "title": "Receive vocabulary validation report via UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18193 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18193.md",
+   "user_story": {
+    "as a": "Governance Authority,",
+    "i want": "to receive a detailed validation report while submitting a vocabulary via the UI,",
+    "so that": "I can review and correct any syntax or semantic errors before completing vocabulary creation or version update."
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "Positive Scenario - Submitted vocabulary passes validation",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I upload or submit a vocabulary in the UI as part of vocabulary creation or version update",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the submitted vocabulary passes validation",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the UI confirms successful validation",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I can complete the flow without validation errors",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18193/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "Negative Scenario - Submitted vocabulary contains validation errors",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I upload or submit a vocabulary in the UI as part of vocabulary creation or version update",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the submitted vocabulary contains validation errors",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the UI displays a detailed structured report highlighting the errors, including their nature and location",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I cannot complete the flow until the blocking validation errors are resolved",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18193/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18194",
+   "title": "Receive vocabulary validation report via API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18194 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18194.md",
+   "user_story": {
+    "as a": "Governance Authority,",
+    "i want": "the API to return a detailed validation report when I submit a vocabulary creation or new version creation request,",
+    "so that": "integrations can process validation feedback programmatically."
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I submit a vocabulary creation or new version creation request via the API",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the submitted vocabulary contains syntax or semantic errors",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API response returns a structured report listing all errors with detailed descriptions and location",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18194/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I submit a vocabulary creation or new version creation request via the API",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "the submitted vocabulary does not contain syntax or semantic errors",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API confirms successful validation as part of the creation or version creation response without separate error details.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18194/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18195",
+   "title": "Role-based access control for vocabulary management UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18195 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18195.md",
+   "user_story": {
+    "as a": "Governance Authority,",
+    "i want": "vocabulary management actions in the UI to be accessible to authorised users only,",
+    "so that": "sensitive vocabulary management operations remain secure and compliant."
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user with a vocabulary management role",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I access vocabulary management functionality in the UI",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "all related actions such as create, update version, and change vocabulary status are enabled and accessible",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18195/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user without the vocabulary management role",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I access vocabulary management functions in the UI",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "restricted actions are hidden or disabled",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "attempts to perform restricted actions display an authorization error message",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18195/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am not authenticated",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I attempt to access vocabulary management functionality in the UI",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "access is denied and I am prompted to authenticate.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18195/AC3"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18196",
+   "title": "Role-based access control for vocabulary management API",
+   "kind": "API",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18196 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18196.md",
+   "user_story": {
+    "as a": "Governance Authority,",
+    "i want": "the API to enforce role-based access control on all vocabulary management actions,",
+    "so that": "unauthorized users cannot perform restricted vocabulary actions."
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "Scenario: Access control enforcement",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated with a valid Bearer token",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I have the vocabulary management role",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I invoke any Vocabulary Management API endpoint",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API authorizes and processes the request.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18196/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "Scenario: Unauthorized role access",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated with a valid Bearer token",
+       "struck": false
+      },
+      {
+       "kw": "But",
+       "text": "I do not have the vocabulary management role",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I invoke any Vocabulary Management API endpoint",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API returns a `403 Forbidden` response.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18196/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": false,
+     "struck": false,
+     "heading": "Scenario: Unauthenticated access",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am not authenticated",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I invoke any Vocabulary Management API endpoint",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API denies access and returns an authentication error response.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18196/AC3"
+    },
+    {
+     "label": "AC4",
+     "explicit": false,
+     "struck": false,
+     "heading": "Scenario: Endpoint protection",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "the Vocabulary Management API is deployed",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I want to authenticate for the endpoints of this API",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "all vocabulary-related endpoints require the authentication token and the Tier1 Role validation",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "----",
+      "Technical Info: [https://confluence.simplprogramme.eu/spaces/SIMPL/pages/137235370/R07.02+Vocabulary+Management+-+Tech+Description]",
+      "The Vocabulary Management API enforces role-based access control based on the following roles:",
+      "* `GA_VOCABULARY_VIEWER`: for read-only operations across vocabulary and version resources.",
+      "* `GA_VOCABULARY_ADMIN`: for both read and write operations, including lifecycle and reference management.",
+      "* This is Tier 1 authentication"
+     ],
+     "id": "SIMPL-18196/AC4"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18452",
+   "title": "Download and view full details of all vocabulary versions in the UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "Ready for DG Acceptance",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18452 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18452.md",
+   "user_story": {
+    "as a": "Governance Authority",
+    "i want": "to download and view the complete details of a selected vocabulary version in the UI",
+    "so that": "I can review details before creating a new version"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority with permission to manage vocabularies",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I am on the Vocabulary Management page",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I open a vocabulary and select a specific version for review",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "I can access that selected version",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18452/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I have selected a vocabulary version",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I click download",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the system provides a file containing the full details of the selected version",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18452/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-18559",
+   "title": "Warning on deprecated vocabulary versions in Vocabulary History UI",
+   "kind": "UI",
+   "replaced": false,
+   "status": "DevTeam PBI is ready for Implementation check",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-18559 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-18559.md",
+   "user_story": {
+    "as a": "Governance Authority user,",
+    "i want": "to see a warning when deprecated vocabulary versions are shown on the vocabulary history page",
+    "so that": "I am discouraged from using them in future resources"
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC1 – Warning and redirection to active version",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am an authenticated Governance Authority user with any role",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "a vocabulary version has status DEPRECATED",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "there is a more recent ACTIVE version for this vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I view it on the vocabulary history page",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open displays a clear warning message indicating that the version is deprecated",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "Simpl-Open provides a visible reference to the latest ACTIVE version",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-18559/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC2 – Warning displayed when no active version exists",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am an authenticated Governance Authority user with any role",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "a vocabulary version has status DEPRECATED",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "there is no ACTIVE version available for this vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I view it on the vocabulary history page",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open displays a clear warning message indicating that the version is deprecated",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "Figma Mockup: [Vocabulary Management UI Mockup](https://www.figma.com/design/plnwsG2ElO7oQQWCIne7CH/Vocabulary-management?node-id=0-1&p=f&t=PsrNysYGOtCdEfl1-0)"
+     ],
+     "id": "SIMPL-18559/AC2"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [],
+    "operations": []
+   }
+  },
+  {
+   "key": "SIMPL-28680",
+   "title": "[API] Governance Authority update metadata quality governance rules by publishing an updated Metadata Quality Profile",
+   "kind": "API",
+   "replaced": false,
+   "status": "DevTeam PBI is ready for Implementation check",
+   "type": "Story",
+   "source": "https://jira.simplprogramme.eu/browse/SIMPL-28680 (collected 2026-10-27)",
+   "file": "specs/stories/SIMPL-28680.md",
+   "user_story": {
+    "as a": "Governance Authority End User,",
+    "i want": "to update metadata quality governance rules via API by submitting an updated Metadata Quality Profile RDF document in Schema Manager,",
+    "so that": "governance changes are applied consistently from a controlled semantic source."
+   },
+   "acs": [
+    {
+     "label": "AC1",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC1",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated and authorized to manage metadata quality governance",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I submit a `POST` request to `/metadataQualityProfiles/{metadataQualityProfileName}/versions` with a valid RDF document in the payload,",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the API accepts the RDF document, creates a new version of the profile, and returns a `201 Created` with a `Location` header pointing to the new version.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-28680/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I upload a syntactically valid RDF document conforming to the Metadata Quality Profile vocabulary",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "Schema Manager processes the update",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "updated governance definitions are persisted in the new active profile version",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "previous profile versions remain available for traceability.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-28680/AC2"
+    },
+    {
+     "label": "AC3",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC3",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I upload a document that is not valid RDF syntax",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "Schema Manager validates the document",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the update is rejected",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "an error is returned with a non-sensitive code and syntax-focused description.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-28680/AC3"
+    },
+    {
+     "label": "AC4",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC4",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I upload a document that is not valid RDF semantic",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "Schema Manager validates the document",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the update is rejected",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "an error is returned with a non-sensitive code and semantic-focused description.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-28680/AC4"
+    },
+    {
+     "label": "AC5",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC5",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am not authorized to manage metadata quality governance",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "I attempt to update the Metadata Quality Profile via API",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "Simpl-Open returns an authorization error.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-28680/AC5"
+    },
+    {
+     "label": "AC6",
+     "explicit": true,
+     "struck": false,
+     "heading": "AC6",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I upload a new version for a non existing MQP",
+       "struck": false
+      },
+      {
+       "kw": "When",
+       "text": "Schema Manager processes the update",
+       "struck": false
+      },
+      {
+       "kw": "Then",
+       "text": "the update is rejected",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "an error is returned with a non-sensitive code and syntax-focused description.",
+       "struck": false
+      }
+     ],
+     "other_text": [
+      "*Link to OpenAPI*: [https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/develop/openapi/schema_openapi.yaml?ref_type=heads](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/5ff38a50c87ba4424804b7e7ed1c116d4a8b6ed0/openapi/tier1-gateway/t1-schema-openapi.yaml)",
+      "Note:",
+      "- Validation is done using same functionality as Schema Manager",
+      "- For semantic validation Schema Manager resolves vocabularies against Vocabulary Manager - the Metadata Quality Profile vocabulary needs to be present there (out of scope)"
+     ],
+     "id": "SIMPL-28680/AC6"
+    }
+   ],
+   "refs": {
+    "stories": [],
+    "paths": [
+     "/blob/5ff38a50c87ba4424804b7e7ed1c116d4a8b6ed0/openapi/tier1-gateway/t1-schema-openapi",
+     "/blob/develop/openapi/schema_openapi",
+     "/metadataQualityProfiles/{metadataQualityProfileName}/versions"
+    ],
+    "operations": []
+   }
+  }
+ ],
+ "apis": [
+  {
+   "name": "vocabulary_openapi-tier1",
+   "title": "Vocabulary Management API",
+   "version": "1.0.0",
+   "file": "specs/api/vocabulary_openapi-tier1.yaml",
+   "operations": [
+    {
+     "id": "vocabulary_openapi-tier1:GET /health",
+     "api": "vocabulary_openapi-tier1",
+     "method": "GET",
+     "path": "/health",
+     "operationId": "getHealth",
+     "summary": "Get API health status.",
+     "description": "",
+     "tags": [
+      "Health"
+     ],
+     "parameters": [],
+     "request_content": [],
+     "responses": [
+      "200",
+      "503"
+     ],
+     "security": [],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:GET /vocabularies",
+     "api": "vocabulary_openapi-tier1",
+     "method": "GET",
+     "path": "/vocabularies",
+     "operationId": "getVocabularies",
+     "summary": "Get the latest version metadata for vocabularies.",
+     "description": "",
+     "tags": [
+      "Vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [],
+     "responses": [
+      "200",
+      "400",
+      "406",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:POST /vocabularies",
+     "api": "vocabulary_openapi-tier1",
+     "method": "POST",
+     "path": "/vocabularies",
+     "operationId": "createVocabulary",
+     "summary": "Create a new internal vocabulary.",
+     "description": "",
+     "tags": [
+      "Vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [
+      "multipart/form-data"
+     ],
+     "responses": [
+      "201",
+      "400",
+      "406",
+      "409",
+      "413",
+      "415",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:POST /vocabularies/searches",
+     "api": "vocabulary_openapi-tier1",
+     "method": "POST",
+     "path": "/vocabularies/searches",
+     "operationId": "searchVocabularies",
+     "summary": "Search local vocabulary metadata for semantic reference resolution.",
+     "description": "Resolves multiple local latest or versioned vocabulary metadata references in one read-only search request. Missing references are omitted from `items`.",
+     "tags": [
+      "Vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [
+      "application/json"
+     ],
+     "responses": [
+      "200",
+      "400",
+      "406",
+      "415",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:GET /vocabularies/{vocabularyName}",
+     "api": "vocabulary_openapi-tier1",
+     "method": "GET",
+     "path": "/vocabularies/{vocabularyName}",
+     "operationId": "getVocabulary",
+     "summary": "Get the latest metadata for a vocabulary.",
+     "description": "",
+     "tags": [
+      "Vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [],
+     "responses": [
+      "200",
+      "400",
+      "404",
+      "406",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:PATCH /vocabularies/{vocabularyName}",
+     "api": "vocabulary_openapi-tier1",
+     "method": "PATCH",
+     "path": "/vocabularies/{vocabularyName}",
+     "operationId": "updateVocabularyStatus",
+     "summary": "Update the status of an existing vocabulary.",
+     "description": "",
+     "tags": [
+      "Vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [
+      "application/json"
+     ],
+     "responses": [
+      "200",
+      "400",
+      "404",
+      "406",
+      "409",
+      "415",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:GET /vocabularies/{vocabularyName}/versions",
+     "api": "vocabulary_openapi-tier1",
+     "method": "GET",
+     "path": "/vocabularies/{vocabularyName}/versions",
+     "operationId": "getVocabularyVersions",
+     "summary": "Get version metadata for a vocabulary.",
+     "description": "",
+     "tags": [
+      "Vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [],
+     "responses": [
+      "200",
+      "400",
+      "404",
+      "406",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:POST /vocabularies/{vocabularyName}/versions",
+     "api": "vocabulary_openapi-tier1",
+     "method": "POST",
+     "path": "/vocabularies/{vocabularyName}/versions",
+     "operationId": "createVocabularyVersion",
+     "summary": "Create a new version of an existing internal vocabulary.",
+     "description": "The API assigns the next version number automatically. Requests must not provide a `version` form field.",
+     "tags": [
+      "Vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [
+      "multipart/form-data"
+     ],
+     "responses": [
+      "201",
+      "400",
+      "404",
+      "406",
+      "413",
+      "415",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:GET /vocabularies/{vocabularyName}/versions/{version}",
+     "api": "vocabulary_openapi-tier1",
+     "method": "GET",
+     "path": "/vocabularies/{vocabularyName}/versions/{version}",
+     "operationId": "getVocabularyVersion",
+     "summary": "Get metadata for a specific vocabulary version.",
+     "description": "",
+     "tags": [
+      "Vocabulary management"
+     ],
+     "parameters": [
+      {
+       "name": "version",
+       "in": "path",
+       "required": true
+      }
+     ],
+     "request_content": [],
+     "responses": [
+      "200",
+      "400",
+      "404",
+      "406",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:PATCH /vocabularies/{vocabularyName}/versions/{version}",
+     "api": "vocabulary_openapi-tier1",
+     "method": "PATCH",
+     "path": "/vocabularies/{vocabularyName}/versions/{version}",
+     "operationId": "updateVocabularyVersionStatus",
+     "summary": "Update the status of a vocabulary version.",
+     "description": "",
+     "tags": [
+      "Vocabulary management"
+     ],
+     "parameters": [
+      {
+       "name": "version",
+       "in": "path",
+       "required": true
+      }
+     ],
+     "request_content": [
+      "application/json"
+     ],
+     "responses": [
+      "200",
+      "400",
+      "404",
+      "406",
+      "409",
+      "415",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:GET /content/{vocabularyName}",
+     "api": "vocabulary_openapi-tier1",
+     "method": "GET",
+     "path": "/content/{vocabularyName}",
+     "operationId": "downloadVocabulary",
+     "summary": "Download the latest vocabulary content in Turtle format.",
+     "description": "",
+     "tags": [
+      "Vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [],
+     "responses": [
+      "200",
+      "400",
+      "404",
+      "406",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:GET /content/{vocabularyName}/versions/{version}",
+     "api": "vocabulary_openapi-tier1",
+     "method": "GET",
+     "path": "/content/{vocabularyName}/versions/{version}",
+     "operationId": "downloadVocabularyVersion",
+     "summary": "Download a specific vocabulary version in Turtle format.",
+     "description": "",
+     "tags": [
+      "Vocabulary management"
+     ],
+     "parameters": [
+      {
+       "name": "version",
+       "in": "path",
+       "required": true
+      }
+     ],
+     "request_content": [],
+     "responses": [
+      "200",
+      "400",
+      "404",
+      "406",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:GET /external-vocabularies",
+     "api": "vocabulary_openapi-tier1",
+     "method": "GET",
+     "path": "/external-vocabularies",
+     "operationId": "getExternalVocabularies",
+     "summary": "Get cached external vocabularies.",
+     "description": "",
+     "tags": [
+      "External vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [],
+     "responses": [
+      "200",
+      "400",
+      "406",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:POST /external-vocabularies",
+     "api": "vocabulary_openapi-tier1",
+     "method": "POST",
+     "path": "/external-vocabularies",
+     "operationId": "createExternalVocabulary",
+     "summary": "Create a cached external vocabulary for validation.",
+     "description": "Uploads a copied Turtle vocabulary. The content is exposed through `/external-vocabularies/{name}/content`; the legacy `/external-vocabularies/content` endpoint remains available for namespace-based downloads.",
+     "tags": [
+      "External vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [
+      "multipart/form-data"
+     ],
+     "responses": [
+      "201",
+      "400",
+      "406",
+      "409",
+      "413",
+      "415",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:POST /external-vocabulary/searches",
+     "api": "vocabulary_openapi-tier1",
+     "method": "POST",
+     "path": "/external-vocabulary/searches",
+     "operationId": "searchExternalVocabularies",
+     "summary": "Search cached external vocabulary metadata.",
+     "description": "Searches cached external vocabularies by canonical namespace URI or by one registered alias URI. The search is processed synchronously and has no side effects.",
+     "tags": [
+      "External vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [
+      "application/json"
+     ],
+     "responses": [
+      "200",
+      "400",
+      "406",
+      "415",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:POST /external-vocabularies/content",
+     "api": "vocabulary_openapi-tier1",
+     "method": "POST",
+     "path": "/external-vocabularies/content",
+     "operationId": "downloadExternalVocabularyContent",
+     "summary": "Download cached external vocabulary content in Turtle format.",
+     "description": "Resolves the cached external vocabulary by the namespace URI used in a vocabulary definition prefix. The namespace URI is normalized before lookup and can match either the registered canonical namespace URI or one of its aliases.",
+     "tags": [
+      "External vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [
+      "application/json"
+     ],
+     "responses": [
+      "200",
+      "400",
+      "404",
+      "406",
+      "415",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:GET /external-vocabularies/{name}/content",
+     "api": "vocabulary_openapi-tier1",
+     "method": "GET",
+     "path": "/external-vocabularies/{name}/content",
+     "operationId": "getExternalVocabularyContentByName",
+     "summary": "Download cached external vocabulary content by name in Turtle format.",
+     "description": "Returns the Turtle graph attached to a cached external vocabulary document.",
+     "tags": [
+      "External vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [],
+     "responses": [
+      "200",
+      "400",
+      "404",
+      "406",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:GET /external-vocabularies/{name}",
+     "api": "vocabulary_openapi-tier1",
+     "method": "GET",
+     "path": "/external-vocabularies/{name}",
+     "operationId": "getExternalVocabulary",
+     "summary": "Get cached external vocabulary metadata.",
+     "description": "",
+     "tags": [
+      "External vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [],
+     "responses": [
+      "200",
+      "400",
+      "404",
+      "406",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    },
+    {
+     "id": "vocabulary_openapi-tier1:DELETE /external-vocabularies/{name}",
+     "api": "vocabulary_openapi-tier1",
+     "method": "DELETE",
+     "path": "/external-vocabularies/{name}",
+     "operationId": "deleteExternalVocabulary",
+     "summary": "Delete a cached external vocabulary.",
+     "description": "Hard deletes the metadata and content graphs from the external vocabulary dataset.",
+     "tags": [
+      "External vocabulary management"
+     ],
+     "parameters": [],
+     "request_content": [],
+     "responses": [
+      "204",
+      "400",
+      "404",
+      "406",
+      "500"
+     ],
+     "security": [
+      {
+       "OAuth2Auth": []
+      }
+     ],
+     "file": "specs/api/vocabulary_openapi-tier1.yaml"
+    }
+   ]
+  }
+ ],
+ "processes": [],
+ "bp_requirements": [],
+ "extraction_issues": [
+  "SIMPL-393: no acceptance criteria found",
+  "SIMPL-395: no acceptance criteria found",
+  "SIMPL-18162/AC2: no When clause",
+  "SIMPL-18162/AC3: no When clause",
+  "SIMPL-18162/AC4: no When clause",
+  "specs/functional/bp02b-manage-vocabularies.md: single-file process, not parsed into requirements"
+ ]
+}

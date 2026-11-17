@@ -10,6 +10,27 @@ The prompts that drive the factory, one file per step, so a run can be repeated.
 | 3 | [`03-code-writer.md`](./03-code-writer.md) | code writer | its own copy of `specs/` and the digest | the build, in its own workspace |
 | 4 | [`04-test-writer-ui.md`](./04-test-writer-ui.md) | test writer | `specs/`, digest, `tests/`, the running UIs | UI browser steps |
 
+## Numbering (from 17 Nov 2026)
+
+The steps are being split so each one does one job and can be chained: a fixed input, a fixed output, and a gate where it stops. Two digits, the phase in the tens, gaps left for steps added later.
+
+| No. | Step | Status | File |
+|---|---|---|---|
+| 10 | Collect the stories (Jira, local model) | done, was step 0 | [`collect_stories.py`](./collect_stories.py) |
+| 11 | Guideline rules: guidelines to numbered, checkable rules | new | [`11-guideline-rules.md`](./11-guideline-rules.md), output in [`../guidelines/`](../guidelines/README.md) |
+| 12 | Spec inventory: a stable id for every story, AC, operation and BP requirement (12a script, 12b review) | new | [`12-spec-inventory.md`](./12-spec-inventory.md), [`extract_inventory.py`](./extract_inventory.py) |
+| 20 | Validate the ACs: complete, unambiguous, testable, consistent | planned | |
+| 21 | Validate the API: against the ACs and the `API-` rules | planned | |
+| 22 | Validate the business process: every requirement has a story and an operation | planned | |
+| 29 | Spec feedback report for the spec owners | planned | |
+| 30 | Decisions (the spec digest), only for what 20 to 22 leave open | was step 1 | [`01-spec-digest.md`](./01-spec-digest.md) |
+| 40 | Test writer, API | was step 2 | [`02-test-writer-api.md`](./02-test-writer-api.md) |
+| 50 | Code writer | was steps 3 and 3b | [`03-code-writer.md`](./03-code-writer.md), [`03b-code-writer-rust.md`](./03b-code-writer-rust.md) |
+| 60 | Test writer, UI | was step 4 | [`04-test-writer-ui.md`](./04-test-writer-ui.md) |
+| 70+ | Verification and reports: hold-out, coverage, security, traceability, per-rule conformance | planned | |
+
+The old prompt files keep their names until they are reworked, and `findings.md` and the run folders keep the old step numbers (step 3b, step 6). This table is the mapping.
+
 After step 3: copy the build into `generated/runN/` (without `node_modules`, `target`, `dist`), run the suite against it, and do the two checks below. Record everything in `findings.md`.
 
 ## Step 0: collecting the stories locally
