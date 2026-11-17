@@ -15,7 +15,7 @@ When sources disagree, the higher one wins:
 
 Why: the criteria are what the tests check, so they lead on behaviour; the OpenAPI is the only exact source for the wire; the CDM is in review and the process is high level. Where all sources are silent, the decision takes what is simplest to build and test and says so.
 
-Totals: 40 decisions (29 provisional, 11 follows the specs).
+Totals: 44 decisions (31 provisional, 13 follows the specs), of which D38 to D41 were added after step 21. Finding ids P-nnn are in `validation/api-findings.json`.
 
 ## Scope
 
@@ -89,6 +89,17 @@ Totals: 40 decisions (29 provisional, 11 follows the specs).
 | D36 | Deprecation warnings in the UI | Vocabulary list: a row whose vocabulary status is DEPRECATED shows a warning icon next to the status with the text 'This vocabulary is deprecated. Its use is discouraged.' The details page of such a vocabulary shows the same text as a banner. Version list and version panel: an effectively deprecated version (D3) shows a warning 'This version is deprecated.' followed by 'Latest ACTIVE version: <n>' as a link to that version when one exists (SIMPL-18559/AC1); without an ACTIVE version only the first sentence (AC2). | provisional | F-030, F-047 |
 | D37 | Form field rules and messages | Name: required, 3 to 64 characters, ^[A-Z][a-zA-Z0-9]*$, unique case-insensitively (409 otherwise). Description: required, 1 to 1000 characters after trimming. Changelog: required on new versions, 1 to 1000 characters after trimming. The API applies the same limits (400). The UI shows field errors under the field before submit; server errors (400 report, 409, 413) appear in a message above the form. | provisional | F-035 |
 
+## Added after step 21 (17 Nov 2026)
+
+Step 21b (API review) ran after step 30 and reopened the gate with one blocker (P-001) and three majors (P-002 to P-004). The decisions above stand. D39 and D40 add no new behaviour: they record that the decisions win over the OpenAPI file and what the API owner should change. D41 also closes the minors P-005 and P-006, because the tests of the external vocabulary operations meet them.
+
+| Id | Topic | Decision | Status | Closes |
+|---|---|---|---|---|
+| D38 | Search operations: paging, limits, order | Neither search is paged. POST /vocabularies/searches takes 1 to 100 items; POST /external-vocabulary/searches takes at most 100 URIs in total (namespaceUris plus aliasUris, each array with at least 1 entry when present). More returns 400 (InputValidationProblem, in: body, name: items, namespaceUris or aliasUris). Every reference matches at most one result, so all results fit in one response: page 1, pageSize 100, total = number of items returned, totalPages 1 (0 when total is 0), and no self, first, prev, next or last links. page, pageSize or any other query parameter returns 400 (as D21). Internal search: results in request order; a missing name or version is left out (as the OpenAPI says); a repeated reference (same name and same version, or same name both without version) gives one result at its first position; {name} and {name, version} are different references and give two results even when the version is the latest. A result with latest true carries the latest version number and the vocabulary status (as D25); a result with latest false carries that version's own status. External search: URIs are normalised as in D30 (trailing '#' or '/' removed) and looked up against the namespace URI and the alias URIs; results in the order of the first matching URI, namespaceUris before aliasUris; an external vocabulary matched by several URIs appears once. A body that fits more than one oneOf branch (for example namespaceUri with aliasUri, or namespaceUri with namespaceUris) or none (empty object) returns 400, as JSON Schema oneOf requires. Roles as D16. | provisional | P-001 |
+| D39 | Decided behaviour the OpenAPI file does not yet show | The decisions win over the OpenAPI file (source hierarchy). Writers build and test the decided behaviour, not the file, on these points: 401 and 403 on every secured operation (D17); name filter relaxed (D19); pageSize maximum 100 (D22); createdBy on version objects (D27); validationWarnings always present with the closed code set (D10); description and changelog 1 to 1000 characters (D37); version form field rejected (D7); latestVersionHref always filled (D5); unknown query parameters rejected (D21); search limits (D38). The writers do not edit the file in specs/api. A writer who generates stubs, clients or contract tests from it adds these points by hand in its own build. No decision is changed by this entry. | follows the specs | P-002 |
+| D40 | Security scheme in the build | Treat the security scheme as OpenID Connect through the Keycloak realm of E1. Clients (the UI and the tests) get a bearer token from Keycloak and request no scopes beyond openid; the scopes read and write are neither requested nor checked (D16). The backend validates the token and the realm roles (D17). Writers ignore the placeholder URLs of OAuth2Auth; a generated client or API console is configured with the Keycloak URLs of E1 and E2. | follows the specs | P-003 |
+| D41 | Test basis for operations without a story | The OpenAPI responses plus D4, D16, D17, D22, D27, D29 and D30 are the test basis for the external vocabulary operations and the manual version status change; the missing stories are a backlog item, not a blocker. External vocabularies: POST /external-vocabularies returns 201 with Location and href /external-vocabularies/<Name> and the ExternalVocabulary body with createdBy and creationDate; invalid Turtle returns 400 with one issue as the D9 syntax error (in: body, name: vocabularyFile), no semantic errors and no warnings; 409, 413 and 415 as D15 and D30. GET /external-vocabularies is paged as D22, default and only order name ascending, no filter or sort parameters (others 400 as D21). GET /external-vocabularies/{name} returns 200 with ExternalVocabulary. GET /external-vocabularies/{name}/content returns the stored Turtle bytes, text/turtle, filename '<Name>.ttl'. DELETE /external-vocabularies/{name} returns 204 and removes metadata and content; a later GET returns 404; internal vocabularies already stored are not touched. Every 404 on an external vocabulary path uses the ExternalVocabularyNotFoundResponse body with detail "External vocabulary with name '<Name>' was not found." and one issue (in: path, name: name). Version status change: as D4, and 404 (VocabularyNotFoundResponse) for an unknown name or version. | provisional | P-004, P-005, P-006 |
+
 ## Environment choices
 
 | Id | Topic | Choice |
@@ -103,28 +114,32 @@ Totals: 40 decisions (29 provisional, 11 follows the specs).
 2. **D3 Vocabulary status and version status.** Should deprecating a vocabulary also write DEPRECATED to each of its versions, and should a new version be refused for a DEPRECATED vocabulary?
 3. **D9 Validation steps and rules.** Give the real list of semantic and structure rules, with one example each; confirm that reporting only the first syntax error is acceptable.
 4. **D16 Roles and what they allow.** Confirm the role names and that the read-only POST searches are open to the viewer.
-5. **D4 Version transitions and same-status requests.** Confirm manual version status change is wanted, and whether two ACTIVE versions are allowed.
-6. **D19 Name filter.** Confirm the API change from exact match to contains.
-7. **D12 What a vocabulary reference is.** Confirm references are recognised by namespace prefix declarations and by the content URL, and name the namespaces that never need a cached external copy.
-8. **D17 Where 401 and 403 come from.** Should the OpenAPI list 401 and 403 on each operation, with these problem types?
-9. **D10 Validation errors versus validation warnings.** Split the CDM class VocabularyValidationWarning into an error and a warning concept with these code sets.
-10. **D33 New version form.** Confirm a new version may change only the description.
-11. **D27 Creator.** Add createdBy to the CDM and to the version schemas.
-12. **D1 Stories outside this build.** Confirm SIMPL-393 and SIMPL-395 can be closed as replaced, and that the CPSV vocabulary needs no pre-load.
-13. **D13 Validation on file upload in the UI.** Confirm that a syntax-only check in the browser meets SIMPL-18180/AC1.
-14. **D25 The vocabulary object (VocabularyCategory).** Rename the schema VocabularyCategory to Vocabulary and its field version to latestVersion in a later API version.
-15. **D28 Description.** Remove InternalVocabulary.description from the CDM.
-16. **D37 Form field rules and messages.** Confirm case-insensitive uniqueness and the 1000-character limits.
-17. **D30 External vocabulary identity and registration.** Confirm the name is the identity and the namespace URI a unique key.
-18. **D22 Pagination limits.** Confirm the maximum page size.
-19. **D20 Date filters.** Is a range (from, to) wanted instead?
-20. **D35 Details and history page.** Confirm the details page and the history page are one screen.
-21. **D18 Restricted actions in the UI.** Confirm hidden rather than disabled.
-22. **D36 Deprecation warnings in the UI.** Supply the wording and form from the Figma mock-up if it differs.
-23. **D5 Meaning of latest version.** Retire current version and newest version in SIMPL-18161 and SIMPL-18165.
-24. **D7 Version numbering.** Confirm the Schema Manager versioning library gives the same integers.
-25. **D15 File format, size and media type.** Confirm RDF/XML and OWL/XML (BP02B.01) are not needed.
-26. **D6 Publication and manual review.** Confirm the manual semantic review of BP02B.02 is an off-line step.
-27. **D2 CDM snapshot.** Approve the CDM with the changes in D3, D10, D25 to D28, or say which ones to drop.
-28. **D14 Validation report and success feedback.** Confirm the CDM may name the validation report as a transient concept.
-29. **D26 The vocabulary version object.** Rename VocabularyMetadata to VocabularyVersion in a later API version.
+5. **D38 Search operations.** Confirm the searches are not paged and the limit of 100 references; add maxItems 100 (minItems 1 on the external arrays) and state the result order.
+6. **D4 Version transitions and same-status requests.** Confirm manual version status change is wanted, and whether two ACTIVE versions are allowed.
+7. **D41 Test basis for operations without a story.** Add stories for external vocabulary registration and for the version status change; point the external 404 at ExternalVocabularyNotFoundResponse and fix the 400 example of POST /external-vocabularies.
+8. **D19 Name filter.** Confirm the API change from exact match to contains.
+9. **D12 What a vocabulary reference is.** Confirm references are recognised by namespace prefix declarations and by the content URL, and name the namespaces that never need a cached external copy.
+10. **D17 Where 401 and 403 come from.** Should the OpenAPI list 401 and 403 on each operation, with these problem types?
+11. **D39 OpenAPI catch-up.** Update the OpenAPI file with the points of D5, D7, D10, D17, D19, D21, D22, D27 and D37 (full list in decisions.json).
+12. **D40 Security scheme.** Replace OAuth2Auth with an openIdConnect scheme on the Tier 1 Keycloak, drop the read and write scopes, and name the two realm roles per operation.
+13. **D10 Validation errors versus validation warnings.** Split the CDM class VocabularyValidationWarning into an error and a warning concept with these code sets.
+14. **D33 New version form.** Confirm a new version may change only the description.
+15. **D27 Creator.** Add createdBy to the CDM and to the version schemas.
+16. **D1 Stories outside this build.** Confirm SIMPL-393 and SIMPL-395 can be closed as replaced, and that the CPSV vocabulary needs no pre-load.
+17. **D13 Validation on file upload in the UI.** Confirm that a syntax-only check in the browser meets SIMPL-18180/AC1.
+18. **D25 The vocabulary object (VocabularyCategory).** Rename the schema VocabularyCategory to Vocabulary and its field version to latestVersion in a later API version.
+19. **D28 Description.** Remove InternalVocabulary.description from the CDM.
+20. **D37 Form field rules and messages.** Confirm case-insensitive uniqueness and the 1000-character limits.
+21. **D30 External vocabulary identity and registration.** Confirm the name is the identity and the namespace URI a unique key.
+22. **D22 Pagination limits.** Confirm the maximum page size.
+23. **D20 Date filters.** Is a range (from, to) wanted instead?
+24. **D35 Details and history page.** Confirm the details page and the history page are one screen.
+25. **D18 Restricted actions in the UI.** Confirm hidden rather than disabled.
+26. **D36 Deprecation warnings in the UI.** Supply the wording and form from the Figma mock-up if it differs.
+27. **D5 Meaning of latest version.** Retire current version and newest version in SIMPL-18161 and SIMPL-18165.
+28. **D7 Version numbering.** Confirm the Schema Manager versioning library gives the same integers.
+29. **D15 File format, size and media type.** Confirm RDF/XML and OWL/XML (BP02B.01) are not needed.
+30. **D6 Publication and manual review.** Confirm the manual semantic review of BP02B.02 is an off-line step.
+31. **D2 CDM snapshot.** Approve the CDM with the changes in D3, D10, D25 to D28, or say which ones to drop.
+32. **D14 Validation report and success feedback.** Confirm the CDM may name the validation report as a transient concept.
+33. **D26 The vocabulary version object.** Rename VocabularyMetadata to VocabularyVersion in a later API version.

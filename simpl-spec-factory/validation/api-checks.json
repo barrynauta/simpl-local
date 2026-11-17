@@ -1,0 +1,127 @@
+{
+ "summary": {
+  "component": ".",
+  "findings": 5,
+  "places": 18,
+  "rules_hit": [
+   "API-06",
+   "API-21",
+   "API-45",
+   "API-52",
+   "API-63"
+  ],
+  "rules_checked": [
+   "API-04",
+   "API-05",
+   "API-06",
+   "API-07",
+   "API-08",
+   "API-09",
+   "API-13",
+   "API-14",
+   "API-16",
+   "API-17",
+   "API-18",
+   "API-20",
+   "API-21",
+   "API-23",
+   "API-24",
+   "API-26",
+   "API-27",
+   "API-29",
+   "API-31",
+   "API-32",
+   "API-34",
+   "API-40",
+   "API-41",
+   "API-42",
+   "API-43",
+   "API-45",
+   "API-48",
+   "API-52",
+   "API-53",
+   "API-56",
+   "API-57",
+   "API-59",
+   "API-61",
+   "API-63",
+   "API-76",
+   "API-77",
+   "API-78",
+   "DDD-04",
+   "DDD-06",
+   "DDD-08",
+   "DDD-09"
+  ]
+ },
+ "findings": [
+  {
+   "id": "A-001",
+   "api": "component",
+   "rule": "API-63",
+   "level": "SHOULD",
+   "rule_text": "The AsyncAPI file lists every channel used, the operation on each channel and the messages on each channel.",
+   "count": 1,
+   "examples": [
+    "no AsyncAPI file in the input set"
+   ]
+  },
+  {
+   "id": "A-002",
+   "api": "vocabulary-manager-be",
+   "rule": "API-06",
+   "level": "SHOULD",
+   "rule_text": "Every literal path segment is lowerCamelCase.",
+   "count": 5,
+   "examples": [
+    "/external-vocabularies (external-vocabularies)",
+    "/external-vocabulary/searches (external-vocabulary)",
+    "/external-vocabularies/content (external-vocabularies)",
+    "/external-vocabularies/{name}/content (external-vocabularies)",
+    "/external-vocabularies/{name} (external-vocabularies)"
+   ]
+  },
+  {
+   "id": "A-003",
+   "api": "vocabulary-manager-be",
+   "rule": "API-21",
+   "level": "SHOULD",
+   "rule_text": "Every request body and response in the OpenAPI file has at least one example under 'examples'.",
+   "count": 6,
+   "examples": [
+    "POST /vocabularies request multipart/form-data",
+    "PATCH /vocabularies/{vocabularyName} request application/json",
+    "POST /vocabularies/{vocabularyName}/versions request multipart/form-data",
+    "PATCH /vocabularies/{vocabularyName}/versions/{version} request application/json",
+    "POST /external-vocabularies request multipart/form-data",
+    "GET /external-vocabularies/{name} 200 application/json"
+   ]
+  },
+  {
+   "id": "A-004",
+   "api": "vocabulary-manager-be",
+   "rule": "API-45",
+   "level": "SHOULD",
+   "rule_text": "Every error response body is an RFC 9457 problem detail (media type application/problem+json).",
+   "count": 1,
+   "examples": [
+    "GET /health 503: application/json"
+   ]
+  },
+  {
+   "id": "A-005",
+   "api": "vocabulary-manager-be",
+   "rule": "API-52",
+   "level": "SHOULD",
+   "rule_text": "Identifier path parameters are named 'id' or 'code', prefixed with the resource type only when several identifiers appear in one path.",
+   "count": 5,
+   "examples": [
+    "/vocabularies/{vocabularyName} (vocabularyName)",
+    "/vocabularies/{vocabularyName}/versions (vocabularyName)",
+    "/content/{vocabularyName} (vocabularyName)",
+    "/external-vocabularies/{name}/content (name)",
+    "/external-vocabularies/{name} (name)"
+   ]
+  }
+ ]
+}

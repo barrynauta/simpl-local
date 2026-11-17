@@ -874,5 +874,101 @@
       "events",
       "tests"
     ]
+  },
+  {
+    "id": "D44",
+    "topic": "Build contract: decisions over the frozen OpenAPI",
+    "closes": [
+      "P-005"
+    ],
+    "decision": "The builder implements from the frozen OpenAPI plus these decisions, and the decisions win wherever the two differ (item 1 of the source hierarchy in decisions.md, now also a decision). No patched OpenAPI is handed over in this run. Server stubs, request validation and contract tests may be generated from the OpenAPI only if the builder then applies every difference below; a generated validator must not answer differently from a decision. The known differences: GET /schemas/{schemaName} exists (D16); every in-scope operation can answer 401 (D26); the security scheme is read as D45; the nine out-of-scope operations are not implemented and answer 404 (D2); GET /schemas items carry created and GET versions items carry status and resourceType (D30); Location and Content-Location use the format of D15, not the /schemas/<uuid>/version/N examples; webhook events are sent as D24 says, without a callbacks object; one 404 problem type (D47); value rules for resourceType and version (D48); webhook target allow list (D46). The external reference GetSchemaVersionsResponsePayload (common-components.yaml, not in the specs) is built as the paging wrapper of GetAllSchemasResponsePayload (page, totalPages, total, pageSize, next, metadata) with the version items of D30. Contract tests assert the decided behaviour, not the frozen examples, where the two differ.",
+    "options": [
+      "Patched OpenAPI as the single build contract",
+      "Frozen OpenAPI plus a precedence rule"
+    ],
+    "basis": "Source hierarchy in decisions.md (decisions first, OpenAPI second); this step writes decisions only and cannot ship a patched OpenAPI. Simplest to build: one rule and one list of differences, no second contract file to keep in step.",
+    "status": "provisional",
+    "owner_question": "API owner: publish a revised OpenAPI (for example 1.2.0) with the differences listed here (D16, 401 on every operation, D45 scheme, D30 fields, D15 Location format, D24 callbacks, D46 to D48, inlined GetSchemaVersionsResponsePayload, the nine out-of-scope operations removed or marked deprecated). From then on that file is the build contract.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D45",
+    "topic": "Security scheme of the OpenAPI versus D26 to D28",
+    "closes": [
+      "P-001"
+    ],
+    "decision": "The service validates the bearer token itself as D26 and D39 say; it does not rely on a gateway. It checks roles only, per the matrix of D27 and D28, and never checks OAuth2 scopes: the read and write scopes of OAuth2Auth and the authorizationUrl and tokenUrl placeholders are ignored. The webhook operations never answer 403, because D28 requires no role; the 403 listed on GET /webhooks, POST /webhooks and DELETE /webhooks/{webhookId} is not built and not tested. Tests use the D39 test users; no test sends or expects scopes.",
+    "options": [
+      "Patch the OpenAPI to match D26 to D28 and D39",
+      "Keep the OpenAPI as is; D26 to D28 alone define the behaviour"
+    ],
+    "basis": "D26, D27, D28, D39 and D44 (decisions over the OpenAPI); SEC-07 (OpenID Connect through the Tier 1 Authentication Provider). No operation requests a scope, so ignoring scopes changes no specified behaviour.",
+    "status": "follows the specs",
+    "owner_question": "API owner: replace OAuth2Auth by an openIdConnect scheme (or http bearer JWT) without scopes, drop 'provided by gateway', state the role per operation (description or x-required-roles), add 401 and remove 403 from the three webhook operations.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D46",
+    "topic": "Webhook target allow list",
+    "closes": [
+      "P-002"
+    ],
+    "decision": "POST /webhooks checks targetUrl in this order, each failure 400 with type urn:problem-type:simpl:badRequest and nothing stored: (1) syntax as D29 ('The targetUrl is invalid or malformed.'); (2) scheme: https always allowed, http only when WEBHOOK_ALLOW_HTTP is true (detail 'The targetUrl must use https.'); (3) host: the URL host, compared case-insensitively and exactly (no wildcards, no subdomain match, port ignored), must be in WEBHOOK_ALLOWED_HOSTS, a comma-separated list (detail 'The targetUrl host is not on the allow list.'). An IP literal passes only if it is listed as written. Defaults fail closed: WEBHOOK_ALLOWED_HOSTS empty (every subscription gets 400) and WEBHOOK_ALLOW_HTTP false. The 409 duplicate check of D29 runs after these checks. At delivery (D24) the service checks the host again against the current list, skips and logs a subscription whose host is no longer allowed, and does not follow redirects (a 3xx counts as a failed delivery, logged, no change to the API response). Test configuration: WEBHOOK_ALLOWED_HOSTS=localhost,127.0.0.1,allowed.example.test and WEBHOOK_ALLOW_HTTP=true, so the D43 receiver at localhost is allowed; tests that need a rejected host use https://not-allowed.example.test/hook. Other D29 rules are unchanged.",
+    "options": [
+      "Allow list by configuration, 400 for other hosts",
+      "Accept the risk for this build and record it against OWASP-11"
+    ],
+    "basis": "OWASP-11 is a MUST rule: outgoing requests to URLs taken from input are checked against an allow list. D28 lets any authenticated participant subscribe and D24 makes the service POST to the URL, so without a list this is a server-side request forgery path. A configured exact-host list is the simplest check two builders implement the same way; failing closed keeps an unconfigured deployment safe. Same 400 problem type as D22 and D29.",
+    "status": "provisional",
+    "owner_question": "Security and API owner: confirm the allow list and its fail-closed default, say who maintains WEBHOOK_ALLOWED_HOSTS in a data space (for example the Governance Authority operator), confirm that plain http is refused outside tests, and add the two 400 detail texts and the https rule to CreateWebhookRequest.targetUrl in the OpenAPI.",
+    "affects": [
+      "api",
+      "events",
+      "tests"
+    ]
+  },
+  {
+    "id": "D47",
+    "topic": "One not-found problem type",
+    "closes": [
+      "P-003"
+    ],
+    "decision": "Every 404 of an in-scope operation, schemas and webhooks, answers application/problem+json with type urn:problem-type:simpl:notFound, title 'Resource Not Found', status 404 and the href of SchemaNotFoundResponse. This includes GET /schemas/{schemaName}/{version} (instead of urn:problem-type:iana:notFound and 'Not Found'), GET /schemas/{schemaName} (D16) and the 404 of the out-of-scope operations (D2). The detail texts stay as D17 fixes them. Tests assert type, title and status on every 404.",
+    "options": [
+      "urn:problem-type:simpl:notFound everywhere",
+      "Keep urn:problem-type:iana:notFound on the version read"
+    ],
+    "basis": "API-46 allows only urn:problem-type:simpl: types; the shared SchemaNotFoundResponse and the webhook DELETE 404 already use urn:problem-type:simpl:notFound with title 'Resource Not Found'. One type per situation, as step 30a requires.",
+    "status": "provisional",
+    "owner_question": "API owner: change the two 404 examples of GET /schemas/{schemaName}/{version} to urn:problem-type:simpl:notFound and 'Resource Not Found', and add a 404 example to GET /schemas/{schemaName}.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D48",
+    "topic": "Value rules for resourceType and version",
+    "closes": [
+      "P-004"
+    ],
+    "decision": "resourceType: D6 applies on every operation that takes it, as query parameter or form field: only Data, Application and Infrastructure, anything else 400, even though the OpenAPI pattern would accept it. schemaType SEARCH with a resourceType gives 400 on every operation (D4), not only on GET /schemas. version path parameter of GET /schemas/{schemaName}/{version}: it is looked up as given; any value that is not an existing version of the selected schema, whether well-formed ('7') or not ('abc', '1.0.0', '9.9.9'), gives 404 with the version-not-found detail of D17 and the problem type of D47. Order of checks: authentication and role (401, 403), then query parameters (400 for resourceType or schemaType), then lookup (404).",
+    "options": [
+      "400 for a malformed version, 404 for a well-formed version that does not exist",
+      "404 for any version that does not exist, malformed or not"
+    ],
+    "basis": "D6 and D4 already settle resourceType; the OpenAPI only lacks the enum (API-58). For version, the frozen OpenAPI has no pattern and its own 404 example uses '9.9.9', and D17 says 404 when the version does not exist; one rule for every unknown version is simplest to build and test.",
+    "status": "provisional",
+    "owner_question": "API owner: add enum [Data, Application, Infrastructure] to the six resourceType places, repeat the SEARCH plus resourceType rule on every operation, and describe version as a whole number written as a string without a pattern that would turn a malformed version into 400.",
+    "affects": [
+      "api",
+      "tests"
+    ]
   }
 ]

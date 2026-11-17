@@ -20,7 +20,7 @@ Why this order: the writers must agree on bytes on the wire first, and the OpenA
 ## Counts
 
 
-43 decisions: 6 follow the specs, 36 provisional, 1 accepted risk. Of these, 6 are environment choices (D38 to D43).
+48 decisions: 7 follow the specs, 40 provisional, 1 accepted risk. Of these, 6 are environment choices (D38 to D43). D44 to D48 were added after step 21 (see the section at the end).
 
 
 ## Sources and scope
@@ -118,22 +118,38 @@ The specs do not fix these; both writers use them as given.
 | D42 | vocabulary registry stub | Known internal vocabularies come from a JSON file at VOCABULARY_FIXTURE: a list of objects {"namespace": IRI, "terms": [IRI, ...]}. INTERNAL_VOCABULARY_BASE default https://vocabulary.simpl.test/. The production adapter to the Vocabulary Manager is behind the same port and not tested here. |
 | D43 | webhook receiver | Tests run a local HTTP receiver that records each POST (headers and JSON body) and can answer 200 or 500 or delay beyond 5 seconds, to check D24 delivery and that failures do not change the API response. |
 
+## Added after step 21 (17 Nov 2026)
+
+Step 21b (API review, [`api-findings.json`](../validation/api-findings.json)) ran after step 30 and found 5 majors without a default. These decisions give each one. Earlier decisions are unchanged; D46 adds checks on top of D29.
+
+| Id | Topic | Decision | Status | Closes |
+|---|---|---|---|---|
+| D44 | Build contract | Frozen OpenAPI plus decisions; decisions win where they differ. Listed differences; generated stubs and validators must apply them. Versions response built as the paging wrapper with D30 items. | provisional | P-005 |
+| D45 | Security scheme | Service validates the token itself and checks roles only, never OAuth2 scopes; webhook operations never answer 403. | follows the specs | P-001 |
+| D46 | Webhook target allow list | targetUrl host must be in WEBHOOK_ALLOWED_HOSTS (exact, fail closed), https only unless WEBHOOK_ALLOW_HTTP; 400 otherwise; host checked again at delivery, no redirects. | provisional | P-002 |
+| D47 | One not-found problem type | Every in-scope 404 uses urn:problem-type:simpl:notFound, title 'Resource Not Found'. | provisional | P-003 |
+| D48 | Value rules for resourceType and version | D6 and the SEARCH rule of D4 apply on every operation; any unknown version, malformed or not, gives 404. | provisional | P-004 |
+
+The minors of step 21b (P-006 to P-013) need no decision for the build: they are example, naming and wording points for the API owner, or are settled by D3, D5, D6, D15, D17, D29 and D44.
+
 ## Questions for the spec owners, by impact
 
-1. **D9, D12 (publication route).** Re-publication through PATCH with PUBLISHED is dropped in favour of a new version, following the OpenAPI. Confirm, or extend the PATCH enum and codes. Affects SIMPL-20529, SIMPL-20530, SIMPL-31098.
-2. **D7, D8 (one published schema per scope).** A second RESOURCE schema for a resource type is created as REVOKED; a second published SEARCH schema is rejected with 409. Confirm the asymmetry and that Providers are not told about a schema created as REVOKED.
-3. **D19, D20 (default properties).** Reject instead of enrich, with properties matched by local name from the default-properties model. Publish the full IRIs per resource type, say what applies to SEARCH, and correct BP02C.04.
-4. **D4 (schema key).** (name, schemaType, resourceType), with revoked names still taken and 400 for an ambiguous name. Record the key in the CDM.
-5. **D24 (webhook events).** Payload, triggers (including new versions) and single-attempt delivery are invented here. Define them in the OpenAPI callbacks or an AsyncAPI file.
-6. **D25 (Provider e-mail).** One configured recipient, fixed subjects and fields. Confirm, and say what the instruction link points to.
-7. **D16 (GET /schemas/{schemaName}).** Added to this service and not public. Add it to the OpenAPI, or confirm a separate Resolver.
-8. **D11 (version status).** Derived, not stored; previous versions show REVOKED. Confirm and add the transition table to the CDM (D13).
-9. **D3 (version).** SemVer withdrawn; rename schemaVersion to version in the next API revision.
-10. **D6 (resource type).** Closed set Data, Application, Infrastructure. Confirm or name the open set.
-11. **D2 (scope).** Deprecate or remove /vocabularies; decide whether metadata quality profiles belong here and, if so, write stories.
-12. **D22, D23 (validation errors).** Confirm the detail prefixes and issue codes as contract, and how the Vocabulary Manager is queried in production.
-13. **D26, D28 (401 and webhook access).** Add 401 to every operation; confirm any authenticated participant may manage subscriptions.
-14. **D30, D31 (lists).** Provide common-components.yaml, confirm the added fields, say whether a creator column is needed and whether sorting must cover the whole result.
-15. **D29 (unknown event type).** 406 follows the contract; API-12 would prefer 400.
-16. **D1 (story pairs).** Cancel or update the originals of each [ENHANCE] story.
-17. UI texts and behaviour (D32 to D35): confirm placements, texts and file names.
+1. **D46 (webhook allow list).** OWASP-11 is a MUST rule. Confirm the configured allow list with a fail-closed default, who maintains it, and that plain http is refused outside tests. Add the https rule and the two 400 texts to the OpenAPI.
+2. **D44, D45, D47, D48 (revised OpenAPI).** Publish a revised OpenAPI with the differences listed in D44: GET /schemas/{schemaName}, 401 everywhere, an openIdConnect scheme without scopes and with roles per operation, no 403 on webhooks, one 404 type, the resourceType enum, the D30 fields, the D15 Location format, the event callbacks and the inlined versions response. That file then becomes the build contract.
+3. **D9, D12 (publication route).** Re-publication through PATCH with PUBLISHED is dropped in favour of a new version, following the OpenAPI. Confirm, or extend the PATCH enum and codes. Affects SIMPL-20529, SIMPL-20530, SIMPL-31098.
+4. **D7, D8 (one published schema per scope).** A second RESOURCE schema for a resource type is created as REVOKED; a second published SEARCH schema is rejected with 409. Confirm the asymmetry and that Providers are not told about a schema created as REVOKED.
+5. **D19, D20 (default properties).** Reject instead of enrich, with properties matched by local name from the default-properties model. Publish the full IRIs per resource type, say what applies to SEARCH, and correct BP02C.04.
+6. **D4 (schema key).** (name, schemaType, resourceType), with revoked names still taken and 400 for an ambiguous name. Record the key in the CDM.
+7. **D24 (webhook events).** Payload, triggers (including new versions) and single-attempt delivery are invented here. Define them in the OpenAPI callbacks or an AsyncAPI file.
+8. **D25 (Provider e-mail).** One configured recipient, fixed subjects and fields. Confirm, and say what the instruction link points to.
+9. **D16 (GET /schemas/{schemaName}).** Added to this service and not public. Add it to the OpenAPI, or confirm a separate Resolver.
+10. **D11 (version status).** Derived, not stored; previous versions show REVOKED. Confirm and add the transition table to the CDM (D13).
+11. **D3 (version).** SemVer withdrawn; rename schemaVersion to version in the next API revision.
+12. **D6 (resource type).** Closed set Data, Application, Infrastructure. Confirm or name the open set.
+13. **D2 (scope).** Deprecate or remove /vocabularies; decide whether metadata quality profiles belong here and, if so, write stories.
+14. **D22, D23 (validation errors).** Confirm the detail prefixes and issue codes as contract, and how the Vocabulary Manager is queried in production.
+15. **D26, D28 (401 and webhook access).** Add 401 to every operation; confirm any authenticated participant may manage subscriptions.
+16. **D30, D31 (lists).** Provide common-components.yaml, confirm the added fields, say whether a creator column is needed and whether sorting must cover the whole result.
+17. **D29 (unknown event type).** 406 follows the contract; API-12 would prefer 400.
+18. **D1 (story pairs).** Cancel or update the originals of each [ENHANCE] story.
+19. UI texts and behaviour (D32 to D35): confirm placements, texts and file names.

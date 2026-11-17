@@ -770,6 +770,86 @@
     ]
   },
   {
+    "id": "D38",
+    "topic": "Search operations: paging, limits, order",
+    "closes": [
+      "P-001"
+    ],
+    "decision": "Neither search is paged. POST /vocabularies/searches takes 1 to 100 items; POST /external-vocabulary/searches takes at most 100 URIs in total (namespaceUris plus aliasUris, each array with at least 1 entry when present). More returns 400 (InputValidationProblem, in: body, name: items, namespaceUris or aliasUris). Every reference matches at most one result, so all results fit in one response: page 1, pageSize 100, total = number of items returned, totalPages 1 (0 when total is 0), and no self, first, prev, next or last links. page, pageSize or any other query parameter returns 400 (as D21). Internal search: results in request order; a missing name or version is left out (as the OpenAPI says); a repeated reference (same name and same version, or same name both without version) gives one result at its first position; {name} and {name, version} are different references and give two results even when the version is the latest. A result with latest true carries the latest version number and the vocabulary status (as D25); a result with latest false carries that version's own status. External search: URIs are normalised as in D30 (trailing '#' or '/' removed) and looked up against the namespace URI and the alias URIs; results in the order of the first matching URI, namespaceUris before aliasUris; an external vocabulary matched by several URIs appears once. A body that fits more than one oneOf branch (for example namespaceUri with aliasUri, or namespaceUri with namespaceUris) or none (empty object) returns 400, as JSON Schema oneOf requires. Roles as D16.",
+    "options": [
+      "No paging, at most 100 references per request, request order, duplicates removed, two branches 400",
+      "Paging as on the GET lists with page and pageSize on the POST, ordered by name then version"
+    ],
+    "basis": "OpenAPI: no page parameters on either POST, 'Missing references are omitted', ExternalVocabularySearchRequest oneOf with additionalProperties false, arrays 'normalized and deduplicated'. D30 makes each URI a unique key, so a bounded request gives a bounded result; one response is simplest to build and test. D22 sets 100 as the page maximum elsewhere.",
+    "status": "provisional",
+    "owner_question": "Confirm the searches are not paged and the limit of 100 references. Add maxItems 100 (and minItems 1 on the external arrays) to the request schemas, and state the result order in the operation descriptions.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D39",
+    "topic": "Decided behaviour the OpenAPI file does not yet show",
+    "closes": [
+      "P-002"
+    ],
+    "decision": "The decisions win over the OpenAPI file (source hierarchy). Writers build and test the decided behaviour, not the file, on these points: 401 and 403 on every secured operation (D17); name filter relaxed (D19); pageSize maximum 100 (D22); createdBy on version objects (D27); validationWarnings always present with the closed code set (D10); description and changelog 1 to 1000 characters (D37); version form field rejected (D7); latestVersionHref always filled (D5); unknown query parameters rejected (D21); search limits (D38). The writers do not edit the file in specs/api. A writer who generates stubs, clients or contract tests from it adds these points by hand in its own build. No decision is changed by this entry.",
+    "options": [
+      "Build from the decisions and add the deltas by hand",
+      "Build from the OpenAPI file as it stands"
+    ],
+    "basis": "decisions.md source hierarchy (decisions above OpenAPI); D5, D7, D10, D17, D19, D21, D22, D27, D37 already settle each point; P-002 lists the gaps.",
+    "status": "follows the specs",
+    "owner_question": "Update the OpenAPI file: add 401 and 403 responses with the D17 problem types; VocabularyNameQuery pattern ^[A-Za-z0-9]+$ with minLength 1; PageSizeQuery maximum 100; createdBy on VocabularyMetadata and VocabularyVersionMetadataResponse; validationWarnings required and VocabularyValidationWarning.code as an enum; minLength 1 and maxLength 1000 on description and changelog; additionalProperties false on CreateNewVocabularyVersionPayload; latestVersionHref not nullable; a note that unknown query parameters return 400.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D40",
+    "topic": "Security scheme in the build",
+    "closes": [
+      "P-003"
+    ],
+    "decision": "Treat the security scheme as OpenID Connect through the Keycloak realm of E1. Clients (the UI and the tests) get a bearer token from Keycloak and request no scopes beyond openid; the scopes read and write are neither requested nor checked (D16). The backend validates the token and the realm roles (D17). Writers ignore the placeholder URLs of OAuth2Auth; a generated client or API console is configured with the Keycloak URLs of E1 and E2.",
+    "options": [
+      "OpenID Connect through Keycloak with roles, scopes ignored",
+      "Enforce the read and write scopes of the file"
+    ],
+    "basis": "D16 (roles, scopes not checked), D17 (service validates token and roles), E1 (Keycloak realm simpl), SEC-07 (Tier 1 authentication through OpenID Connect and Keycloak).",
+    "status": "follows the specs",
+    "owner_question": "Replace OAuth2Auth with an openIdConnect scheme pointing at the Tier 1 Keycloak discovery URL, drop the read and write scopes, and describe the two realm roles per operation.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D41",
+    "topic": "Test basis for operations without a story",
+    "closes": [
+      "P-004",
+      "P-005",
+      "P-006"
+    ],
+    "decision": "The OpenAPI responses plus D4, D16, D17, D22, D27, D29 and D30 are the test basis for the external vocabulary operations and the manual version status change; the missing stories are a backlog item, not a blocker. External vocabularies: POST /external-vocabularies returns 201 with Location and href /external-vocabularies/<Name> and the ExternalVocabulary body with createdBy and creationDate; invalid Turtle returns 400 with one issue as the D9 syntax error (in: body, name: vocabularyFile), no semantic errors and no warnings; 409, 413 and 415 as D15 and D30. GET /external-vocabularies is paged as D22, default and only order name ascending, no filter or sort parameters (others 400 as D21). GET /external-vocabularies/{name} returns 200 with ExternalVocabulary. GET /external-vocabularies/{name}/content returns the stored Turtle bytes, text/turtle, filename '<Name>.ttl'. DELETE /external-vocabularies/{name} returns 204 and removes metadata and content; a later GET returns 404; internal vocabularies already stored are not touched. Every 404 on an external vocabulary path uses the ExternalVocabularyNotFoundResponse body with detail \"External vocabulary with name '<Name>' was not found.\" and one issue (in: path, name: name). Version status change: as D4, and 404 (VocabularyNotFoundResponse) for an unknown name or version.",
+    "options": [
+      "Write new stories first",
+      "Accept the decisions and the OpenAPI as the test basis and log the missing stories"
+    ],
+    "basis": "P-004 option 2; D30 and D4 already fix the behaviour; the OpenAPI states 201, 204, 404 and the content media type; ExternalVocabularyNotFoundResponse exists for external lookups (P-005); name ascending matches GET /vocabularies (D23) and is simplest (P-006).",
+    "status": "provisional",
+    "owner_question": "Add one API story for external vocabulary registration (register, list, read, content, delete) and one for the version status change, with criteria taken from D30, D41 and D4. Point the 404 of GET and DELETE /external-vocabularies/{name} at ExternalVocabularyNotFoundResponse, and give POST /external-vocabularies a 400 example with a syntax error only.",
+    "affects": [
+      "api",
+      "tests",
+      "data"
+    ]
+  },
+  {
     "id": "E1",
     "topic": "Identity provider and test users",
     "closes": [],

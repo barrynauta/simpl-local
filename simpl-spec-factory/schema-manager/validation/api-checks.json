@@ -1,0 +1,176 @@
+{
+ "summary": {
+  "component": "schema-manager",
+  "findings": 8,
+  "places": 35,
+  "rules_hit": [
+   "API-13",
+   "API-18",
+   "API-20",
+   "API-21",
+   "API-52",
+   "API-63",
+   "COV-01",
+   "COV-02"
+  ],
+  "rules_checked": [
+   "API-04",
+   "API-05",
+   "API-06",
+   "API-07",
+   "API-08",
+   "API-09",
+   "API-13",
+   "API-14",
+   "API-16",
+   "API-17",
+   "API-18",
+   "API-20",
+   "API-21",
+   "API-23",
+   "API-24",
+   "API-26",
+   "API-27",
+   "API-29",
+   "API-31",
+   "API-32",
+   "API-34",
+   "API-40",
+   "API-41",
+   "API-42",
+   "API-43",
+   "API-45",
+   "API-48",
+   "API-52",
+   "API-53",
+   "API-56",
+   "API-57",
+   "API-59",
+   "API-61",
+   "API-63",
+   "API-76",
+   "API-77",
+   "API-78",
+   "DDD-04",
+   "DDD-06",
+   "DDD-08",
+   "DDD-09"
+  ]
+ },
+ "findings": [
+  {
+   "id": "A-001",
+   "api": "component",
+   "rule": "API-63",
+   "level": "SHOULD",
+   "rule_text": "The AsyncAPI file lists every channel used, the operation on each channel and the messages on each channel.",
+   "count": 1,
+   "examples": [
+    "no AsyncAPI file in the input set"
+   ]
+  },
+  {
+   "id": "A-002",
+   "api": "schema-manager-be",
+   "rule": "API-13",
+   "level": "SHOULD",
+   "rule_text": "Every JSON property name is lowerCamelCase.",
+   "count": 2,
+   "examples": [
+    "ActiveMetadataQualityProfileResponsePayload.@context",
+    "ActiveMetadataQualityProfileResponsePayload.@graph"
+   ]
+  },
+  {
+   "id": "A-003",
+   "api": "schema-manager-be",
+   "rule": "API-18",
+   "level": "SHOULD",
+   "rule_text": "No property name is or contains a generic term such as 'info', 'information' or 'data'.",
+   "count": 3,
+   "examples": [
+    "GetAllSchemasResponsePayload.metadata",
+    "GetVocabulariesResponsePayload.metadata",
+    "GetAllVocabulariesResponsePayload.metadata"
+   ]
+  },
+  {
+   "id": "A-004",
+   "api": "schema-manager-be",
+   "rule": "API-20",
+   "level": "SHOULD",
+   "rule_text": "Property names do not repeat the name of the enclosing object (for example 'name' inside 'Employer', not 'employerName').",
+   "count": 1,
+   "examples": [
+    "Webhook.webhookId"
+   ]
+  },
+  {
+   "id": "A-005",
+   "api": "schema-manager-be",
+   "rule": "API-21",
+   "level": "SHOULD",
+   "rule_text": "Every request body and response in the OpenAPI file has at least one example under 'examples'.",
+   "count": 6,
+   "examples": [
+    "POST /schemas request multipart/form-data",
+    "PATCH /schemas/{schemaName} request application/json",
+    "POST /schemas/{schemaName}/versions request multipart/form-data",
+    "POST /vocabularies request multipart/form-data",
+    "PATCH /vocabularies/{vocabularyName} request application/json",
+    "POST /vocabularies/{vocabularyName}/versions request multipart/form-data"
+   ]
+  },
+  {
+   "id": "A-006",
+   "api": "schema-manager-be",
+   "rule": "API-52",
+   "level": "SHOULD",
+   "rule_text": "Identifier path parameters are named 'id' or 'code', prefixed with the resource type only when several identifiers appear in one path.",
+   "count": 7,
+   "examples": [
+    "/schemas/{schemaName} (schemaName)",
+    "/schemas/{schemaName}/versions (schemaName)",
+    "/vocabularies/{vocabularyName} (vocabularyName)",
+    "/vocabularies/{vocabularyName}/versions (vocabularyName)",
+    "/metadataQualityProfiles/{metadataQualityProfileName} (metadataQualityProfileName)",
+    "/schemas/{schemaName}/qualityProfiles/active (schemaName)",
+    "/webhooks/{webhookId} (webhookId)"
+   ]
+  },
+  {
+   "id": "A-007",
+   "api": "schema_openapi",
+   "rule": "COV-01",
+   "level": "SHOULD",
+   "rule_text": "Operation that no acceptance criterion covers (step 12b links)",
+   "count": 9,
+   "examples": [
+    "GET /vocabularies",
+    "POST /vocabularies",
+    "PATCH /vocabularies/{vocabularyName}",
+    "GET /vocabularies/{vocabularyName}/versions",
+    "POST /vocabularies/{vocabularyName}/versions",
+    "GET /vocabularies/{vocabularyName}/versions/{version}",
+    "PATCH /metadataQualityProfiles/{metadataQualityProfileName}",
+    "DELETE /metadataQualityProfiles/{metadataQualityProfileName}"
+   ]
+  },
+  {
+   "id": "A-008",
+   "api": "stories",
+   "rule": "COV-02",
+   "level": "MUST",
+   "rule_text": "Operation a story names that no OpenAPI entry file has",
+   "count": 6,
+   "examples": [
+    "SIMPL-13343: GET /api/v1/schemas",
+    "SIMPL-20067: GET /schemas/{schemaName} (path exists with another method)",
+    "SIMPL-31098: PATCH /schemas/FedSearch",
+    "SIMPL-31098: GET /schemas/{schemaName} (path exists with another method)",
+    "SIMPL-32258: GET /api/v1/schemas",
+    "SIMPL-33537: GET /schemas/{schemaName} (path exists with another method)"
+   ]
+  }
+ ]
+}

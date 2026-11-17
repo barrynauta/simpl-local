@@ -1,0 +1,234 @@
+[
+ {
+  "id": "P-001",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "SEC-07",
+  "severity": "major",
+  "finding": "The security scheme does not fit the decided authentication and roles. The OpenAPI declares an OAuth2 authorizationCode flow 'provided by gateway' with placeholder URLs and two scopes, read and write, that no operation requests. The decisions say the service itself validates an OIDC JWT bearer token and authorises on realm roles GA_SCHEMA_ADMIN and GA_SCHEMA_VIEWER. No in-scope operation names the role it needs, and the webhook operations list 403 although D28 grants them to any authenticated caller. A builder who follows the OpenAPI may leave token checks to a gateway or enforce scopes; one who follows the decisions checks roles in the service.",
+  "evidence": "components.securitySchemes.OAuth2Auth (lines 1758 to 1768): type oauth2, description 'OAuth2 authentication provided by gateway', authorizationUrl https://auth.example.com/oauth/authorize, tokenUrl https://auth.example.com/oauth/token, scopes read and write; root security OAuth2Auth: [] (no scopes). Roles appear only in the description of the out-of-scope DELETE /metadataQualityProfiles/{metadataQualityProfileName} (line 1359). GET /webhooks, POST /webhooks and DELETE /webhooks/{webhookId} list 403 (ForbiddenResponse). D26: 'The service checks the bearer token itself (OIDC JWT, D39)'. D27: role matrix. D28: webhook operations need a valid token and no role. D39: RS256, realm_access.roles.",
+  "question": "Should the OpenAPI declare an openIdConnect (or http bearer JWT) scheme without scopes, state the required role per operation (for example in the description or an x-required-roles extension), drop 'provided by gateway', and remove 403 from the webhook operations?",
+  "options": [
+   "Patch the OpenAPI to match D26 to D28 and D39",
+   "Keep the OpenAPI as is; D26 to D28 alone define the behaviour"
+  ],
+  "from_21a": [],
+  "see": [
+   "F-014",
+   "F-015",
+   "F-037",
+   "D26",
+   "D27",
+   "D28",
+   "D39"
+  ]
+ },
+ {
+  "id": "P-002",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "OWASP-11",
+  "severity": "major",
+  "finding": "Any authenticated participant can register any http or https URL, and the service then POSTs event data to it. D29 checks the URL syntax only and D28 requires no role. This is a server-side request forgery path (internal hosts, cloud metadata addresses, localhost) and conflicts with the MUST rule that outgoing requests to URLs taken from input are checked against an allow list. Plain http is also accepted for event delivery. A builder who applies OWASP-11 adds an allow list and a 400 for other hosts; a builder who follows D29 does not. The two give different results on the same test.",
+  "evidence": "CreateWebhookRequest.targetUrl (lines 2359 to 2363): type string, format uri, no pattern, no scheme restriction. POST /webhooks 400 example 'The targetUrl is invalid or malformed.' only. D29: 'targetUrl is checked for syntax only: an absolute URL with scheme http or https and a host'. D28: 'any authenticated participant may subscribe'. D24: the service POSTs the event to targetUrl. D43: tests use a local HTTP receiver. OWASP-11 (MUST): 'Outgoing requests to URLs taken from input are validated against an allow list.'",
+  "question": "Should D29 add a configured allow list of target hosts (for example WEBHOOK_ALLOWED_HOSTS, with the local test receiver of D43 on it), reject other hosts with 400, and decide whether plain http stays allowed outside tests?",
+  "options": [
+   "Allow list by configuration, 400 for other hosts",
+   "Accept the risk for this build and record it against OWASP-11"
+  ],
+  "from_21a": [],
+  "see": [
+   "F-041",
+   "D24",
+   "D28",
+   "D29",
+   "D43"
+  ]
+ },
+ {
+  "id": "P-003",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "API-46",
+  "severity": "major",
+  "finding": "The same 'not found' case has different problem types across operations. GET /schemas/{schemaName}/{version} answers urn:problem-type:iana:notFound with title 'Not Found', which is not a Simpl problem type; the shared SchemaNotFoundResponse, used by PATCH and the versions operations, answers urn:problem-type:simpl:notFound with title 'Resource Not Found'. The new GET /schemas/{schemaName} of D16 has no example at all. A client that branches on type sees two values for one case, and tests copied from the examples assert different types per operation.",
+  "evidence": "GET /schemas/{schemaName}/{version} 404 examples schemaNotFound and versionNotFound (lines 641 to 658): type urn:problem-type:iana:notFound. components.responses.SchemaNotFoundResponse (lines 1814 to 1826): type urn:problem-type:simpl:notFound. API-46 allows only urn:problem-type:simpl:<type>, urn:problem-type:simpl:<api>:<type> and urn:problem-type:simpl:<type>:<specificType>. D17 fixes only the 404 detail texts; D22 fixes the type for validation failures only.",
+  "question": "Is urn:problem-type:simpl:notFound with title 'Resource Not Found' the one 404 type for every schema and webhook operation, including GET /schemas/{schemaName} (D16)?",
+  "from_21a": [],
+  "see": [
+   "D16",
+   "D17",
+   "D22"
+  ]
+ },
+ {
+  "id": "P-004",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "API-58",
+  "severity": "major",
+  "finding": "The OpenAPI schemas accept values the decisions forbid. resourceType is an open PascalCase pattern in six places, while D6 makes it a closed set of Data, Application and Infrastructure with 400 for anything else; a service that validates against the OpenAPI accepts LegalPerson. The version path parameter of GET /schemas/{schemaName}/{version} is any non-empty string, while D3 makes it a whole number written as a string; its own 404 example uses '9.9.9'. A builder can answer 'abc' or '1.0.0' with 400 or with 404, and both fit the contract. The SEARCH plus resourceType rule of D4 is stated only on GET /schemas.",
+  "evidence": "resourceType pattern '^[A-Z][a-zA-Z0-9]*$' without enum: GET /schemas query (lines 39 to 47), PATCH /schemas/{schemaName} query (245 to 253), GET /schemas/{schemaName}/versions query (359 to 367), GET /schemas/{schemaName}/{version} query (577 to 585), CreateSchemaPayload.resourceType (1995 to 2001), CreateNewSchemaVersionPayload.resourceType (2025 to 2031). Path parameter version (569 to 576): type string, minLength 1, no pattern; 404 example detail \"Schema version '9.9.9' not found\" (657). D6: closed set, 400 otherwise. D3: server-generated whole number as string. D4: any request with schemaType SEARCH and a resourceType returns 400; only GET /schemas describes it (line 28).",
+  "question": "Add enum [Data, Application, Infrastructure] to every resourceType, pattern '^[1-9][0-9]*$' to the version path parameter, and decide whether a version that is not a whole number gives 400 or 404?",
+  "options": [
+   "400 for a malformed version, 404 for a well-formed version that does not exist",
+   "404 for any version that does not exist, malformed or not"
+  ],
+  "from_21a": [],
+  "see": [
+   "F-013",
+   "D-012",
+   "D3",
+   "D4",
+   "D6",
+   "D17"
+  ]
+ },
+ {
+  "id": "P-005",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "builder",
+  "severity": "major",
+  "finding": "The frozen OpenAPI and the decided contract now differ in many places, and no decision says which one the builder implements from. D1 lets decisions win over story text, not over the OpenAPI. A builder who generates server stubs or contract tests from the OpenAPI gets 18 operations, no GET /schemas/{schemaName}, no 401, list items without created and a versions response that does not resolve. A builder who hand-codes from the decisions gets a different surface.",
+  "evidence": "Decided but not in the file: GET /schemas/{schemaName} (D16); 401 UnauthorizedErrorResponse on every in-scope operation (D26; today only on the two quality profile operations, lines 1303 and 1390); created on GET /schemas items and status and resourceType on versions items (D30); Location format /schemas/{name}/{version}?schemaType=... (D15; examples at lines 169 and 486 use /schemas/<uuid>/version/N); webhook event payload (D24; no callbacks object); the nine out-of-scope operations still listed (D2). Unresolved reference: GetSchemaVersionsResponsePayload is '$ref: ./common/common-components.yaml#/components/schemas/GetSchemaVersionsResponsePayload' (line 2109) and that file is not in specs/api/. Plus the value rules of P-004.",
+  "question": "Will step 30 hand the builder a patched OpenAPI (with the changes above and the external reference inlined) as the build contract, or is the rule 'decisions win over the OpenAPI' to be added to D1?",
+  "options": [
+   "Patched OpenAPI as the single build contract",
+   "Frozen OpenAPI plus a precedence rule in D1"
+  ],
+  "from_21a": [],
+  "see": [
+   "F-005",
+   "F-014",
+   "F-016",
+   "F-019",
+   "F-010",
+   "D-010",
+   "D1",
+   "D2",
+   "D15",
+   "D16",
+   "D24",
+   "D26",
+   "D30",
+   "P-004"
+  ]
+ },
+ {
+  "id": "P-006",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "API-22",
+  "severity": "minor",
+  "finding": "Several examples contradict the declared types, patterns or decisions, and three in-scope request bodies have no body example. Version values are declared as strings but the examples are numbers. Schema names in examples contain spaces, which the name pattern rejects. resourceType examples fall outside D6. Several 406 detail texts stop mid-sentence. Tests and mocks built from these examples will be wrong.",
+  "evidence": "Integer examples for string versions: CreateSchemaResponsePayload.schemaVersion example 1 (line 2119), GetAllSchemasResponsePayload metadata[].version 3 (2096), CreateNewVersionSchemaResponsePayload.version 2 (2155), SchemaCategory.latestVersion 3 (2314), POST /schemas 201 example schemaVersion 1 (183), GET /schemas 200 example version 1 (99, 107). Names against '^[A-Z][a-zA-Z0-9]*$': CreateSchemaPayload.name 'Application Shape' (1982), CreateSchemaResponsePayload.schemaName (2115), POST /schemas 201 example (182), POST versions 201 example name 'Data Offering Schema.' (497). resourceType outside D6: 'Data Offering' (105), 'LegalPerson' (287, 2295). Truncated 406 detail: lines 148, 200, 321 (\"...defined in the request's\") and 1609. No body example (A-005): POST /schemas, PATCH /schemas/{schemaName}, POST /schemas/{schemaName}/versions; the three /vocabularies places are out of scope (D2).",
+  "question": "",
+  "from_21a": [
+   "A-005"
+  ],
+  "see": [
+   "D3",
+   "D5",
+   "D6",
+   "D17",
+   "D29"
+  ]
+ },
+ {
+  "id": "P-007",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "API-52",
+  "severity": "minor",
+  "finding": "Identifier and property names do not follow the naming rules: path parameters are schemaName and webhookId instead of id, the webhook carries webhookId instead of id, the list wrapper property is the generic 'metadata', and graphName names the RDF storage rather than its business meaning (the version URI, D30). The decisions D5 and D30 keep these wire names for this build, so this is a point for the next major version, not a change now.",
+  "evidence": "Path parameters {schemaName} on /schemas/{schemaName}, /schemas/{schemaName}/versions, /schemas/{schemaName}/{version}, /schemas/{schemaName}/qualityProfiles/active and {webhookId} on /webhooks/{webhookId} (A-006). Webhook.webhookId (line 2334, A-004, API-50). GetAllSchemasResponsePayload.metadata (2064, A-003, API-18). graphName in the versions example (415) and D30 'graphName (the version URI of D15)' (API-19). A schema is addressed by a business key (name, schemaType, resourceType, D4), so 'name' is a reasonable business identifier under API-55.",
+  "question": "",
+  "from_21a": [
+   "A-003",
+   "A-004",
+   "A-006"
+  ],
+  "see": [
+   "D-001",
+   "D4",
+   "D5",
+   "D30"
+  ]
+ },
+ {
+  "id": "P-008",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "API-30",
+  "severity": "minor",
+  "finding": "A schema version is served at /schemas/{schemaName}/{version}, beside the collection /schemas/{schemaName}/versions, not inside it. The vocabulary operations in the same file use /versions/{version}. D15 and D17 fix the current path for this build; the consistent form is a point for the next major version.",
+  "evidence": "Paths /schemas/{schemaName}/versions (line 338) and /schemas/{schemaName}/{version} (554) versus /vocabularies/{vocabularyName}/versions/{version} (1173). API-30: details at /resources/{resourceId}.",
+  "question": "",
+  "from_21a": [],
+  "see": [
+   "D15",
+   "D17"
+  ]
+ },
+ {
+  "id": "P-009",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "builder",
+  "severity": "minor",
+  "finding": "Result sizes have no upper bound. pageSize has a minimum but no maximum on GET /schemas and GET /schemas/{schemaName}/versions, and GET /webhooks returns an unpaged array. One builder caps pageSize and answers 400 above the cap, another serves any size.",
+  "evidence": "pageSize: minimum 1, default 20, no maximum (lines 66 to 73, 386 to 393). GET /webhooks 200: type array of Webhook, no paging parameters (1565 to 1583). D31 sets defaults only.",
+  "question": "What is the maximum pageSize (for example 100), and is a larger value answered with 400 or clamped?",
+  "from_21a": [],
+  "see": [
+   "D31"
+  ]
+ },
+ {
+  "id": "P-010",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "builder",
+  "severity": "minor",
+  "finding": "DELETE /webhooks/{webhookId} declares the path parameter as a UUID but has no 400 response. A malformed id can get 400 from a framework that validates the format, or 404 from one that looks it up as a string.",
+  "evidence": "DELETE /webhooks/{webhookId} parameters: type string, format uuid (lines 1715 to 1722); responses 204, 403, 404, 406, 500. D29: 'DELETE returns 204 only', 'webhookId is a server-generated UUID'.",
+  "question": "Is a webhookId that is not a UUID answered with 400 or with 404?",
+  "from_21a": [],
+  "see": [
+   "D29"
+  ]
+ },
+ {
+  "id": "P-011",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "builder",
+  "severity": "minor",
+  "finding": "The two content reads return text/turtle on success and application/problem+json on error. A client that sends Accept: text/turtle and hits a 404 can get the problem body anyway or a 406, depending on the framework. Tests for 404 and 403 on these reads depend on the choice.",
+  "evidence": "GET /schemas/{schemaName}/{version}: 200 text/turtle (line 612), 4xx application/problem+json, 406 'Not Acceptable' (659 to 671). GET /schemas/{schemaName} (D16): 200 text/turtle, 404. D35: the UI downloads through both.",
+  "question": "On an error, do the Turtle reads always answer application/problem+json whatever the Accept header says, with 406 only when the success response cannot be produced?",
+  "from_21a": [],
+  "see": [
+   "D16",
+   "D17",
+   "D35"
+  ]
+ },
+ {
+  "id": "P-012",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "builder",
+  "severity": "minor",
+  "finding": "16 of 18 operations have no operationId; only the two out-of-scope quality profile operations have one. Code generators then invent method and client names, so two builders produce different interfaces and generated UI clients.",
+  "evidence": "No operationId on any /schemas, /vocabularies or /webhooks operation, nor on PATCH /metadataQualityProfiles/{metadataQualityProfileName}; operationId only on DELETE /metadataQualityProfiles/{metadataQualityProfileName} (line 1351) and GET /schemas/{schemaName}/qualityProfiles/active (1462). Inventory extraction issues list the 16.",
+  "question": "",
+  "from_21a": [],
+  "see": [
+   "D2"
+  ]
+ },
+ {
+  "id": "P-013",
+  "target": "schema-manager-be (specs/api/schema_openapi.yaml)",
+  "rule": "API-49",
+  "severity": "minor",
+  "finding": "info.description states a business purpose but covers only part of the API. It names resource description schemas and leaves out federated search schemas and webhook subscriptions, which are in scope (D2, D8, D24).",
+  "evidence": "info.description (line 14): 'This API allows the Governance authority to manage Resource Description Schemas.' D36 terms: 'resource description schema' and 'federated search schema'.",
+  "question": "",
+  "from_21a": [],
+  "see": [
+   "D2",
+   "D36"
+  ]
+ }
+]

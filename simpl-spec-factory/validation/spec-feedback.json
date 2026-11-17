@@ -1,9 +1,9 @@
 {
  "component": ".",
  "counts": {
-  "blocker": 13,
-  "major": 39,
-  "minor": 21
+  "blocker": 14,
+  "major": 42,
+  "minor": 29
  },
  "findings": [
   {
@@ -1310,6 +1310,253 @@
    "code": "DDD-01",
    "step": "23b",
    "theme": "One language for the domain"
+  },
+  {
+   "id": "P-001",
+   "target": "vocabulary-manager-be#POST /vocabularies/searches; POST /external-vocabulary/searches",
+   "rule": "COV-01",
+   "severity": "blocker",
+   "finding": "The two search operations have no story and no decision, and their contract is open on the points a tester needs. Both responses extend CollectionPage (page, pageSize, total, totalPages), but neither request takes page or pageSize, and the request arrays have no maxItems. One builder returns every match in one response, another cuts at the default page size of 20 and drops the rest without a way to fetch them. The result order, the handling of duplicate references, and the outcome of an external search body that matches more than one oneOf branch (for example namespaceUri plus namespaceUris) are not stated either.",
+   "evidence": "OpenAPI POST /vocabularies/searches: request VocabularySearchRequest (items, minItems 1, no maxItems, no page parameters), response VocabularySearchResponse allOf CollectionPage, example 'page: 1, pageSize: 20, total: 2, totalPages: 1'; POST /external-vocabulary/searches: request ExternalVocabularySearchRequest (oneOf namespaceUri | aliasUri | anyOf namespaceUris, aliasUris; arrays without maxItems), response GetExternalVocabularyListResponse with page/pageSize; links.json: both operations are linked only by SIMPL-18196/AC1 to AC4 ('invoke any Vocabulary Management API endpoint'); decisions D16 (role only) and D22 (pagination limits, worded for GET) do not cover them.",
+   "question": "Are the search results paged, how many references may one request hold, in which order are results returned, and is a body that fits two oneOf branches rejected?",
+   "options": [
+    "No paging: all matches in one response with page 1, totalPages 1 and pageSize equal to the number of items; at most 100 references per request (400 above); results in request order, duplicates removed; a body that fits two branches returns 400",
+    "Paging as on the GET lists: page and pageSize query parameters on the POST, default 20, maximum 100; results ordered by name then version; duplicates removed; two branches return 400"
+   ],
+   "from_21a": [],
+   "see": [
+    "D16",
+    "D22",
+    "D30"
+   ],
+   "code": "COV-01",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-002",
+   "target": "vocabulary-manager-be",
+   "rule": "BUILD",
+   "severity": "major",
+   "finding": "Step 30 decided several behaviours that the OpenAPI file does not yet show. A builder who generates server stubs, clients or contract tests from the file builds the old behaviour: no 401 or 403 responses, a strict PascalCase name filter, an unbounded pageSize, no creator on version objects, an optional validationWarnings with a free-text code, unbounded description and changelog, a version form field that the schema does not forbid, a nullable latestVersionHref, and silence on unknown query parameters.",
+   "evidence": "D17 (401 urn:problem-type:simpl:unauthorized, 403 urn:problem-type:simpl:forbidden) vs every operation: responses limited to 200/201/204, 400, 404, 406, 409, 413, 415, 500; D19 (name filter ^[A-Za-z0-9]+$, minLength 1, contains match) vs components/parameters/VocabularyNameQuery pattern '^[A-Z][a-zA-Z0-9]*$', minLength 3; D22 (pageSize maximum 100) vs PageSizeQuery 'minimum: 1' only; D27 (createdBy on version objects) vs schemas VocabularyMetadata and VocabularyVersionMetadataResponse without createdBy; D10 (validationWarnings always present, closed code set externalReferenceSkipped, deprecatedVocabularyReference, semanticReasoningSkipped) vs VocabularyVersionMetadataResponse without required list and VocabularyValidationWarning.code 'type: string' without enum; D37 (description and changelog 1 to 1000 characters) vs CreateVocabularyPayload and CreateNewVocabularyVersionPayload without minLength or maxLength; D7 (version form field returns 400) vs CreateNewVocabularyVersionPayload without additionalProperties false; D5 (latestVersionHref always filled) vs VocabularyMetadata.latestVersionHref 'nullable: true'; D21 (unknown query parameter returns 400) not stated on any GET.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [
+    "F-011",
+    "F-017",
+    "F-018",
+    "F-029",
+    "D5",
+    "D7",
+    "D10",
+    "D17",
+    "D19",
+    "D21",
+    "D22",
+    "D27",
+    "D37"
+   ],
+   "code": "BUILD",
+   "step": "21b",
+   "theme": "Other"
+  },
+  {
+   "id": "P-003",
+   "target": "vocabulary-manager-be#components/securitySchemes/OAuth2Auth",
+   "rule": "SEC-07",
+   "severity": "major",
+   "finding": "The security scheme does not fit the decided access model. It declares an OAuth2 authorization code flow with placeholder URLs and two scopes, read and write, while D16 grants access by two Keycloak realm roles and states that the scopes are not checked. A client generated from the file will ask for scopes that mean nothing, and a builder can reasonably enforce read and write scopes instead of the roles. SEC-07 asks for OpenID Connect through the Tier 1 Keycloak; the file names neither.",
+   "evidence": "components/securitySchemes/OAuth2Auth: type oauth2, flows.authorizationCode, authorizationUrl 'https://auth.example.com/oauth/authorize', tokenUrl 'https://auth.example.com/oauth/token', scopes 'read: Read access', 'write: Write access', description 'OAuth2 authentication provided by the gateway.'; top-level security '- OAuth2Auth: []'; D16 'GA_VOCABULARY_VIEWER', 'GA_VOCABULARY_ADMIN', 'The OAuth2 scopes read and write in the OpenAPI are not checked.'; D17 'The service validates the bearer token ... and the roles itself'; E1 realm 'simpl'.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [
+    "F-002",
+    "D-018",
+    "D16",
+    "D17",
+    "E1"
+   ],
+   "code": "SEC-07",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-004",
+   "target": "vocabulary-manager-be#external vocabulary operations; PATCH /vocabularies/{vocabularyName}/versions/{version}",
+   "rule": "COV-01",
+   "severity": "major",
+   "finding": "Seven operations are reached by no acceptance criterion except the blanket access rules of SIMPL-18196. For six of them, the external vocabulary operations, no story exists at all; D30 fixes their behaviour, but there are no criteria for listing, reading, reading content by name or deleting an external vocabulary. The manual version status change is decided in D4 but also has no story. 21a counted these operations as covered because the inferred SIMPL-18196 links point at every secured operation.",
+   "evidence": "links.json: GET /external-vocabularies, POST /external-vocabularies, GET /external-vocabularies/{name}, GET /external-vocabularies/{name}/content, DELETE /external-vocabularies/{name} and PATCH /vocabularies/{vocabularyName}/versions/{version} have links only from SIMPL-18196/AC1 to AC4 (reason \"'invoke any Vocabulary Management API endpoint' with the role\"); SIMPL-18166 names the path of the PATCH but its links point at the GET only; D-020 'No story covers registering, reading or deleting an external vocabulary'; F-015; D4; D30.",
+   "question": "Which story holds the acceptance criteria for registering, listing, reading and deleting external vocabularies, and for the manual version status change?",
+   "options": [
+    "Add one API story for external vocabulary registration (create, list, read, content, delete) and one for the version status change, with criteria taken from D30 and D4",
+    "Accept D30 and D4 as the test basis for this build and record the missing stories as a backlog item"
+   ],
+   "from_21a": [],
+   "see": [
+    "D-020",
+    "F-015",
+    "D4",
+    "D30"
+   ],
+   "code": "COV-01",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-005",
+   "target": "vocabulary-manager-be#/external-vocabularies",
+   "rule": "API-45",
+   "severity": "minor",
+   "finding": "The external vocabulary operations reuse error responses written for internal vocabularies. GET and DELETE /external-vocabularies/{name} answer 404 with VocabularyNotFoundResponse, whose example says 'Vocabulary with name' and points the issue at a path parameter 'vocabularyName' that these paths do not have, while ExternalVocabularyNotFoundResponse exists. POST /external-vocabularies answers 400 with VocabularyValidationBadRequestResponse, whose examples include a semantic error, while D30 says registration checks syntax only. Two builders will word these bodies differently, and tests that check the issue name will fail on one of them.",
+   "evidence": "OpenAPI GET and DELETE /external-vocabularies/{name} '404: $ref VocabularyNotFoundResponse'; VocabularyNotFoundResponse example issues 'in: path, name: vocabularyName'; ExternalVocabularyNotFoundResponse used only by POST /external-vocabularies/content and GET /external-vocabularies/{name}/content; POST /external-vocabularies '400: $ref VocabularyValidationBadRequestResponse' with example semanticError; D30 'Registration checks Turtle syntax only (400 on error), no semantic validation'.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [
+    "D30",
+    "D24"
+   ],
+   "code": "API-45",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-006",
+   "target": "vocabulary-manager-be#GET /external-vocabularies",
+   "rule": "BUILD",
+   "severity": "minor",
+   "finding": "GET /external-vocabularies is paged but has no sort parameter and no stated default order, so the content of page 2 differs between builders. D23 fixes the order only for the internal vocabulary lists.",
+   "evidence": "OpenAPI GET /external-vocabularies parameters PageQuery and PageSizeQuery only; D23 'GET /vocabularies ... default is name ascending', 'GET .../versions default order is version number descending'.",
+   "question": "What is the default order of GET /external-vocabularies?",
+   "options": [
+    "name ascending, as GET /vocabularies",
+    "creationDate descending"
+   ],
+   "from_21a": [],
+   "see": [
+    "D22",
+    "D23"
+   ],
+   "code": "BUILD",
+   "step": "21b",
+   "theme": "Other"
+  },
+  {
+   "id": "P-007",
+   "target": "vocabulary-manager-be#paths",
+   "rule": "API-06",
+   "severity": "minor",
+   "finding": "Path naming is not consistent. Literal segments use kebab-case instead of lowerCamelCase. The external search path uses a singular 'external-vocabulary' next to the plural 'external-vocabularies', which is easy to get wrong. Internal content lives under a separate root /content/{vocabularyName}, while external content lives under the resource, /external-vocabularies/{name}/content. Controller segments share a level with identifiers: GET /vocabularies/searches and GET /external-vocabularies/content fall into the {vocabularyName} and {name} templates and get 400 from the name pattern, or 405, depending on the router.",
+   "evidence": "Paths /external-vocabularies, /external-vocabularies/{name}, /external-vocabularies/{name}/content, /external-vocabularies/content, /external-vocabulary/searches, /vocabularies/searches, /content/{vocabularyName}, /content/{vocabularyName}/versions/{version}; API-06, API-10, API-28; A-002.",
+   "question": "",
+   "options": [],
+   "from_21a": [
+    "A-002"
+   ],
+   "see": [
+    "F-045"
+   ],
+   "code": "API-06",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-008",
+   "target": "vocabulary-manager-be#components/parameters",
+   "rule": "API-52",
+   "severity": "minor",
+   "finding": "Identifier naming does not follow the guidelines and is not shared. The path parameters are vocabularyName and name, the resource property is name (API-50 asks for 'id' or 'code'), and there is no identifier schema type (API-54). The name pattern is written out five times, and D19 now relaxes one of the five copies, so a change can easily miss one. Since D30 makes the name the identity, a single VocabularyName schema referenced everywhere would keep the rule in one place.",
+   "evidence": "components/parameters VocabularyNamePath (vocabularyName), ExternalVocabularyNamePath (name), VocabularyNameQuery (name); pattern '^[A-Z][a-zA-Z0-9]*$' repeated in VocabularyNamePath, ExternalVocabularyNamePath, VocabularyNameQuery, CreateVocabularyPayload.name, CreateExternalVocabularyPayload.name, VocabularySearchItemRequest.name; A-005; D-008; D30; D19.",
+   "question": "",
+   "options": [],
+   "from_21a": [
+    "A-005"
+   ],
+   "see": [
+    "D-008",
+    "D19",
+    "D30"
+   ],
+   "code": "API-52",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-009",
+   "target": "vocabulary-manager-be",
+   "rule": "API-21",
+   "severity": "minor",
+   "finding": "Six bodies have no example. Four are the multipart upload requests, where an example form would show the field names and the Turtle file part. GET /external-vocabularies/{name} has no 200 example, and the two PATCH requests have none.",
+   "evidence": "A-003: POST /vocabularies, POST /vocabularies/{vocabularyName}/versions, POST /external-vocabularies (multipart/form-data); PATCH /vocabularies/{vocabularyName}, PATCH /vocabularies/{vocabularyName}/versions/{version} (application/json); GET /external-vocabularies/{name} 200.",
+   "question": "",
+   "options": [],
+   "from_21a": [
+    "A-003"
+   ],
+   "see": [],
+   "code": "API-21",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-010",
+   "target": "vocabulary-manager-be#info.description",
+   "rule": "API-49",
+   "severity": "minor",
+   "finding": "info.description states a business purpose but covers only part of the API. It speaks of internal vocabularies, while the API also registers external vocabularies and offers reference search for other components.",
+   "evidence": "info.description 'This API allows the Governance Authority to manage internal vocabularies.'; tags 'External vocabulary management'; POST /vocabularies/searches 'for semantic reference resolution'.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [
+    "D30"
+   ],
+   "code": "API-49",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-011",
+   "target": "vocabulary-manager-be#POST /external-vocabularies/content",
+   "rule": "API-11",
+   "severity": "minor",
+   "finding": "POST /external-vocabularies/content is a read done with POST, and the API itself calls it legacy next to GET /external-vocabularies/{name}/content. No story covers it. If a consumer still resolves content by namespace URI it is plumbing and can stay; otherwise it is a candidate to retire.",
+   "evidence": "POST /external-vocabularies description 'the legacy `/external-vocabularies/content` endpoint remains available for namespace-based downloads'; POST /external-vocabularies/content 'Resolves the cached external vocabulary by the namespace URI'; links.json: only SIMPL-18196 links; D16 lists it as a read-only POST for the viewer role.",
+   "question": "Is the namespace-based content download still needed by a consumer in this build, or can it be retired?",
+   "options": [
+    "Keep it as plumbing for namespace resolution and document why it is a POST",
+    "Retire it; consumers use POST /external-vocabulary/searches then GET /external-vocabularies/{name}/content"
+   ],
+   "from_21a": [],
+   "see": [
+    "D16",
+    "D30"
+   ],
+   "code": "API-11",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-012",
+   "target": "vocabulary-manager-be#components/schemas",
+   "rule": "BUILD",
+   "severity": "minor",
+   "finding": "No response schema declares required properties, so every field is optional on the wire. A builder may leave out href, status or version, and a contract test cannot fail on a missing field. Only HealthResponse and the request schemas have required lists.",
+   "evidence": "Schemas VocabularyCategory, VocabularyMetadata, VocabularyVersionMetadataResponse, VocabularySearchItem, ExternalVocabulary, CollectionPage, Problem: no 'required'; HealthResponse 'required: status'.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [
+    "D25",
+    "D26"
+   ],
+   "code": "BUILD",
+   "step": "21b",
+   "theme": "Other"
   }
  ]
 }

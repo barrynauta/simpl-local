@@ -668,5 +668,107 @@
       "tests",
       "data"
     ]
+  },
+  {
+    "id": "D26",
+    "topic": "Published operations that are not built",
+    "closes": [
+      "P-001",
+      "P-002"
+    ],
+    "decision": "Six Contract Manager operations of the published OpenAPI are not built and the tests do not call them: POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/issue, PATCH /agreements/{contractAgreementId}/definitions/{contractDefinitionId}/status, GET /agreements/{contractAgreementId}/file, POST /agreements/search, PUT /contractOffers/{contractNegotiationId}/update and the Contract Manager POST /contractOffers/{contractNegotiationId}. Signing happens only inside D5 (Consumer) and D7 (Provider). A usage contract changes state only through the D12 transitions caused by D5, D7, D8 and D13; no operation sets a state directly. The offer reaches contract-ui-be only through D4. A list of usage contracts is not built: a usage contract after acceptance is read one at a time through GET /agreements/{contractAgreementId} (D14). The operations that stay are the ones the earlier decisions name: on the Contract Manager /create (D4), PATCH /contractOffers/{contractNegotiationId}/{operation} (D5), validateAndIssue (D7), PUT /verifications/{contractNegotiationId} (D8), GET /verifications/{contractNegotiationId}/vc (D10), POST /agreements/{contractNegotiationId}/search (D3), GET /agreements/{contractAgreementId}, GET /audits/usageContractStatusCounts (D17) and GET /health; on contract-ui-be POST, GET and PATCH /contractOffers (D4, D14) and GET /health.",
+    "options": [
+      "Retire both P-001 operations (simplest, matches D5 and D7)",
+      "Keep /issue as an internal alias of the D5 or D7 signing step, retire PATCH .../status",
+      "Keep both, guarded by D12, 409 otherwise",
+      "For P-002: retire three and write a story for POST /agreements/search; retire all four; keep all four as internal plumbing"
+    ],
+    "basis": "D1 (SIMPL-19934 superseded by SIMPL-35584; SIMPL-21928 and 21963 made concrete by D5 and D7), D5 and D7 (signing inside accept and validateAndIssue), D12 (only the listed transitions), D21 (the Contract Manager is the root, contract-ui-be does not get pushed a status), D2 (no orchestrator), D4 (the offer goes to contract-ui-be inside /create). POST /agreements/search has no story (COV-01), so it is left out as the simplest choice to build and test; D14 already reads usage contracts after acceptance one at a time. PATCH .../status would let any API key holder skip the state machine.",
+    "status": "provisional",
+    "owner_question": "API owner: remove these six operations from the next OpenAPI version (or mark them deprecated) and unlink SIMPL-19934, 21928 and 21963 from /issue and PATCH .../status. Product owner: does POST /agreements/search serve the overview of usage contracts after acceptance (D14)? If yes, write a story with a state filter.",
+    "affects": [
+      "api",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D27",
+    "topic": "Response codes and request schemas follow the decisions, not the OpenAPI",
+    "closes": [
+      "P-003",
+      "P-004"
+    ],
+    "decision": "Where the OpenAPI and D3, D4, D5, D7, D8, D14 or E5 differ on a response code or a required field, the decisions win (source hierarchy, rule 1). Nothing new is decided here. The differences, for the build and the tests: Contract Manager POST .../create also answers 406 and 409; POST /agreements/{contractNegotiationId}/search also answers 406 and 415; PATCH /contractOffers/{contractNegotiationId}/{operation} also answers 404 and 409; PUT /verifications/{contractNegotiationId} also answers 404, 406 and 409. contract-ui-be PATCH /contractOffers/{contractNegotiationId}/{operation} also answers 409 and 502; POST /contractOffers/{contractNegotiationId} also answers 400 (humanReadable or hash missing) and 415; GET /contractOffers never answers 404. 406 and 415 follow E5 on every operation that takes or returns a JSON body. Request bodies: the search body and ContractAgreementCreate need all five fields (contractNegotiationId, assetId, providerId, consumerId, contractOfferId for ContractAgreementCreate; contractAgreementId, contractDefinitionId, assetId, providerId, consumerId for the search body), 400 otherwise. The PUT /verifications body is optional and ignored: no body, an empty body or any JSON body gives the D8 answer, never a 400 for the body. contract-ui-be ContractOffer accepts assetId, providerId and consumerId on POST and returns contractNegotiationId and createdAt as read-only properties (D14). A tool that validates responses against the OpenAPI must allow these codes and properties until the OpenAPI is updated.",
+    "options": [
+      "Decisions override; the OpenAPI is updated afterwards from the same list",
+      "Update the OpenAPI first and build from it"
+    ],
+    "basis": "Source hierarchy rule 1 (decisions win) and rule 4 (OpenAPI for the wire format only where no decision settles it). API-12 (status codes), API-60 (required flags). The codes and fields come from D3, D4, D5, D7, D8, D14 and E5; this entry only collects them per operation.",
+    "status": "follows the specs",
+    "owner_question": "API owner: update both OpenAPI files to this list: add the codes per operation, remove 404 from GET /contractOffers, add 'required' lists to the search body and ContractAgreementCreate, make the PUT /verifications body optional, and add contractNegotiationId, createdAt, assetId, providerId and consumerId to the contract-ui-be ContractOffer.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D28",
+    "topic": "Problem details follow E5, not the OpenAPI examples",
+    "closes": [
+      "P-006"
+    ],
+    "decision": "E5 stands. Every problem detail carries a type from the E5 list; the example types in the OpenAPI (argumentTypeMismatch, badRequest, methodNotSupported, methodNotAllowed, singleCustomException, internalServerError, urn:error:single-custom-exception) are not used. A request with a path or query value of the wrong type is invalidRequest (400). Every problem detail has type, title, status and instance. instance is the request path including the base path, as a relative URI reference (for example /contract/v1/agreements/search), never an absolute URL. Tests assert status, type and that instance equals the request path. 405 answers are not part of the tested contract.",
+    "options": [
+      "Follow E5 and declare instance as uri-reference",
+      "Adopt the existing example types and change E5"
+    ],
+    "basis": "E5, API-45, API-46, API-47. RFC 9457 allows instance to be a URI reference, so the relative paths of the examples stay valid with format uri-reference. One error format for the component (30a consistency rule).",
+    "status": "provisional",
+    "owner_question": "API owner: change the problem examples in both OpenAPI files to the E5 types, add a type to every example, and declare Problem.instance as format uri-reference.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D29",
+    "topic": "contract-ui-be payloads and offerUrl",
+    "closes": [
+      "P-005"
+    ],
+    "decision": "The schemas and D14 fix the payloads of contract-ui-be; the examples do not. ContractOffer has exactly: humanReadable, hash, status, contractNegotiationId, createdAt, assetId, providerId, consumerId. The example names humanReadableData, hashData, contractData, createdDate and lastUpdatedDate are not used, and there is no last-updated property. PATCH /contractOffers/{contractNegotiationId}/{operation} returns 200 with the new status as a JSON string, for example \"ACCEPTED\" (D14). POST /contractOffers/{contractNegotiationId} returns 201 with ContractOfferResponse {offerUrl} only, no offerStatus. offerUrl is the configured frontend base URL CONTRACT_UI_FRONTEND_URL (test value http://localhost:3000, no trailing slash) followed by /contractOffers/{contractNegotiationId}. The Contract Manager does not store or use offerUrl.",
+    "options": [
+      "Drop lastUpdatedDate, offerUrl = configured frontend base URL + /contractOffers/{contractNegotiationId}",
+      "Add lastUpdatedAt as read-only, offerUrl = backend resource URL"
+    ],
+    "basis": "Source hierarchy rule 4 (schema over example), D14 and D21 (names), API-21. flow.puml: 'offerUrl: <frontend>/contractOffers/{contractNegotiationId}'. No story needs a last-updated time, so leaving it out is the simplest to build and test.",
+    "status": "provisional",
+    "owner_question": "API owner: align every contract-ui-be example with the schema, drop offerStatus from the POST example, and confirm that offerUrl points to the frontend. Is a last-updated time needed anywhere?",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D30",
+    "topic": "Date and time format",
+    "closes": [
+      "P-007"
+    ],
+    "decision": "Every date and time value on both APIs (consumerSignatureDate, providerSignatureDate, createdAt, generatedAt of D17, validatedAt of D24) is an RFC 3339 date-time in UTC with a Z suffix, for example 2026-11-17T10:20:30.123Z. Fractional seconds are optional. Tests parse the values and compare them as instants, never as strings. providerSignatureDate is the instant of the Provider VC issuanceDate (D8 on the Consumer side) or of the Provider's own VC (D7 on the Provider side). consumerSignatureDate is the instant of the Consumer VC issuanceDate. createdAt is set by contract-ui-be when it stores the offer and is the start of the D13 timeout. Stores keep instants; local times without a zone are never written.",
+    "options": [
+      "RFC 3339 date-time, UTC, Z suffix, format date-time in the schema",
+      "Local time without zone, as in the examples"
+    ],
+    "basis": "VerifiableCredential.issuanceDate is already format date-time with Z in the OpenAPI, and D8 copies it; one format avoids time zone drift in the D13 timeout. CODE-27 asks for a standard date format in logs. Simplest to test.",
+    "status": "provisional",
+    "owner_question": "API owner: declare format date-time on consumerSignatureDate, providerSignatureDate and the contract-ui-be createdAt, and change the examples to UTC with Z.",
+    "affects": [
+      "api",
+      "data",
+      "tests"
+    ]
   }
 ]

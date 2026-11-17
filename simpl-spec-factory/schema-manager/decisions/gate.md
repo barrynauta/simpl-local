@@ -4,9 +4,9 @@
 
 | Check | Result |
 |---|---|
-| Decisions | 43 (accepted risk 1, follows the specs 6, provisional 36) |
+| Decisions | 48 (accepted risk 1, follows the specs 7, provisional 40) |
 | Blockers closed | 16 of 16 (0 only as accepted risk) |
-| Majors with a default | 47 of 47 |
+| Majors with a default | 52 of 52 |
 | Glossary terms decided | 41 of 41 |
 | Decisions citing unknown finding ids | 0 |
 

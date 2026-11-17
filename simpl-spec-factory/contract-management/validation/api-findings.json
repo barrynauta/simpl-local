@@ -1,0 +1,337 @@
+[
+ {
+  "id": "P-001",
+  "target": "contract-manager-be",
+  "ids": [
+   "POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/issue",
+   "PATCH /agreements/{contractAgreementId}/definitions/{contractDefinitionId}/status"
+  ],
+  "rule": "API-12",
+  "severity": "blocker",
+  "finding": "Two state-changing operations of the published API have no decision: build or retire. The decisions put Consumer signing inside the accept call (D5) and Provider signing inside validateAndIssue (D7), and treat the stories linked to these operations (SIMPL-19934, 21928, 21963) as superseded or made concrete elsewhere (D1). Yet the OpenAPI still offers /issue, which starts signing on its own, and PATCH .../status, which lets any caller with the API key set FINALIZED or TERMINATED directly. That bypasses the D12 state machine: Active is reached only through D7 or a successful D8 validation. One builder will implement them from the OpenAPI, another will leave them out, and the tests have no oracle for either.",
+  "evidence": "specs/api/contract-manager-be/openapi3-v1.yaml lines 72 to 159: /issue, 'Issue Verifiable credential. Start the process of signing contract', requestBody required: false, 201 ConfirmationResponse. Lines 258 to 342: PATCH .../status, 'Confirm signing ... Final step in the process', body StatusUpdate with enum [FINALIZED, TERMINATED] (line 1398). links.json links SIMPL-19934/AC1, AC2, SIMPL-21928/AC1, AC2 and SIMPL-21963/AC1 to /issue and SIMPL-21963/AC1 to /status. D1: 'SIMPL-19934 is superseded by SIMPL-35584 ... SIMPL-21928, 21963 ... are business-level descriptions of steps that D5, D6, D7 and D10 make concrete'. No decision names either path. D12 lists the only allowed transitions.",
+  "question": "Are POST .../issue and PATCH .../status retired in the target design, or kept? If kept, which D12 transitions may they cause and on which side?",
+  "options": [
+   "Retire both: not built, not in the next OpenAPI version (simplest, matches D5 and D7)",
+   "Keep /issue as an internal alias of the D5 or D7 signing step, and retire PATCH .../status",
+   "Keep both, guarded by D12: PATCH .../status only Signed to Active or Closed, with 409 otherwise"
+  ],
+  "from_21a": [],
+  "see": [
+   "D1",
+   "D5",
+   "D7",
+   "D12",
+   "F-003",
+   "F-038",
+   "F-019"
+  ]
+ },
+ {
+  "id": "P-002",
+  "target": "contract-manager-be",
+  "ids": [
+   "GET /agreements/{contractAgreementId}/file",
+   "POST /agreements/search",
+   "PUT /contractOffers/{contractNegotiationId}/update",
+   "POST /contractOffers/{contractNegotiationId}"
+  ],
+  "rule": "COV-01",
+  "severity": "major",
+  "finding": "Four operations have no acceptance criterion and no decision. POST /agreements/search could serve the overview of usage contracts after acceptance, which D14 leaves as an owner question, so a story is missing. The other three belong to the replaced orchestrator design and should be retired: PUT .../update pushes a status from the Provider side to the UI side, which D21 forbids (the Contract Manager is the root, contract-ui-be changes its own status only after its own call succeeds); the Contract Manager's own POST /contractOffers relays the offer to contract-ui-be, which D4 now does inside /create; GET .../file reads a text file from the filesystem that the D12 record and the E8 rendering do not know. Without a decision a builder may implement them.",
+  "evidence": "specs/api/contract-manager-be/openapi3-v1.yaml line 429 GET .../file 'Get stored Contract Agreement data file from filesystem', text/plain. Line 608 POST /agreements/search 'Get list of existing active Contract Agreement', returns ContractSearchResponse {items: [contractAgreementId, consumerId]}. Line 1011 PUT .../update 'Get status update from provider side and transfer it to UI side', body ContractOfferStatusUpdate whose example status SIGNED is not in its own enum [CREATED, APPROVED, REJECTED] (lines 1033, 1252). Line 812 POST /contractOffers 'Transfers a contract offer presentation to contract-ui-backend'; flow.puml shows it called by the Contract orchestrator, which D2 removes; its only link (SIMPL-35526/AC1) is inferred, while the named link goes to contract-ui-be. api-checks A-010.",
+  "question": "Which of these four operations stay in the target API? Does POST /agreements/search serve the usage contract overview after acceptance (D14 owner question)?",
+  "options": [
+   "Retire GET .../file, PUT .../update and the Contract Manager POST /contractOffers; write a story for POST /agreements/search with a state filter",
+   "Retire all four",
+   "Keep all four as internal plumbing, documented as not for the Connector or the UI"
+  ],
+  "from_21a": [
+   "A-010",
+   "A-006"
+  ],
+  "see": [
+   "D2",
+   "D4",
+   "D12",
+   "D14",
+   "D21",
+   "E8",
+   "D-015"
+  ]
+ },
+ {
+  "id": "P-003",
+  "target": "cross",
+  "ids": [
+   "contract-manager-be:POST .../create",
+   "contract-manager-be:POST /agreements/{contractNegotiationId}/search",
+   "contract-manager-be:PATCH /contractOffers/{contractNegotiationId}/{operation}",
+   "contract-manager-be:PUT /verifications/{contractNegotiationId}",
+   "contract-ui-be:PATCH /contractOffers/{contractNegotiationId}/{operation}",
+   "contract-ui-be:POST /contractOffers/{contractNegotiationId}",
+   "contract-ui-be:GET /contractOffers"
+  ],
+  "rule": "API-12",
+  "severity": "major",
+  "finding": "The OpenAPI files do not list response codes that the decisions define, and list one that a decision forbids. A builder working from the OpenAPI and a tester working from the decisions will disagree, and a contract-testing tool that checks responses against the OpenAPI will reject correct answers. The decisions already ask to add the three new operations (D7, D10, D17); they do not ask to add these codes to the existing ones.",
+  "evidence": "specs/api/contract-manager-be/openapi3-v1.yaml: /create lists 201, 400, 401, 405, 415, 500, but D4 adds 409 (second call) and E5 lists 406. /agreements/{contractNegotiationId}/search lists 200, 400, 401, 405, 500, but D3 names 406 and 415. PATCH /contractOffers/.../{operation} has no 404 or 409, which D5 defines (unknown id, record not in Requested). PUT /verifications has no 404, 406 or 409, which D8 defines. specs/api/contract-ui-be/openapi3-v1.yaml: PATCH .../{operation} has no 409 or 502, which D14 defines. POST /contractOffers has no 400 or 415. GET /contractOffers lists 404, which D14 forbids ('never 404', also F-051).",
+  "question": "Will the OpenAPI files be updated to the response codes of D3, D4, D5, D8 and D14 before the build, or do the decisions override the OpenAPI for the build?",
+  "options": [
+   "Decisions override; the OpenAPI is updated afterwards from the same list",
+   "Update the OpenAPI first and build from it"
+  ],
+  "from_21a": [],
+  "see": [
+   "D3",
+   "D4",
+   "D5",
+   "D8",
+   "D14",
+   "E5",
+   "F-051",
+   "F-034",
+   "F-035"
+  ]
+ },
+ {
+  "id": "P-004",
+  "target": "cross",
+  "ids": [
+   "contract-manager-be:POST /agreements/{contractNegotiationId}/search request",
+   "contract-manager-be:ContractAgreementCreate",
+   "contract-manager-be:POST .../issue request",
+   "contract-manager-be:VerifyCredentialRequest",
+   "contract-ui-be:ContractOffer"
+  ],
+  "rule": "API-60",
+  "severity": "major",
+  "finding": "Request schemas allow what the decisions forbid, or forbid what they allow. The search body and ContractAgreementCreate declare no required properties, while D3, D4 and D7 make all five fields required with a 400 otherwise. PUT /verifications marks its body required, while D8 says the body is optional and ignored. The contract-ui-be ContractOffer has no assetId, providerId, consumerId, contractNegotiationId or createdAt, which D4 sends and D14 adds. A schema-validating builder would reject the D8 call without a body and accept a D3 call with missing fields.",
+  "evidence": "specs/api/contract-manager-be/openapi3-v1.yaml lines 519 to 550 (search body: properties only, no 'required'); line 1369 ContractAgreementCreate (no 'required'); line 91 /issue 'required: false'; line 737 PUT /verifications 'required: true' with VerifyCredentialRequest, which requires @context, type, issuer and credentialSubject (line 1418). specs/api/contract-ui-be/openapi3-v1.yaml line 515 ContractOffer: humanReadable, hash, status only.",
+  "question": "Can the schemas be aligned with D3, D4, D7, D8 and D14 (required lists, optional VC body, extra ContractOffer properties)?",
+  "options": [
+   "Align the schemas to the decisions",
+   "Keep the schemas and let the code validate beyond them"
+  ],
+  "from_21a": [],
+  "see": [
+   "D3",
+   "D4",
+   "D7",
+   "D8",
+   "D14",
+   "F-011",
+   "F-044"
+  ]
+ },
+ {
+  "id": "P-005",
+  "target": "contract-ui-be",
+  "ids": [
+   "GET /contractOffers/{contractNegotiationId} 200",
+   "GET /contractOffers 200",
+   "PATCH /contractOffers/{contractNegotiationId}/{operation} 200",
+   "POST /contractOffers/{contractNegotiationId} 201"
+  ],
+  "rule": "API-21",
+  "severity": "major",
+  "finding": "In contract-ui-be every success example contradicts its schema. The GET and PATCH examples use humanReadableData, hashData, contractData, createdDate and lastUpdatedDate; the schema has humanReadable, hash and status, and D14 names createdAt. The PATCH schema is a plain string (as D14 decides) but its example is a full object. The POST example returns offerStatus, which ContractOfferResponse does not have, and the offerUrl points to the backend path while flow.puml says the frontend. A builder and a tester who copy the examples will produce different payloads. D-017 and D21 settle the names in the schemas and the CDM, not these examples, and lastUpdatedDate and offerUrl are decided nowhere.",
+  "evidence": "specs/api/contract-ui-be/openapi3-v1.yaml lines 176 to 186 (GET example), 277 to 300 (list example), 408 to 418 (PATCH example with schema 'type: string'), 101 to 102 (POST example offerStatus, offerUrl https://contract-ui.simpl.eu:9999/contract-ui/v1/contractOffers/12345); schema ContractOffer line 515, ContractOfferResponse line 531 (offerUrl only). flow.puml: 'offerUrl: <frontend>/contractOffers/{contractNegotiationId}'.",
+  "question": "Is lastUpdatedDate part of ContractOffer, and what does offerUrl point to (frontend or backend, built from which configured base URL)?",
+  "options": [
+   "Drop lastUpdatedDate, offerUrl = configured frontend base URL + /contractOffers/{contractNegotiationId}",
+   "Add lastUpdatedAt as read-only, offerUrl = backend resource URL"
+  ],
+  "from_21a": [],
+  "see": [
+   "D14",
+   "D21",
+   "D-017",
+   "F-044"
+  ]
+ },
+ {
+  "id": "P-006",
+  "target": "cross",
+  "ids": [
+   "contract-manager-be:Problem examples",
+   "contract-ui-be:Problem examples"
+  ],
+  "rule": "API-46",
+  "severity": "major",
+  "finding": "The problem detail examples contradict the error format of E5. They use type values E5 does not have (argumentTypeMismatch, badRequest, methodNotSupported, methodNotAllowed, singleCustomException, internalServerError), one type outside the Simpl URN scheme (urn:error:single-custom-exception), and many examples have no type at all. instance is declared format uri but every example holds a relative path. Tests written from E5 will fail against a build that copies the OpenAPI examples.",
+  "evidence": "specs/api/contract-manager-be/openapi3-v1.yaml line 573 'type: urn:error:single-custom-exception' (search 400); /issue, /create, PATCH .../status and GET /agreements examples have no type; PUT /verifications 400 argumentTypeMismatch, 500 internalServerError. specs/api/contract-ui-be/openapi3-v1.yaml 404 'urn:problem-type:simpl:singleCustomException' (lines 227, 342, 459). Problem.instance 'format: uri' (CM line 1554 schema) with examples such as '/contract/v1/agreements/search'. E5: invalidRequest (400), notFound (404), internalError (500).",
+  "question": "Do the OpenAPI examples follow E5 in the next version, and is instance a URI reference (relative allowed) as RFC 9457 permits?",
+  "options": [
+   "Follow E5 and declare instance as uri-reference",
+   "Adopt the existing example types and change E5"
+  ],
+  "from_21a": [],
+  "see": [
+   "E5",
+   "D7"
+  ]
+ },
+ {
+  "id": "P-007",
+  "target": "cross",
+  "ids": [
+   "contract-manager-be:ContractAgreementData.consumerSignatureDate",
+   "contract-manager-be:ContractAgreementData.providerSignatureDate",
+   "contract-ui-be:ContractOffer createdAt"
+  ],
+  "rule": "API-12",
+  "severity": "major",
+  "finding": "Date and time values have no declared format. The signature dates are plain strings with an example without time zone, while D8 copies providerSignatureDate from the VC issuanceDate, which is date-time with a zone. The contract-ui-be examples use microseconds without zone. A tester comparing providerSignatureDate with issuanceDate, or ordering offers by creation time for the D13 timeout, needs one format.",
+  "evidence": "specs/api/contract-manager-be/openapi3-v1.yaml lines 1279 to 1284 (type: string, no format), example '2024-05-05T10:20:30' (line 369); VerifiableCredential.issuanceDate format date-time, example '2024-10-01T10:09:52Z'. specs/api/contract-ui-be/openapi3-v1.yaml createdDate '2026-06-03T13:38:15.561754'.",
+  "question": "Are all timestamps RFC 3339 date-time in UTC with a Z suffix?",
+  "options": [
+   "RFC 3339 date-time, UTC, Z suffix, format: date-time in the schema",
+   "Local time without zone, as in the examples"
+  ],
+  "from_21a": [],
+  "see": [
+   "D8",
+   "D13",
+   "D14"
+  ]
+ },
+ {
+  "id": "P-008",
+  "target": "contract-ui-be",
+  "ids": [
+   "components.securitySchemes.ApiKeyAuth",
+   "403 responses"
+  ],
+  "rule": "SEC-07",
+  "severity": "minor",
+  "finding": "contract-ui-be is the API a user-facing frontend calls, but it declares only a static API key and lists 403 'Access denied' on every business operation, while E2 and D2 say there are no users or roles in the backend and user login is checked at the gateway. The OpenAPI does not say this, so a reader expects OpenID Connect or a role check. The 403 responses (also on three contract-manager-be operations) cannot occur in this build.",
+  "evidence": "specs/api/contract-ui-be/openapi3-v1.yaml line 509 ApiKeyAuth (apiKey, header x-api-key) and global security; 403 on POST, GET, GET list and PATCH /contractOffers. specs/api/contract-manager-be/openapi3-v1.yaml 403 on POST /contractOffers, PATCH .../{operation}, PUT .../update. D2: 'User login and roles are checked at the gateway (SEC-07, SEC-12), not in these backends'. E2: 'No Keycloak, users or roles'.",
+  "question": "Remove the 403 responses for this build and add a security description that names the gateway as the place of user authentication?",
+  "options": [
+   "Remove 403, describe the gateway in the security scheme",
+   "Keep 403 for a later role check"
+  ],
+  "from_21a": [],
+  "see": [
+   "D2",
+   "E2",
+   "F-024",
+   "F-046",
+   "F-052"
+  ]
+ },
+ {
+  "id": "P-009",
+  "target": "cross",
+  "ids": [
+   "contract-manager-be:info.description",
+   "contract-ui-be:info.description"
+  ],
+  "rule": "API-49",
+  "severity": "minor",
+  "finding": "Neither info.description states the purpose in business terms. The Contract Manager says it is for 'interaction with the Dataspace connector'; contract-ui-be says 'UI for contract and billing module', although it is a backend and billing is not in scope. The adapter's description is a good model.",
+  "evidence": "specs/api/contract-manager-be/openapi3-v1.yaml line 5; specs/api/contract-ui-be/openapi3-v1.yaml line 5; specs/api/contract-consumption-adapter-be/openapi-contract-consumption-be-tier1-v1.yaml lines 3 to 27.",
+  "question": "",
+  "options": [],
+  "from_21a": [],
+  "see": [
+   "D-014",
+   "D19"
+  ]
+ },
+ {
+  "id": "P-010",
+  "target": "cross",
+  "ids": [
+   "contract-manager-be:POST /agreements/{contractNegotiationId}/search request",
+   "contract-manager-be:POST /agreements/search request",
+   "contract-manager-be:VerifiableCredential example",
+   "health examples"
+  ],
+  "rule": "API-22",
+  "severity": "minor",
+  "finding": "Some examples are missing or not realistic. Both search request bodies have only per-property examples. The VerifiableCredential examples carry credentialSubject {userId, collectionId} instead of the E8 contract fields. consumerId is shown as a number (123456) for a string property. Placeholders such as 'did:jwk:...' and Windows paths in the health examples remain. Schemas use 'format: string', which is not an OpenAPI format.",
+  "evidence": "specs/api/contract-manager-be/openapi3-v1.yaml lines 519, 615 (no body example); line 729 and line 1544 (credentialSubject userId, collectionId); line 652 consumerId 123456; line 49 'C:\\workspace\\...'; ContractAgreementCreate properties 'format: string' (line 1369). specs/api/contract-ui-be/openapi3-v1.yaml line 44 Windows path.",
+  "question": "",
+  "options": [],
+  "from_21a": [
+   "A-007"
+  ],
+  "see": [
+   "E8"
+  ]
+ },
+ {
+  "id": "P-011",
+  "target": "cross",
+  "ids": [
+   "contract-manager-be:PATCH .../{operation} parameter operation",
+   "contract-ui-be:PATCH .../{operation} parameter operation",
+   "contract-ui-be:server contract-ui",
+   "contract-ui-be:tags"
+  ],
+  "rule": "API-57",
+  "severity": "minor",
+  "finding": "Small naming and description gaps for the next API version: the operation path parameter has no description in either API; the contract-ui-be base path segment contract-ui is not lowerCamelCase (E1 keeps it for this build); contract-ui-be operations use tags all-contract-offers and contractOffers that the tag list does not declare.",
+  "evidence": "specs/api/contract-manager-be/openapi3-v1.yaml line 916 and specs/api/contract-ui-be/openapi3-v1.yaml line 396 (operation: no description). specs/api/contract-ui-be/openapi3-v1.yaml line 15 server url .../contract-ui/v1; tags at lines 269 and 384 versus the tag list at line 620.",
+  "question": "",
+  "options": [],
+  "from_21a": [
+   "A-009",
+   "A-013",
+   "A-011"
+  ],
+  "see": [
+   "E1"
+  ]
+ },
+ {
+  "id": "P-012",
+  "target": "cross",
+  "ids": [
+   "contract-manager-be:PUT /verifications/{contractNegotiationId}",
+   "contract-manager-be:POST /agreements/search",
+   "contract-manager-be:ContractSearchConfirmation",
+   "contract-manager-be:ContractAgreementData"
+  ],
+  "rule": "API-11",
+  "severity": "minor",
+  "finding": "For the next API version: PUT /verifications starts an asynchronous validation instead of replacing a resource (D8 keeps it); POST is used to read a list where four query parameters would do; the search example returns contractSearchTO, a technical name that the schema does not declare; resource representations name their own id contractAgreementId and references after the target id (providerId, assetId) rather than the relation (API-50, API-51). D19, D20 and D22 already keep the wire names for this build and plan renames, so these are notes for that renaming, not build questions.",
+  "evidence": "specs/api/contract-manager-be/openapi3-v1.yaml lines 710 to 716, 608 to 614, 560 (contractSearchTO), 1265 ContractAgreementData.",
+  "question": "",
+  "options": [],
+  "from_21a": [],
+  "see": [
+   "D8",
+   "D19",
+   "D20",
+   "D22",
+   "D-024"
+  ]
+ },
+ {
+  "id": "P-013",
+  "target": "contract-consumption-adapter-be",
+  "ids": [
+   "Policy.policyConstraints",
+   "problem schemas",
+   "POST /transfers",
+   "POST /contracts"
+  ],
+  "rule": "API-03",
+  "severity": "minor",
+  "finding": "Context only, reviewed lightly. The file looks generated from code: four copies of the problem schema each have a property literally named additionalProperties, and JsonNode is a Java type. Six of nine operations declare only a success response, and the two POST operations that create a negotiation or a transfer return 200 instead of 201. Policy.policyConstraints repeats the parent name. Nothing here affects this build (D2); the points are for the adapter's owners.",
+  "evidence": "specs/api/contract-consumption-adapter-be/openapi-contract-consumption-be-tier1-v1.yaml schemas ConflictProblem, UnauthorizedProblem, NotFoundProblem, BadRequestProblem (property 'additionalProperties'), JsonNode, Policy.policyConstraints; POST /transfers and POST /contracts respond 200 only.",
+  "question": "",
+  "options": [],
+  "from_21a": [
+   "A-003"
+  ],
+  "see": [
+   "D2",
+   "D-027",
+   "D-028"
+  ]
+ }
+]

@@ -7,7 +7,7 @@ Step 29 of the spec factory, assembled on 17 Nov 2026 by [`pipeline/build_feedba
 ## In short
 
 - **Input:** 35 stories with 91 live acceptance criteria, 19 API operations, 25 business process requirements, and the CDMs of each API.
-- **Findings:** 73: **13 to decide before building**, 39 to confirm, 21 small.
+- **Findings:** 85: **14 to decide before building**, 42 to confirm, 29 small.
 - **Mechanical checks:** 26 hits on the acceptance criteria and 34 on the API and CDM names; the agents triaged them, and the real ones are part of the findings above.
 - **Coverage:** 9 of 91 criteria link to no operation and no process requirement; 1 of 19 operations and 25 of 25 process requirements have no criterion.
 
@@ -113,6 +113,15 @@ The blockers. A builder or tester cannot proceed on these without a decision, an
   - Option: Structure validation is part of semantic validation (two steps: syntax, semantic)
   - Option: Structure validation is a third step between syntax and semantic, with its own rule list
 
+### API guidelines and coverage
+
+**P-001** (COV-01). The two search operations have no story and no decision, and their contract is open on the points a tester needs. Both responses extend CollectionPage (page, pageSize, total, totalPages), but neither request takes page or pageSize, and the request arrays have no maxItems. One builder returns every match in one response, another cuts at the default page size of 20 and drops the rest without a way to fetch them. The result order, the handling of duplicate references, and the outcome of an external search body that matches more than one oneOf branch (for example namespaceUri plus namespaceUris) are not stated either.
+
+- Where: vocabulary-manager-be#POST /vocabularies/searches; POST /external-vocabulary/searches
+- Question: Are the search results paged, how many references may one request hold, in which order are results returned, and is a body that fits two oneOf branches rejected?
+  - Option: No paging: all matches in one response with page 1, totalPages 1 and pageSize equal to the number of items; at most 100 references per request (400 above); results in request order, duplicates removed; a body that fits two branches returns 400
+  - Option: Paging as on the GET lists: page and pageSize query parameters on the POST, default 20, maximum 100; results ordered by name then version; duplicates removed; two branches return 400
+
 ### Scope
 
 **F-010** (AC-C06). The story is about a Schema Manager endpoint for Metadata Quality Profiles that is not in the Vocabulary Management API, and its note puts the only Vocabulary Manager part out of scope. A builder of this component cannot tell whether to build it.
@@ -172,10 +181,13 @@ The majors: the build can proceed on a sensible default, but the default should 
 | F-038 | Error cases and testability | cross | Neither status story says what happens when the requested status equals the current one; the OpenAPI answers 409 for that case. | Does a request for the current status return 409 (API) and does the UI offer only the other status? |
 | F-040 | Error cases and testability | SIMPL-18193 | The UI report story covers errors only. The API can return non-blocking warnings on success, and the story does not say whether or how the UI shows them. | Does the UI show validation warnings after a successful creation, and where? |
 | D-009 | Data model governance | vocabulary-manager-be | The CDM of this component and the context CDM of Schema Manager exist and point to their APIs, but neither is approved for delivery. A glossary built on them can still change. | When will the Vocabulary Manager CDM be approved, and should the factory wait for it or work from this snapshot? |
+| P-003 | API guidelines and coverage | vocabulary-manager-be#components/securitySchemes/OAuth2Auth | The security scheme does not fit the decided access model. It declares an OAuth2 authorization code flow with placeholder URLs and two scopes, read and write, while D16 grants access by two Keycloak realm roles and states that the scopes are not checked. A client generated from the file will ask for scopes that mean nothing, and a builder can reasonably enforce read and write scopes instead of the roles. SEC-07 asks for OpenID Connect through the Tier 1 Keycloak; the file names neither. |  |
+| P-004 | API guidelines and coverage | vocabulary-manager-be#external vocabulary operations; PATCH /vocabularies/{vocabularyName}/versions/{version} | Seven operations are reached by no acceptance criterion except the blanket access rules of SIMPL-18196. For six of them, the external vocabulary operations, no story exists at all; D30 fixes their behaviour, but there are no criteria for listing, reading, reading content by name or deleting an external vocabulary. The manual version status change is decided in D4 but also has no story. 21a counted these operations as covered because the inferred SIMPL-18196 links point at every secured operation. | Which story holds the acceptance criteria for registering, listing, reading and deleting external vocabularies, and for the manual version status change? |
 | F-041 | Scope | SIMPL-393 | The story has no Given/When/Then criteria and an open question with the customer. It is unclear whether this component must ship the CPSV vocabulary as seed data. | Must Vocabulary Manager be deployed with the Core Public Services vocabulary pre-loaded, and is GET /vocabularies listing it the acceptance test? |
 | F-042 | Scope | SIMPL-395 | The story has no criteria, is still in grooming, and asks for things the other stories and the API do not have: removing a vocabulary and a UI that wraps the catalogue's vocabulary calls. | Is SIMPL-395 replaced by the SIMPL-181xx stories, or does it still add a requirement (deletion, catalogue integration)? |
+| P-002 | Other | vocabulary-manager-be | Step 30 decided several behaviours that the OpenAPI file does not yet show. A builder who generates server stubs, clients or contract tests from the file builds the old behaviour: no 401 or 403 responses, a strict PascalCase name filter, an unbounded pageSize, no creator on version objects, an optional validationWarnings with a free-text code, unbounded description and changelog, a version form field that the schema does not forbid, a nullable latestVersionHref, and silence on unknown query parameters. |  |
 
-The 21 minor findings (wording, numbering, duplicates) are in [`ac-findings.json`](./ac-findings.json) and [`domain-findings.json`](./domain-findings.json).
+The 29 minor findings (wording, numbering, duplicates) are in [`ac-findings.json`](./ac-findings.json) and [`domain-findings.json`](./domain-findings.json).
 
 ## Coverage
 
@@ -199,6 +211,7 @@ See [`../../cdm/README.md`](../../cdm/README.md) for the state of the CDM regist
 |---|---|---|
 | 12 | every story, criterion, operation and process requirement with a stable id, and the links between them | [`../inventory/`](../inventory/inventory.md) |
 | 20a, 20b | the acceptance criteria: structure and wording (script), then completeness, testability, ambiguity, consistency and correctness (agent) | [`ac-checks.md`](./ac-checks.md), [`ac-review.md`](./ac-review.md) |
+| 21a, 21b | the API definitions against the API, security and OWASP rules, and the coverage between operations and stories | [`api-checks.md`](./api-checks.md), [`api-review.md`](./api-review.md) |
 | 23a, 23b | the domain language: API against CDM against the stories, by the `DDD-` and CDM rules; the draft glossary | [`domain-checks.md`](./domain-checks.md), [`domain-review.md`](./domain-review.md) |
 
 The agents worked only from the published specs and each other's output, not from code or earlier builds. Their findings were not checked one by one by a person; treat each as a well-argued question, not a verdict.

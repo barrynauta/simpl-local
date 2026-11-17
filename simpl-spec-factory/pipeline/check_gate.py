@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Step 30b: the gate before the writers start.
 
-Passes when every blocker of steps 20b and 23b is closed by a decision in
+Passes when every blocker of steps 20b, 21b and 23b is closed by a decision in
 <component>/decisions/decisions.json (or marked as an accepted risk), and every
 glossary term with status proposed or open in validation/glossary.md appears in
 decisions/glossary.md. Lists majors without a default (warning, not a failure).
@@ -40,13 +40,14 @@ def main():
     comp = FACTORY / name
     v, d = comp / "validation", comp / "decisions"
     findings = [f | {"src": "20b"} for f in load(v / "ac-findings.json", [])] + \
-               [f | {"src": "23b"} for f in load(v / "domain-findings.json", [])]
+               [f | {"src": "23b"} for f in load(v / "domain-findings.json", [])] + \
+               [f | {"src": "21b"} for f in load(v / "api-findings.json", [])]
     decisions = load(d / "decisions.json", [])
     closed = {}
     for dec in decisions:
         for fid in dec.get("closes", []):
             closed.setdefault(fid, []).append(dec)
-    # 20b and 23b both number from 1 (F- and D- prefixes), so ids are unique across the two.
+    # 20b, 21b and 23b number with their own prefixes (F-, P-, D-), so ids are unique across them.
     blockers = [f for f in findings if f["severity"] == "blocker"]
     majors = [f for f in findings if f["severity"] == "major"]
     open_blockers = [f for f in blockers if f["id"] not in closed]
@@ -59,7 +60,8 @@ def main():
     undecided = [t for t in to_decide if t.split(",")[0].split("(")[0].strip().lower() not in final_low]
     unknown = sorted({fid for dec in decisions for fid in dec.get("closes", [])} - {f["id"] for f in findings})
     # Consistency warnings: error body formats, and findings closed by more than one decision.
-    text = " ".join(json.dumps(x, ensure_ascii=False) for x in decisions)
+    # A decision another one overrides (field overridden_by) no longer counts for consistency.
+    text = " ".join(json.dumps(x, ensure_ascii=False) for x in decisions if not x.get("overridden_by"))
     formats = [f for f, rx in (("problem+json (RFC 7807/9457)", r"(?i)problem\+json|problem details|problem type|rfc ?(7807|9457)|\bProblem\b"),
                                ("error object with code and message", r"errorCode|errorMessage|\bError body\b|\{\s*\\?\"code\\?\"\s*:"))
                if re.search(rx, text)]
@@ -94,7 +96,7 @@ def main():
     (d / "gate.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     print(f"{name}: gate {'passed' if passed else 'NOT passed'}; blockers open {len(open_blockers)}, "
           f"terms undecided {len(undecided)}, majors without default {len(majors_open)}; "
-          f"warnings: error formats {len(formats)}, findings with several decisions {len(multi)}")
+          f"error body formats seen {len(formats)} (warning if 2), findings with several decisions {len(multi)}")
     sys.exit(0 if passed else 1)
 
 

@@ -4,15 +4,11 @@
 
 | Check | Result |
 |---|---|
-| Decisions | 36 (accepted risk 1, follows the specs 1, provisional 34) |
-| Blockers closed | 21 of 21 (0 only as accepted risk) |
-| Majors with a default | 48 of 48 |
+| Decisions | 46 (accepted risk 1, follows the specs 1, provisional 44) |
+| Blockers closed | 24 of 24 (0 only as accepted risk) |
+| Majors with a default | 58 of 58 |
 | Glossary terms decided | 38 of 38 |
 | Decisions citing unknown finding ids | 0 |
-
-## Warning: more than one error body format
-
-The decisions mention problem+json (RFC 7807/9457) and error object with code and message. Check that one format applies to the whole component.
 
 ## Warning: findings closed by more than one decision
 

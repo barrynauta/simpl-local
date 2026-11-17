@@ -26,12 +26,15 @@ THEMES = [  # (theme, codes) in the order the report shows them
     ("Boundaries with other components", {"DDD-13", "DDD-14", "DDD-15"}),
     ("Error cases and testability", {"AC-C01", "AC-C02"}),
     ("Data model governance", {"DATA-01", "DATA-04", "DATA-09", "API-01"}),
+    ("API guidelines and coverage", None),
     ("Scope", {"AC-C06"}),
 ]
 
 
 def theme(code):
-    return next((t for t, codes in THEMES if code in codes), "Other")
+    if code.startswith(("API-", "COV-", "SEC-", "OWASP-")) and code != "API-01":
+        return "API guidelines and coverage"
+    return next((t for t, codes in THEMES if codes and code in codes), "Other")
 
 
 def load(p, default):
@@ -69,6 +72,8 @@ def main():
         findings.append(f | {"code": f["check"], "step": "20b"})
     for f in dom:
         findings.append(f | {"code": f["rule"], "step": "23b"})
+    for f in load(v / "api-findings.json", []):
+        findings.append(f | {"code": f["rule"], "step": "21b"})
     for f in findings:
         f["theme"] = theme(f["code"])
     by_sev = Counter(f["severity"] for f in findings)
@@ -166,6 +171,7 @@ def main():
            "| Step | What | File |", "|---|---|---|",
            "| 12 | every story, criterion, operation and process requirement with a stable id, and the links between them | [`../inventory/`](../inventory/inventory.md) |",
            "| 20a, 20b | the acceptance criteria: structure and wording (script), then completeness, testability, ambiguity, consistency and correctness (agent) | [`ac-checks.md`](./ac-checks.md), [`ac-review.md`](./ac-review.md) |",
+           "| 21a, 21b | the API definitions against the API, security and OWASP rules, and the coverage between operations and stories | [`api-checks.md`](./api-checks.md), [`api-review.md`](./api-review.md) |",
            "| 23a, 23b | the domain language: API against CDM against the stories, by the `DDD-` and CDM rules; the draft glossary | [`domain-checks.md`](./domain-checks.md), [`domain-review.md`](./domain-review.md) |",
            "", "The agents worked only from the published specs and each other's output, not from code or earlier "
            "builds. Their findings were not checked one by one by a person; treat each as a well-argued question, "

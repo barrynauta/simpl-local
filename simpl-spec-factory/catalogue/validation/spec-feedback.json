@@ -1,9 +1,9 @@
 {
  "component": "catalogue",
  "counts": {
-  "major": 48,
-  "blocker": 21,
-  "minor": 17
+  "major": 58,
+  "blocker": 24,
+  "minor": 27
  },
  "findings": [
   {
@@ -1647,6 +1647,521 @@
    "code": "DDD-11",
    "step": "23b",
    "theme": "Entities, identities and states"
+  },
+  {
+   "id": "P-001",
+   "target": "catalogue-client-be",
+   "rule": "COV-02",
+   "severity": "blocker",
+   "finding": "The Consumer-facing API has no search operation. The v2 entry file of catalogue-client-be holds only schema operations and the detail. D24 says the UI makes one call to catalogue-client-be, which forwards to the adapter, and that own-only searches use 'the existing local search operations'. No decision names the catalogue-client-be path, its parameters or where the grouped response lives. The only local search operations are tier 2 (catalogue-be quickSearch, adapter GET /selfDescriptions), which a Tier 1 UI does not call directly. D23 and D32 move GET /catalogues and the QAR operation from v1 into v2, but no decision moves the v1 search operations. SIMPL-31142 names a catalogue-client-be POST /selfDescriptions that no file has.",
+   "evidence": "openapi-xfscadvsearch-tier1-v2.yaml paths: /schemas/{schemaId}/content, /schemas/{schemaId}/{version}, /schemas/{schemaName}/qualityProfiles/active, /schemas, /selfDescriptions/{selfDescriptionId} only; openapi-xfscadvsearch-tier1-v1.yaml (context): GET /selfDescriptions (q, minimumScore, minimumClassification, catalogueIds, page, pageSize), POST /selfDescriptions/advanced; D24: 'catalogue-client-be forwards it to the adapter GET /governanceAuthority/selfDescriptions ...'; 21a A-022: 'SIMPL-31142: catalogue-client-be POST /selfDescriptions'.",
+   "question": "Which catalogue-client-be operations does the search UI call for quick and advanced search, own-only and mixed, with which parameters, and do they return the D24 grouped response in both cases?",
+   "options": [
+    "Take v1 GET /selfDescriptions (q, catalogueIds, quality filters, paging) and POST /selfDescriptions/advanced into v2, both returning {groups: [...]} per D24, also for an own-only selection (one group)",
+    "Same two operations, but return the flat v1 list for an own-only selection and {groups} only when a Trustor catalogue is selected",
+    "Use POST /selfDescriptions as SIMPL-31142 names it, for both search modes"
+   ],
+   "from_21a": [
+    "A-022"
+   ],
+   "see": [
+    "F-033",
+    "F-034",
+    "F-028",
+    "D-012",
+    "D22",
+    "D23",
+    "D24",
+    "D32"
+   ],
+   "code": "COV-02",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-002",
+   "target": "cross",
+   "rule": "API-60",
+   "severity": "blocker",
+   "finding": "It is not defined how the Consumer's identity attributes reach the services that apply the discovery access policy. Local tier 2 searches (catalogue-be quickSearch and advancedSearch, adapter GET /selfDescriptions and POST /selfDescriptions/advancedSearch) take User-Attributes as an optional header. D20 and E1 say tier 2 services read User-Attributes and that no gateway is built, so tests send the gateway headers. In an end-to-end search the call comes from catalogue-client-be or the Trusted adapter, not from a test, and the Tier 1 operations have no User-Attributes header. Nothing says which service turns the Consumer's JWT into User-Attributes, from which claim, and D30 has the Trusted adapter send User-Attributes to the Trustor without saying where it gets them. D20 defines 400 for a missing header only on Trustor operations; on local operations one builder returns 400, another treats it as no attributes (D21: only descriptions with an empty list), a third skips filtering.",
+   "evidence": "t2-fc-openapi.yaml GET /selfDescriptions/quickSearch and POST /selfDescriptions/advancedSearch: User-Attributes required: false, no description; t2-adapter-openapi.yaml GET /selfDescriptions: 'Optional user attributes header', summary 'access policy values other than the one defined in the Client access token'; t1-adapter-openapi.yaml: no User-Attributes parameter; D20: 'A missing User-Attributes header on a Trustor operation gets 400'; E1: 'Tier 1 services check the JWT role; tier 2 services read User-Attributes directly. No gateway is built'; D30: 'calls the Trustor ... with User-Attributes and Correlation-Id'.",
+   "question": "Which JWT claim carries the identity attribute codes, which service sets User-Attributes on calls to tier 2 operations when no gateway is built, and what does a local tier 2 search return when the header is missing?",
+   "options": [
+    "catalogue-client-be and the Trusted adapter copy the codes from a named JWT claim into User-Attributes; a missing header on any tier 2 search gets 400",
+    "Tier 2 services read the forwarded JWT themselves; User-Attributes is used only between Governance Authorities",
+    "A missing header means no attributes: only descriptions with an empty policy list are returned (D21)"
+   ],
+   "from_21a": [],
+   "see": [
+    "F-024",
+    "F-029",
+    "D-010",
+    "D20",
+    "D21",
+    "D27",
+    "D30",
+    "E1"
+   ],
+   "code": "API-60",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-003",
+   "target": "catalogue-be POST /self-descriptions/resource",
+   "rule": "BUILDER",
+   "severity": "blocker",
+   "finding": "The publication operation, the main path of the quality gate, has no request contract. The body is 'type: string' with no example. The description says validation covers 'schema version, resource version number, and provider ownership' and rejects a conflicting version (409), but no field is named. A builder needs to know where the schema reference sits (D17 takes the threshold from that schema's active profile), how a new version names its resource description and carries its version number (D18 revokes the previous version, D7 addresses versions by number), and how ownership is checked (against which header or claim). The 201 response returns SelfDescription without the quality assessment, while SelfDescriptionPublicationResponse with qualityAssessment hangs on POST /self-descriptions, which D4 does not build; D11 refers to 'the publication response'. Two builders will accept different payloads and return different 201 bodies, and a tester cannot write a valid fixture.",
+   "evidence": "t2-fc-openapi.yaml POST /self-descriptions/resource: requestBody application/json schema type: string, no example; responses 201 SelfDescription, 409 Conflict, 422 Unprocessible; common-components.yaml SelfDescriptionPublicationResponse used only by POST /self-descriptions; SelfDescription.resourceKey, currentVersion; federated example shows dct:conformsTo with dct:schemaName and dct:hasVersion; D-022: 'a new version is posted ... so the root it extends is found only in the body'.",
+   "question": "What is the publication request (credential fields for schema name and version, resource description id and version number, provider identity), which checks give 400, 403, 409 and 422, and which schema does the 201 body use?",
+   "options": [
+    "Body is the signed credential; schema from credentialSubject dct:conformsTo (dct:schemaName, dct:hasVersion), version from currentVersion in a named property, ownership from providedBy against User-Attributes; 201 returns SelfDescriptionPublicationResponse",
+    "Same body, 201 returns SelfDescription only and the quality is read through the QAR operation",
+    "Add an explicit JSON envelope {schemaName, schemaVersion, version, credential}"
+   ],
+   "from_21a": [
+    "A-004"
+   ],
+   "see": [
+    "D-022",
+    "D-002",
+    "D-005",
+    "F-001",
+    "F-002",
+    "F-003",
+    "D7",
+    "D11",
+    "D17",
+    "D18"
+   ],
+   "code": "BUILDER",
+   "step": "21b",
+   "theme": "Other"
+  },
+  {
+   "id": "P-004",
+   "target": "cross",
+   "rule": "SEC-07",
+   "severity": "major",
+   "finding": "The security schemes do not describe the decided authentication and roles. catalogue-be uses OAuth2Auth at root but defines only 'jwt' (http bearer), so the reference is broken in both entry files and in the root spec. The adapter defines an oauth2 authorizationCode flow with placeholder URLs (auth.example.com) and scopes read and write, not Keycloak and not roles. catalogue-client-be uses a plain bearer JWT 'IAA cloud gateway'. The role CATALOGUE_SEARCHER of D20 and E1 appears only in descriptions of catalogue-be tier 2 operations, not on any Tier 1 operation. D20 gives Tier 1 401 for no token and 403 without the role, but the adapter Tier 1 searches list neither 401 nor 403 and catalogue-client-be lists no 403 anywhere. catalogue-be tier 2 operations also declare Authorization as a header parameter, which OpenAPI ignores when a security scheme applies.",
+   "evidence": "t1-fc-openapi.yaml and t2-fc-openapi.yaml: security OAuth2Auth, components.securitySchemes jwt; t1-adapter-openapi.yaml: OAuth2Auth authorizationUrl https://auth.example.com/oauth/authorize, scopes read, write; GET /governanceAuthority/selfDescriptions responses 200, 400, 406, 500; openapi-xfscadvsearch-tier1-v2.yaml bearerAuth, responses without 403; t2-fc GET /selfDescriptions/quickSearch: 'Required ABAC roles (any one of): CATALOGUE_SEARCHER, ...', parameter Authorization in header.",
+   "question": "",
+   "options": [],
+   "from_21a": [
+    "A-007",
+    "A-013"
+   ],
+   "see": [
+    "F-029",
+    "D20",
+    "E1"
+   ],
+   "code": "SEC-07",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-005",
+   "target": "catalogue-be POST /self-descriptions/{selfDescriptionId}/qualityAssessmentRecord",
+   "rule": "BUILDER",
+   "severity": "major",
+   "finding": "The operation that creates or replaces a Quality Assessment Record requires no role ('Required ABAC roles: N/A') yet lists 401 and 403. D4 builds it and D17 says publication calls the scoring service and stores the record itself. If any caller may write a record, a Provider can replace a failing record with a passing one and change the scores the search filters on. One builder leaves it open, another restricts it to an internal caller; a tester cannot write the 403 case.",
+   "evidence": "t2-fc-openapi.yaml POST .../qualityAssessmentRecord: '**Required ABAC roles:** N/A', responses 200, 400, 401, 403, 404, 500; D4 builds 'GET and POST /self-descriptions/{selfDescriptionId}/qualityAssessmentRecord'; D17: 'Pass: 201, stored and published, QAR stored'.",
+   "question": "Who may call POST .../qualityAssessmentRecord, and is it used by the build at all, or does publication store the record internally?",
+   "options": [
+    "Internal only: not exposed in the build, publication stores the record (D17)",
+    "Exposed only to the Quality Scoring Service identity; any other caller gets 403",
+    "Exposed to the publishing Provider for its own descriptions"
+   ],
+   "from_21a": [],
+   "see": [
+    "D4",
+    "D11",
+    "D17",
+    "F-003"
+   ],
+   "code": "BUILDER",
+   "step": "21b",
+   "theme": "Other"
+  },
+  {
+   "id": "P-006",
+   "target": "cross",
+   "rule": "API-22",
+   "severity": "major",
+   "finding": "The contracts still allow and show the 0 to 100 scale that D14 rejected. minimumScore has no maximum in any operation, and catalogue-be quickSearch and the adapter local search have no minimum either (only the description says '>= 0'). In the advanced search bodies minimumScore and minimumClassification are not declared properties at all (catalogue-be body is 'type: string', the adapter payload only mentions them in the description). Examples send minimumScore 75 and minimumClassification 'good', results show 'Green', and the active profile example in catalogue-client-be uses score ranges 0 to 100 and thresholds 70, 85 and 90. A validator generated from these files accepts 75 and returns 200, while D14 requires 400.",
+   "evidence": "t2-fc-openapi.yaml quickSearch minimumScore: type number, no minimum or maximum; advancedSearch example returnValidResponseWithQualityFilters: minimumScore 75, minimumClassification good; t1-adapter-openapi.yaml minimumScore minimum 0; common-components.yaml (adapter) advancedSearchRequestPayload example minimumScore 75; openapi-xfscadvsearch-tier1-v2.yaml GET /schemas/{schemaName}/qualityProfiles/active example ex:scorerange/Green minScore 80.0 maxScore 100.0, ex:threshold/PublicationMinimum thresholdValue 70.0.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [
+    "F-004",
+    "F-006",
+    "F-007",
+    "D14",
+    "D15",
+    "D16",
+    "E4"
+   ],
+   "code": "API-22",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-007",
+   "target": "query-mapper-adapter-be advancedSearchRequestPayload",
+   "rule": "API-60",
+   "severity": "major",
+   "finding": "catalogueIds in the shared advanced search payload is required but has no minItems, and its description says 'If no Ids provided no catalogue will be searched', which reads as 200 with no results. D5 keeps at least one item and D25 gives 400 for an unknown catalogue. The same payload is used by the local tier 2 advanced search, where D22 says the own data space has one catalogue and a local search needs no catalogue parameter; it is open whether the local operation ignores catalogueIds, requires the own catalogue id (E3), or rejects other values.",
+   "evidence": "query-mapper-adapter-be/common/common-components.yaml advancedSearchRequestPayload: required [catalogueIds], items type string, no minItems; t1 GET /governanceAuthority/selfDescriptions catalogueIds minItems 1; t2 POST /selfDescriptions/advancedSearch uses the same payload.",
+   "question": "What do the local and the Governance Authority advanced searches do with an empty catalogueIds and with a value that is not the own catalogue?",
+   "options": [
+    "Both: empty list gets 400 (minItems 1); local search accepts only the own catalogue id and gives 400 for others",
+    "Local search ignores catalogueIds; Governance Authority search gets minItems 1 and D25 rules"
+   ],
+   "from_21a": [],
+   "see": [
+    "F-020",
+    "F-028",
+    "D5",
+    "D22",
+    "D25",
+    "E3"
+   ],
+   "code": "API-60",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-008",
+   "target": "query-mapper-adapter-be",
+   "rule": "BUILDER",
+   "severity": "major",
+   "finding": "The Governance Authority advanced search that D24 uses is a draft outside the composed root spec. The adapter README says only the quick-search path is composed into the root, and the root drives code generation. Its operationId advancedSearchSelfDescriptions is the same as the local tier 2 advanced search, so composing both gives a duplicate operationId. The root says version 1.2.0 while both tier files say 1.1.0.",
+   "evidence": "adapter_openapi.yaml paths: /governanceAuthority/selfDescriptions only from tier 1; README: 'Only the quick-search path is composed into the root'; t1-adapter-openapi.yaml and t2-adapter-openapi.yaml both operationId advancedSearchSelfDescriptions; adapter_openapi.yaml info.version 1.2.0, tier files 1.1.0.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [
+    "F-033",
+    "D24",
+    "D28",
+    "D30"
+   ],
+   "code": "BUILDER",
+   "step": "21b",
+   "theme": "Other"
+  },
+  {
+   "id": "P-009",
+   "target": "catalogue-be",
+   "rule": "API-45",
+   "severity": "major",
+   "finding": "catalogue-be returns two error formats. The shared responses ClientError, NotFound, Unauthorized, Forbidden, ServerError, Conflict and Unprocessible are application/json with Error {code, message}; the QAR, quick and advanced search, recalculation and webhook errors are application/problem+json Problem. A client of the built operations has to parse both (for example quickSearch 400 is Problem, 500 is Error). D17 builds on Error.code (QUALITY_THRESHOLD_NOT_MET, QUALITY_ASSESSMENT_FAILED). 21a did not report API-45 for these responses. catalogue-client-be v2 defines five copies of the problem schema with a property literally named additionalProperties.",
+   "evidence": "catalogue-be/common/common-components.yaml responses ClientError, NotFound, Unauthorized, Forbidden, ServerError, Conflict, Unprocessible: application/json, schema Error; t2-fc-openapi.yaml quickSearch 400 application/problem+json, 500 ServerError; openapi-xfscadvsearch-tier1-v2.yaml UnauthorizedProblem, InternalServerErrorProblem, NotAcceptableProblem, NotFoundProblem, BadRequestProblem each with property additionalProperties.",
+   "question": "Do the built catalogue-be operations move to problem+json, with the D17 codes as a Problem extension member, or does D17 keep Error for the publication operation only?",
+   "options": [
+    "All built operations return problem+json; D17 codes go into an extension member 'code' and the type URN",
+    "Keep Error {code, message} for publication (D17) and problem+json elsewhere, written down as an exception"
+   ],
+   "from_21a": [],
+   "see": [
+    "D17",
+    "D25",
+    "D31"
+   ],
+   "code": "API-45",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-010",
+   "target": "catalogue-be",
+   "rule": "BUILDER",
+   "severity": "major",
+   "finding": "Several built catalogue-be operations have no response structure. The detail (GET /self-descriptions/{selfDescriptionId}) and the version list (GET .../versions) return 'type: string' under application/json, and the advanced search request is 'type: string'. D7 addresses versions by number only through the version list and D18 relies on it in tests, but nothing says what a version item holds, whether the requested version is included ('Returns all versions except the requested Self-Description'), or how revoked versions appear. The adapter has a versionHistoryResponsePayload for its own version list that catalogue-be does not reuse.",
+   "evidence": "t2-fc-openapi.yaml GET /self-descriptions/{selfDescriptionId}/versions 200 schema type: string, description 'Returns all versions except the requested Self-Description'; GET /self-descriptions/{selfDescriptionId} 200 type: string; POST /selfDescriptions/advancedSearch requestBody type: string; query-mapper-adapter-be versionHistoryResponsePayload {totalCount, items[].n{..., version}}.",
+   "question": "What does GET /self-descriptions/{selfDescriptionId}/versions return per item (id, version number, status, dates), and does it include the requested and revoked versions?",
+   "options": [
+    "Reuse the adapter versionHistoryResponsePayload plus status, all versions including the requested one",
+    "Return SelfDescriptions (meta per version), excluding the requested one as the description says"
+   ],
+   "from_21a": [
+    "A-004"
+   ],
+   "see": [
+    "D7",
+    "D18",
+    "D4",
+    "D-005"
+   ],
+   "code": "BUILDER",
+   "step": "21b",
+   "theme": "Other"
+  },
+  {
+   "id": "P-011",
+   "target": "catalogue-client-be",
+   "rule": "API-52",
+   "severity": "major",
+   "finding": "A schema has three identifiers in the client API and nothing maps them. GET /schemas returns items with schemaId (dataOfferingShape), name ('health', 'Data offering') and resourceType, in an untyped object. Content and version operations take schemaId; the active profile operation takes a PascalCase schemaName (pattern ^[A-Z][a-zA-Z0-9]*$) that none of the example names match. A credential points to its schema with dct:schemaName and dct:hasVersion. The UI needs the profile of a schema (D15) and the schema of an own detail (D29), and two builders will derive the path values differently; one renders own details with the latest content, the other with the version the credential conforms to.",
+   "evidence": "openapi-xfscadvsearch-tier1-v2.yaml GET /schemas 200 schema type: object, example schemas[].schemaId applicationHealth, name health; /schemas/{schemaId}/content example data-offeringShape; /schemas/{schemaId}/{version} example dataOfferingShape; /schemas/{schemaName}/qualityProfiles/active pattern ^[A-Z][a-zA-Z0-9]*$, example DataOfferingShape; federated example dct:conformsTo dct:schemaName DataSchema, dct:hasVersion 21.",
+   "question": "Which value from GET /schemas or from a credential is passed as schemaId and as schemaName, and does an own detail render with the latest schema content or with the version it conforms to?",
+   "options": [
+    "One identifier: schemaName (PascalCase) everywhere, list items get a typed schema with schemaName, version and schemaType; own details use /schemas/{schemaName}/{version} from dct:conformsTo",
+    "Keep schemaId for content and schemaName for profiles, with both returned in each list item"
+   ],
+   "from_21a": [
+    "A-016"
+   ],
+   "see": [
+    "D-009",
+    "F-060",
+    "D15",
+    "D29",
+    "D12"
+   ],
+   "code": "API-52",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-012",
+   "target": "catalogue-be",
+   "rule": "COV-01",
+   "severity": "major",
+   "finding": "Two operations that the build needs have no story: POST /self-descriptions/{selfDescriptionId}/revoke and GET /self-descriptions/{selfDescriptionId}/versions. D4 keeps them as fixtures and D18 defines revoke (no-op 200 on a revoked one, superseded versions revoked), and BP05B revokes the previous version, but no acceptance criterion traces this behaviour. A story for the Provider revoking a resource description and reading its versions would make D18 testable from requirements.",
+   "evidence": "inventory/links.json: no link to catalogue-be:POST /self-descriptions/{selfDescriptionId}/revoke or GET /self-descriptions/{selfDescriptionId}/versions; D4: 'Revoke and versions stay because the lifecycle (D18) and the search tests need them as fixtures'; D18.",
+   "question": "",
+   "options": [],
+   "from_21a": [
+    "A-014"
+   ],
+   "see": [
+    "D4",
+    "D18",
+    "D-005"
+   ],
+   "code": "COV-01",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-013",
+   "target": "catalogue-be, catalogue-client-be",
+   "rule": "API-24",
+   "severity": "major",
+   "finding": "The versioning in the URLs does not match. catalogue-be serves at '{baseUrl}' with a default ending in /fc, no apiName and no major version. catalogue-client-be v2 has info.version '1.0' but its server URL ends in /v2. The adapter is consistent (/v1, 1.x). A client cannot tell the major version of catalogue-be from the URL, and the client API says major 1 and 2 at once.",
+   "evidence": "t1-fc-openapi.yaml and t2-fc-openapi.yaml servers url '{baseUrl}', default https://authority.be.authority01.sandbox-cat-dat.simpl-europe.eu/fc, info.version 1.0.0; openapi-xfscadvsearch-tier1-v2.yaml info.version '1.0', servers https://xfsc-advsearch-be.dev.simpl-europe.eu/v2.",
+   "question": "",
+   "options": [],
+   "from_21a": [
+    "A-006"
+   ],
+   "see": [],
+   "code": "API-24",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-014",
+   "target": "catalogue-be, query-mapper-adapter-be",
+   "rule": "COV-01",
+   "severity": "minor",
+   "finding": "The operations D4 leaves out are still in the root specs that drive code generation, including unprotected ones: POST, PUT and DELETE /schemas and recalcQualityScore require no role, and the schema-events webhook has security []. A generated server exposes them unless they are removed or switched off. The adapter /participants operations (with a second revoke by PATCH) are in the same position.",
+   "evidence": "catalogue-be README: 'Root specs must represent the full API surface used by code generation'; t1-fc-openapi.yaml POST /schemas, PUT and DELETE /schemas/{schemaId}: 'Required RBAC roles: N/A'; POST /webhooks/schema-events security []; t2-adapter-openapi.yaml PATCH /participants/resourceDescriptions/{resourceDescriptionId} revoke.",
+   "question": "",
+   "options": [],
+   "from_21a": [
+    "A-008",
+    "A-014",
+    "A-021",
+    "A-003"
+   ],
+   "see": [
+    "D4",
+    "D1",
+    "D-012",
+    "D-013"
+   ],
+   "code": "COV-01",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-015",
+   "target": "query-mapper-adapter-be searchResponsePayload",
+   "rule": "BUILDER",
+   "severity": "minor",
+   "finding": "Paging fields differ between the layers. The adapter result has both totalCount and total for the same number, plus page, pageSize, totalPages and next; catalogue-be SearchResponsePayload has only totalCount and items. The D24 group uses totalCount, page, pageSize and totalPages, so the adapter must compute paging for the own catalogue group and decide whether total stays.",
+   "evidence": "query-mapper-adapter-be/common/common-components.yaml searchResponsePayload required totalCount, items, page, pageSize, total, totalPages, next; catalogue-be/common/common-components.yaml SearchResponsePayload = ResultPage{totalCount} + items.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [
+    "D24"
+   ],
+   "code": "BUILDER",
+   "step": "21b",
+   "theme": "Other"
+  },
+  {
+   "id": "P-016",
+   "target": "cross",
+   "rule": "API-06",
+   "severity": "minor",
+   "finding": "Naming follows the guideline only in part: catalogue-be mixes /self-descriptions and /selfDescriptions in one API, response headers are lower case (location, retry-after), identifier path parameters carry the resource name (schemaId, selfDescriptionId, resourceDescriptionId) and one uses snake case (self_description_hash), and the adapter version list is /version. D6 and D7 keep the existing wire names for now, so this is a note for the next major version.",
+   "evidence": "21a A-001 (8 paths), A-005 (6 headers), A-012, A-016, A-020; t2-adapter-openapi.yaml /participants/resourceDescriptions/{resourceDescriptionId}/version.",
+   "question": "",
+   "options": [],
+   "from_21a": [
+    "A-001",
+    "A-005",
+    "A-012",
+    "A-016",
+    "A-020"
+   ],
+   "see": [
+    "D6",
+    "D7",
+    "D-001",
+    "D-002"
+   ],
+   "code": "API-06",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-017",
+   "target": "catalogue-client-be",
+   "rule": "API-14",
+   "severity": "minor",
+   "finding": "The Trustor endpoint has two spellings in decided contract parts: D23 takes CatalogueInfo.authorityURL unchanged from v1, and D24 defines the group field authorityUrl. A builder of catalogue-client-be will have both in one API, and the UI may read the wrong one.",
+   "evidence": "openapi-xfscadvsearch-tier1-v1.yaml CatalogueInfo.authorityURL; D23 'CatalogueInfo id, name, authorityURL, active'; D24 group '{catalogueId, catalogueName, authorityUrl, ...}'.",
+   "question": "",
+   "options": [],
+   "from_21a": [
+    "A-015"
+   ],
+   "see": [
+    "D3",
+    "D23",
+    "D24"
+   ],
+   "code": "API-14",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-018",
+   "target": "cross",
+   "rule": "API-15",
+   "severity": "minor",
+   "finding": "Property and parameter names use British spelling: catalogueIds, catalogueId, catalogueName (D7, D24), while the client API title says 'Catalog Search API'. The shared response name Unprocessible is misspelt. D7 and D24 fixed catalogueId, so this is recorded, not a change request for this build.",
+   "evidence": "t1-adapter-openapi.yaml parameter catalogueIds; advancedSearchRequestPayload.catalogueIds; openapi-xfscadvsearch-tier1-v2.yaml parameter catalogueId, info.title 'Catalog Search API'; catalogue-be common-components.yaml responses Unprocessible.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [
+    "D7",
+    "D24"
+   ],
+   "code": "API-15",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-019",
+   "target": "catalogue-be",
+   "rule": "API-49",
+   "severity": "minor",
+   "finding": "catalogue-be info is incomplete: t1 has no description, license or contact; t2 has the Apache 2.0 license, no contact, the title 'Eclipse XFSC Federated Catalogue (Tier 1 Gateway) (Tier 2 Gateway)' and a description with generator remarks ('No FC service routes were present in the provided Tier 1 values') instead of the business purpose. The adapter tier 2 description is one technical line.",
+   "evidence": "t1-fc-openapi.yaml info: title, version only; t2-fc-openapi.yaml info.title, info.description, license Apache 2.0; t2-adapter-openapi.yaml info.description 'This the API  for the adapter to the Simpl Federated Catalogue located in the Governance authority node.'",
+   "question": "",
+   "options": [],
+   "from_21a": [
+    "A-009",
+    "A-010",
+    "A-011"
+   ],
+   "see": [
+    "D9"
+   ],
+   "code": "API-49",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-020",
+   "target": "cross",
+   "rule": "API-21",
+   "severity": "minor",
+   "finding": "Examples and descriptions are thin on the built operations. catalogue-be publication, detail, versions and revoke have no request or response examples; quickSearch parameters searchTerm, page, pageSize and User-Attributes have no description (D20 fixes the comma-separated format). Several examples use placeholders (simpl:format test, signature test, contact test@test.com, jws illustrative-signature, catalogueId1, conformsTo SCHEMA_VERSION_ID). The client detail 404 says 'Schema not found', and no 500 example shows the D31 type federatedSourceUnavailable.",
+   "evidence": "21a A-004 (26 places), A-013 (12 parameters); t2-fc-openapi.yaml POST /self-descriptions/resource, GET /self-descriptions/{selfDescriptionId}, GET .../versions, POST .../revoke without examples; openapi-xfscadvsearch-tier1-v2.yaml GET /selfDescriptions/{selfDescriptionId} 404 description 'Schema not found'.",
+   "question": "",
+   "options": [],
+   "from_21a": [
+    "A-004",
+    "A-013"
+   ],
+   "see": [
+    "D20",
+    "D31"
+   ],
+   "code": "API-21",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-021",
+   "target": "query-mapper-adapter-be, catalogue-client-be",
+   "rule": "API-03",
+   "severity": "minor",
+   "finding": "Two files show signs of generation from code. The adapter servers keep the springdoc default 'Generated server url'. The client v2 file has its openapi key last, components before paths, and problem schemas with a property named additionalProperties, a typical artefact of a Map field. catalogue-be states the opposite direction (code generated from the root spec), which the guideline asks for.",
+   "evidence": "t1-adapter-openapi.yaml and t2-adapter-openapi.yaml servers description 'Generated server url'; openapi-xfscadvsearch-tier1-v2.yaml line order info, servers, security, openapi, components, paths; catalogue-be README 'Root specs must represent the full API surface used by code generation'.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [],
+   "code": "API-03",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-022",
+   "target": "catalogue-client-be",
+   "rule": "API-28",
+   "severity": "minor",
+   "finding": "The schema paths overlap: /schemas/{schemaId}/{version} also matches /schemas/{schemaId}/content when the version is 'content', and there is no schema document at /schemas/{schemaId}. OpenAPI routing prefers the literal path, so it works, but a version resource under /schemas/{schemaId}/versions/{version} would be clearer.",
+   "evidence": "openapi-xfscadvsearch-tier1-v2.yaml paths /schemas/{schemaId}/content and /schemas/{schemaId}/{version}.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [
+    "P-011"
+   ],
+   "code": "API-28",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "P-023",
+   "target": "cross",
+   "rule": "API-54",
+   "severity": "minor",
+   "finding": "Identifiers have no named types and are not always called id. The search item identifies a resource description by claimsGraphUri, an array (D7 takes item 0); SelfDescription has id, sdHash and resourceKey; validatorDids is named after the identifier, not the relation; no components schema such as ResourceDescriptionId or CatalogueId exists.",
+   "evidence": "catalogue-be SearchResponsePayload items[].n.claimsGraphUri type array; SelfDescription.id, sdHash, resourceKey, validatorDids; no identifier types under components/schemas in any entry file.",
+   "question": "",
+   "options": [],
+   "from_21a": [],
+   "see": [
+    "D7",
+    "D-002",
+    "D-011"
+   ],
+   "code": "API-54",
+   "step": "21b",
+   "theme": "API guidelines and coverage"
   }
  ]
 }

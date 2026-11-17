@@ -1,0 +1,392 @@
+{
+ "summary": {
+  "component": "catalogue",
+  "findings": 23,
+  "places": 271,
+  "rules_hit": [
+   "API-06",
+   "API-13",
+   "API-14",
+   "API-18",
+   "API-21",
+   "API-23",
+   "API-24",
+   "API-40",
+   "API-41",
+   "API-42",
+   "API-43",
+   "API-45",
+   "API-48",
+   "API-52",
+   "API-57",
+   "API-63",
+   "COV-01",
+   "COV-02"
+  ],
+  "rules_checked": [
+   "API-04",
+   "API-05",
+   "API-06",
+   "API-07",
+   "API-08",
+   "API-09",
+   "API-13",
+   "API-14",
+   "API-16",
+   "API-17",
+   "API-18",
+   "API-20",
+   "API-21",
+   "API-23",
+   "API-24",
+   "API-26",
+   "API-27",
+   "API-29",
+   "API-31",
+   "API-32",
+   "API-34",
+   "API-40",
+   "API-41",
+   "API-42",
+   "API-43",
+   "API-45",
+   "API-48",
+   "API-52",
+   "API-53",
+   "API-56",
+   "API-57",
+   "API-59",
+   "API-61",
+   "API-63",
+   "API-76",
+   "API-77",
+   "API-78",
+   "DDD-04",
+   "DDD-06",
+   "DDD-08",
+   "DDD-09"
+  ]
+ },
+ "findings": [
+  {
+   "id": "A-001",
+   "api": "catalogue-be",
+   "rule": "API-06",
+   "level": "SHOULD",
+   "rule_text": "Every literal path segment is lowerCamelCase.",
+   "count": 8,
+   "examples": [
+    "/webhooks/schema-events (schema-events)",
+    "/self-descriptions (self-descriptions)",
+    "/self-descriptions/resource (self-descriptions)",
+    "/self-descriptions/{selfDescriptionId} (self-descriptions)",
+    "/self-descriptions/{selfDescriptionId}/qualityAssessmentRecord (self-descriptions)",
+    "/self-descriptions/{selfDescriptionId}/versions (self-descriptions)",
+    "/self-descriptions/{self_description_hash} (self-descriptions)",
+    "/self-descriptions/{selfDescriptionId}/revoke (self-descriptions)"
+   ]
+  },
+  {
+   "id": "A-002",
+   "api": "catalogue-be",
+   "rule": "API-13",
+   "level": "SHOULD",
+   "rule_text": "Every JSON property name is lowerCamelCase.",
+   "count": 2,
+   "examples": [
+    "QualityAssessmentRecord.@context",
+    "QualityAssessmentRecord.@graph"
+   ]
+  },
+  {
+   "id": "A-003",
+   "api": "catalogue-be",
+   "rule": "API-18",
+   "level": "SHOULD",
+   "rule_text": "No property name is or contains a generic term such as 'info', 'information' or 'data'.",
+   "count": 1,
+   "examples": [
+    "SchemaChangeEvent.data"
+   ]
+  },
+  {
+   "id": "A-004",
+   "api": "catalogue-be",
+   "rule": "API-21",
+   "level": "SHOULD",
+   "rule_text": "Every request body and response in the OpenAPI file has at least one example under 'examples'.",
+   "count": 96,
+   "examples": [
+    "GET /schemas 200 application/json",
+    "GET /schemas 400 application/json",
+    "GET /schemas 403 application/json",
+    "GET /schemas 500 application/json",
+    "POST /schemas request application/rdf+xml",
+    "POST /schemas request application/ld+json",
+    "POST /schemas request application/json",
+    "POST /schemas request text/turtle"
+   ]
+  },
+  {
+   "id": "A-005",
+   "api": "catalogue-be",
+   "rule": "API-23",
+   "level": "SHOULD",
+   "rule_text": "Every HTTP header name is Kebab-Case with each word capitalised (for example 'Content-Type').",
+   "count": 6,
+   "examples": [
+    "POST /schemas 201: header location",
+    "POST /self-descriptions 201: header location",
+    "POST /self-descriptions 202: header location",
+    "POST /self-descriptions 202: header retry-after",
+    "POST /self-descriptions/resource 201: header location",
+    "POST /self-descriptions/{selfDescriptionId}/revoke 200: header location"
+   ]
+  },
+  {
+   "id": "A-006",
+   "api": "catalogue-be",
+   "rule": "API-24",
+   "level": "SHOULD",
+   "rule_text": "Each API URI follows https://host/pathPrefix/apiName/v{majorVersion}/resources.",
+   "count": 2,
+   "examples": [
+    "t1-fc-openapi.yaml: server {baseUrl}",
+    "t2-fc-openapi.yaml: server {baseUrl}"
+   ]
+  },
+  {
+   "id": "A-007",
+   "api": "catalogue-be",
+   "rule": "API-40",
+   "level": "SHOULD",
+   "rule_text": "Every security scheme used is defined under components/securitySchemes.",
+   "count": 24,
+   "examples": [
+    "GET /schemas: OAuth2Auth",
+    "POST /schemas: OAuth2Auth",
+    "GET /schemas/{schemaId}: OAuth2Auth",
+    "PUT /schemas/{schemaId}: OAuth2Auth",
+    "DELETE /schemas/{schemaId}: OAuth2Auth",
+    "GET /schemas/latest: OAuth2Auth",
+    "POST /schemas/{schemaName}/recalcQualityScore: OAuth2Auth",
+    "GET /verification: OAuth2Auth"
+   ]
+  },
+  {
+   "id": "A-008",
+   "api": "catalogue-be",
+   "rule": "API-41",
+   "level": "SHOULD",
+   "rule_text": "Every operation is covered by a 'security' section at root or operation level.",
+   "count": 1,
+   "examples": [
+    "POST /webhooks/schema-events"
+   ]
+  },
+  {
+   "id": "A-009",
+   "api": "catalogue-be",
+   "rule": "API-42",
+   "level": "SHOULD",
+   "rule_text": "info.license names 'European Union Public License (EUPL) 1.2' with the EUPL 1.2 URL given in the guideline.",
+   "count": 2,
+   "examples": [
+    "t1-fc-openapi.yaml: license missing",
+    "t2-fc-openapi.yaml: license Apache 2.0"
+   ]
+  },
+  {
+   "id": "A-010",
+   "api": "catalogue-be",
+   "rule": "API-43",
+   "level": "SHOULD",
+   "rule_text": "info.contact has name 'Simpl Programme', email 'cnect-simpl@ec.europa.eu' and url 'https://simpl-programme.ec.europa.eu/'.",
+   "count": 2,
+   "examples": [
+    "t1-fc-openapi.yaml: contact missing",
+    "t2-fc-openapi.yaml: contact missing"
+   ]
+  },
+  {
+   "id": "A-011",
+   "api": "catalogue-be",
+   "rule": "API-45",
+   "level": "SHOULD",
+   "rule_text": "Every error response body is an RFC 9457 problem detail (media type application/problem+json).",
+   "count": 70,
+   "examples": [
+    "GET /schemas 400: application/json",
+    "GET /schemas 403: application/json",
+    "GET /schemas 500: application/json",
+    "POST /schemas 400: application/json",
+    "POST /schemas 403: application/json",
+    "POST /schemas 500: application/json",
+    "GET /schemas/{schemaId} 400: application/json",
+    "GET /schemas/{schemaId} 403: application/json"
+   ]
+  },
+  {
+   "id": "A-012",
+   "api": "catalogue-be",
+   "rule": "API-48",
+   "level": "SHOULD",
+   "rule_text": "info.description is present and not empty.",
+   "count": 1,
+   "examples": [
+    "t1-fc-openapi.yaml"
+   ]
+  },
+  {
+   "id": "A-013",
+   "api": "catalogue-be",
+   "rule": "API-52",
+   "level": "SHOULD",
+   "rule_text": "Identifier path parameters are named 'id' or 'code', prefixed with the resource type only when several identifiers appear in one path.",
+   "count": 7,
+   "examples": [
+    "/schemas/{schemaId} (schemaId)",
+    "/schemas/{schemaName}/recalcQualityScore (schemaName)",
+    "/self-descriptions/{selfDescriptionId} (selfDescriptionId)",
+    "/self-descriptions/{selfDescriptionId}/qualityAssessmentRecord (selfDescriptionId)",
+    "/self-descriptions/{selfDescriptionId}/versions (selfDescriptionId)",
+    "/self-descriptions/{self_description_hash} (self_description_hash)",
+    "/self-descriptions/{selfDescriptionId}/revoke (selfDescriptionId)"
+   ]
+  },
+  {
+   "id": "A-014",
+   "api": "catalogue-be",
+   "rule": "API-57",
+   "level": "SHOULD",
+   "rule_text": "Every parameter has a description.",
+   "count": 12,
+   "examples": [
+    "GET /selfDescriptions/quickSearch: searchTerm",
+    "GET /selfDescriptions/quickSearch: page",
+    "GET /selfDescriptions/quickSearch: pageSize",
+    "GET /selfDescriptions/quickSearch: User-Attributes",
+    "GET /selfDescriptions/quickSearch: Authorization",
+    "POST /selfDescriptions/advancedSearch: User-Attributes",
+    "POST /selfDescriptions/advancedSearch: Authorization",
+    "POST /self-descriptions/{selfDescriptionId}/revoke: Authorization"
+   ]
+  },
+  {
+   "id": "A-015",
+   "api": "catalogue-be",
+   "rule": "COV-01",
+   "level": "SHOULD",
+   "rule_text": "Operation that no acceptance criterion covers (step 12b links)",
+   "count": 19,
+   "examples": [
+    "GET /schemas",
+    "GET /schemas/{schemaId}",
+    "PUT /schemas/{schemaId}",
+    "DELETE /schemas/{schemaId}",
+    "GET /schemas/latest",
+    "POST /schemas/{schemaName}/recalcQualityScore",
+    "GET /verification",
+    "POST /verification"
+   ]
+  },
+  {
+   "id": "A-016",
+   "api": "catalogue-client-be",
+   "rule": "API-14",
+   "level": "SHOULD",
+   "rule_text": "Abbreviations inside property names are written with only the first letter capitalised (for example 'httpUrl', not 'HTTPURL').",
+   "count": 1,
+   "examples": [
+    "CatalogueInfo.authorityURL"
+   ]
+  },
+  {
+   "id": "A-017",
+   "api": "catalogue-client-be",
+   "rule": "API-52",
+   "level": "SHOULD",
+   "rule_text": "Identifier path parameters are named 'id' or 'code', prefixed with the resource type only when several identifiers appear in one path.",
+   "count": 3,
+   "examples": [
+    "/schemas/{schemaId}/content (schemaId)",
+    "/schemas/{schemaName}/qualityProfiles/active (schemaName)",
+    "/selfDescriptions/{selfDescriptionId} (selfDescriptionId)"
+   ]
+  },
+  {
+   "id": "A-018",
+   "api": "catalogue-client-be",
+   "rule": "COV-01",
+   "level": "SHOULD",
+   "rule_text": "Operation that no acceptance criterion covers (step 12b links)",
+   "count": 2,
+   "examples": [
+    "GET /schemas/{schemaId}/content",
+    "GET /schemas/{schemaId}/{version}"
+   ]
+  },
+  {
+   "id": "A-019",
+   "api": "component",
+   "rule": "API-63",
+   "level": "SHOULD",
+   "rule_text": "The AsyncAPI file lists every channel used, the operation on each channel and the messages on each channel.",
+   "count": 1,
+   "examples": [
+    "no AsyncAPI file in the input set"
+   ]
+  },
+  {
+   "id": "A-020",
+   "api": "query-mapper-adapter-be",
+   "rule": "API-41",
+   "level": "SHOULD",
+   "rule_text": "Every operation is covered by a 'security' section at root or operation level.",
+   "count": 1,
+   "examples": [
+    "GET /federated/resourceDescriptions/{resourceDescriptionId}"
+   ]
+  },
+  {
+   "id": "A-021",
+   "api": "query-mapper-adapter-be",
+   "rule": "API-52",
+   "level": "SHOULD",
+   "rule_text": "Identifier path parameters are named 'id' or 'code', prefixed with the resource type only when several identifiers appear in one path.",
+   "count": 3,
+   "examples": [
+    "/participants/resourceDescriptions/{resourceDescriptionId} (resourceDescriptionId)",
+    "/federated/resourceDescriptions/{resourceDescriptionId} (resourceDescriptionId)",
+    "/participants/resourceDescriptions/{resourceDescriptionId}/version (resourceDescriptionId)"
+   ]
+  },
+  {
+   "id": "A-022",
+   "api": "query-mapper-adapter-be",
+   "rule": "COV-01",
+   "level": "SHOULD",
+   "rule_text": "Operation that no acceptance criterion covers (step 12b links)",
+   "count": 4,
+   "examples": [
+    "GET /participants/resourceDescriptions",
+    "GET /participants/resourceDescriptions/{resourceDescriptionId}",
+    "PATCH /participants/resourceDescriptions/{resourceDescriptionId}",
+    "GET /participants/resourceDescriptions/{resourceDescriptionId}/version"
+   ]
+  },
+  {
+   "id": "A-023",
+   "api": "stories",
+   "rule": "COV-02",
+   "level": "MUST",
+   "rule_text": "Operation a story names that no OpenAPI entry file has",
+   "count": 3,
+   "examples": [
+    "SIMPL-31142: catalogue-client-be POST /selfDescriptions",
+    "SIMPL-31770: xfsc-advsearch-be GET /selfDescriptions/{id}",
+    "SIMPL-31817: POST /schemas/{schemaName}/versions"
+   ]
+  }
+ ]
+}
