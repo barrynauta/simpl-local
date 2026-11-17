@@ -22,7 +22,7 @@ CLAUSE = re.compile(r"^\*{0,2}(Given|When|Then|And|But)\*{0,2}\s+(.*)$", re.I)
 # An AC or scenario heading: "AC1 - ...", "### AC2", "**AC3: ...**", "Scenario 2 - ...",
 # "**Positive Scenario 1:**", "Negative Scenarios:".
 AC_HEAD = re.compile(
-    r"^(?:#+\s*)?\*{0,2}\s*(?P<strike>-)?\s*"
+    r"^(?:#+\s*)?(?:[-*]\s+)?\*{0,2}\s*(?P<strike>-)?\*{0,2}\s*"
     r"(?P<label>(?:AC|Acceptance Criterion)\s*(?P<num>\d+)|(?:(?:Positive|Negative)\s+)?Scenarios?(?:\s*(?P<snum>\d+))?)"
     r"\s*(?P<rest>.*)$",
     re.I,
@@ -36,10 +36,24 @@ def clean(line):
     return line.rstrip().rstrip("\\").strip()
 
 
+def unlist(line):
+    """Drop a leading list marker ("- " or "* ")."""
+    return re.sub(r"^[-*]\s+", "", clean(line))
+
+
 def struck(line):
-    """Jira strikethrough comes through as -text-."""
-    s = clean(line).strip("*").strip()
+    """Jira strikethrough comes through as -text-, also inside a list item."""
+    s = unlist(line).strip("*").strip()
     return len(s) > 2 and s.startswith("-") and s.endswith("-")
+
+
+def unstrike(line):
+    """The clause text without list marker, strike dashes and emphasis around the keyword."""
+    s = unlist(line).strip()
+    if struck(line):
+        s = s.strip("*").strip()[1:-1].strip()
+    s = re.sub(r"^\*?-?\*?(Given|When|Then|And|But)-?\*?\*?", lambda m: "**" + m.group(1) + "**", s, flags=re.I)
+    return s
 
 
 def parse_story(path):
@@ -88,13 +102,13 @@ def parse_story(path):
         if not ln or ln.startswith("## Description") or re.match(r"^#*\s*\**Acceptance Criteria\**:?$", ln, re.I):
             continue
         h = AC_HEAD.match(ln)
-        if h and not CLAUSE.match(ln) and re.search(r"scenarios\b", h.group("label"), re.I):
+        if h and not CLAUSE.match(unstrike(ln)) and re.search(r"scenarios\b", h.group("label"), re.I):
             # "Negative Scenarios:" groups the scenarios that follow; it is not one itself.
             close()
             group = ln.strip("*#:- ").strip()
             last_kw = None
             continue
-        if h and not CLAUSE.match(ln):
+        if h and not CLAUSE.match(unstrike(ln)):
             num = h.group("num") or h.group("snum")
             label = f"AC{num}" if num else None
             new_ac(label, bool(num), strike=bool(h.group("strike")) or struck(ln),
@@ -102,7 +116,7 @@ def parse_story(path):
             last_kw = None
             continue
         is_struck = struck(ln)
-        c = CLAUSE.match(ln.strip("-").strip() if is_struck else ln)
+        c = CLAUSE.match(unstrike(ln))
         if c:
             kw = c.group(1).capitalize()
             # An "And" or "Then" before any scenario continues the user story ("So that ... And ..."):
@@ -174,9 +188,13 @@ def parse_story(path):
         if a["struck"]:
             issues.append(f"{a['id']}: struck through in Jira, left out of the live count")
 
+    plain_text = text.replace("\\{", "{").replace("\\}", "}")
     refs = {
         "stories": sorted(set(STORY_KEY.findall(text)) - {key}),
-        "paths": sorted(set(p for p in PATH_REF.findall(text) if len(p) > 3 and not p.startswith("//"))),
+        "paths": sorted(set(p for p in PATH_REF.findall(plain_text) if len(p) > 3 and not p.startswith("//"))),
+        "method_paths": sorted(set(f"{m.upper()} {p}" for m, p in re.findall(
+            r"\b(GET|POST|PUT|PATCH|DELETE)\s+(/[\w{}\-/]+)", plain_text, re.I))),
+        "bp_steps": sorted(set(re.findall(r"\bBP\s?\d+[A-Z]?(?:\.\d+)*\b", text))),
     }
     return {
         "key": key, "title": title, "kind": kind, "replaced": replaced,
@@ -270,9 +288,20 @@ def main():
         stories.append(s)
         issues += iss
 
+    entries = None
+    mf = comp / "sources.yaml"
+    if mf.exists():
+        man = yaml.safe_load(mf.read_text(encoding="utf-8"))
+        entries = {}
+        for a in man.get("api", []):
+            if a.get("entry"):
+                entries[a["name"]] = set(a["entry"])
     apis = []
     for f in sorted((specs / "api").rglob("*.y*ml")):
-        name = f.parent.name if f.parent != specs / "api" else f.stem
+        rel_api = f.relative_to(specs / "api")
+        if entries and rel_api.parts[0] in entries and "/".join(rel_api.parts[1:]) not in entries[rel_api.parts[0]]:
+            continue  # references, -itb copies or older versions: not where the operations are counted
+        name = rel_api.parts[0] if len(rel_api.parts) > 1 else f.stem
         a, iss = parse_openapi(f, name)
         apis.append(a)
         issues += iss
@@ -294,10 +323,20 @@ def main():
             norm = re.sub(r"\{[^}]+\}", "{}", o["path"])
             op_by_path.setdefault(norm, []).append(o["id"])
     for s in stories:
-        hits = set()
+        hits, mismatch = set(), []
+        named = {re.sub(r"\{[^}]+\}", "{}", mp.split(" ", 1)[1]): mp.split(" ", 1)[0] for mp in s["refs"]["method_paths"]}
         for p in s["refs"]["paths"]:
-            hits.update(op_by_path.get(re.sub(r"\{[^}]+\}", "{}", p), []))
+            norm = re.sub(r"\{[^}]+\}", "{}", p.rstrip("/"))
+            ops = op_by_path.get(norm, [])
+            if norm in named:  # the story names the method too: only that one counts
+                same = [o for o in ops if o.split(":", 1)[1].startswith(named[norm] + " ")]
+                if ops and not same:
+                    mismatch.append(f"{named[norm]} {p}")
+                ops = same
+            hits.update(ops)
         s["refs"]["operations"] = sorted(hits)
+        for m in mismatch:
+            issues.append(f"{s['key']}: names {m}, but the OpenAPI has that path with another method")
 
     live_acs = [a for s in stories for a in s["acs"] if not a["struck"]]
     summary = {

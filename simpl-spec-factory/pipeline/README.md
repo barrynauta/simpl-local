@@ -16,7 +16,7 @@ The steps are being split so each one does one job and can be chained: a fixed i
 
 | No. | Step | Status | File |
 |---|---|---|---|
-| 10 | Collect the stories (Jira, local model) | done, was step 0 | [`collect_stories.py`](./collect_stories.py) |
+| 10 | Collect the input set from a manifest per component (`<component>/sources.yaml`): OpenAPI and business processes from code.europa.eu at pinned commits, stories from Jira through the local model; `--verify` compares the manifest with `specs/` | done (stories was step 0) | [`collect_specs.py`](./collect_specs.py), [`collect_stories.py`](./collect_stories.py) |
 | 11 | Guideline rules: guidelines to numbered, checkable rules | new | [`11-guideline-rules.md`](./11-guideline-rules.md), output in [`../guidelines/`](../guidelines/README.md) |
 | 12 | Spec inventory: a stable id for every story, AC, operation and BP requirement (12a script, 12b review) | new | [`12-spec-inventory.md`](./12-spec-inventory.md), [`extract_inventory.py`](./extract_inventory.py) |
 | 20 | Validate the ACs: complete, unambiguous, testable, consistent | planned | |
@@ -28,6 +28,8 @@ The steps are being split so each one does one job and can be chained: a fixed i
 | 50 | Code writer | was steps 3 and 3b | [`03-code-writer.md`](./03-code-writer.md), [`03b-code-writer-rust.md`](./03b-code-writer-rust.md) |
 | 60 | Test writer, UI | was step 4 | [`04-test-writer-ui.md`](./04-test-writer-ui.md) |
 | 70+ | Verification and reports: hold-out, coverage, security, traceability, per-rule conformance | planned | |
+
+Step 10 in practice: `python3 pipeline/collect_specs.py <component>` writes a new set to `<component>/specs-YYYYMMDD/` with a `SOURCES.json` (full commit ids, story keys, a sha256 per file); it never overwrites an existing set. The README of the set stays hand-written. `--verify` checks a manifest against the frozen `specs/`: on 17 Nov 2026 all four manifests reproduced their sets byte for byte. Jira then had one story more for Contract Management (SIMPL-35994, created 29 Oct) and no other changes. Cancelled stories have the status "PBI Cancelled" in Jira, so the queries exclude both names.
 
 The old prompt files keep their names until they are reworked, and `findings.md` and the run folders keep the old step numbers (step 3b, step 6). This table is the mapping.
 

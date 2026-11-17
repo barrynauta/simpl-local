@@ -28,6 +28,8 @@ What the script does: splits each story into its user story (As a, I want, So th
 
 What it flags as extraction issues: a story without criteria, a criterion without a Given, When or Then, a criterion number used twice, a struck criterion, an operation without an operationId or responses, a process without detailed requirements, a gap in requirement numbers.
 
+Operations are counted only in the files listed as `entry` in `sources.yaml`, when given; composed OpenAPI layouts (a root file with references, `-itb` copies, older versions) would otherwise count operations several times. Catalogue: 39 operations, not 103.
+
 Known limits: derived ids depend on the order in the story, so if a story owner inserts a scenario, the derived ids after it shift. Single-file business processes (one markdown file, no folder) are not split into requirements.
 
 ## 12b: the review (brief for a fresh agent)

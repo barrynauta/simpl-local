@@ -1,0 +1,4837 @@
+[
+  {
+    "id": "API-01",
+    "source": "api-guidelines.md#Data Modelling",
+    "quote": "Every API definition (REST or event-driven) MUST be accompanied by a [Common Data Model (CDM)](https://code.europa.eu/simpl/simpl-open/foundations/architecture/-/blob/master/data-modeling-guidelines.md?ref_type=heads).",
+    "rule": "Every OpenAPI or AsyncAPI definition has a matching CDM delivered with it.",
+    "level": "MUST",
+    "applies_to": [
+      "api-spec",
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks that a CDM file exists next to each API definition and covers its business entities.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Here CDM is expanded as 'Common Data Model'; data-modeling-guidelines.md calls it 'Conceptual Data Model'. Overlaps DATA-01."
+  },
+  {
+    "id": "API-02",
+    "source": "api-guidelines.md#Data Modelling",
+    "quote": "OpenAPI Schema Objects and AsyncAPI message payloads SHOULD reference the CDM rather than redefining types locally, \nto ensure consistency across components.",
+    "rule": "Schema Objects and message payloads reference the CDM instead of redefining business types locally.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer compares schema names and fields with CDM entities; flags local redefinitions.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Vague: the CDM is a UML diagram (DATA-09), so it is unclear how a JSON schema can 'reference' it. A machine-readable CDM or a naming convention would make this checkable."
+  },
+  {
+    "id": "API-03",
+    "source": "api-guidelines.md#Synchronous REST APIs",
+    "quote": "The **contract-first principle** SHOULD be followed when developing an API. In this approach, the specifications of the REST API are created first and not generated from the code.",
+    "rule": "The OpenAPI file is written by hand before the code and is not generated from the code.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec",
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "OpenAPI file is committed source (not a build output); no springdoc or similar spec generation in the build; spec commit precedes implementation.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-04",
+    "source": "api-guidelines.md#Synchronous REST APIs",
+    "quote": "Specifications of the API SHOULD be provided using [**OpenAPI 3.0**](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.3.md).",
+    "rule": "The REST API specification uses OpenAPI 3.0.x.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral with the oas3 ruleset; check the 'openapi' field starts with 3.0.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The examples in the same document show 'openapi: 3.0.0' while the link points to 3.0.3; any 3.0.x passes."
+  },
+  {
+    "id": "API-05",
+    "source": "api-guidelines.md#Synchronous REST APIs",
+    "quote": "For this specific guideline, Simpl-Open deviates from the BelgIF guidelines and only **YAML** is used as\nfile type for the OpenAPI definition.",
+    "rule": "The OpenAPI definition file is YAML, not JSON.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "File extension .yaml or .yml and the file parses as YAML.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "API-06",
+    "source": "api-guidelines.md#Synchronous REST APIs",
+    "quote": "Path segments and query parameters within an API SHOULD use **lowerCamelCase** notation to enhance readability and to separate compound names.",
+    "rule": "Every literal path segment is lowerCamelCase.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: each non-parameter path segment matches ^[a-z][a-zA-Z0-9]*$.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-07",
+    "source": "api-guidelines.md#Synchronous REST APIs",
+    "quote": "Path segments and query parameters within an API SHOULD use **lowerCamelCase** notation to enhance readability and to separate compound names.",
+    "rule": "Every query parameter name is lowerCamelCase.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule on parameters with in: query, name matches ^[a-z][a-zA-Z0-9]*$.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-08",
+    "source": "api-guidelines.md#Synchronous REST APIs",
+    "quote": "**Trailing slashes MUST NOT be used.**",
+    "rule": "No path ends with a slash.",
+    "level": "MUST",
+    "applies_to": [
+      "api-spec",
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral built-in path-keys-no-trailing-slash; black-box test that '/x/' is not served as '/x'.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-09",
+    "source": "api-guidelines.md#Synchronous REST APIs",
+    "quote": "The URI SHOULD NOT contain a file extension.",
+    "rule": "No path segment ends with a file extension such as .json or .xml.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: no path segment matches \\.[a-z0-9]{2,5}$.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-10",
+    "source": "api-guidelines.md#Synchronous REST APIs",
+    "quote": "A **plural noun** SHOULD be used for collection names, for example `employers` or `people`.",
+    "rule": "Collection resources are named with a plural noun.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer (or agent) checks each collection path segment is a plural noun; a pluralisation heuristic can pre-flag.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-11",
+    "source": "api-guidelines.md#Synchronous REST APIs",
+    "quote": "The HTTP methods SHOULD be used that are appropriate for the type of action performed on the resource.",
+    "rule": "Each operation uses the HTTP method that fits its action (GET reads, POST creates or triggers, PUT replaces, PATCH updates, DELETE removes).",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec",
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks method against operation summary; flags GET with side effects or POST used for reads without reason.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-12",
+    "source": "api-guidelines.md#Synchronous REST APIs",
+    "quote": "The HTTP response status code SHOULD be returned that best describes the outcome of the treatment of the request.",
+    "rule": "Each response uses the status code that best describes the outcome.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec",
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Black-box tests per operation assert the documented status codes (201 on create, 404 on unknown id, and so on).",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Vague: 'best describes' depends on judgement; the BelgIF status code table could be adopted as the reference."
+  },
+  {
+    "id": "API-13",
+    "source": "api-guidelines.md#JSON property naming",
+    "quote": "use **lowerCamelCase** notation;",
+    "rule": "Every JSON property name is lowerCamelCase.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule on all schema property names: ^[a-z][a-zA-Z0-9]*$.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Properties taken from other standards (OpenID Connect, OAuth2) are allowed to deviate."
+  },
+  {
+    "id": "API-14",
+    "source": "api-guidelines.md#JSON property naming",
+    "quote": "also for abbreviations: all letters after the first should be lowercase.",
+    "rule": "Abbreviations inside property names are written with only the first letter capitalised (for example 'httpUrl', not 'HTTPURL').",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: no two consecutive uppercase letters in property names.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-15",
+    "source": "api-guidelines.md#JSON property naming",
+    "quote": "use **American English**;",
+    "rule": "Property names use American English spelling.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer or spell checker with an en-US dictionary flags British spellings (for example 'authorisation').",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Tension with the prose of the guidelines themselves, which use British spelling ('authorisation', 'harmonisation'); this rule is only about JSON property names."
+  },
+  {
+    "id": "API-16",
+    "source": "api-guidelines.md#JSON property naming",
+    "quote": "do not use underscores (`_`), hyphens (`-`) or dots (`.`) in a property name, nor use a digit as first letter;",
+    "rule": "No property name contains an underscore, hyphen or dot.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: property names do not match [_.-].",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Properties from OpenID Connect and OAuth2 (for example 'access_token') are allowed to deviate."
+  },
+  {
+    "id": "API-17",
+    "source": "api-guidelines.md#JSON property naming",
+    "quote": "do not use underscores (`_`), hyphens (`-`) or dots (`.`) in a property name, nor use a digit as first letter;",
+    "rule": "No property name starts with a digit.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: property names do not match ^[0-9].",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-18",
+    "source": "api-guidelines.md#JSON property naming",
+    "quote": "don't use overly generic terms like `info(rmation)` and `data` as property name or as part of it;",
+    "rule": "No property name is or contains a generic term such as 'info', 'information' or 'data'.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: case-insensitive match on info|information|data in property names, reviewer confirms.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Vague: 'like' means the list is open; a closed list of banned terms would make it fully checkable."
+  },
+  {
+    "id": "API-19",
+    "source": "api-guidelines.md#JSON property naming",
+    "quote": "the name should refer to the **business meaning** of its value in relation to the object in which it is specified, rather than how it is defined;",
+    "rule": "Property names express the business meaning of the value, not its technical definition.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer flags names describing type or format (for example 'stringValue', 'dateField').",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Vague: needs judgement."
+  },
+  {
+    "id": "API-20",
+    "source": "api-guidelines.md#JSON property naming",
+    "quote": "omit parts of the name that are already clear from the context.",
+    "rule": "Property names do not repeat the name of the enclosing object (for example 'name' inside 'Employer', not 'employerName').",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: property name does not start with the lowerCamelCase name of its parent schema; reviewer confirms.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-21",
+    "source": "api-guidelines.md#Examples and headers",
+    "quote": "Add example request and response values to the OpenAPI specification under the `examples` property.",
+    "rule": "Every request body and response in the OpenAPI file has at least one example under 'examples'.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule on requestBody and responses content: 'examples' present (oas3-valid-media-example validates them).",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The sentence is an imperative."
+  },
+  {
+    "id": "API-22",
+    "source": "api-guidelines.md#Examples and headers",
+    "quote": "Examples SHOULD contain realistic values.",
+    "rule": "Example values are realistic, not placeholders such as 'string' or 'foo'.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer or agent flags placeholder values ('string', 0, 'foo', 'test').",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-23",
+    "source": "api-guidelines.md#Examples and headers",
+    "quote": "**Kebab-Case with uppercase** SHOULD be used for HTTP header names.",
+    "rule": "Every HTTP header name is Kebab-Case with each word capitalised (for example 'Content-Type').",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule on parameters with in: header and response headers: ^[A-Z][a-z0-9]*(-[A-Z][a-z0-9]*)*$.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-24",
+    "source": "api-guidelines.md#URI structure",
+    "quote": "The API SHOULD match the following:\n\n```\nURI = https://host/pathPrefix/apiName/vmajorVersion/resources\n```",
+    "rule": "Each API URI follows https://host/pathPrefix/apiName/v{majorVersion}/resources.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule on servers.url plus paths: a '/v<integer>' segment precedes the resource segments.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "pathPrefix is optional."
+  },
+  {
+    "id": "API-25",
+    "source": "api-guidelines.md#URI structure",
+    "quote": "Services are at least secured on transport level using a one-way TLS connection. The implicit port is 443.",
+    "rule": "Every service is reachable only over HTTPS (at least one-way TLS).",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "servers.url uses https; black-box test that plain HTTP is refused or redirected.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Overlaps SEC-08 and OWASP-03."
+  },
+  {
+    "id": "API-26",
+    "source": "api-guidelines.md#URI structure",
+    "quote": "The API name consists of one or multiple path segments and SHOULD be written in lowerCamelCase (example: `/referenceData/geography`).",
+    "rule": "The apiName path segments are lowerCamelCase.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Same Spectral rule as API-06, applied to the segments before the version segment.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Overlaps API-06."
+  },
+  {
+    "id": "API-27",
+    "source": "api-guidelines.md#URI structure",
+    "quote": "Major version numbers are integers and start at 1.",
+    "rule": "The major version in the URI is an integer starting at 1 (v1, v2, ...).",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: version segment matches ^v[1-9][0-9]*$.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "API-28",
+    "source": "api-guidelines.md#Resource archetypes",
+    "quote": "Resources should follow the following 3 resource archetypes (more details [here](https://www.belgif.be/specification/rest/api-guide/#resource-archetypes)):\n\n- Document\n- Collection\n- Controller",
+    "rule": "Each resource is a document, a collection or a controller.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer classifies each path; controller resources are verbs acting on a document or collection.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-29",
+    "source": "api-guidelines.md#Resource archetypes",
+    "quote": "Resource name SHOULD NOT include ownership words (e.g. `own`, `my`, ...). Exceptions are to be made when the said \nownership word is part of a technical term (e.g. `selfDescription`).",
+    "rule": "No resource name contains an ownership word such as 'own' or 'my', unless the word is part of a technical term.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule matching (^|[A-Z/])(my|own)[A-Z/]? in path segments; reviewer clears technical terms.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Vague: the list ends with '...'; a closed list would make it checkable."
+  },
+  {
+    "id": "API-30",
+    "source": "api-guidelines.md#Resource archetypes",
+    "quote": "Details of a resource should be obtained either through `/resources/{resourceId}` or `/resources/{resourceId}/details` if\na distinction should be made.",
+    "rule": "Resource details are served at /resources/{resourceId}, or at /resources/{resourceId}/details when a separate detail view is needed.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks detail endpoints follow one of the two path forms.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-31",
+    "source": "api-guidelines.md#Versioning",
+    "quote": "The version string of an API SHOULD contain a major, minor and optionally a patch number.",
+    "rule": "info.version contains a major and a minor number, and optionally a patch number.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: info.version matches ^\\d+\\.\\d+(\\.\\d+)?$.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-32",
+    "source": "api-guidelines.md#Versioning",
+    "quote": "Only the major version of the\nAPI is part of the base URL (`basePath` in Swagger) of the API.",
+    "rule": "The base URL carries only the major version (v1), never the minor or patch number.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: no path or server segment matches v\\d+\\.\\d+.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "API-33",
+    "source": "api-guidelines.md#Versioning",
+    "quote": "Thereby, for a major version only a single minor and patch\nversion can be available in production at a time.",
+    "rule": "For each major version, only one minor and patch version is deployed in production at a time.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Cannot be checked on an artefact; a release record would show it.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. devsecops.md states that no Production environment is planned for Simpl-Open, so this applies to Simpl-Labs and Simpl-Live deployments only."
+  },
+  {
+    "id": "API-34",
+    "source": "api-guidelines.md#Versioning",
+    "quote": "The version of the API MUST be included in the `info` section of the\nOpenAPI definition.",
+    "rule": "info.version is present in the OpenAPI definition.",
+    "level": "MUST",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral built-in info rules / OpenAPI schema validation (info.version is required).",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-35",
+    "source": "api-guidelines.md#Content negotiation",
+    "quote": "REST clients SHOULD specify the media type(s) that is(/are) acceptable for the response in the `Accept` HTTP header.",
+    "rule": "REST client code sends an Accept header on every request.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer or Semgrep checks outgoing HTTP client calls set Accept.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-36",
+    "source": "api-guidelines.md#Content negotiation",
+    "quote": "A REST response or request with payload MUST include the `Content-Type` HTTP header to indicate the media type of the HTTP payload.",
+    "rule": "Every request or response that has a body carries a Content-Type header.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "api-spec"
+    ],
+    "check": "test",
+    "check_hint": "Black-box tests assert Content-Type on every response with a body; client code review for requests.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-37",
+    "source": "api-guidelines.md#Content negotiation",
+    "quote": "Status code **406** SHOULD be used to indicate that the requested media type could not be provided.",
+    "rule": "A request with an Accept header the API cannot satisfy gets 406.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Black-box test: send Accept: application/xml to a JSON-only endpoint, expect 406.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-38",
+    "source": "api-guidelines.md#Content negotiation",
+    "quote": "Status code **415** SHOULD be used to indicate an unsupported media type in the request payload.",
+    "rule": "A request with an unsupported Content-Type gets 415.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Black-box test: POST with Content-Type: text/plain to a JSON endpoint, expect 415.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-39",
+    "source": "api-guidelines.md#Content negotiation",
+    "quote": "If a resource supports multiple content types through negotiation, the response header `Vary: Accept` MUST be added to avoid undesired cache hits.",
+    "rule": "Responses from a resource that negotiates between several content types carry 'Vary: Accept'.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "api-spec"
+    ],
+    "check": "test",
+    "check_hint": "Black-box test on resources with more than one response media type: assert Vary contains Accept.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-40",
+    "source": "api-guidelines.md#Security schemes",
+    "quote": "All security schemes used by the API SHOULD be defined in the global `components/securitySchemes` section.",
+    "rule": "Every security scheme used is defined under components/securitySchemes.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral built-in oas3-operation-security-defined.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-41",
+    "source": "api-guidelines.md#Security schemes",
+    "quote": "Security schemes SHOULD be applied to the whole API or individual operations by adding the `security` \nsection on the root level or operation level, respectively.",
+    "rule": "Every operation is covered by a 'security' section at root or operation level.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: root 'security' present, or each operation has 'security'.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "An explicitly public operation would have 'security: []'; the source does not say how to mark public operations."
+  },
+  {
+    "id": "API-42",
+    "source": "api-guidelines.md#License and contact info",
+    "quote": "License information SHOULD be included in the top-level `info` object as follows:",
+    "rule": "info.license names 'European Union Public License (EUPL) 1.2' with the EUPL 1.2 URL given in the guideline.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule comparing info.license.name and info.license.url with the guideline values.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-43",
+    "source": "api-guidelines.md#License and contact info",
+    "quote": "Contact information SHOULD be included in the top-level `info` object as follows:",
+    "rule": "info.contact has name 'Simpl Programme', email 'cnect-simpl@ec.europa.eu' and url 'https://simpl-programme.ec.europa.eu/'.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule comparing info.contact fields with the guideline values.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-44",
+    "source": "api-guidelines.md#Error handling",
+    "quote": "For any problem occurred during processing, whether it be caused by the client or the server, the API provider supplies:\n\n- a suitable status code: `4xx` for consumer or `5xx` for server errors",
+    "rule": "Client-caused errors return a 4xx status and server-caused errors return a 5xx status.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "api-spec"
+    ],
+    "check": "test",
+    "check_hint": "Black-box tests with invalid input expect 4xx; fault-injection tests expect 5xx, never 200 with an error body.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "API-45",
+    "source": "api-guidelines.md#Error handling",
+    "quote": "- a **RFC 9457** problem detail message",
+    "rule": "Every error response body is an RFC 9457 problem detail (media type application/problem+json).",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: 4xx and 5xx responses use application/problem+json; black-box tests validate the body against RFC 9457.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "API-46",
+    "source": "api-guidelines.md#Error handling",
+    "quote": "Problem type SHOULD be specified as a URN in one of the following formats:\n\n- `urn:problem-type:simpl:<api>:<type>`\n- `urn:problem-type:simpl:<type>`\n- `urn:problem-type:simpl:<type>:<specificType>`",
+    "rule": "The 'type' of every problem detail is a URN starting 'urn:problem-type:simpl:' in one of the three listed forms.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "api-spec"
+    ],
+    "check": "test",
+    "check_hint": "Regex check on problem 'type' in examples and in black-box test responses.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The <api> part MAY be used for API-specific problem types (a permission, not checked). The first and third forms both have three parts after 'simpl:' and cannot be told apart by syntax."
+  },
+  {
+    "id": "API-47",
+    "source": "api-guidelines.md#Error handling",
+    "quote": "- `<type>`: type of the problem in lowerCamelCase",
+    "rule": "The <type> part of the problem type URN is lowerCamelCase.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "api-spec"
+    ],
+    "check": "test",
+    "check_hint": "Regex check on the URN segments.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "API-48",
+    "source": "api-guidelines.md#API description",
+    "quote": "A global API description SHOULD be included in the top-level `info` object as follows:",
+    "rule": "info.description is present and not empty.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral built-in info-description.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-49",
+    "source": "api-guidelines.md#API description",
+    "quote": "This description should clearly describe the purpose of the API from a business perspective.",
+    "rule": "info.description states the purpose of the API in business terms.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer reads info.description for business purpose, not technical detail.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Vague: 'clearly' needs judgement."
+  },
+  {
+    "id": "API-50",
+    "source": "api-guidelines.md#Identifiers and codes",
+    "quote": "within an object that represents the entire or part of a resource: use `id` or `code`",
+    "rule": "Inside a resource representation, the resource's own identifier property is named 'id' or 'code'.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer or agent checks identifier properties of each resource schema.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Exception: use the standardised business identifier name if one exists (API-55)."
+  },
+  {
+    "id": "API-51",
+    "source": "api-guidelines.md#Identifiers and codes",
+    "quote": "to reference a resource within another one's representation: property name should designate the relation between the resources; no need to suffix with `id` or `code`",
+    "rule": "A property that references another resource is named after the relation (for example 'employer'), not after the target's identifier.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks reference properties name the relation.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-52",
+    "source": "api-guidelines.md#Identifiers and codes",
+    "quote": "**Path parameter:** use `id` or `code`, OPTIONALLY prefixed with the resource type to disambiguate when there are multiple identifiers as path parameters",
+    "rule": "Identifier path parameters are named 'id' or 'code', prefixed with the resource type only when several identifiers appear in one path.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule on path parameters: name is id|code or <type>Id|<type>Code when more than one identifier is in the path.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The Parameters section example uses '/users/{userId}' with a prefix although the path has only one identifier."
+  },
+  {
+    "id": "API-53",
+    "source": "api-guidelines.md#Identifiers and codes",
+    "quote": "**Query search parameter:** use same name as the property in the JSON resource representation of the response",
+    "rule": "Each search query parameter has the same name as the matching property in the response representation.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Script compares query parameter names with property names in the 200 response schema.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-54",
+    "source": "api-guidelines.md#Identifiers and codes",
+    "quote": "**OpenAPI type:** add suffix `Id` or `Code` to distinguish it from the type of the full resource representation",
+    "rule": "Schema types for identifiers end with 'Id' or 'Code' (for example 'EmployerId').",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks components/schemas used for identifiers have the suffix.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-55",
+    "source": "api-guidelines.md#Identifiers and codes",
+    "quote": "As an exception, use the standardized name for the business identifier if one exists, rather than `id` or `code`.",
+    "rule": "Where a standardised business identifier name exists, it is used instead of 'id' or 'code'.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks known standard identifiers keep their standard name.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Vague: no list of standardised identifiers is given."
+  },
+  {
+    "id": "API-56",
+    "source": "api-guidelines.md#Parameters",
+    "quote": "Parameters should be described by specifying `name`, location (`in`), data type (defined by either `schema` or `content`)\nand other attributes, such as `description` or `required`.",
+    "rule": "Every parameter declares name, in, and either schema or content.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "OpenAPI schema validation (Spectral oas3-schema).",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-57",
+    "source": "api-guidelines.md#Parameters",
+    "quote": "Parameters should be described by specifying `name`, location (`in`), data type (defined by either `schema` or `content`)\nand other attributes, such as `description` or `required`.",
+    "rule": "Every parameter has a description.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral custom rule: parameters have a non-empty description.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Vague: 'other attributes, such as' leaves open which attributes are expected beyond description and required."
+  },
+  {
+    "id": "API-58",
+    "source": "api-guidelines.md#Parameters",
+    "quote": "if a parameter only allows a certain set of\nvalues, it should be restricted by adding the `enum` to the parameter's schema.",
+    "rule": "A parameter that accepts only a fixed set of values declares them with 'enum'.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks parameters described as a closed list have an enum.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-59",
+    "source": "api-guidelines.md#Parameters",
+    "quote": "The enum values must be of the same type\nas the parameter data type.",
+    "rule": "Every enum value matches the parameter's declared type.",
+    "level": "MUST",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Spectral built-in typed-enum.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-60",
+    "source": "api-guidelines.md#Parameters",
+    "quote": "Required request parameters should be explicitly marked as such using the `required: true` keyword.",
+    "rule": "Every required request parameter has 'required: true'.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer compares parameter descriptions and code validation with the required flag.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-61",
+    "source": "api-guidelines.md#Parameters",
+    "quote": "> **Note:** path parameters must have `required: true`, because they are always required.",
+    "rule": "Every path parameter has 'required: true'.",
+    "level": "MUST",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "OpenAPI schema validation / Spectral path-params.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-62",
+    "source": "api-guidelines.md#AsyncAPI Definitions",
+    "quote": "Every microservice offering an event-driven API must provide an **AsyncAPI** file describing its interaction with the\nKafka-based messaging system.",
+    "rule": "Every microservice that publishes or consumes Kafka events ships an AsyncAPI file.",
+    "level": "MUST",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks Kafka producer or consumer code has a matching asyncapi.yaml in the repository.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-63",
+    "source": "api-guidelines.md#AsyncAPI Definitions",
+    "quote": "This file acts as a contract, outlining:\n\n- **Channels** (Kafka topics) the microservice publishes to or subscribes from.\n- **Operations** (publish or subscribe) associated with each channel.\n- **Messages** that are exchanged on each channel.",
+    "rule": "The AsyncAPI file lists every channel used, the operation on each channel and the messages on each channel.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec",
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "AsyncAPI parser validates the file; script compares topics used in code with channels in the file.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "API-64",
+    "source": "api-guidelines.md#Code Generation",
+    "quote": "To include Modelina code generation into a Maven project, configure the\n[frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin) to generate the code during the\n`generate-sources` Maven phase.",
+    "rule": "When a Maven project generates event models with Modelina, it does so through frontend-maven-plugin bound to the generate-sources phase.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect pom.xml: frontend-maven-plugin execution running asyncapi-generate with phase generate-sources.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The example in the same section binds the execution to 'generate-resources', not 'generate-sources'. Whether Modelina is required at all is not stated."
+  },
+  {
+    "id": "API-65",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "Microservices must follow [CloudEvents](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md) conventions\nwhen exchanging messages",
+    "rule": "Every Kafka message exchanged follows CloudEvents 1.0.2.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "api-spec"
+    ],
+    "check": "test",
+    "check_hint": "Integration test consumes produced messages and validates CloudEvents attributes with the CloudEvents SDK.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-66",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "- Use **Kafka binary content mode** (CloudEvents fields in Kafka message headers).",
+    "rule": "Messages use Kafka binary content mode: CloudEvents attributes are in Kafka headers ('ce_' prefix), the payload is the data.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Integration test inspects Kafka record headers for ce_ attributes and a plain data payload.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Strength taken from the lead sentence of the list."
+  },
+  {
+    "id": "API-67",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "- The Kafka message headers must include all required CloudEvents fields.",
+    "rule": "Every message carries all required CloudEvents attributes as Kafka headers.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Integration test asserts ce_id, ce_source, ce_type, ce_specversion headers are present.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-68",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "- The Kafka message headers should include the `time` field containing the timestamp of the event.",
+    "rule": "Every message carries the 'time' attribute as a Kafka header.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Integration test asserts ce_time header is present and an RFC 3339 timestamp.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Conflicts with API-74: the attribute table lists 'time' as required in Simpl-Open messages."
+  },
+  {
+    "id": "API-69",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "| `id` | String | The unique identifier of the message in UUID v7 format. |",
+    "rule": "The CloudEvents 'id' of every message is a UUID version 7.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Integration test parses ce_id and asserts UUID version 7.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Strength from 'The following attributes are required' (required = MUST)."
+  },
+  {
+    "id": "API-70",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "| `source` | String | The identifier of the application producing the event (e.g. `eu.europa.ec.simpl.events.authenticationprovider`). |",
+    "rule": "The CloudEvents 'source' identifies the producing application.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Integration test asserts ce_source is set to the component's agreed identifier.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: the value pattern is only shown by example; a stated pattern (for example eu.europa.ec.simpl.events.<component>) would make the value checkable."
+  },
+  {
+    "id": "API-71",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "| `type` | String | The event type and version (e.g. `eu.europa.ec.simpl.events.authenticationprovider.v1.CredentialUpdatedEvent`). |",
+    "rule": "The CloudEvents 'type' carries the event type and its version.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "api-spec"
+    ],
+    "check": "test",
+    "check_hint": "Integration test asserts ce_type contains a '.v<n>.' version segment and the event name.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Vague: the pattern is only shown by example."
+  },
+  {
+    "id": "API-72",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "| `specversion` | String | The version of the CloudEvents spec. Must be set to `application/json`. |",
+    "rule": "Every message carries the CloudEvents 'specversion' attribute.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Integration test asserts ce_specversion is present.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source says the value must be 'application/json'. CloudEvents 1.0.2 (API-65) requires '1.0'. This looks like a copy error from the datacontenttype row; until the owners correct it, only presence is checked."
+  },
+  {
+    "id": "API-73",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "| `datacontenttype` | String | The data content type. Must be set to `application/json`. |",
+    "rule": "The CloudEvents 'datacontenttype' of every message is 'application/json'.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Integration test asserts content-type header (binary mode) equals application/json.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "API-74",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "| `time` | Timestamp | Timestamp of when the occurrence happened. |",
+    "rule": "The CloudEvents 'time' of every message is the time the occurrence happened.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Integration test asserts ce_time is present and close to the triggering action.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Required by the table; conflicts with API-68 (SHOULD)."
+  },
+  {
+    "id": "API-75",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "Microservices should be designed to accommodate these headers when they become available.",
+    "rule": "Consumers and producers can carry 'traceparent' and 'tracestate' headers without failing.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Integration test sends a message with traceparent and tracestate headers and expects normal processing.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: 'accommodate' is not defined (ignore, propagate, or log)."
+  },
+  {
+    "id": "API-76",
+    "source": "api-guidelines.md#CloudEvents Conventions",
+    "quote": "To promote harmonisation across all Simpl-Open services, the CloudEvent message headers are externalised into a dedicated\nYAML file, stored centrally on GitLab. A reference to this file is then used in the `traits` field of each message\ndefinition",
+    "rule": "Each AsyncAPI message definition takes its CloudEvents headers from the central shared YAML file through 'traits'.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "tool",
+    "check_hint": "Script checks every components/messages entry has a traits $ref to cloudEventsHeaders.yaml#/messageTraits/cloudEventsHeaders.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The example $ref points to a feature branch ('feature/cloudeventsHeaders'); a stable tag or main branch reference would make the target fixed."
+  },
+  {
+    "id": "API-77",
+    "source": "api-guidelines.md#Topic Naming Convention",
+    "quote": "Follow an **action-based naming convention** for Kafka topics:\n\n**Events:**\n\n```\n  $topic-owner-id.events.credential.updated\n  $topic-owner-id.events.identity-attributes.changed\n```",
+    "rule": "Event topics are named <topic-owner-id>.events.<subject>.<past-tense verb>.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec",
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Regex check on AsyncAPI channel addresses and topic config: \\.events\\.[a-z-]+(\\.[a-z-]+)*\\.[a-z]+$.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The AsyncAPI example in the same document uses 'authentication-provider.events.credentialUpdated', which does not follow this convention."
+  },
+  {
+    "id": "API-78",
+    "source": "api-guidelines.md#Topic Naming Convention",
+    "quote": "**Commands:**\n\n```\n  $topic-owner-id.commands.identity-attributes.assign\n```",
+    "rule": "Command topics are named <topic-owner-id>.commands.<subject>.<imperative verb>.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec",
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Regex check on channel addresses: \\.commands\\.[a-z-]+(\\.[a-z-]+)*\\.[a-z]+$.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "API-79",
+    "source": "api-guidelines.md#Topic Naming Convention",
+    "quote": "- `$topic-owner-id` is the namespace of the microservice that publishes the event (e.g. `eu.europa.ec.simpl.authenticationprovider.events.credential.updated`)",
+    "rule": "The topic-owner-id part of a topic name is the namespace of the publishing microservice.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the topic prefix matches the publisher's namespace.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Vague: 'namespace' is shown both as a Java-style package (eu.europa.ec.simpl.authenticationprovider) and, in the example, as a {prefix} plus 'authentication-provider'."
+  },
+  {
+    "id": "API-80",
+    "source": "api-guidelines.md#Topic Naming Convention",
+    "quote": "> **Note:** Since the dev cluster has a shared Kafka broker, prefix your topics with the namespace name.",
+    "rule": "On the shared dev cluster, topic names are prefixed with the Kubernetes namespace name.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Check Helm values or topic config apply a namespace prefix in dev.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "CODE-01",
+    "source": "coding-guidelines.md#1.1 Java",
+    "quote": "**Formatter:** [Spotless](https://github.com/diffplug/spotless), applied via the [Palantir](https://github.com/palantir/palantir-java-format) format (which is based on the Google Java style guidelines).",
+    "rule": "Java code is formatted with Spotless using the Palantir Java format.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "mvn spotless:check with palantirJavaFormat configured passes.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Strength from 'Each supported technology has a mandated formatter and rule set.'"
+  },
+  {
+    "id": "CODE-02",
+    "source": "coding-guidelines.md#1.1 Java",
+    "quote": "**Maven integration:** Spotless is provided as a Maven goal, so formatting can be enforced in the build.",
+    "rule": "The Maven build runs the Spotless check.",
+    "level": "MAY",
+    "applies_to": [
+      "config",
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "pom.xml binds spotless:check to a build phase; CI log shows it.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "'can' gives MAY here; OPS-33 and OPS-35 (NFR08) make automated enforcement a MUST."
+  },
+  {
+    "id": "CODE-03",
+    "source": "coding-guidelines.md#1.2 Angular",
+    "quote": "**Linter:** [ESLint](https://github.com/angular-eslint/angular-eslint).",
+    "rule": "Angular code is linted with ESLint through angular-eslint.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "npx eslint passes with @angular-eslint configured.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Strength from the section lead sentence ('mandated')."
+  },
+  {
+    "id": "CODE-04",
+    "source": "coding-guidelines.md#1.2 Angular",
+    "quote": "**Rule set:** The default `all` configuration from `angular-eslint` must be used:",
+    "rule": "The ESLint configuration for Angular extends the angular-eslint 'all' configuration.",
+    "level": "MUST",
+    "applies_to": [
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect eslint config: extends plugin:@angular-eslint/all (and template/all).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "CODE-05",
+    "source": "coding-guidelines.md#1.3 Vue",
+    "quote": "**Formatter:** [Prettier](https://prettier.io/) (TypeScript configuration) must be used for Vue applications.",
+    "rule": "Vue application code is formatted with Prettier using a TypeScript configuration.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "npx prettier --check passes.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: 'TypeScript configuration' is not defined further."
+  },
+  {
+    "id": "CODE-06",
+    "source": "coding-guidelines.md#2.1 Decomposition",
+    "quote": "Each method must have a single purpose.",
+    "rule": "Each method does one thing.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer flags methods whose name joins two actions (for example openAndPrint) or that mix concerns.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: needs judgement."
+  },
+  {
+    "id": "CODE-07",
+    "source": "coding-guidelines.md#2.1 Decomposition",
+    "quote": "Consider extracting a new method when a method exceeds the maximum line count",
+    "rule": "Methods stay within the maximum line count.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Sonar or Checkstyle MethodLength once a number is set.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: the maximum line count is not given in the source. 'Consider' read as SHOULD."
+  },
+  {
+    "id": "CODE-08",
+    "source": "coding-guidelines.md#2.1 Decomposition",
+    "quote": "or when the same block of code is repeated in several places.",
+    "rule": "A block of code repeated in several places is extracted into a method.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Sonar duplicated blocks or PMD CPD report.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "'Consider' read as SHOULD. Tension with CODE-09."
+  },
+  {
+    "id": "CODE-09",
+    "source": "coding-guidelines.md#2.1 Decomposition",
+    "quote": "Do not over-apply this: two blocks that look similar but do different things must not be merged.",
+    "rule": "Blocks that look similar but do different things are not merged into one method.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks extracted methods are not driven by flags that switch between unrelated behaviours.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Tension with CODE-08; the reviewer decides which applies."
+  },
+  {
+    "id": "CODE-10",
+    "source": "coding-guidelines.md#2.2 Unit-testability",
+    "quote": "All code must be written with testability in mind, to enable high unit-test coverage across the codebase.",
+    "rule": "Code is unit-testable and reaches high unit-test coverage.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "tests"
+    ],
+    "check": "tool",
+    "check_hint": "JaCoCo (Java) or Istanbul (TypeScript) coverage report against the agreed threshold.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: 'high' coverage has no number."
+  },
+  {
+    "id": "CODE-11",
+    "source": "coding-guidelines.md#2.2 Unit-testability",
+    "quote": "- Avoid tight coupling to concrete implementations.",
+    "rule": "Classes depend on interfaces or abstractions, not on concrete implementations of their collaborators.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "ArchUnit rule or reviewer: service classes do not reference other services' implementation classes.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Strength taken from the lead sentence of the list."
+  },
+  {
+    "id": "CODE-12",
+    "source": "coding-guidelines.md#2.2 Unit-testability",
+    "quote": "- Use dependency injection (DI) and inversion of control (IoC) to supply dependencies to classes.",
+    "rule": "Dependencies are supplied to classes through dependency injection, not created inside them.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Semgrep or ArchUnit: no 'new' of service, repository or client classes inside other beans; constructor injection used.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Strength taken from the lead sentence of the list. Overlaps CODE-48."
+  },
+  {
+    "id": "CODE-13",
+    "source": "coding-guidelines.md#2.3 Readability",
+    "quote": "- Know and apply the coding standards.",
+    "rule": "Code complies with the coding standards of section 1 (formatter and linter for its technology).",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Same checks as CODE-01 to CODE-05.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Overlaps CODE-01 to CODE-05."
+  },
+  {
+    "id": "CODE-14",
+    "source": "coding-guidelines.md#2.3 Readability",
+    "quote": "- Keep code as readable as possible, using English for identifiers and comments.",
+    "rule": "Identifiers are in English.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer or agent scans identifiers for non-English words.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "CODE-15",
+    "source": "coding-guidelines.md#2.3 Readability",
+    "quote": "- Keep code as readable as possible, using English for identifiers and comments.",
+    "rule": "Comments are in English.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer or language-detection script on comments.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "CODE-16",
+    "source": "coding-guidelines.md#2.3 Readability",
+    "quote": "- Keep code as readable as possible, using English for identifiers and comments.",
+    "rule": "Code is kept as readable as possible.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer judgement.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: no measurable criterion; a cognitive complexity limit (for example Sonar S3776) would make it checkable."
+  },
+  {
+    "id": "CODE-17",
+    "source": "coding-guidelines.md#2.3 Readability",
+    "quote": "- Name all things well.",
+    "rule": "All names are clear and descriptive.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer flags single-letter or meaningless names outside loops.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: needs judgement; naming conventions per language are not given."
+  },
+  {
+    "id": "CODE-18",
+    "source": "coding-guidelines.md#2.3 Readability",
+    "quote": "- Break up long statements.",
+    "rule": "Long statements are broken up.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Formatter line length plus Sonar cognitive complexity.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: 'long' has no number."
+  },
+  {
+    "id": "CODE-19",
+    "source": "coding-guidelines.md#2.3 Readability",
+    "quote": "- Use whitespace deliberately to aid readability.",
+    "rule": "Whitespace is used to aid readability.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Covered by the formatter checks (CODE-01, CODE-05).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague; in practice the formatter decides."
+  },
+  {
+    "id": "CODE-20",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "Developers must write logging that makes problems diagnosable in production.",
+    "rule": "Logging lets a problem in production be diagnosed from the logs alone.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks error paths log what failed, with which input identifiers.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: needs judgement."
+  },
+  {
+    "id": "CODE-21",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "The logging framework and log format are documented on the Log4J wrapper page.",
+    "rule": "Logging uses the framework and format described on the Log4J wrapper page.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the logging dependency and pattern match the wrapper page.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The Log4J wrapper page is not in the sources, so the framework and format cannot be checked yet. Overlaps CODE-52."
+  },
+  {
+    "id": "CODE-22",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "Every log statement must use one of the following levels:",
+    "rule": "Every log statement uses one of the levels Trace, Debug, Info, Warning, Error or Fatal.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Semgrep: logger calls use only the listed levels (no custom levels).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "CODE-23",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "| Trace   | Development-only tracing of bugs. Prefer Debug instead. |",
+    "rule": "Trace level is not used; Debug is used instead.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Semgrep flags log.trace calls.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "'Prefer' read as SHOULD."
+  },
+  {
+    "id": "CODE-24",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "- Using the correct log level.",
+    "rule": "Each log statement uses the level whose 'when to use it' description fits the event.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks levels against the table (user actions at Info, failures at Error, and so on).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "CODE-25",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "If an Error does not require immediate investigation, its severity should probably be lowered.",
+    "rule": "Error level is used only for events that require immediate investigation.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks each log.error is an investigation-worthy failure.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "'should probably' read as SHOULD."
+  },
+  {
+    "id": "CODE-26",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "Logs must be machine-parseable yet human-readable.",
+    "rule": "Log lines are machine-parseable and human-readable.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Test parses sample log output with the agreed parser (for example JSON) and checks a message field.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: no format named here; depends on CODE-21."
+  },
+  {
+    "id": "CODE-27",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "- Using a standard date and time format.",
+    "rule": "Log timestamps use a standard date and time format.",
+    "level": "MUST",
+    "applies_to": [
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Check the log pattern uses ISO 8601.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: 'a standard' is not named; ISO 8601 would make it checkable."
+  },
+  {
+    "id": "CODE-28",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "- Adding timestamps.",
+    "rule": "Every log line has a timestamp.",
+    "level": "MUST",
+    "applies_to": [
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Check the log pattern or encoder includes a timestamp.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "CODE-29",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "- Including the stack trace when logging a thrown exception.",
+    "rule": "When an exception is logged, its stack trace is included.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Semgrep: in catch blocks, logger calls pass the exception object, not only e.getMessage().",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "CODE-30",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "Always enrich logs with context and metadata to help pinpoint production problems.",
+    "rule": "Log statements carry context and metadata (for example request or correlation id, component, entity id).",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks MDC or structured fields are set.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The imperative 'always' has no modal verb. Vague: which context fields are expected is not listed."
+  },
+  {
+    "id": "CODE-31",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "Never log sensitive data or personally identifiable information (PII).",
+    "rule": "No log statement writes sensitive data such as secrets, tokens or credentials.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Semgrep rules for logging of password, token, secret, key variables; reviewer checks the rest.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The imperative 'never' has no modal verb; owners may want MUST. 'Sensitive data' is not defined. Overlaps OWASP-10."
+  },
+  {
+    "id": "CODE-32",
+    "source": "coding-guidelines.md#2.4 Logging",
+    "quote": "Never log sensitive data or personally identifiable information (PII).",
+    "rule": "No log statement writes personally identifiable information.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks logged fields against the CDM's personal data attributes.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Same note as CODE-31."
+  },
+  {
+    "id": "CODE-33",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "A shared exception-handling framework provides a base exception hierarchy and the core exceptions the project needs.",
+    "rule": "Code uses the shared exception-handling framework's base exception hierarchy.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks custom exceptions extend the shared base exception.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The framework is not named or linked in the sources."
+  },
+  {
+    "id": "CODE-34",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "- Be consistent. Consistent handling is essential to the application's usability and maintainability.",
+    "rule": "Exceptions are handled the same way throughout the component.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks a single global handler (for example @ControllerAdvice) maps exceptions to responses.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: 'consistent' has no reference."
+  },
+  {
+    "id": "CODE-35",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "- Account for the different exception sources: architecture exceptions, Java API exceptions from direct Java API calls, and exceptions from third-party libraries called directly by the application.",
+    "rule": "The exception strategy covers architecture exceptions, Java API exceptions and third-party library exceptions.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "docs"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the handler or design note addresses all three sources.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "CODE-36",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "- Identify base application exceptions and define how each is handled (e.g. the error message sent to the user).",
+    "rule": "Each base application exception has a defined handling, including the message returned to the user.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "docs"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks a mapping from each base exception or error code to response status and message.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "CODE-37",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "- Use a `finally` block or a try-with-resources statement to release resources.",
+    "rule": "Resources are released in a finally block or with try-with-resources.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Sonar java:S2095 (resources should be closed).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Strength taken from the lead sentence of the list."
+  },
+  {
+    "id": "CODE-38",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "- Prefer more specific exceptions over general ones.",
+    "rule": "Code throws specific exceptions, not generic ones such as Exception or RuntimeException.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Sonar java:S112 (generic exceptions should never be thrown).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "'Prefer' read as SHOULD although the list is introduced with 'must'. Tension with CODE-43."
+  },
+  {
+    "id": "CODE-39",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "- Document thrown exceptions in Javadoc comments.",
+    "rule": "Every exception a public method throws is documented with @throws in its Javadoc.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Checkstyle JavadocMethod with validateThrows.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Strength taken from the lead sentence of the list."
+  },
+  {
+    "id": "CODE-40",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "- Catch the most specific exception first.",
+    "rule": "Catch clauses are ordered from most specific to most general.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Java compiler plus Sonar java:S1181 for broad catches.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Strength taken from the lead sentence of the list."
+  },
+  {
+    "id": "CODE-41",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "- Never swallow a caught exception.",
+    "rule": "No catch block discards an exception without handling, rethrowing or logging it.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Sonar java:S108 and java:S1166.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Strength taken from the lead sentence of the list."
+  },
+  {
+    "id": "CODE-42",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "- Never log an exception and then re-throw it.",
+    "rule": "No catch block both logs an exception and rethrows it.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "Sonar java:S2139.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Strength taken from the lead sentence of the list."
+  },
+  {
+    "id": "CODE-43",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "**A single, system-wide exception class.** Rather than a separate class per exception type, one class extends `RuntimeException`.",
+    "rule": "The component uses one system-wide exception class that extends RuntimeException, not a class per exception type.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "ArchUnit: only the shared exception class extends RuntimeException in application packages.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Tension with CODE-38 (prefer specific exceptions); the error code enum (CODE-44) is what makes the single class specific."
+  },
+  {
+    "id": "CODE-44",
+    "source": "coding-guidelines.md#2.5 Exception Handling",
+    "quote": "Instead, use an enum to indicate the exception's type, with one enum per error category.",
+    "rule": "The exception type is given by an error code enum, one enum per error category, not by free-text messages.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the system-wide exception takes an enum error code.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The sentence is an imperative."
+  },
+  {
+    "id": "CODE-45",
+    "source": "coding-guidelines.md#2.6 Patterns",
+    "quote": "| API Gateway | Single entry point for all clients. Exposes the REST APIs, performs authentication and authorisation, transforms requests if needed, and forwards them to the appropriate microservices. |",
+    "rule": "Clients reach the component's REST APIs only through the API gateway, which performs authentication and authorisation.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks Helm chart exposes the service only through the gateway route, not a public ingress.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Overlaps SEC-12."
+  },
+  {
+    "id": "CODE-46",
+    "source": "coding-guidelines.md#2.6 Patterns",
+    "quote": "| Circuit breaker | Prevents a failing service from cascading failures to others. A client calls a remote service through a proxy; when the proxy detects the service is down it short-circuits and fails subsequent calls immediately, and resumes normal calls once the service recovers. |",
+    "rule": "Calls to remote services go through a circuit breaker.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer or Semgrep: outgoing HTTP clients are wrapped with a circuit breaker (for example Resilience4j).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Overlaps ARCH-34."
+  },
+  {
+    "id": "CODE-47",
+    "source": "coding-guidelines.md#2.6 Patterns",
+    "quote": "| DAO | Abstracts and encapsulates all access to the data source. The DAO manages the connection used to obtain and store data. |",
+    "rule": "All data source access goes through DAO (repository) classes.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "ArchUnit: only repository or DAO packages use JDBC, JPA EntityManager or database clients.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "CODE-48",
+    "source": "coding-guidelines.md#2.6 Patterns",
+    "quote": "| Dependency Injection | Spring Boot removes hard-coded dependencies, allowing them to be substituted at compile-time or run-time. |",
+    "rule": "Dependencies are wired by Spring Boot dependency injection, not hard-coded.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks beans are injected, not constructed.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Overlaps CODE-12. Assumes Spring Boot; other stacks are not covered."
+  },
+  {
+    "id": "CODE-49",
+    "source": "coding-guidelines.md#2.6 Patterns",
+    "quote": "| Externalized configuration | Lets a service run in multiple environments without code changes. Configuration is supplied at runtime by the platform. |",
+    "rule": "Environment-specific configuration is supplied at runtime, not hard-coded, so the same build runs in every environment.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Semgrep or gitleaks for hard-coded hosts, URLs and credentials; Helm values carry environment settings.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "CODE-50",
+    "source": "coding-guidelines.md#2.6 Patterns",
+    "quote": "| Log aggregation | Logs from all services are collected centrally for searching and viewing. |",
+    "rule": "The component's logs are collected by the central log aggregation.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the component logs to stdout in the agreed format so the cluster collector picks them up.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. How logs reach the central store is not stated."
+  },
+  {
+    "id": "CODE-51",
+    "source": "coding-guidelines.md#2.6 Patterns",
+    "quote": "| Messaging Gateway | Encapsulates messaging-specific code (sending and receiving messages) and isolates it from the rest of the application, so only the gateway knows about the messaging system. |",
+    "rule": "Only the messaging gateway classes depend on the messaging system's API.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "tool",
+    "check_hint": "ArchUnit: only the messaging gateway package imports org.apache.kafka or spring-kafka.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "CODE-52",
+    "source": "coding-guidelines.md#2.6 Patterns",
+    "quote": "| Standardized logging format | All services log in the same format. |",
+    "rule": "The component logs in the common Simpl-Open log format.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Compare the log encoder configuration with the agreed format.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Overlaps CODE-21; the format is not given in the sources."
+  },
+  {
+    "id": "CODE-53",
+    "source": "coding-guidelines.md#2.6 Patterns",
+    "quote": "| Tolerant reader | The calling service extracts only the fields it needs from a response. The called service need not know its callers' specifics and can add response fields without breaking them. |",
+    "rule": "Clients ignore unknown fields in responses and read only the fields they need.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Test feeds a response with an extra field and expects no failure (for example Jackson FAIL_ON_UNKNOWN_PROPERTIES off).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "CODE-54",
+    "source": "enforce-coding-and-development-guidelines.md#SMART Breakdown",
+    "quote": "Specific: All code contributions in Simpl-Open shall follow clearly documented guidelines covering formatting rules, naming conventions, modular design principles, error handling, and documentation expectations.",
+    "rule": "Every code contribution follows the documented guidelines for formatting, naming, modular design, error handling and documentation.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Covered by the CODE and ARCH rules; reviewer checks the parts that have no own rule.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Overlaps CODE-01 to CODE-44. Naming conventions per language and documentation expectations are not defined in the sources."
+  },
+  {
+    "id": "CODE-55",
+    "source": "enforce-coding-and-development-guidelines.md#SMART Breakdown",
+    "quote": "These rules apply across all relevant languages and frameworks used in the platform.",
+    "rule": "Every language and framework used in a component has documented formatting and lint rules.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer lists languages in the repository and checks each has a formatter or linter configured.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The coding guidelines cover Java, Angular and Vue only."
+  },
+  {
+    "id": "ARCH-01",
+    "source": "architecture-principles.md#Federation",
+    "quote": "Simpl-Open should federate data, infrastructure and applications.",
+    "rule": "The component works within a federation of autonomous participants and does not require central ownership of data, infrastructure or applications.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "docs"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the design has no hidden central dependency beyond the governance authority.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: 'federate' is not defined as a testable property."
+  },
+  {
+    "id": "ARCH-02",
+    "source": "architecture-principles.md#Modularity",
+    "quote": "The architecture of Simpl-Open needs to be defined in a modular way which allows the replacement or addition of components without affecting the rest of the system.",
+    "rule": "A component can be replaced or added without changes to other components.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks other components depend only on the component's published API and events.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "'needs to' read as MUST."
+  },
+  {
+    "id": "ARCH-03",
+    "source": "architecture-principles.md#Modularity",
+    "quote": "Through modularity, Simpl-Open users are able to deploy a specific subset of components that are tailored for their purposes.",
+    "rule": "The component can be deployed and run without components it does not need.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Deployment test installs the component with only its declared dependencies and checks it starts.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "ARCH-04",
+    "source": "architecture-principles.md#Loose Coupling",
+    "quote": "Components and services should have minimal dependencies on each other.",
+    "rule": "The component has minimal dependencies on other components.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer lists runtime dependencies (calls, topics, shared stores) and checks each is needed.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: 'minimal' has no measure."
+  },
+  {
+    "id": "ARCH-05",
+    "source": "architecture-principles.md#Loose Coupling",
+    "quote": "Standardised, business-oriented APIs make sure consumers are not impacted by changes to services.",
+    "rule": "The component's APIs are business-oriented and hide implementation details, so internal changes do not affect consumers.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks API schemas do not expose database or framework details.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "ARCH-06",
+    "source": "architecture-principles.md#Resilience",
+    "quote": "Components of the architecture must be fault tolerant, such that failures in one of them will have minimal impact on other components.",
+    "rule": "A failure of one component has minimal impact on other components.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Failure-injection test stops a dependency and checks the component stays up and reports a clear error.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: 'minimal impact' has no measure."
+  },
+  {
+    "id": "ARCH-07",
+    "source": "architecture-principles.md#Resilience",
+    "quote": "Single points of failure need to be avoided to the maximum extent possible as the main objective is achieving a distributed architecture.",
+    "rule": "The component has no single point of failure (for example it can run with more than one replica).",
+    "level": "MUST",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Helm chart allows replicaCount above 1 and has no single-instance state; reviewer checks.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "'need to' read as MUST. Vague: 'to the maximum extent possible'."
+  },
+  {
+    "id": "ARCH-08",
+    "source": "architecture-principles.md#Openness & Agnosticism",
+    "quote": "The open specification allows insights into all parts of the architecture without any proprietary claims.",
+    "rule": "The component's specification is open and free of proprietary claims.",
+    "level": "SHOULD",
+    "applies_to": [
+      "docs"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks specification and licence files (EUPL) and that no proprietary specification is required.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "ARCH-09",
+    "source": "architecture-principles.md#Openness & Agnosticism",
+    "quote": "Services should be provided irrespective of specific technologies and should be executable in all environments.",
+    "rule": "The service does not depend on a specific vendor technology.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks for cloud-vendor SDKs or managed services. Overlaps OPS-01.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "ARCH-10",
+    "source": "architecture-principles.md#Openness & Agnosticism",
+    "quote": "Services should be provided irrespective of specific technologies and should be executable in all environments.",
+    "rule": "The service runs in all target environments.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Deployment test on a standard Kubernetes cluster other than the development one.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: 'all environments' is not defined."
+  },
+  {
+    "id": "ARCH-11",
+    "source": "architecture-principles.md#Composability & Extensibility",
+    "quote": "Simpl-Open's architecture should allow services to deliver value to the business in different contexts, providing the necessary tools to facilitate their composition together with other services to form new aggregated services.",
+    "rule": "The service can be composed with other services into aggregated services.",
+    "level": "SHOULD",
+    "applies_to": [
+      "api-spec",
+      "docs"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the API is generic enough to be reused outside its first use case.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Vague: no criterion for composability."
+  },
+  {
+    "id": "ARCH-12",
+    "source": "architecture-principles.md#Composability & Extensibility",
+    "quote": "An open development community should be promoted in order to enable the contribution of new features that extend Simpl-Open's functionalities by its members.",
+    "rule": "An open development community is promoted.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on an artefact.",
+    "steps": [
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "ARCH-13",
+    "source": "architecture-principles.md#Interoperability",
+    "quote": "The architecture should describe the technical means to achieve this and be agnostic to the specific implementation details of each participant.",
+    "rule": "The component's documentation describes how it interoperates with participants, without assuming a participant's implementation.",
+    "level": "SHOULD",
+    "applies_to": [
+      "docs"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the docs describe protocols and contracts, not participant internals.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "ARCH-14",
+    "source": "architecture-principles.md#Scalability & Elasticity",
+    "quote": "Both vertical scaling [...] the practice of adding more resources to a single node [...] and horizontal scaling [...] the process of duplicating nodes [...] should be possible.",
+    "rule": "The component scales vertically through configurable resources.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Helm chart exposes resources.requests and resources.limits.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "ARCH-15",
+    "source": "architecture-principles.md#Scalability & Elasticity",
+    "quote": "Both vertical scaling [...] the practice of adding more resources to a single node [...] and horizontal scaling [...] the process of duplicating nodes [...] should be possible.",
+    "rule": "The component scales horizontally by adding replicas.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config",
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Test runs two replicas behind the service and checks requests succeed on both.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Depends on ARCH-29."
+  },
+  {
+    "id": "ARCH-16",
+    "source": "architecture-principles.md#Scalability & Elasticity",
+    "quote": "Simpl-Open's performance should be able to follow user demand without deteriorating.",
+    "rule": "Performance does not deteriorate as load grows, given scaling.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Load test with rising load and scaling checks response times stay within target.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: no performance target is given."
+  },
+  {
+    "id": "ARCH-17",
+    "source": "architecture-principles.md#Security, Privacy & Trust",
+    "quote": "Data confidentiality, availability and integrity must be guaranteed.",
+    "rule": "Data confidentiality is guaranteed.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks encryption in transit, access control and secret handling.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: 'guaranteed' has no measure; see OWASP rules."
+  },
+  {
+    "id": "ARCH-18",
+    "source": "architecture-principles.md#Security, Privacy & Trust",
+    "quote": "Data confidentiality, availability and integrity must be guaranteed.",
+    "rule": "Data integrity is guaranteed.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks validation, transactions and integrity protection in transit.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague."
+  },
+  {
+    "id": "ARCH-19",
+    "source": "architecture-principles.md#Security, Privacy & Trust",
+    "quote": "Data confidentiality, availability and integrity must be guaranteed.",
+    "rule": "Data availability is guaranteed.",
+    "level": "MUST",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks replicas, backups and recovery.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague. Overlaps ARCH-06 and ARCH-07."
+  },
+  {
+    "id": "ARCH-20",
+    "source": "architecture-principles.md#Security, Privacy & Trust",
+    "quote": "Privacy of data subjects, Simpl-Open users, or individuals must be assured.",
+    "rule": "Privacy of data subjects and users is assured.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks personal data in the CDM is minimised, protected and not logged.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: no privacy requirements are listed."
+  },
+  {
+    "id": "ARCH-21",
+    "source": "architecture-principles.md#Security, Privacy & Trust",
+    "quote": "Users of Simpl-Open must be confident that when they interact with other entities they are doing so in a secure and trustworthy environment and in full compliance with relevant regulations.",
+    "rule": "The component complies with relevant regulations.",
+    "level": "MUST",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on an artefact without a list of regulations.",
+    "steps": [
+      70
+    ],
+    "notes": "Vague: 'relevant regulations' are not named."
+  },
+  {
+    "id": "ARCH-22",
+    "source": "architecture-principles.md#Discoverability",
+    "quote": "All services that are deployed in Simpl-Open will be 'publicly' exposed and discoverable in a service registry or catalogue.",
+    "rule": "Every deployed service is registered and discoverable in the service registry or catalogue, visible to approved participants of the data space.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config",
+      "docs"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the component registers or is described in the catalogue.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. 'will' read as SHOULD. Which registry is meant is not stated."
+  },
+  {
+    "id": "ARCH-23",
+    "source": "architecture-principles.md#Discoverability",
+    "quote": "Services will adhere to a service description, providing interested parties with a clear understanding of their business purpose and technical interface.",
+    "rule": "Every service has a service description of its business purpose and technical interface.",
+    "level": "SHOULD",
+    "applies_to": [
+      "docs",
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the description exists (info.description and README).",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Overlaps API-48 and API-49."
+  },
+  {
+    "id": "ARCH-24",
+    "source": "architectural-patterns.md#Microservices Architecture",
+    "quote": "Breaks down applications into small, independently deployable services.",
+    "rule": "Each service can be built and deployed on its own.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config",
+      "pipeline"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the service has its own pipeline, image and Helm chart.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default."
+  },
+  {
+    "id": "ARCH-25",
+    "source": "architectural-patterns.md#Microservices Architecture",
+    "quote": "Each service focuses on a specific business capability and communicates via APIs, enhancing flexibility and scalability.",
+    "rule": "Each service covers one business capability.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "docs"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the service scope against one capability.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default. Vague: 'specific business capability' needs judgement."
+  },
+  {
+    "id": "ARCH-26",
+    "source": "architectural-patterns.md#Microservices Architecture",
+    "quote": "Each service focuses on a specific business capability and communicates via APIs, enhancing flexibility and scalability.",
+    "rule": "Services communicate only through APIs (REST or events), not through shared databases.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks each database is used by one service only.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default."
+  },
+  {
+    "id": "ARCH-27",
+    "source": "architectural-patterns.md#Event-Driven Architecture",
+    "quote": "Components communicate by producing and reacting to events, promoting loose coupling and scalability.",
+    "rule": "Components communicate by producing and reacting to events.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks state changes other components need are published as events.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default. Vague: when to use events instead of synchronous REST is not stated."
+  },
+  {
+    "id": "ARCH-28",
+    "source": "architectural-patterns.md#Asynchronous Communication",
+    "quote": "Allows components to interact without waiting for immediate responses.",
+    "rule": "Interactions that do not need an immediate answer are non-blocking (queues or background workers).",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks long-running work is queued, not held in a request.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default. Vague: no criterion for which interactions."
+  },
+  {
+    "id": "ARCH-29",
+    "source": "architectural-patterns.md#Stateless Design",
+    "quote": "Ensures each request is independent and self-contained, avoiding reliance on stored session data.",
+    "rule": "Each request is self-contained; the service keeps no session state between requests.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Test sends consecutive requests to different replicas and checks the same results; reviewer checks no HTTP session use.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default."
+  },
+  {
+    "id": "ARCH-30",
+    "source": "architectural-patterns.md#Least Privilege",
+    "quote": "Grants each user or service only the minimum level of access required to perform its tasks.",
+    "rule": "Each user and service has only the access it needs.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config",
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks roles, Kubernetes service account rights and database grants.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default. Overlaps OWASP-02."
+  },
+  {
+    "id": "ARCH-31",
+    "source": "architectural-patterns.md#Defence in Depth",
+    "quote": "Applies multiple layers of security controls throughout the system.",
+    "rule": "Security controls exist at more than one layer (network, gateway, service).",
+    "level": "SHOULD",
+    "applies_to": [
+      "config",
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the service also validates authorisation and input, not only the gateway.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default. Vague: no list of layers."
+  },
+  {
+    "id": "ARCH-32",
+    "source": "architectural-patterns.md#Zero Trust",
+    "quote": "Assumes no implicit trust in users or systems, whether inside or outside the network. Continuously verifies identities and enforces strict access controls before granting access to resources.",
+    "rule": "Every request, internal or external, is authenticated and authorised before access is granted.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Test calls the service from inside the cluster without credentials and expects 401 or 403.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default."
+  },
+  {
+    "id": "ARCH-33",
+    "source": "architectural-patterns.md#Retries",
+    "quote": "Automatically re-attempts failed operations after a delay, particularly useful in cases of transient failures.",
+    "rule": "Failed calls with transient errors are retried automatically after a delay.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks retry with backoff on outgoing calls (for example Resilience4j Retry, Spring Retry).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default."
+  },
+  {
+    "id": "ARCH-34",
+    "source": "architectural-patterns.md#Circuit Breakers",
+    "quote": "Monitors service calls and halts repeated failures by stopping requests to underperforming services.",
+    "rule": "Calls to underperforming services are stopped by a circuit breaker.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Same as CODE-46.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default. Overlaps CODE-46."
+  },
+  {
+    "id": "ARCH-35",
+    "source": "architectural-patterns.md#Graceful Degradation",
+    "quote": "Ensures that the system continues to provide limited or reduced functionality when some components fail.",
+    "rule": "When a dependency fails, the component keeps offering the functions that do not need it.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Failure-injection test stops one dependency and checks unrelated operations still work.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The patterns document gives no strength; it says they are 'applied consistently across Simpl-Open components'. SHOULD by default."
+  },
+  {
+    "id": "DATA-01",
+    "source": "data-modeling-guidelines.md#Data Modeling Guidelines",
+    "quote": "Three data models are produced while progressing from requirements to\nthe database that backs the system:",
+    "rule": "A Conceptual Data Model (CDM) exists for the component.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks a CDM diagram exists.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default. Overlaps API-01, which makes the CDM a MUST for each API."
+  },
+  {
+    "id": "DATA-02",
+    "source": "data-modeling-guidelines.md#Data Modeling Guidelines",
+    "quote": "Three data models are produced while progressing from requirements to\nthe database that backs the system:",
+    "rule": "A Logical Data Model (LDM) exists for a component that persists data.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks an LDM diagram exists when the component has a database.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-03",
+    "source": "data-modeling-guidelines.md#Data Modeling Guidelines",
+    "quote": "Three data models are produced while progressing from requirements to\nthe database that backs the system:",
+    "rule": "A Physical Data Model (PDM) exists for a component that persists data.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks a PDM diagram exists when the component has a database.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-04",
+    "source": "data-modeling-guidelines.md#Key principles",
+    "quote": "- **Business focus.** Describe the business domain, not technical\n  implementation. Focus on what the data means, not how it is stored or\n  transferred.",
+    "rule": "The CDM describes the business domain, not storage or transfer.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks entities and attributes are business terms.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-05",
+    "source": "data-modeling-guidelines.md#Key principles",
+    "quote": "- **No technical detail.** Do not include UUIDs, database keys, audit trails, or\n  security fields unless they have explicit business value.",
+    "rule": "The CDM contains no UUIDs, database keys, audit fields or security fields unless they have explicit business value.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer or script scans CDM attributes for uuid, id, createdAt, updatedAt, createdBy, password and similar.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-06",
+    "source": "data-modeling-guidelines.md#Key principles",
+    "quote": "- **Visual relationships.** Use associations and multiplicity to show\n  relationships, not redundant attributes.",
+    "rule": "Relationships in the CDM are shown as associations, not as attributes.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks no attribute duplicates an association (for example accountId next to an Account link).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-07",
+    "source": "data-modeling-guidelines.md#Key principles",
+    "quote": "- **Enumerate business states.** For fields like status or type, list the valid\n  business values (e.g. `status: OPEN, APPROVED, REJECTED`).",
+    "rule": "Every status or type attribute in the CDM lists its valid business values.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks status and type attributes have an enumeration.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-08",
+    "source": "data-modeling-guidelines.md#Key principles",
+    "quote": "- **Name relationships.** Label association lines with verbs where possible\n  (e.g. \"Account requests RoleAssignmentRequest\").",
+    "rule": "CDM associations are labelled with verbs where possible.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks association labels.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default. Vague: 'where possible'."
+  },
+  {
+    "id": "DATA-09",
+    "source": "data-modeling-guidelines.md#Step-by-step",
+    "quote": "1. **Identify business entities.** Use meaningful names (e.g. `User`, `Role`,\n   `CatalogueItem`). These are usually nouns with independent existence that the\n   business wants to track. Each becomes a UML class.",
+    "rule": "Each CDM entity is a UML class with a meaningful business noun as name.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the CDM is a UML class diagram with noun class names.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-10",
+    "source": "data-modeling-guidelines.md#Step-by-step",
+    "quote": "3. **Simplify data types.** No need for strict types (`int`, `varchar`). Use\n   general terms like `Money`, `Date`, or `Text` where a type is needed at all.",
+    "rule": "CDM attribute types are general business types (Money, Date, Text), not physical types such as int or varchar.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Script or reviewer flags physical type names in the CDM.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-11",
+    "source": "data-modeling-guidelines.md#Step-by-step",
+    "quote": "- Transform technical flags into business concepts (e.g. `status:\n     AccountStatus` instead of `enabled: boolean`).",
+    "rule": "The CDM uses business concepts instead of technical boolean flags.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer flags boolean attributes such as enabled or active.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-12",
+    "source": "data-modeling-guidelines.md#Step-by-step",
+    "quote": "- Rename generic timestamps to business events (e.g. `publicationDate`,\n     `expiryDate`).",
+    "rule": "CDM date attributes are named after business events, not generic timestamps.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer flags names such as timestamp, createdAt, updatedAt.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-13",
+    "source": "data-modeling-guidelines.md#Step-by-step",
+    "quote": "- Indicate multiplicity (e.g. `1..1`, `1..*`, `0..1`).",
+    "rule": "Every CDM association shows its multiplicity at both ends.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks multiplicities on every association.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-14",
+    "source": "data-modeling-guidelines.md#Anti-patterns",
+    "quote": "- Do not include API mechanics (`...Request`, `...Response`, DTOs).",
+    "rule": "The CDM contains no API mechanics such as request, response or DTO classes.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer flags classes that model API calls.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default. A name check on 'Request' would wrongly flag the guideline's own good example 'RoleAssignmentRequest', which is a business entity."
+  },
+  {
+    "id": "DATA-15",
+    "source": "data-modeling-guidelines.md#Anti-patterns",
+    "quote": "- Do not mix technical and business concepts in the same model.",
+    "rule": "The CDM does not mix technical and business concepts.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer judgement.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default. Overlaps DATA-04 and DATA-05."
+  },
+  {
+    "id": "DATA-16",
+    "source": "data-modeling-guidelines.md#Anti-patterns",
+    "quote": "- Do not duplicate attributes and relationships.",
+    "rule": "No attribute or relationship appears twice in the CDM.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks for duplicates.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default. Overlaps DATA-06."
+  },
+  {
+    "id": "DATA-17",
+    "source": "data-modeling-guidelines.md#Logical Data Model (LDM)",
+    "quote": "Represent the LDM as a UML class diagram with:",
+    "rule": "The LDM is a UML class diagram.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the notation.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-18",
+    "source": "data-modeling-guidelines.md#Logical Data Model (LDM)",
+    "quote": "- Attributes shown on each class, named in `snake_case`.",
+    "rule": "LDM attributes are shown on each class and named in snake_case.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "tool",
+    "check_hint": "Script checks attribute names match ^[a-z][a-z0-9_]*$ when the model is in a machine-readable form.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default. Differs from the lowerCamelCase of API properties (API-13); the mapping between the two is not described."
+  },
+  {
+    "id": "DATA-19",
+    "source": "data-modeling-guidelines.md#Logical Data Model (LDM)",
+    "quote": "- Logical data types and identifying attributes (candidate keys) declared.",
+    "rule": "LDM attributes have logical data types and each class declares its candidate keys.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks types and keys on each class.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-20",
+    "source": "data-modeling-guidelines.md#Logical Data Model (LDM)",
+    "quote": "- Associations with multiplicities; resolve many-to-many associations into\n  association classes where the relationship carries its own data.",
+    "rule": "LDM associations show multiplicities.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks multiplicities.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-21",
+    "source": "data-modeling-guidelines.md#Logical Data Model (LDM)",
+    "quote": "- Associations with multiplicities; resolve many-to-many associations into\n  association classes where the relationship carries its own data.",
+    "rule": "Many-to-many associations that carry their own data are resolved into association classes.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks many-to-many links with attributes.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-22",
+    "source": "data-modeling-guidelines.md#Physical Data Model (PDM)",
+    "quote": "Represent the PDM as a UML class diagram using UML relationship notation, where:\n\n- Each table is a UML class.",
+    "rule": "The PDM is a UML class diagram with one class per table.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer compares PDM classes with the database migration scripts.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-23",
+    "source": "data-modeling-guidelines.md#Physical Data Model (PDM)",
+    "quote": "- Table columns are modelled as UML attributes with physical types.",
+    "rule": "PDM columns are attributes with physical database types.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer compares with the schema.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-24",
+    "source": "data-modeling-guidelines.md#Physical Data Model (PDM)",
+    "quote": "- Primary keys and foreign keys are modelled as UML attributes/operations as\n  appropriate to the modelling tool.",
+    "rule": "The PDM shows primary and foreign keys.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks keys against the schema.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default."
+  },
+  {
+    "id": "DATA-25",
+    "source": "data-modeling-guidelines.md#Physical Data Model (PDM)",
+    "quote": "- Indexes and other physical access structures are declared where relevant.",
+    "rule": "The PDM declares indexes and other access structures where relevant.",
+    "level": "SHOULD",
+    "applies_to": [
+      "data-model"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer compares with indexes in the migrations.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The data modelling guidelines are written as descriptions and imperatives without modal verbs (except 'must' in Considerations). SHOULD by default. Vague: 'where relevant'."
+  },
+  {
+    "id": "DATA-26",
+    "source": "data-modeling-guidelines.md#Considerations",
+    "quote": "CDMs must go hand in hand with Contract definitions. Each domain change entails:\n\n- Updating the CDM / domain model (conceptual).",
+    "rule": "Every domain change updates the CDM.",
+    "level": "MUST",
+    "applies_to": [
+      "data-model",
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks merge requests that change API schemas also change the CDM.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "DATA-27",
+    "source": "data-modeling-guidelines.md#Considerations",
+    "quote": "- Updating the affected Contract / API.",
+    "rule": "Every domain change updates the affected API contract.",
+    "level": "MUST",
+    "applies_to": [
+      "api-spec",
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks merge requests that change the CDM also change the API definitions.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "DATA-28",
+    "source": "data-modeling-guidelines.md#Considerations",
+    "quote": "- Updating the technical and architecture documentation and specifications\n  where that model is referenced.",
+    "rule": "Every domain change updates the documentation that references the model.",
+    "level": "MUST",
+    "applies_to": [
+      "docs",
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer searches docs for the changed entities.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "DATA-29",
+    "source": "data-modeling-guidelines.md#Considerations",
+    "quote": "The CDM and the APIs must evolve together, maintaining a single versioned\nsource of truth.",
+    "rule": "The CDM and the APIs are versioned together from one source of truth.",
+    "level": "MUST",
+    "applies_to": [
+      "data-model",
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks CDM and API files live in the same repository and version.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "Vague: where the single source of truth lives is not stated."
+  },
+  {
+    "id": "SEC-01",
+    "source": "coding-guidelines.md#3. Secure Development Guidelines",
+    "quote": "Security must be considered no later than the design and development phases.",
+    "rule": "Security is addressed in the design, before or during development.",
+    "level": "MUST",
+    "applies_to": [
+      "docs",
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the component design has a security section (threats, controls).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "SEC-02",
+    "source": "coding-guidelines.md#3. Secure Development Guidelines",
+    "quote": "The Secure Development Guideline document contains the coding practices every developer must follow to produce source code free of flaws and avoidable attack vectors.",
+    "rule": "Code follows the coding practices of the Secure Development Guideline document.",
+    "level": "MUST",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Cannot be checked until the document is available.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The Secure Development Guideline document is not in the sources and is not linked. Overlaps OWASP-01."
+  },
+  {
+    "id": "SEC-03",
+    "source": "security.md#Introduction and Perimeter of Intervention",
+    "quote": "Every Participant: Each participant is required to have local IT security plans and implement measures for their personnel, IT systems, and local deployment of the Simpl-Open agent.",
+    "rule": "Each participant has a local IT security plan covering personnel, IT systems and its agent deployment.",
+    "level": "MUST",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on a component artefact.",
+    "steps": [
+      70
+    ],
+    "notes": "Applies to participants, not to the build."
+  },
+  {
+    "id": "SEC-04",
+    "source": "security.md#Introduction and Perimeter of Intervention",
+    "quote": "Simpl-Open agent: Each agent includes features to comply with the Simpl-Open IT Security Plan, ensuring alignment with the product’s security requirements.",
+    "rule": "The agent's features comply with the Simpl-Open IT Security Plan.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "none",
+    "check_hint": "Cannot be checked until the IT Security Plan is available.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The Simpl-Open IT Security Plan is not in the sources."
+  },
+  {
+    "id": "SEC-05",
+    "source": "security.md#Functional Security",
+    "quote": "| 1 | Tier 1 Access Control | All | RBAC (Role Based Access Control) |",
+    "rule": "Tier 1 access control is role based (RBAC).",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Test calls protected operations with and without the required role.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The table lists features 'already introduced'; read as the expected design. Details are in ACVs outside the sources."
+  },
+  {
+    "id": "SEC-06",
+    "source": "security.md#Functional Security",
+    "quote": "| 2 | Tier 2 Access Control | Governance Authority (Management) | ABAC (Attribute Based Access Control) |",
+    "rule": "Tier 2 access control is attribute based (ABAC) on identity attributes.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Test calls Tier 2 operations with and without the required identity attribute.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "SEC-07",
+    "source": "security.md#Functional Security",
+    "quote": "| 6 | Tier 1 Authentication | All | Tier 1 Authentication Provider (OpenID Connect) |",
+    "rule": "Tier 1 user authentication uses OpenID Connect through the Tier 1 Authentication Provider (Keycloak).",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config",
+      "api-spec"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the API declares an openIdConnect or oauth2 scheme and the service validates Keycloak tokens.",
+    "steps": [
+      21,
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Technical Security table row 4 names Keycloak."
+  },
+  {
+    "id": "SEC-08",
+    "source": "security.md#Functional Security",
+    "quote": "| 9 | Communication | All | Encryption<br>Integrity<br>Authentication |",
+    "rule": "Agent-to-agent communication is encrypted.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Test checks agent-to-agent calls use TLS.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Overlaps API-25."
+  },
+  {
+    "id": "SEC-09",
+    "source": "security.md#Functional Security",
+    "quote": "| 9 | Communication | All | Encryption<br>Integrity<br>Authentication |",
+    "rule": "Agent-to-agent communication is integrity protected.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Same TLS test (TLS gives integrity).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "SEC-10",
+    "source": "security.md#Functional Security",
+    "quote": "| 9 | Communication | All | Encryption<br>Integrity<br>Authentication |",
+    "rule": "Agent-to-agent communication is mutually authenticated (mTLS).",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Test checks a call without a client certificate is refused by the Tier 2 gateway.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "SEC-11",
+    "source": "security.md#Functional Security",
+    "quote": "| 10 | Logging | All | Logging<br>Monitoring<br>Reporting |",
+    "rule": "The component's logs feed the central monitoring service (ELK).",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks log shipping to the ELK monitoring service.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Vague: the business-logging specification is still being migrated (SIMPL-33642). Overlaps CODE-50 and OWASP-10."
+  },
+  {
+    "id": "SEC-12",
+    "source": "security.md#Technical Security",
+    "quote": "| 2 | Tier 1 Authorisation | All | Spring Cloud Gateway |",
+    "rule": "Tier 1 authorisation is enforced at the Spring Cloud Gateway.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks gateway routes and rules exist for every exposed operation.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Overlaps CODE-45."
+  },
+  {
+    "id": "SEC-13",
+    "source": "security.md#Technical Security",
+    "quote": "| 3 | Tier 2 Authorisation | Governance Authority | Spring Cloud Gateway |",
+    "rule": "Tier 2 authorisation is enforced at the Spring Cloud Gateway.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks Tier 2 gateway rules for every agent-to-agent operation.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "SEC-14",
+    "source": "security.md#Deployment Consideration",
+    "quote": "Next to the above features implemented as part of the Simpl-Open\nproduct, every participant should consider the following typical\ninfrastructure deployment practices (outside of Simpl-Open scope),",
+    "rule": "Participants consider DMZ, IDS, firewall, VPN and a 2-3 tier deployment for their node.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on a component artefact.",
+    "steps": [
+      70
+    ],
+    "notes": "Outside Simpl-Open scope by the source's own words."
+  },
+  {
+    "id": "SEC-15",
+    "source": "security.md#Initial version (current release)",
+    "quote": "is triggered in\nany HTTP call performed by the mTLS HTTP Client (the only option for\nthe current release) to try to establish\na mTLS connection.",
+    "rule": "Agent-to-agent HTTP calls are made through the mTLS HTTP client.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks outgoing calls to other agents use the shared mTLS client.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. SEC-15 to SEC-21 apply only to components that call other agents or implement the Tier 2 gateway."
+  },
+  {
+    "id": "SEC-16",
+    "source": "security.md#Initial version (current release)",
+    "quote": "The caller mTLS client uses the Tier 2 Authentication Provider to retrieve a valid Ephemeral Proof\n    1. if it already exists, from the agent cache.\n    2. if not present in the cache, a new proof is then requested from the Authority and stored in the cache for subsequent calls until it expires.",
+    "rule": "The caller takes the ephemeral proof from the cache, or requests a new one from the Authority and caches it until it expires.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Test: two calls in a row make one proof request to the Authority.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "SEC-17",
+    "source": "security.md#Initial version (current release)",
+    "quote": "the caller agent performs always a credential check (OCSP request) to the Authority Identity Provider.",
+    "rule": "The caller always performs an OCSP credential check against the Authority Identity Provider.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Test with a mocked OCSP responder counts one check per call.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The enhanced version caches this check instead; only the current release is turned into rules."
+  },
+  {
+    "id": "SEC-18",
+    "source": "security.md#Initial version (current release)",
+    "quote": "the called agent Tier 2 Authentication Gateway performs a credential check (OCSP request) to the Authority Identity Provider only if no validated proof associated with the credential's public key is found in his cache.",
+    "rule": "The called gateway performs an OCSP check only when no validated proof for the credential's public key is cached.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Test: second call with the same credential makes no new OCSP request.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "SEC-19",
+    "source": "security.md#Initial version (current release)",
+    "quote": "The caller agent always sends the ephemeral proof to be validated\n    1. the called agent checks the cache to see if the proof was already validated (if true step 3.b is not performed).\n    2. the proof is validated and stored in the cache with a TTL (Time To Live) calculated according to its expiration time.",
+    "rule": "The called agent validates a proof not yet in its cache and caches it with a TTL derived from the proof's expiry.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Test: expired proof is rejected; cached proof is not validated again before its TTL ends.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "SEC-20",
+    "source": "security.md#Initial version (current release)",
+    "quote": "after that ABAC policies are enforced and passed, and the request is processed.",
+    "rule": "A request is processed only after the ABAC policies have passed.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Test: a valid mTLS call without the required identity attribute is refused.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "SEC-21",
+    "source": "security.md#Initial version (current release)",
+    "quote": "However, if the target endpoint does not belong to a Simpl-Open agent,\nthe communication fallback to standard HTTPS(TLS)",
+    "rule": "When the target is not a Simpl-Open agent, the client falls back to standard HTTPS.",
+    "level": "SHOULD",
+    "applies_to": [
+      "code"
+    ],
+    "check": "test",
+    "check_hint": "Test: call to a non-agent HTTPS endpoint succeeds over TLS without client authentication.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Vague: how the client decides that an endpoint is not an agent is not stated for the current release; a silent fallback could also hide a misconfigured agent."
+  },
+  {
+    "id": "SEC-22",
+    "source": "security.md#Principles of Operations Security: Technical Accounts for Administration",
+    "quote": "The administration of the Simpl-Open agent requires technical accounts\nthat are allowed to:\n\n- Perform the first configuration of the agent\n- Create the accounts for managing the operations of the agent components.",
+    "rule": "Agent administration (first configuration, creation of operations accounts) is done with technical accounts.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config",
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the install documentation creates technical admin accounts and does not use personal accounts.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "SEC-23",
+    "source": "security.md#Principles of Operations Security: Technical Accounts for Administration",
+    "quote": "this structure should be tailored to the business and technical organisation of each participant, where rights are assigned to roles, and roles are assigned to people.",
+    "rule": "Administrative rights are assigned to roles, and roles to people, never rights directly to people.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config",
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the default account structure uses roles.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "OPS-01",
+    "source": "devsecops.md#Planning and Design of Clusters",
+    "quote": "To avoid vendor-lock-in, it is proposed to avoid using managed services on OVH like managed databases.",
+    "rule": "The component does not depend on OVH managed services such as managed databases.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks Helm values and Terraform for OVH managed service references.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "'it is proposed' read as SHOULD. Overlaps ARCH-09."
+  },
+  {
+    "id": "OPS-02",
+    "source": "devsecops.md#Planning and Design of Clusters",
+    "quote": "| Dev | The development stage is where new features and enhancements are developed and tested; Isolated Simpl product teams dev environments (opt: connected to feature branches); No involvement in commercial applications. | Synthetic, manually created data per dev test to conduct functional testing of the individual product.",
+    "rule": "Tests in the development stage use synthetic data.",
+    "level": "SHOULD",
+    "applies_to": [
+      "tests"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks test fixtures are synthetic.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-03",
+    "source": "devsecops.md#Planning and Design of Clusters",
+    "quote": "May use sanitised production data. The sanitisation process will ensure no sensitive information will be used.",
+    "rule": "Production data used in integration or pre-prod is sanitised so no sensitive information remains.",
+    "level": "SHOULD",
+    "applies_to": [
+      "tests",
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks the sanitisation step for any production-derived dataset.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-04",
+    "source": "devsecops.md#Environment Onboarding Process",
+    "quote": "If a Dev-Team needs a new environment for any stage, they need to create an issue in the following GitLab repo: `Simpl/Operations/Environment-onboarding`.",
+    "rule": "New environments are requested through an issue in Simpl/Operations/Environment-onboarding.",
+    "level": "MUST",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on a component artefact.",
+    "steps": [
+      70
+    ],
+    "notes": "'need to' read as MUST."
+  },
+  {
+    "id": "OPS-05",
+    "source": "devsecops.md#Security Checks",
+    "quote": "*WHEN*: SAST is performed on every commit/merge",
+    "rule": "The pipeline runs SAST on every commit and merge.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect .gitlab-ci.yml: a SAST job runs on push and merge request pipelines.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The text names Fortify; the tool choice is not part of the rule. Overlaps OWASP-12."
+  },
+  {
+    "id": "OPS-06",
+    "source": "devsecops.md#Security Checks",
+    "quote": "A quality gate set in Fortify must be met for\nthe pipeline to merge the code to the main branch.",
+    "rule": "Code is merged to main only when the SAST quality gate passes.",
+    "level": "MUST",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect pipeline: the SAST job is blocking (no allow_failure) for merges to main.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "OPS-07",
+    "source": "devsecops.md#Security Checks",
+    "quote": "*WHEN*: SCA is performed on every commit/merge",
+    "rule": "The pipeline runs SCA (dependency scanning) on every commit and merge.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect .gitlab-ci.yml: an SCA or dependency scanning job runs on push and merge request pipelines.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-08",
+    "source": "devsecops.md#Security Checks",
+    "quote": "*WHEN*: container scanning is performed in the development lifecycle\nat every branch and i every commit/merge",
+    "rule": "The pipeline scans container images on every branch, commit and merge.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect .gitlab-ci.yml: a container scanning job (for example Trivy) runs on all branches.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-09",
+    "source": "devsecops.md#Security Checks",
+    "quote": "*WHEN*: at the end of the development lifecycle, after e2e testing.\n\n*WHAT*: DAST is performed on the Agents.\n\n*WHERE*: DAST is performed in the pre-prod environment",
+    "rule": "DAST runs on the integrated agents in pre-prod after end-to-end testing.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on a component artefact; the release record shows the DAST report.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-10",
+    "source": "devsecops.md#Kubernetes best practices",
+    "quote": "Inside the Kubernetes cluster ingress and egress isolation for pod level according to the specific needs of the cluster are used.",
+    "rule": "The component's deployment defines pod-level ingress and egress network policies.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Helm chart renders NetworkPolicy objects covering ingress and egress (helm template plus kubeconform or Polaris).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-11",
+    "source": "devsecops.md#Kubernetes best practices",
+    "quote": "Secret Management: Usage of Kubernetes Secrets and/or Vault to store sensitive data securely.",
+    "rule": "Sensitive runtime data is stored in Kubernetes Secrets or Vault, not in plain configuration.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "gitleaks on the repository; reviewer checks Helm values reference Secrets for credentials.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-12",
+    "source": "devsecops.md#Kubernetes best practices",
+    "quote": "Secrets used in the pipeline are stored in an external tool like Vault;",
+    "rule": "Pipeline secrets are held in an external secret store such as Vault, not in the repository.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "gitleaks on .gitlab-ci.yml and repository history.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-13",
+    "source": "devsecops.md#Kubernetes best practices",
+    "quote": "Service Accounts: Usage of Service Accounts to authenticate and authorise pods;",
+    "rule": "Pods run with a dedicated Kubernetes service account.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Helm chart sets serviceAccountName to a chart-created account, not 'default'.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-14",
+    "source": "devsecops.md#Kubernetes best practices",
+    "quote": "Image Scanning: The integrity and security of container images are verified before deployment in the pipeline;",
+    "rule": "Container images are scanned before they are deployed.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Pipeline runs the image scan before the deploy or release job.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Overlaps OPS-08."
+  },
+  {
+    "id": "OPS-15",
+    "source": "devsecops.md#GitFlow",
+    "quote": "Artefacts should be versioned according to the Semantic Versioning\nConcept.",
+    "rule": "Every released artefact (jar, image, Helm chart) has a Semantic Versioning version.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline",
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Check pom version, image tag and Chart.yaml version match SemVer 2.0.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "OPS-16",
+    "source": "devsecops.md#GitFlow",
+    "quote": "The project uses GitFlow, as a branching strategy for Git repositories",
+    "rule": "The repository follows GitFlow with main, develop, feature/*, release and hotfix branches.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks branch names.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-17",
+    "source": "devsecops.md#GitFlow",
+    "quote": "In GitLab (code.europa.eu) the main and develop branches are set up as\nprotected.",
+    "rule": "The main and develop branches are protected.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Check GitLab protected branch settings.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-18",
+    "source": "devsecops.md#GitFlow",
+    "quote": "Merge to main can be initiated from develop, release and\nhotfix.",
+    "rule": "Merges to main come only from develop, release or hotfix branches.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Check merge request source branches into main.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. Worded as a permission ('can'); read as the only allowed sources."
+  },
+  {
+    "id": "OPS-19",
+    "source": "devsecops.md#GitFlow",
+    "quote": "Develop is only allowed to merge code from\nfeature/* (for instance feature/SIMPL-1234).",
+    "rule": "Merges to develop come only from feature/* branches.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Check merge request source branches into develop.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. 'only allowed' is strong wording but has no modal verb; owners may want MUST. Note release and hotfix changes also need to reach develop, which this rule does not allow."
+  },
+  {
+    "id": "OPS-20",
+    "source": "devsecops.md#GitFlow",
+    "quote": "hotfix: Forked from tags of the main branch used for urgent fixes.",
+    "rule": "Hotfix branches are created from a tag on main.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Check hotfix branch base.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-21",
+    "source": "devsecops.md#GitFlow",
+    "quote": "Developers remove release and hotfix following the merge of the\nupdated code to main.",
+    "rule": "Release and hotfix branches are deleted after they are merged to main.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Check no merged release or hotfix branches remain.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-22",
+    "source": "devsecops.md#GitFlow",
+    "quote": "Developers remove the\nfeature branch after merging to develop.",
+    "rule": "Feature branches are deleted after they are merged to develop.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Check no merged feature branches remain (or 'delete source branch' is set).",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-23",
+    "source": "devsecops.md#CI/CD Pipeline",
+    "quote": "- Perform Unit Testing: Execute automated tests to verify individual components of the codebase for correctness;",
+    "rule": "The pipeline runs the unit tests on every build.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline",
+      "tests"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect .gitlab-ci.yml for a blocking unit test job.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-24",
+    "source": "devsecops.md#CI/CD Pipeline",
+    "quote": "- Perform Quality Testing with Sonar: Perform static code analysis to identify code quality issues and technical debt;",
+    "rule": "The pipeline runs Sonar static code analysis.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect .gitlab-ci.yml for a sonar job.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-25",
+    "source": "devsecops.md#CI/CD Pipeline",
+    "quote": "- Build and Push Docker Image: Create a Docker image from the application and push it to the GitLab Container registry;",
+    "rule": "The pipeline builds the container image and pushes it to the GitLab container registry.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect .gitlab-ci.yml for build and push to $CI_REGISTRY.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-26",
+    "source": "devsecops.md#CI/CD Pipeline",
+    "quote": "- Perform Image Scan and produce SBOM: Scan the Docker image for vulnerabilities and compliance issues using Trivy, list all dependencies created with Trivy and Fortify;",
+    "rule": "The pipeline produces an SBOM for the image.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect .gitlab-ci.yml for an SBOM artefact (for example trivy --format cyclonedx).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-27",
+    "source": "devsecops.md#CI/CD Pipeline",
+    "quote": "- Release reports, Java package and Helm Chart: Update the version, package and release a Helm chart for Kubernetes deployments in the GitLab Package Registry;",
+    "rule": "The pipeline releases the component's Helm chart to the GitLab Package Registry.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect .gitlab-ci.yml for helm package and push to the project package registry.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-28",
+    "source": "devsecops.md#Helm Charts",
+    "quote": "Component development teams release their component by a Helm Chart.",
+    "rule": "Each component is released as a Helm chart.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Chart.yaml present; helm lint passes.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-29",
+    "source": "devsecops.md#Helm Charts",
+    "quote": "This is ensured by\nthe configuration of Helm Charts in a hierarchical manner (Agent level\nconfiguration overwrites component level configuration).",
+    "rule": "Component chart values can be overridden from the agent-level chart.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks environment-specific settings are chart values, not hard-coded templates.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-30",
+    "source": "devsecops.md#Argo CD",
+    "quote": "Deployment Strategies: Choose deployment strategies for each application, such as rolling updates or blue-green deployments.",
+    "rule": "Each deployment declares its deployment strategy.",
+    "level": "SHOULD",
+    "applies_to": [
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Rendered Deployment has spec.strategy set.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. The sentence is an imperative."
+  },
+  {
+    "id": "OPS-31",
+    "source": "devsecops.md#Step 2: Infrastructure Deprovisioning",
+    "quote": "This can be done exclusively by the admins of the DevSecOps team for\neach environment.",
+    "rule": "Only DevSecOps admins destroy environment infrastructure.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on a component artefact.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OPS-32",
+    "source": "devsecops.md#Step 2: Infrastructure Deprovisioning",
+    "quote": "Any necessary data must be backed up before this process is\nstarted.",
+    "rule": "Necessary data is backed up before infrastructure is destroyed.",
+    "level": "MUST",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on a component artefact.",
+    "steps": [
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "OPS-33",
+    "source": "enforce-coding-and-development-guidelines.md#SMART Breakdown",
+    "quote": "Measurable: Compliance shall be assessed using automated tools such as linters, code formatters, and static analysis tools integrated in the CI/CD pipeline.",
+    "rule": "The pipeline runs linters, formatter checks and static analysis.",
+    "level": "MUST",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect .gitlab-ci.yml for lint, format-check and static analysis jobs.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Overlaps CODE-02 and OPS-24."
+  },
+  {
+    "id": "OPS-34",
+    "source": "enforce-coding-and-development-guidelines.md#SMART Breakdown",
+    "quote": "Achievable: Guidelines shall be made available in a central, version-controlled location (e.g. Confluence or Git), and automatically enforced via pre-commit hooks, CI/CD jobs, or merge gate checks.",
+    "rule": "Guidelines are kept in a central, version-controlled location.",
+    "level": "MUST",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on a component artefact.",
+    "steps": [
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "OPS-35",
+    "source": "enforce-coding-and-development-guidelines.md#SMART Breakdown",
+    "quote": "Achievable: Guidelines shall be made available in a central, version-controlled location (e.g. Confluence or Git), and automatically enforced via pre-commit hooks, CI/CD jobs, or merge gate checks.",
+    "rule": "Guideline violations block the merge automatically (pre-commit hook, CI job or merge gate).",
+    "level": "MUST",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Lint and format jobs are blocking and required for merge.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "OPS-36",
+    "source": "enforce-coding-and-development-guidelines.md#SMART Breakdown",
+    "quote": "Timely: Guidelines shall be finalised before major development milestones and reviewed quarterly.",
+    "rule": "Guidelines are reviewed every quarter.",
+    "level": "MUST",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on a component artefact.",
+    "steps": [
+      70
+    ],
+    "notes": "Vague: 'major development milestones' are not named."
+  },
+  {
+    "id": "OPS-37",
+    "source": "enforce-coding-and-development-guidelines.md#SMART Breakdown",
+    "quote": "Enforcement mechanisms must be included in CI/CD from early phases and refined iteratively.",
+    "rule": "Guideline enforcement is in the pipeline from the first pipeline version of the component.",
+    "level": "MUST",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks lint and format jobs exist from the first pipeline commit.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": ""
+  },
+  {
+    "id": "OWASP-01",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown",
+    "quote": "Specific: The system must comply with OWASP Top Ten security guidelines, including input validation, secure authentication, injection prevention, and secure data storage.",
+    "rule": "The component complies with the OWASP Top Ten.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Covered by OWASP-02 to OWASP-11.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Overlaps the NFR14 description ('shall enforce secure coding practices by adhering to OWASP Top Ten principles') and SEC-02. NFR14 names no OWASP version."
+  },
+  {
+    "id": "OWASP-02",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown + OWASP Top 10 A01:2021 Broken Access Control",
+    "quote": "Specific: The system must comply with OWASP Top Ten security guidelines, including input validation, secure authentication, injection prevention, and secure data storage.",
+    "rule": "Every operation enforces access control on the server side; users cannot act outside their permissions.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Black-box tests per operation with missing, wrong-role and other-owner credentials expect 401 or 403; Semgrep for unprotected endpoints.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Category from OWASP Top 10:2021. NFR14 names no version; 2021 is used as the last edition the factory can quote with certainty. Strength from 'must comply'. Overlaps ARCH-30 and SEC-05."
+  },
+  {
+    "id": "OWASP-03",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown + OWASP Top 10 A02:2021 Cryptographic Failures",
+    "quote": "Specific: The system must comply with OWASP Top Ten security guidelines, including input validation, secure authentication, injection prevention, and secure data storage.",
+    "rule": "Sensitive data is protected with sound cryptography in transit and at rest (secure data storage).",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Semgrep crypto rules (weak algorithms, hard-coded keys); TLS config check.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Category from OWASP Top 10:2021. NFR14 names no version; 2021 is used as the last edition the factory can quote with certainty. Strength from 'must comply'. Maps NFR14 'secure data storage'."
+  },
+  {
+    "id": "OWASP-04",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown + OWASP Top 10 A03:2021 Injection",
+    "quote": "Specific: The system must comply with OWASP Top Ten security guidelines, including input validation, secure authentication, injection prevention, and secure data storage.",
+    "rule": "All untrusted input is validated and never reaches an interpreter (SQL, LDAP, OS, template) without parameterisation or encoding.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "SAST rules for injection; Bean Validation on request DTOs; Semgrep for string-built queries.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Category from OWASP Top 10:2021. NFR14 names no version; 2021 is used as the last edition the factory can quote with certainty. Strength from 'must comply'. Maps NFR14 'input validation' and 'injection prevention'."
+  },
+  {
+    "id": "OWASP-05",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown + OWASP Top 10 A04:2021 Insecure Design",
+    "quote": "Specific: The system must comply with OWASP Top Ten security guidelines, including input validation, secure authentication, injection prevention, and secure data storage.",
+    "rule": "The design addresses threats (threat model, secure design patterns) before implementation.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks a threat model or security section exists in the design.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Category from OWASP Top 10:2021. NFR14 names no version; 2021 is used as the last edition the factory can quote with certainty. Strength from 'must comply'. Overlaps SEC-01."
+  },
+  {
+    "id": "OWASP-06",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown + OWASP Top 10 A05:2021 Security Misconfiguration",
+    "quote": "Specific: The system must comply with OWASP Top Ten security guidelines, including input validation, secure authentication, injection prevention, and secure data storage.",
+    "rule": "The component ships with secure defaults: no default credentials, no unneeded features, hardened headers and error output.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Helm chart and container checks (Polaris, Trivy config); DAST.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Category from OWASP Top 10:2021. NFR14 names no version; 2021 is used as the last edition the factory can quote with certainty. Strength from 'must comply'."
+  },
+  {
+    "id": "OWASP-07",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown + OWASP Top 10 A06:2021 Vulnerable and Outdated Components",
+    "quote": "Specific: The system must comply with OWASP Top Ten security guidelines, including input validation, secure authentication, injection prevention, and secure data storage.",
+    "rule": "No dependency or base image has known vulnerabilities above the agreed threshold.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "SCA and image scanning in the pipeline (Trivy, dependency scanning).",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Category from OWASP Top 10:2021. NFR14 names no version; 2021 is used as the last edition the factory can quote with certainty. Strength from 'must comply'. Overlaps OPS-07 and OPS-08. The threshold is not stated."
+  },
+  {
+    "id": "OWASP-08",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown + OWASP Top 10 A07:2021 Identification and Authentication Failures",
+    "quote": "Specific: The system must comply with OWASP Top Ten security guidelines, including input validation, secure authentication, injection prevention, and secure data storage.",
+    "rule": "Authentication is done through the platform identity provider; no custom password handling, and sessions and tokens are validated.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "test",
+    "check_hint": "Tests with expired, tampered and missing tokens expect 401.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Category from OWASP Top 10:2021. NFR14 names no version; 2021 is used as the last edition the factory can quote with certainty. Strength from 'must comply'. Maps NFR14 'secure authentication'. Overlaps SEC-07."
+  },
+  {
+    "id": "OWASP-09",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown + OWASP Top 10 A08:2021 Software and Data Integrity Failures",
+    "quote": "Specific: The system must comply with OWASP Top Ten security guidelines, including input validation, secure authentication, injection prevention, and secure data storage.",
+    "rule": "Code, dependencies, images and data received are integrity checked; no unsafe deserialisation of untrusted data.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Pipeline uses pinned, verified dependencies; Semgrep for unsafe deserialisation.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Category from OWASP Top 10:2021. NFR14 names no version; 2021 is used as the last edition the factory can quote with certainty. Strength from 'must comply'."
+  },
+  {
+    "id": "OWASP-10",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown + OWASP Top 10 A09:2021 Security Logging and Monitoring Failures",
+    "quote": "Specific: The system must comply with OWASP Top Ten security guidelines, including input validation, secure authentication, injection prevention, and secure data storage.",
+    "rule": "Security-relevant events (logins, access denials, input validation failures) are logged and monitored.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "review",
+    "check_hint": "Reviewer checks security events are logged at the right level and reach monitoring.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Category from OWASP Top 10:2021. NFR14 names no version; 2021 is used as the last edition the factory can quote with certainty. Strength from 'must comply'. Overlaps CODE-31, CODE-32 and SEC-11."
+  },
+  {
+    "id": "OWASP-11",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown + OWASP Top 10 A10:2021 Server-Side Request Forgery",
+    "quote": "Specific: The system must comply with OWASP Top Ten security guidelines, including input validation, secure authentication, injection prevention, and secure data storage.",
+    "rule": "Outgoing requests to URLs taken from input are validated against an allow list.",
+    "level": "MUST",
+    "applies_to": [
+      "code",
+      "config"
+    ],
+    "check": "tool",
+    "check_hint": "Semgrep SSRF rules on HTTP clients using request data.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Category from OWASP Top 10:2021. NFR14 names no version; 2021 is used as the last edition the factory can quote with certainty. Strength from 'must comply'."
+  },
+  {
+    "id": "OWASP-12",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown",
+    "quote": "Measurable: Measured through security code reviews, automated security scanning (e.g., SonarQube), and penetration testing results.",
+    "rule": "The pipeline runs automated security scanning.",
+    "level": "SHOULD",
+    "applies_to": [
+      "pipeline"
+    ],
+    "check": "tool",
+    "check_hint": "Inspect .gitlab-ci.yml for a security scanning job.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. NFR14 names SonarQube; devsecops.md names Fortify for SAST, SCA and DAST and Trivy for images. Overlaps OPS-05."
+  },
+  {
+    "id": "OWASP-13",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown",
+    "quote": "Measurable: Measured through security code reviews, automated security scanning (e.g., SonarQube), and penetration testing results.",
+    "rule": "Security code reviews are done.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "review",
+    "check_hint": "Merge request review records a security check.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "OWASP-14",
+    "source": "secure-coding-guidelines-owasp-top-ten.md#SMART Breakdown",
+    "quote": "Measurable: Measured through security code reviews, automated security scanning (e.g., SonarQube), and penetration testing results.",
+    "rule": "Penetration tests are run and their results recorded.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on a component artefact; the release record shows it.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "UX-01",
+    "source": "uis-must-follow-ux-guidelines.md#SMART Breakdown",
+    "quote": "Specific: Simpl-Open shall ensure that all user interfaces (UIs) adhere to established UX guidelines to enhance user experience, consistency, and ease of use.",
+    "rule": "Every user interface follows the established UX guidelines.",
+    "level": "MUST",
+    "applies_to": [
+      "ui"
+    ],
+    "check": "review",
+    "check_hint": "Cannot be checked until the UX guidelines are available.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "Vague: the 'established UX guidelines' are not in the sources and not linked. Repeats the NFR15 description."
+  },
+  {
+    "id": "UX-02",
+    "source": "uis-must-follow-ux-guidelines.md#SMART Breakdown",
+    "quote": "Measurable: The adherence to the UX guidelines will be measured by conducting usability testing, gathering user feedback, and performing evaluations to assess consistency and usability.",
+    "rule": "UI adherence is measured with usability testing, user feedback and evaluations.",
+    "level": "SHOULD",
+    "applies_to": [
+      "ui",
+      "process"
+    ],
+    "check": "test",
+    "check_hint": "Usability test record per UI release.",
+    "steps": [
+      50,
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default. 'will be measured' read as SHOULD."
+  },
+  {
+    "id": "UX-03",
+    "source": "uis-must-follow-ux-guidelines.md#SMART Breakdown",
+    "quote": "Achievable: Achieved by working with a UX team to establish comprehensive guidelines and conducting user testing with tools like Figma or Sketch for prototype validation.",
+    "rule": "UI prototypes are validated with user testing before build.",
+    "level": "SHOULD",
+    "applies_to": [
+      "ui",
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on a component artefact.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  },
+  {
+    "id": "UX-04",
+    "source": "uis-must-follow-ux-guidelines.md#SMART Breakdown",
+    "quote": "Timely: Implemented during the design phase and continuously refined based on user feedback and usability testing throughout the lifecycle.",
+    "rule": "UX guidelines are applied from the design phase and refined from user feedback.",
+    "level": "SHOULD",
+    "applies_to": [
+      "process"
+    ],
+    "check": "none",
+    "check_hint": "Not checkable on a component artefact.",
+    "steps": [
+      70
+    ],
+    "notes": "The source gives no strength (no must, should or may); SHOULD by default."
+  }
+]

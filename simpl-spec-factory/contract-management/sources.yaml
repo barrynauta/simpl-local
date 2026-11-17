@@ -1,0 +1,26 @@
+# Step 10 manifest: where the input set of this component comes from.
+# collect_specs.py builds a new, dated input set from it; --verify compares it with specs/.
+component: Contract Management
+stories:
+  # Every live story of the Jira component (cancelled ones left out).
+  jql: 'project = SIMPL AND component = "Contract Management" AND issuetype = Story AND status not in ("PBI Cancelled", Cancelled)'
+api:
+  - name: contract-manager-be
+    project: simpl/simpl-open/governance/contract-management/contract-lifecycle-management/contract-manager/contract-manager-be
+    ref: b6c32c0
+    path: openapi
+    exclude: [values-routes.yaml]   # Helm route values, not a specification
+  - name: contract-ui-be
+    project: simpl/simpl-open/governance/contract-management/contract-lifecycle-management/contract-manager/contract-ui-be
+    ref: b639f7d
+    path: openapi
+  - name: contract-consumption-adapter-be
+    project: simpl/simpl-open/integration/resource-sharing/resource-sharing-runtime/resource-consumption/contract-consumption-adapter-be
+    ref: 6845f63
+    path: openapi
+    context_only: true   # no story describes it
+functional:
+  - project: simpl/simpl-open/foundations/business-processes
+    ref: 8090f32
+    paths: [bp07-establish-usage-contract, bp10-provider-bills-consumer-based-resource-consumption]
+    exclude: ["media/*", "media"]

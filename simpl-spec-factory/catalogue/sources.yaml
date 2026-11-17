@@ -1,0 +1,27 @@
+# Step 10 manifest: where the input set of this component comes from.
+component: Catalogue
+stories:
+  jql: 'project = SIMPL AND component in ("Federated Catalogue", "Search", "XSFC Components") AND issuetype = Story AND status not in ("PBI Cancelled", Cancelled)'
+api:
+  - name: catalogue-be
+    project: simpl/simpl-open/integration/resource-discovery/resource-catalogue/federated-catalogue/catalogue-be
+    ref: fab79eb
+    path: openapi
+    exclude: ["*-legacy.yaml"]
+    entry: [tier1-gateway/t1-fc-openapi.yaml, tier2-gateway/t2-fc-openapi.yaml]   # where the operations are; the rest is references or -itb copies
+  - name: query-mapper-adapter-be
+    project: simpl/simpl-open/integration/resource-discovery/search-engine/catalogue-search/query-mapper-adapter-be
+    ref: b395914
+    path: openapi
+    exclude: ["*-legacy.yaml"]
+    entry: [tier1-gateway/t1-adapter-openapi.yaml, tier2-gateway/t2-adapter-openapi.yaml]
+  - name: catalogue-client-be
+    project: simpl/simpl-open/integration/resource-discovery/search-engine/catalogue-search/catalogue-client-be
+    ref: 5b4c4c6
+    path: openapi
+    entry: [openapi-xfscadvsearch-tier1-v2.yaml]   # v1 kept for context
+functional:
+  - project: simpl/simpl-open/foundations/business-processes
+    ref: 8090f32
+    paths: [bp05b-provider-manages-resource-descriptions, bp06-consumer-searches-resources]
+    exclude: ["media/*", "media"]

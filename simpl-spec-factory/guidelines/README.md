@@ -21,6 +21,10 @@ Frozen copies, collected **2026-11-17**. Do not refresh them in place: a new cop
 
 Images under `media/` are not copied; the rules come from the text.
 
+## Result of step 11 (17 Nov 2026)
+
+277 rules: API 80, CODE 55, OPS 37, ARCH 35, DATA 29, SEC 23, OWASP 14, UX 4. MUST 84, SHOULD 192, MAY 1 (many sources have no modal verb, so the default SHOULD applies, with a note). Check type: tool 93, test 44, review 125, none 15. Conflicts, vague rules and the documents the sources refer to but that are not here are listed at the end of [`rules.md`](./rules.md). OWASP: NFR14 names no version; Top 10:2021 was used, to be confirmed.
+
 ## Not here yet
 
 - **The PSO Development Handbook** (v1.8, with the PSO coding guidelines). It is not published, so a copy belongs in `sources/_private/` (gitignored) and its rules get the prefix `HB-`. Without it, step 11 covers the published guidelines only.
