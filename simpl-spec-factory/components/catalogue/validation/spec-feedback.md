@@ -1,6 +1,6 @@
 # Spec feedback: Catalogue
 
-Step 29 of the spec factory, assembled on 17 Nov 2026 by `spec-factory/pipeline/build_feedback.py` (engine 0cbc4c6). For the owners of the stories, the API definitions, the CDMs and the business process. Every point cites the ids it is about and the question that needs an answer; the full evidence is in the linked files.
+Step 29 of the spec factory, assembled on 17 Nov 2026 by `spec-factory/pipeline/build_feedback.py` (engine 608dc73). For the owners of the stories, the API definitions, the CDMs and the business process. Every point cites the ids it is about and the question that needs an answer; the full evidence is in the linked files.
 
 **What this is.** An automated reading of the published specifications, as a builder would read them, before anything is built. A finding says where two careful readers would build different things, or where a builder would have to guess. It is not a judgement on the people who wrote the specs: most points are normal for specifications written by several teams over time.
 
