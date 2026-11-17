@@ -18,7 +18,18 @@ import yaml
 
 FACTORY = Path(__file__).resolve().parent.parent
 METHODS = ("get", "put", "post", "patch", "delete", "head", "options")
-CLAUSE = re.compile(r"^\*{0,2}(Given|When|Then|And|But)\*{0,2}\s+(.*)$", re.I)
+KW = r"(?:[Gg]iven|[Ww]hen|[Tt]hen|[Aa]nd|[Bb]ut|[Oo]r|GIVEN|WHEN|THEN|AND|BUT|OR)"
+# A clause starts with a keyword in bold (any case), or plain with a capital letter. A lowercase
+# plain "when" or "then" is prose (a note), not a clause.
+CLAUSE = re.compile(r"^(?:\*{1,2}`?(" + KW + r")`?\*{1,2}|`(" + KW + r")`|((?:Given|When|Then|And|But|Or|GIVEN|WHEN|THEN|AND|BUT|OR)))[:,]?\s+(.*)$")
+GROUP = re.compile(r"^(?:#+\s*)?\**\s*((?:(?:positive|negative|happy|unhappy|error|edge|alternative|alternate)\s+)?"
+                   r"(?:scenarios|cases|paths|flows)|(?:positive|negative|happy|unhappy|error|edge|alternative)\s+(?:case|path|flow))"
+                   r"\s*:?\s*\**\s*:?$", re.I)
+NUM_HEAD = re.compile(r"^(?:#{2,5}\s*|\*\*)\s*(\d+)[.)]\s+(.+?)\**:?$")
+MD_HEAD = re.compile(r"^#{2,5}\s+(.+)$")
+STOP = re.compile(r"(?i)^(implementation|technical|tech\b|scope|out of scope|in scope|definition of done|dependencies|"
+                  r"assumptions|design|api details|endpoint|non-functional|nfr|test data|open questions|references)")
+URL = re.compile(r"https?://\S+")
 # An AC or scenario heading: "AC1 - ...", "### AC2", "**AC3: ...**", "Scenario 2 - ...",
 # "**Positive Scenario 1:**", "Negative Scenarios:".
 AC_HEAD = re.compile(
@@ -37,8 +48,8 @@ def clean(line):
 
 
 def unlist(line):
-    """Drop a leading list marker ("- " or "* ")."""
-    return re.sub(r"^[-*]\s+", "", clean(line))
+    """Drop a leading list marker ("- ", "* " or "1. ")."""
+    return re.sub(r"^(?:[-*]|\d+\.)\s+", "", clean(line))
 
 
 def struck(line):
@@ -52,8 +63,18 @@ def unstrike(line):
     s = unlist(line).strip()
     if struck(line):
         s = s.strip("*").strip()[1:-1].strip()
-    s = re.sub(r"^\*?-?\*?(Given|When|Then|And|But)-?\*?\*?", lambda m: "**" + m.group(1) + "**", s, flags=re.I)
+    if struck(line):  # keyword emphasis inside a strike: *-*Given*-* and the like
+        s = re.sub(r"^\*?-?\*?(Given|When|Then|And|But|Or)-?\*?\*?", lambda m: "**" + m.group(1) + "**", s, flags=re.I)
     return s
+
+
+def clause(line):
+    """(keyword, text) if the line is a Given/When/Then clause, else None."""
+    m = CLAUSE.match(unstrike(line))
+    if not m:
+        return None
+    kw = (m.group(1) or m.group(2) or m.group(3)).capitalize()
+    return kw, m.group(4)
 
 
 def parse_story(path):
@@ -74,9 +95,10 @@ def parse_story(path):
 
     user_story = {}
     for ln in body:
-        m = re.match(r"^\*\*(As an?|I want|So that)\*\*\s*(.*)", clean(ln), re.I)
+        m = re.match(r"^(?:\*\*)?(As an?|I want|So that)(?:\*\*)?[,:]?\s+(.*)", clean(ln), re.I) or \
+            re.match(r"^\|+\s*(As an?|I want|So that)\s*\|\s*([^|]+?)\s*\|", clean(ln), re.I)
         if m:
-            user_story[m.group(1).lower().replace("as an", "as a")] = m.group(2).strip()
+            user_story.setdefault(m.group(1).lower().replace("as an", "as a"), m.group(2).strip())
 
     acs, issues = [], []
     cur = None
@@ -97,42 +119,84 @@ def parse_story(path):
                "group": group, "clauses": [], "other_text": []}
 
     last_kw = None
-    for raw in body:
+    in_list = False   # the last clause ends with ":" and a list follows
+    pending = ""      # a plain heading or table title waiting for the scenario under it
+    stopped = False   # inside a non-criteria section (implementation scope, technical notes)
+    # Clauses before the "Acceptance Criteria" marker belong to the description, if the marker exists.
+    marker = next((i for i, ln in enumerate(body)
+                   if re.match(r"^#*\s*\**Acceptance Criteria\**:?\\?$", clean(ln), re.I)), None)
+    for idx, raw in enumerate(body):
         ln = clean(raw)
-        if not ln or ln.startswith("## Description") or re.match(r"^#*\s*\**Acceptance Criteria\**:?$", ln, re.I):
+        if not ln or ln.startswith("## Description"):
+            continue
+        if re.match(r"^#*\s*\**Acceptance Criteria\**:?$", ln, re.I):
+            stopped = False
+            continue
+        if marker is not None and idx < marker:
+            continue
+        if GROUP.match(ln) and not clause(ln):
+            close()
+            group, last_kw, stopped = ln.strip("*#:- ").strip(), None, False
+            continue
+        nh = NUM_HEAD.match(ln)
+        if nh and not clause(nh.group(2)):
+            new_ac(f"AC{nh.group(1)}", True, heading=ln.strip("*#- ").strip())
+            last_kw, stopped = None, False
             continue
         h = AC_HEAD.match(ln)
-        if h and not CLAUSE.match(unstrike(ln)) and re.search(r"scenarios\b", h.group("label"), re.I):
-            # "Negative Scenarios:" groups the scenarios that follow; it is not one itself.
+        if h and not clause(ln) and re.search(r"scenarios\b", h.group("label"), re.I):
             close()
-            group = ln.strip("*#:- ").strip()
-            last_kw = None
+            group, last_kw, stopped = ln.strip("*#:- ").strip(), None, False
             continue
-        if h and not CLAUSE.match(unstrike(ln)):
+        if h and not clause(ln):
             num = h.group("num") or h.group("snum")
             label = f"AC{num}" if num else None
             new_ac(label, bool(num), strike=bool(h.group("strike")) or struck(ln),
                    heading=ln.strip("*#- ").strip())
-            last_kw = None
+            last_kw, stopped = None, False
+            continue
+        mh = MD_HEAD.match(ln) or re.match(r"^\*\*([^*]{3,80})\*\*:?$", ln)
+        if mh and not clause(ln):
+            title = mh.group(1).strip("*: ")
+            if STOP.match(title):
+                close()
+                stopped, pending = True, ""
+            else:
+                pending = title
+            continue
+        if ln.startswith("|") and re.search(r"(?i)\b(scenario|AC\s*\d)", ln):
+            pending = ln.strip("| ").split("|")[0].strip()
+            continue
+        if stopped:
             continue
         is_struck = struck(ln)
-        c = CLAUSE.match(unstrike(ln))
+        c = clause(ln)
         if c:
-            kw = c.group(1).capitalize()
+            kw, ctext = c
             # An "And" or "Then" before any scenario continues the user story ("So that ... And ..."):
             # not an acceptance criterion.
             if cur is None and kw not in ("Given", "When"):
-                user_story.setdefault("extra", []).append(c.group(2).strip())
+                user_story.setdefault("extra", []).append(ctext.strip())
                 continue
             # A Given after a Then (or the first clause) starts a new, unlabelled scenario.
-            if cur is None or (kw == "Given" and last_kw in ("Then", "And", "But") and
-                               any(x["kw"] == "Then" for x in cur["clauses"])):
-                new_ac(None, False, strike=is_struck)
-            cur["clauses"].append({"kw": kw, "text": c.group(2).strip().rstrip("-").strip(), "struck": is_struck})
+            if cur is None or (kw == "Given" and last_kw in ("Then", "And", "But", "Or") and
+                               any(x["kw"] == "Then" for x in cur["clauses"])) or (
+                    cur["clauses"] and pending and kw == "Given"):
+                new_ac(None, False, strike=is_struck, heading=pending)
+            elif not cur["heading"] and pending:
+                cur["heading"] = pending
+            pending = ""
+            cur["clauses"].append({"kw": kw, "text": ctext.strip().rstrip("-").strip(), "struck": is_struck})
             last_kw = kw
+            in_list = ctext.rstrip().endswith(":")
             continue
         if cur is not None and cur["clauses"]:
-            cur["other_text"].append(ln)
+            if re.match(r"^(?:[-*]|\d+\.)\s+", ln) and in_list:
+                # A list that finishes a clause ("the following fields are available:") belongs to it.
+                cur["clauses"][-1].setdefault("items", []).append(unlist(ln))
+            else:
+                cur["other_text"].append(ln)
+                in_list = False
     close()
 
     # A heading with no clauses, followed by another heading, labels a group ("Positive Scenarios").
@@ -188,13 +252,16 @@ def parse_story(path):
         if a["struck"]:
             issues.append(f"{a['id']}: struck through in Jira, left out of the live count")
 
-    plain_text = text.replace("\\{", "{").replace("\\}", "}")
+    plain_text = URL.sub(" ", text.replace("\\{", "{").replace("\\}", "}"))
+    plain_text = re.sub(r"<([A-Za-z_]\w*)>", r"{\1}", plain_text)
     refs = {
         "stories": sorted(set(STORY_KEY.findall(text)) - {key}),
         "paths": sorted(set(p for p in PATH_REF.findall(plain_text) if len(p) > 3 and not p.startswith("//"))),
         "method_paths": sorted(set(f"{m.upper()} {p}" for m, p in re.findall(
             r"\b(GET|POST|PUT|PATCH|DELETE)\s+(/[\w{}\-/]+)", plain_text, re.I))),
         "bp_steps": sorted(set(re.findall(r"\bBP\s?\d+[A-Z]?(?:\.\d+)*\b", text))),
+        "api_method_paths": sorted(set(f"{a} {m.upper()} {p}" for a, m, p in re.findall(
+            r"\b([a-z][a-z0-9-]+-be)\b\s*:?\s*\b(GET|POST|PUT|PATCH|DELETE)\s+(/[\w{}\-/]+)", plain_text))),
     }
     return {
         "key": key, "title": title, "kind": kind, "replaced": replaced,
@@ -241,8 +308,10 @@ def parse_openapi(path, api_name):
 
 
 def parse_bp(folder):
+    """A business process: a folder of sub-process files, or one file (folder may be a file)."""
     reqs, procs, issues = [], [], []
-    for f in sorted(folder.glob("*.md")):
+    files = [folder] if folder.is_file() else sorted(folder.glob("*.md"))
+    for f in files:
         text = f.read_text(encoding="utf-8")
         title = next((ln[2:].strip() for ln in text.splitlines() if ln.startswith("# ")), f.stem)
         m = re.match(r"(BP\d+\w*|\d+[A-Z]?(?:\.\d+)*)\s*[-–—:]\s*(.*)", title)
@@ -257,6 +326,44 @@ def parse_bp(folder):
                 reqs.append({"id": f"BP{r.group(1)}", "process": pid, "title": r.group(2).strip(),
                              "text": desc, "details_url": link.group(1) if link else "",
                              "file": str(f.relative_to(FACTORY))})
+        # Single-file processes: steps "### BP02B.01 - Create new vocabulary", requirements in the
+        # "High-level requirements" table "| 2B.1 | title | SIMPL-15931 | link |" and their descriptions.
+        for ln in text.splitlines():
+            st = re.match(r"^#{2,4}\s*(BP\d+[A-Z]?\.\d+)\s*[-–—:]?\s*(.+)$", ln)
+            if st:
+                reqs.append({"id": st.group(1), "process": pid, "kind": "step", "title": st.group(2).strip(),
+                             "text": "", "details_url": "", "file": str(f.relative_to(FACTORY))})
+            tr = re.match(r"^\|\s*(\d+[A-Z]?\.\d+(?:\.\d+)*)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*)\|", ln)
+            if tr and not any(q["id"] == f"BP{tr.group(1)}" for q in reqs):
+                link = re.search(r"\]\(([^)]*)\)", tr.group(4))
+                reqs.append({"id": f"BP{tr.group(1)}", "process": pid, "kind": "requirement",
+                             "title": tr.group(2).strip().rstrip("."), "text": "",
+                             "issue": tr.group(3).strip(), "details_url": link.group(1) if link else "",
+                             "file": str(f.relative_to(FACTORY))})
+            dl = re.match(r"^\s*[-*]\s+(\d+[A-Z]?\.\d+\.\d+)\s*[-–—]\s*(.+)$", ln)
+            if dl and not any(q["id"] == f"BP{dl.group(1)}" for q in reqs):
+                reqs.append({"id": f"BP{dl.group(1)}", "process": pid, "kind": "detailed requirement",
+                             "title": dl.group(2).strip(), "text": "", "details_url": "",
+                             "file": str(f.relative_to(FACTORY))})
+        # Requirement descriptions: "**2B.1 - title** (SIMPL-n)" followed by the paragraph.
+        lines = text.splitlines()
+        for i, ln in enumerate(lines):
+            d = re.match(r"^\*\*(\d+[A-Z]?\.\d+(?:\.\d+)*)\s*[-–—]\s*(.+?)\*\*", ln)
+            if d:
+                q = next((q for q in reqs if q["id"] == f"BP{d.group(1)}"), None)
+                para = next((x.strip() for x in lines[i + 1:i + 4] if x.strip()), "")
+                if q is not None and not q["text"]:
+                    q["text"] = para
+        # Text of each step, from its heading to the next heading.
+        for q in reqs:
+            if q.get("kind") == "step" and q["file"] == str(f.relative_to(FACTORY)):
+                i = next(i for i, ln in enumerate(lines) if re.match(r"^#{2,4}\s*" + re.escape(q["id"]), ln))
+                body = []
+                for ln in lines[i + 1:]:
+                    if ln.startswith("#"):
+                        break
+                    body.append(ln.strip())
+                q["text"] = " ".join(x for x in body if x)[:600]
         mine = [q for q in reqs if q["file"] == str(f.relative_to(FACTORY))]
         if f.name != "README.md" and "dynamic-view" not in f.name and not mine:
             issues.append(f"{f.relative_to(FACTORY)}: no detailed requirements found")
@@ -272,13 +379,15 @@ def parse_bp(folder):
 
 
 def main():
-    if len(sys.argv) != 2:
+    args = [a for a in sys.argv[1:] if not a.startswith("--out=")]
+    outs = [a[6:] for a in sys.argv[1:] if a.startswith("--out=")]
+    if len(args) != 1:
         sys.exit(__doc__)
-    comp = FACTORY / sys.argv[1]
+    comp = FACTORY / args[0]
     specs = comp / "specs"
     if not specs.is_dir():
         sys.exit(f"no specs folder: {specs}")
-    out = comp / "inventory"
+    out = Path(outs[0]) if outs else comp / "inventory"
     out.mkdir(exist_ok=True)
 
     issues = []
@@ -314,7 +423,10 @@ def main():
         reqs += r
         issues += iss
     for f in sorted(func.glob("*.md")) if func.is_dir() else []:
-        issues.append(f"{f.relative_to(FACTORY)}: single-file process, not parsed into requirements")
+        p, r, iss = parse_bp(f)
+        procs += p
+        reqs += r
+        issues += iss
 
     # Mechanical cross-references only: what the texts literally name.
     op_by_path = {}
@@ -322,25 +434,46 @@ def main():
         for o in a["operations"]:
             norm = re.sub(r"\{[^}]+\}", "{}", o["path"])
             op_by_path.setdefault(norm, []).append(o["id"])
+    api_names = {a["name"] for a in apis}
     for s in stories:
-        hits, mismatch = set(), []
-        named = {re.sub(r"\{[^}]+\}", "{}", mp.split(" ", 1)[1]): mp.split(" ", 1)[0] for mp in s["refs"]["method_paths"]}
+        hits, notes = set(), []
+        # "catalogue-client-be GET /x": that API only.
+        scoped = {}
+        for amp in s["refs"].get("api_method_paths", []):
+            api, m, p = amp.split(" ", 2)
+            scoped[re.sub(r"\{[^}]+\}", "{}", p.rstrip("/"))] = (api, m)
+        named = {}
+        for mp in s["refs"]["method_paths"]:
+            m, p = mp.split(" ", 1)
+            named.setdefault(re.sub(r"\{[^}]+\}", "{}", p.rstrip("/")), set()).add(m)
         for p in s["refs"]["paths"]:
             norm = re.sub(r"\{[^}]+\}", "{}", p.rstrip("/"))
             ops = op_by_path.get(norm, [])
-            if norm in named:  # the story names the method too: only that one counts
-                same = [o for o in ops if o.split(":", 1)[1].startswith(named[norm] + " ")]
-                if ops and not same:
-                    mismatch.append(f"{named[norm]} {p}")
+            if norm in scoped:
+                api, m = scoped[norm]
+                same = [o for o in ops if o == f"{api}:{m} {o.split(' ', 1)[1]}" and o.startswith(api + ":")]
+                if not same:
+                    where = f"{api} entry files" if api in api_names else f"this input set ({api} is not an API here)"
+                    notes.append(f"names {api} {m} {p}, which is not in the {where}")
+                hits.update(same)
+                continue
+            if norm in named:  # the story names the method too: only those count
+                same = [o for o in ops if o.split(":", 1)[1].split(" ", 1)[0] in named[norm]]
+                for m in sorted(named[norm]):
+                    if not [o for o in same if o.split(":", 1)[1].startswith(m + " ")]:
+                        notes.append(f"names {m} {p}, " + ("but the OpenAPI has that path with another method"
+                                                          if ops else "which is in no API entry file"))
                 ops = same
+            elif len(ops) > 1:
+                notes.append(f"names {p} without a method; {len(ops)} operations have that path, all linked")
             hits.update(ops)
         s["refs"]["operations"] = sorted(hits)
-        for m in mismatch:
-            issues.append(f"{s['key']}: names {m}, but the OpenAPI has that path with another method")
+        for n in notes:
+            issues.append(f"{s['key']}: {n}")
 
     live_acs = [a for s in stories for a in s["acs"] if not a["struck"]]
     summary = {
-        "component": sys.argv[1],
+        "component": args[0],
         "stories": len(stories),
         "stories_replaced": sum(s["replaced"] for s in stories),
         "stories_without_ac": sum(1 for s in stories if not [a for a in s["acs"] if not a["struck"]]),

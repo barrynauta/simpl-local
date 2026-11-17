@@ -1,0 +1,961 @@
+[
+ {
+  "id": "F-001",
+  "target": "SIMPL-27998/AC2",
+  "check": "AC-C02",
+  "severity": "major",
+  "finding": "The rejection names no status code. The publish operation offers several error statuses, so a tester cannot write the assertion. The error text in the technical details covers only the overall score, not a failing dimension.",
+  "evidence": "SIMPL-27998/AC2: \"an explicit error is returned explaining the reason (reached score value and threshold)\"; technical details: \"Error message: \\\"Quality Score X is below treshold Y.\\\"\"; catalogue-be POST /self-descriptions/resource responses 400, 409, 422.",
+  "question": "Which status code and which message does a quality rejection return, for an overall-score failure and for a dimension-score failure?",
+  "options": [
+   "422 Unprocessable Entity with the score and threshold in the problem detail",
+   "400 Bad Request with the same detail"
+  ],
+  "from_20a": [
+   "AC-W05"
+  ]
+ },
+ {
+  "id": "F-002",
+  "target": "SIMPL-27998/AC3",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "AC2 says a rejected description is not stored; AC3 says only that it is not published. A builder can read AC3 either way. The technical error also has no status and \"the failure reason is logged\" has no observable oracle.",
+  "evidence": "SIMPL-27998/AC2: \"the resource description is not stored\"; SIMPL-27998/AC3: \"the resource description is not published in the catalogue / an explicit technical error is returned / the failure reason is logged.\"",
+  "question": "On a technical failure of the quality assessment, is the description stored (unpublished) or not stored at all, and which status is returned?",
+  "options": [
+   "not stored, 500 or 503 returned",
+   "stored as unpublished, error returned"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-003",
+  "target": "SIMPL-27998",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "The technical details list an invalid-QAR scenario and an endpoint-failure scenario that no criterion describes as an outcome; AC3 only gives a missing threshold as an example. It is also not said which metadata quality definition applies when several schemas have their own active profile.",
+  "evidence": "Technical details: \"Cover pass, reject, invalid-QAR, endpoint-failure, and configuration-error scenarios\"; SIMPL-27998/AC1: \"the overall threshold defined in the metadata quality definition\"; catalogue-client-be GET /schemas/{schemaName}/qualityProfiles/active (one profile per schema).",
+  "question": "Does an invalid QAR or an unreachable scoring endpoint fall under AC3, and is the threshold taken from the active profile of the description's schema?",
+  "from_20a": []
+ },
+ {
+  "id": "F-004",
+  "target": "cross",
+  "ids": [
+   "SIMPL-29292/AC2",
+   "SIMPL-29293/AC2"
+  ],
+  "check": "AC-C03",
+  "severity": "blocker",
+  "finding": "The scale of the score is open. The quick-search API example uses a fraction (overallScore 0.92, minimumScore 0.8), the advanced-search example uses minimumScore 75, and the classification note uses percent ranges. A test with minimum score 75 passes under one reading and returns nothing under the other.",
+  "evidence": "SIMPL-29292/AC2, SIMPL-29293/AC2: \"overallScore greater than or equal to the minimum score\"; query-mapper-adapter-be GET /governanceAuthority/selfDescriptions example minimumScore 0.8, overallScore 0.92; POST /selfDescriptions/advancedSearch example minimumScore: 75; SIMPL-29292/AC3 note: \"\\\"Sufficient\\\": 40-70 %\".",
+  "question": "Is the score a fraction from 0 to 1 or a percentage from 0 to 100, and what is the upper bound the UI accepts?",
+  "options": [
+   "0 to 1",
+   "0 to 100"
+  ],
+  "from_20a": [
+   "AC-W05"
+  ]
+ },
+ {
+  "id": "F-005",
+  "target": "SIMPL-29292/AC3",
+  "check": "AC-C03",
+  "severity": "blocker",
+  "finding": "Classifications and their order come from \"the active MQP\", but a quick search has no schema, and each schema has its own active profile. The UI cannot know which list of classifications to offer, nor which ranges order them.",
+  "evidence": "SIMPL-29292/AC3 note: \"defined and named by the Governance Authority as part of the active Metadata Quality Profile (MQP)\"; catalogue-client-be GET /schemas/{schemaName}/qualityProfiles/active (per schema name).",
+  "question": "For quick search, which profile supplies the classification list and the ordering: one profile per data space, the profile of each result's schema, or a union?",
+  "options": [
+   "one data-space-wide profile",
+   "per result, using the profile of its schema",
+   "union of all active profiles"
+  ],
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-006",
+  "target": "SIMPL-29293/AC3",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "Advanced search has a selected schema, so its active profile is the natural source of the classifications. The example ranges overlap at the bounds (40 in Poor and Sufficient), and the API examples use other labels (Green, good). The sensible default should be confirmed.",
+  "evidence": "SIMPL-29293/AC3 note: \"Poor: 0-40 %\", \"Sufficient: 40-70 %\"; t2-fc-openapi.yaml example overallClassification: Green; minimumClassification: good.",
+  "question": "Is the classification list taken from the active profile of the selected schema, and is a range bound inclusive at the lower end?",
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-007",
+  "target": "cross",
+  "ids": [
+   "SIMPL-29292",
+   "SIMPL-29293"
+  ],
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "AC6 (description without a score while a filter is active) and AC7 (invalid filter input) are struck, but the API returns descriptions with overallScore null and defines 400 errors for invalid values, and the technical details still ask for inline validation. A builder has to guess both behaviours.",
+  "evidence": "SIMPL-29292 and SIMPL-29293: \"-AC6- ... excluded from the filtered result set-\", \"-AC7- ... the UI shows a clear validation message-\"; technical details: \"Add input validation and inline error messages for invalid score/classification inputs\"; t2-fc-openapi.yaml example overallScore: null.",
+  "question": "With a quality filter active, are descriptions without a score excluded, and how does the UI handle an invalid score or a negative value?",
+  "options": [
+   "unscored descriptions are excluded, invalid input blocked in the UI",
+   "unscored descriptions are kept, the API 400 is shown"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-008",
+  "target": "SIMPL-29293/AC5",
+  "check": "AC-C04",
+  "severity": "minor",
+  "finding": "The advanced-search story says \"Quick Search behavior remains unchanged\", a copy from the quick-search twin.",
+  "evidence": "SIMPL-29293/AC5: \"Then Quick Search behavior remains unchanged and quality filters are not applied.\"",
+  "question": "Confirm that AC5 means Advanced Search behaviour.",
+  "from_20a": []
+ },
+ {
+  "id": "F-009",
+  "target": "SIMPL-30848",
+  "check": "AC-C06",
+  "severity": "major",
+  "finding": "The note says the story is implemented by the authentication provider, a component outside this input set, and that the story exists only for linkage. Its Then also asks to let the Consumer choose the catalogue, which SIMPL-31102 and SIMPL-31103 cover.",
+  "evidence": "SIMPL-30848 note: \"This US is covered with the implementation of [...]authentication-provider-be[...] and only for linkage to the epic.\"; SIMPL-30848/AC1: \"enable the Consumer to choose the catalogue of the Trustor Governance Authority\".",
+  "question": "Is anything in SIMPL-30848 built or tested in the catalogue component, or is it out of scope here?",
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-010",
+  "target": "SIMPL-30848/AC1",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "The role is left blank and \"endpoint details\" are not named. A note gives a URL rule (base URL plus a catalogue suffix), but the AC does not say what is provided or what is checked. No negative case (invalid endpoint, missing role) exists.",
+  "evidence": "SIMPL-30848/AC1: \"with a role authorising __ federated search configuration\", \"When I provide the endpoint details of a Trustor Governance Authority\"; note: \"the catalogue url is <base-url> + \\\"catalogue-suffix\\\"\".",
+  "question": "Which role, which fields make up the endpoint configuration, and what happens on an invalid or unreachable endpoint?",
+  "from_20a": []
+ },
+ {
+  "id": "F-011",
+  "target": "cross",
+  "ids": [
+   "SIMPL-30850/AC1",
+   "SIMPL-30850/AC2",
+   "SIMPL-30850/AC3",
+   "SIMPL-31817/AC1",
+   "SIMPL-31817/AC2",
+   "SIMPL-31817/AC3"
+  ],
+  "check": "AC-C05",
+  "severity": "blocker",
+  "finding": "The criteria require POST /schemas/{schemaName}/versions with multipart form data and a 201. No entry OpenAPI file has this operation, so the request fields, the response body and the error statuses are undefined.",
+  "evidence": "SIMPL-30850/AC1 to AC3: \"send a POST request to the /schemas/{schemaName}/versions endpoint with the form data as multipart/form-data\"; SIMPL-31817/AC1: \"POST /schemas/<schemaName>/versions\"; inventory-review: \"no /schemas/{schemaName}/versions operation exists in the entry files\".",
+  "question": "Where is the versioning operation defined (which component, which contract), and which fields does it take?",
+  "from_20a": []
+ },
+ {
+  "id": "F-012",
+  "target": "cross",
+  "ids": [
+   "SIMPL-30850/AC1",
+   "SIMPL-30850/AC2",
+   "SIMPL-30850/AC4"
+  ],
+  "check": "AC-C04",
+  "severity": "blocker",
+  "finding": "AC1 says schemaType may be left empty and defaults to RESOURCE; AC2 lists schemaType as a required field; AC4 names only the changelog and the file as validated fields. The UI cannot both require the field and default it.",
+  "evidence": "SIMPL-30850/AC1: \"I fill in changelog message but do not fill schemaType\" ... \"schemaType was set to \\\"RESOURCE\\\" as default value\"; SIMPL-30850/AC2: \"all required fields in the form, i.e. a changelog message and schemaType field\"; SIMPL-30850/AC4: \"I leave the changelog blank, or do not upload a file\".",
+  "question": "Is schemaType required on the Create New Version form, or optional with RESOURCE as default?",
+  "options": [
+   "required, no default",
+   "optional, defaults to RESOURCE"
+  ],
+  "from_20a": [
+   "AC-W03"
+  ]
+ },
+ {
+  "id": "F-013",
+  "target": "cross",
+  "ids": [
+   "SIMPL-30850/AC3",
+   "SIMPL-30850/AC5",
+   "SIMPL-31817/AC1",
+   "SIMPL-31817/AC3"
+  ],
+  "check": "AC-C03",
+  "severity": "blocker",
+  "finding": "Creating a new version of the one federated search schema is a main path, yet a 409 is required when \"another federated search schema is already published\". If the schema being versioned counts as already published, the main path can never succeed.",
+  "evidence": "SIMPL-30850/AC3: \"viewing the details page for the federated search schema ... schemaType = SEARCH ... 201 Created\"; SIMPL-30850/AC5: \"409 Conflict (if another federated search schema is already published)\"; SIMPL-31817/AC3: \"there is already another published federated search schema ... 409\".",
+  "question": "Does the 409 apply only when the published SEARCH schema has a different name than the one being versioned?",
+  "options": [
+   "409 only when a SEARCH schema with another name is published",
+   "409 whenever any SEARCH schema is published, versioning needs revocation first"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-014",
+  "target": "SIMPL-30850",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "No criterion covers a user without the schema-management role (button hidden, or 403 shown), and AC1 and AC2 give two different role descriptions for the same action.",
+  "evidence": "SIMPL-30850/AC1: \"with a role authorising schema management\"; SIMPL-30850/AC2: \"a logged-in user with the governance-admin role\".",
+  "question": "What does the UI do for a user without the role, and which role is meant?",
+  "from_20a": []
+ },
+ {
+  "id": "F-015",
+  "target": "SIMPL-30850",
+  "check": "AC-C02",
+  "severity": "minor",
+  "finding": "The validation and error messages are described as clear and user-friendly without texts; one example is given. This leaves wording to the builder, which is fine if confirmed.",
+  "evidence": "SIMPL-30850/AC4: \"clear, inline validation error messages\"; SIMPL-30850/AC5: \"a clear, user-friendly error message ... (e.g., \\\"The uploaded schema file is invalid\\\")\".",
+  "question": "Are message texts free, or is there a list to follow?",
+  "from_20a": [
+   "AC-W01"
+  ]
+ },
+ {
+  "id": "F-016",
+  "target": "SIMPL-31817/AC3",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "AC3 combines a resourceType in the request (a 400 under AC2) with an existing published schema (a 409). The order of the checks is not stated, so a test of AC3 may get 400 instead of 409. The status is also written \"409 Config\" here and \"409 Conflict\" in SIMPL-31815/AC3.",
+  "evidence": "SIMPL-31817/AC2: \"And a resourceType for instance \\\"DATA\\\" is specified ... 400 Bad Request\"; SIMPL-31817/AC3: \"there is already another published federated search schema ... And a resourceType for instance \\\"DATA\\\" is specified ... (409 Config)\".",
+  "question": "Is the resourceType clause in AC3 intended, and if so, which check wins: 400 or 409?",
+  "options": [
+   "drop the resourceType clause from AC3",
+   "keep it, 409 takes precedence",
+   "keep it, 400 takes precedence"
+  ],
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-017",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31815",
+   "SIMPL-31817"
+  ],
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "Invalid SHACL, a missing name or title, and a caller without GA_SCHEMA_ADMIN are left to tickets outside this input set, so a builder has no expected status for them.",
+  "evidence": "SIMPL-31815 hints: \"The other negative scenrios are in this ticket SIMPL-13353\"; SIMPL-31817 technical details: \"The other negative scenarios are in this ticket SIMPL-13357\".",
+  "question": "Which statuses apply to an invalid definition, a missing field and a caller without the role?",
+  "from_20a": []
+ },
+ {
+  "id": "F-018",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31102/AC1",
+   "SIMPL-31102/AC2",
+   "SIMPL-31103/AC1",
+   "SIMPL-31103/AC2"
+  ],
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The list of selectable catalogues comes from an API \"implemented under ticket SIMPL-33471\" that is in no entry file. The criteria cannot be built or tested against a defined response.",
+  "evidence": "SIMPL-31102 and SIMPL-31103 technical details: \"The API used to retrieve the list of trusted dataspaces is exposed by the xfsc-adv-search component through the API implemented under ticket SIMPL-33471\"; catalogue-client-be v2 has no such operation.",
+  "question": "Which operation returns the selectable catalogues, and what is its response shape?",
+  "from_20a": []
+ },
+ {
+  "id": "F-019",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31102/AC1",
+   "SIMPL-31103/AC1",
+   "SIMPL-35874/AC1"
+  ],
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "The selection list holds \"the catalogues of all trustor authorities\". SIMPL-31142 and SIMPL-35874 also talk about selecting the local catalogue. It is open whether own catalogues appear in the same selector.",
+  "evidence": "SIMPL-31102/AC1: \"select one or more catalogues from the catalogues of all trustor authorities\"; SIMPL-35874/AC1: \"only the local catalogue is selected\"; SIMPL-31142 technical design: \"create dedicated tabs for the local catalogue and each federated catalogue\".",
+  "question": "Does the catalogue selector list own catalogues together with the Trustor catalogues?",
+  "options": [
+   "one selector with own and Trustor catalogues",
+   "Trustor catalogues only; the local catalogue is always searched"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-020",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31102/AC1",
+   "SIMPL-31103/AC1"
+  ],
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The business process also allows a search in all federated catalogues without selecting them, while the federated search API requires a non-empty catalogue selection and no story offers \"all\".",
+  "evidence": "BP6.1.2: \"Searching in all federated catalogues without explicitely selecting them\"; query-mapper-adapter-be GET /governanceAuthority/selfDescriptions: catalogueIds required, minItems 1.",
+  "question": "Is \"search all federated catalogues\" in scope for this release?",
+  "options": [
+   "out of scope for now",
+   "UI selects all by default"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-021",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31102",
+   "SIMPL-31103"
+  ],
+  "check": "AC-C01",
+  "severity": "minor",
+  "finding": "No criterion covers an empty catalogue list (no Trustor yet), and the error text is \"appropriate\". Both have an easy default, to be confirmed.",
+  "evidence": "SIMPL-31102/AC2, SIMPL-31103/AC2: \"an appropriate error message is displayed to the user.\"",
+  "question": "What does the selector show when there are no Trustor catalogues?",
+  "from_20a": [
+   "AC-W01"
+  ]
+ },
+ {
+  "id": "F-022",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31106/AC1",
+   "SIMPL-31138/AC1",
+   "SIMPL-31138/AC2",
+   "SIMPL-31138/AC3",
+   "SIMPL-31139/AC1",
+   "SIMPL-31139/AC2",
+   "SIMPL-31139/AC3"
+  ],
+  "check": "AC-C05",
+  "severity": "blocker",
+  "finding": "The Trustor-side search operation (receiving a forwarded quick or advanced search) is in no entry file; the adapter calls it \"the separate SIMPL-31880 API\". AC2 requires a 403 on an operation whose path, parameters, attribute header and response are undefined.",
+  "evidence": "SIMPL-31138/AC2: \"I reject the request with error code 403\"; SIMPL-31138 technical design: \"implement API Simpl-31875\"; SIMPL-31139: \"implement API Simpl-31877\"; t1-adapter-openapi.yaml: \"Quick-search delegation to Trustor Governance Authorities is defined separately in SIMPL-31880\".",
+  "question": "Which contract defines the Trustor-side search operations, and can it be added to the input set?",
+  "from_20a": []
+ },
+ {
+  "id": "F-023",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31138/AC2",
+   "SIMPL-31139/AC2",
+   "SIMPL-31113/AC2"
+  ],
+  "check": "AC-C04",
+  "severity": "major",
+  "finding": "The Trustor rejects a non-trusted caller with 403, while the Trusted side expects a failed mTLS handshake (502) for the same broken trust. A failed handshake never reaches HTTP, so a 403 can only happen for a caller with a valid certificate. The two tests need different set-ups.",
+  "evidence": "SIMPL-31138/AC2, SIMPL-31139/AC2: \"from someone who is not a Trusted GA ... reject the request with error code 403\"; SIMPL-31113/AC2: \"no longer consider trusted GA as trusted ... reject the call to this trustor GA with an error code 502 failed mTLS handshake\".",
+  "question": "Which caller gets 403 at the Trustor (valid certificate but no federation?), and which case ends in a handshake failure?",
+  "options": [
+   "403 for an authenticated caller without federation; handshake failure for a revoked certificate",
+   "always handshake failure; drop the 403"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-024",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31138",
+   "SIMPL-31139",
+   "SIMPL-31114"
+  ],
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "No criterion covers a forwarded request without identity attributes, an attribute with no mapping, an unavailable mapping service, or an invalid request. SIMPL-31150 lists these cases for the detail request; the search side is silent.",
+  "evidence": "SIMPL-31138/AC1: \"the Consumer's identity attributes are mapped according to the federation-defined attribute mappings\"; SIMPL-31114/AC1: \"make the mapped attributes available\"; SIMPL-31150 technical description: \"the identity mapping is unavailable\".",
+  "question": "What does the Trustor return when attributes are missing, unmapped, or the mapping service is down?",
+  "from_20a": []
+ },
+ {
+  "id": "F-025",
+  "target": "SIMPL-31106",
+  "check": "AC-C06",
+  "severity": "minor",
+  "finding": "The story is linkage-only and its one criterion repeats SIMPL-31138/AC1 and SIMPL-31139/AC1 with less detail. It adds no requirement of its own.",
+  "evidence": "SIMPL-31106 note: \"covered with the implementation of SIMPL-33462 ... SIMPL-33465 ... and only for linkage to the epic\"; SIMPL-31106/AC1: \"replies to trusted governance authority with the resource descriptions matching the search criteria\".",
+  "question": "Confirm that SIMPL-31106 adds nothing beyond SIMPL-31138 and SIMPL-31139.",
+  "from_20a": []
+ },
+ {
+  "id": "F-026",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31111/AC1",
+   "SIMPL-31138/AC1"
+  ],
+  "check": "AC-C03",
+  "severity": "blocker",
+  "finding": "\"At least one of the search terms is found in at least one of its properties\" needs a rule for splitting the search string into terms. The API takes one searchString that may contain spaces. Two readings give different results for \"climate data\".",
+  "evidence": "SIMPL-31111/AC1: \"at least one of the search terms is found in at least one of its properties\"; SIMPL-31138/AC1: \"at least one of the properties match the search terms\"; query-mapper-adapter-be GET /selfDescriptions: one searchString, pattern allows whitespace.",
+  "question": "Is the search string split on whitespace with OR between terms, or matched as one phrase? Is matching case-insensitive and by substring?",
+  "options": [
+   "split on whitespace, any term matches (OR)",
+   "whole string as one phrase"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-027",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31112/AC1",
+   "SIMPL-31139/AC1"
+  ],
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "\"Each search term is found in the property to which it was submitted\" does not say whether found means equal, contains, or a typed comparison (numbers, dates).",
+  "evidence": "SIMPL-31112/AC1: \"each search term is found in the property to which it was submitted\"; SIMPL-31139/AC1: \"whose properties match the search terms for that property\".",
+  "question": "Which comparison applies per property type in advanced search?",
+  "from_20a": []
+ },
+ {
+  "id": "F-028",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31111/AC1",
+   "SIMPL-31141/AC1",
+   "SIMPL-31767/AC1"
+  ],
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "Local quick search must keep only descriptions from the catalogues in the query, but the local quick-search operations have no catalogue parameter (the local advanced search body does have catalogueIds).",
+  "evidence": "SIMPL-31111/AC1: \"I select the resource descriptions belong to one of my catalogues specified in the search query\"; SIMPL-31767/AC1: \"from one of the selected catalogues in search request from my data space\"; query-mapper-adapter-be GET /selfDescriptions and catalogue-be GET /selfDescriptions/quickSearch: no catalogue parameter.",
+  "question": "How does a local quick search carry the catalogue selection, or is the own data space always one catalogue?",
+  "from_20a": []
+ },
+ {
+  "id": "F-029",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31111",
+   "SIMPL-31112"
+  ],
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "The linkage-only stories for local search start from \"the Consumer is authorised\" and give no outcome for a Consumer without the search role or without a token. The ABAC roles in the API (CATALOGUE_SEARCHER and others) are not named.",
+  "evidence": "SIMPL-31111/AC1, SIMPL-31112/AC1: \"And the Consumer is authorised with the identity attributes for searching\"; catalogue-be GET /selfDescriptions/quickSearch: \"Required ABAC roles (any one of): CATALOGUE_SEARCHER, ...\".",
+  "question": "What does a search return for a Consumer without a search role: 403, or an empty list filtered by policy?",
+  "from_20a": []
+ },
+ {
+  "id": "F-030",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31113/AC2",
+   "SIMPL-31113/AC3",
+   "SIMPL-31140/AC3",
+   "SIMPL-31142/AC3"
+  ],
+  "check": "AC-C04",
+  "severity": "blocker",
+  "finding": "For a Trustor that no longer trusts, SIMPL-31113 rejects the call with 502, while SIMPL-31140 and SIMPL-31142 return an empty group for that catalogue and leave the others unaffected. A builder cannot tell whether the Consumer gets 502 or 200 with an empty group.",
+  "evidence": "SIMPL-31113/AC2: \"Simpl-Open reject the call to this trustor GA with an error code 502 failed mTLS handshake\"; SIMPL-31140/AC3: \"a Trustor Governance Authority cannot authenticate the request ... Simpl-Open returns an empty group for that catalogue\".",
+  "question": "Is the 502 internal (between the GAs, turned into an empty group for the Consumer) or the status the Consumer receives?",
+  "options": [
+   "internal only; Consumer gets 200 with an empty group",
+   "Consumer gets 502 for the whole search"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-031",
+  "target": "SIMPL-31113/AC3",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "A catalogue that belongs to no federation has no Trustor to call, so no handshake can fail. A 400 for an unknown catalogue identifier is the other natural reading.",
+  "evidence": "SIMPL-31113/AC3: \"there is one federated catalogue selected which does not belong to a federation ... error code 502 failed mTLS handshake\"; query-mapper-adapter-be GET /governanceAuthority/selfDescriptions defines 400 for invalid catalogue selection.",
+  "question": "For an unknown or unfederated catalogue identifier, is the result 502, 400, or an empty group?",
+  "options": [
+   "502",
+   "400 Bad Request",
+   "empty group, others unaffected"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-032",
+  "target": "SIMPL-31113",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "No criterion covers a Trustor that is unreachable or slow, and no timeout value is named, while SIMPL-31140/AC3 only covers \"cannot authenticate, or returns no results\".",
+  "evidence": "SIMPL-31113/AC1: \"forward the search request to each relevant Trustor Governance Authority via API\"; SIMPL-31140/AC3: \"cannot authenticate the request, or returns no results\".",
+  "question": "What happens when a Trustor does not answer, and after how long?",
+  "from_20a": []
+ },
+ {
+  "id": "F-033",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31140/AC1",
+   "SIMPL-31140/AC2",
+   "SIMPL-31142/AC1",
+   "SIMPL-31142/AC2"
+  ],
+  "check": "AC-C05",
+  "severity": "blocker",
+  "finding": "The criteria require results grouped per catalogue, each group naming its catalogue and GA, with independent paging. The federated search operation returns one flat items list with one page block and says it does not define aggregation.",
+  "evidence": "SIMPL-31140/AC1: \"the results remain grouped per catalogue, each group identifying its catalogue and the Governance Authority\"; SIMPL-31140/AC2: \"paging information for each catalogue group independently\"; t1-adapter-openapi.yaml GET /governanceAuthority/selfDescriptions: searchResponsePayload {totalCount, items, page, pageSize, ...}, \"does not define orchestration, result aggregation, or partial-failure rules\".",
+  "question": "What is the grouped response shape, and how does a client ask for the next page of one group?",
+  "from_20a": []
+ },
+ {
+  "id": "F-034",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31140/AC1",
+   "SIMPL-31142/AC1"
+  ],
+  "check": "AC-C04",
+  "severity": "blocker",
+  "finding": "SIMPL-31140/AC1 returns own and federated results \"in a single response\", while the SIMPL-31142 technical design has the UI call the local search API and the federated search API separately and build the tabs itself. These are two different builds.",
+  "evidence": "SIMPL-31140/AC1: \"Simpl-Open returns the results to the initiating Consumer in a single response\"; SIMPL-31142 technical design: \"Local Search -> invoke the local catalogue search API ... Federated Search -> invoke the federated search API (SIMPL-33462)\".",
+  "question": "Does the backend merge own and federated results into one response, or does the UI combine two calls?",
+  "options": [
+   "backend returns one grouped response",
+   "UI makes two calls and groups the results"
+  ],
+  "from_20a": [
+   "AC-W01"
+  ]
+ },
+ {
+  "id": "F-035",
+  "target": "SIMPL-31140/AC1",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "\"Own catalogues (if relevant)\" does not say when the own catalogue is searched in a federated search.",
+  "evidence": "SIMPL-31140/AC1: \"have obtained the results by performing the search on my own catalogues (if relevant)\".",
+  "question": "Is the own catalogue searched only when the Consumer selected it?",
+  "from_20a": [
+   "AC-W01"
+  ]
+ },
+ {
+  "id": "F-036",
+  "target": "SIMPL-31140/AC3",
+  "check": "AC-C02",
+  "severity": "major",
+  "finding": "An authentication failure and a genuine empty result both give an empty group, so the Consumer cannot tell them apart and a tester cannot tell a fault from no matches.",
+  "evidence": "SIMPL-31140/AC3: \"When a Trustor Governance Authority cannot authenticate the request, or returns no results / Then Simpl-Open returns an empty group for that catalogue\".",
+  "question": "Should a failed group carry a status or error marker next to the empty list?",
+  "from_20a": []
+ },
+ {
+  "id": "F-037",
+  "target": "SIMPL-31140/AC4",
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "Federated groups must omit the quality score, but the federated search operation returns overallScore and overallClassification per item and accepts minimumScore and minimumClassification as filters. It is open whether the quality filter applies to federated catalogues.",
+  "evidence": "SIMPL-31140/AC4: \"it is omitted for groups from catalogues of a Trustor Governance Authority\"; t1-adapter-openapi.yaml GET /governanceAuthority/selfDescriptions: parameters minimumScore, minimumClassification; example items overallScore: 0.92; BP6.7.2: main properties only.",
+  "question": "For federated catalogues, are the quality fields removed from the response, and is a quality filter ignored or applied by the Trustor?",
+  "options": [
+   "fields removed, filter ignored for federated catalogues",
+   "fields removed, filter applied at the Trustor",
+   "fields kept"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-038",
+  "target": "SIMPL-31142",
+  "check": "AC-C06",
+  "severity": "major",
+  "finding": "The four criteria of this UI story are copies of the backend criteria of SIMPL-31140, written from the GA's view. The UI behaviour (one tab per catalogue, navigation) is only in the technical design, so no criterion tests the UI.",
+  "evidence": "SIMPL-31142/AC1: \"When I, the Governance Authority, have obtained the results\" (same text as SIMPL-31140/AC1); technical design: \"The UI dynamically creates one tab for each federated catalogue selected in the search request.\"",
+  "question": "Should SIMPL-31142 get UI criteria for the tabs, with SIMPL-31140 owning the backend criteria?",
+  "from_20a": []
+ },
+ {
+  "id": "F-039",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31141/AC1",
+   "SIMPL-31767/AC1",
+   "SIMPL-31768/AC1"
+  ],
+  "check": "AC-C02",
+  "severity": "major",
+  "finding": "\"The main properties\" is the pass condition for every overview, but no story or API lists them.",
+  "evidence": "SIMPL-31141/AC1, SIMPL-31767/AC1, SIMPL-31768/AC1: \"for each resource description in the list I receive the main properties\"; SIMPL-31142 technical design: \"according to the existing search results view\".",
+  "question": "Which properties are the main properties (for example name, description, offering type, access point)?",
+  "from_20a": []
+ },
+ {
+  "id": "F-040",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31141/AC1",
+   "SIMPL-31767/AC1"
+  ],
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The process requires the own-catalogue overview to show the overall quality score and classification and to be sortable on main and quality properties. The overview criteria mention neither.",
+  "evidence": "BP6.7.1: \"Overall metadata quality score and quality classification. This list can be sorted based on the main properties and qual[ity]\"; SIMPL-31141/AC1, SIMPL-31767/AC1: \"for each resource description in the list I receive the main properties\".",
+  "question": "Are quality fields and sorting in the overview in scope for these stories?",
+  "from_20a": []
+ },
+ {
+  "id": "F-041",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31143/AC1",
+   "SIMPL-31769/AC1"
+  ],
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The detail must include overall and per-dimension quality, but the detail operation returns only the credential, and quality sits in a separate QAR operation that answers 204 when there is no record. No criterion says what to show when a description has no QAR.",
+  "evidence": "SIMPL-31143/AC1, SIMPL-31769/AC1: \"the metadata quality score and quality classification for each dimension is returned\"; catalogue-client-be GET /selfDescriptions/{selfDescriptionId} 200: VerifiableCredential, no quality fields; catalogue-be GET /self-descriptions/{selfDescriptionId}/qualityAssessmentRecord: 204.",
+  "question": "Which operation returns the quality block for the detail, and what is shown for a description without a QAR?",
+  "from_20a": []
+ },
+ {
+  "id": "F-042",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31143",
+   "SIMPL-31769"
+  ],
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "The own-catalogue detail stories have only the happy path. The federated twins (SIMPL-31148, SIMPL-31770) define not-found, failure and invalid-request cases; here a builder must guess them.",
+  "evidence": "SIMPL-31143/AC1 and SIMPL-31769/AC1 are the only criteria; catalogue-client-be GET /selfDescriptions/{selfDescriptionId} defines 400, 401, 404, 500.",
+  "question": "Do the error criteria of SIMPL-31148 and SIMPL-31770 also apply to own-catalogue details?",
+  "from_20a": []
+ },
+ {
+  "id": "F-043",
+  "target": "SIMPL-31769",
+  "check": "AC-C06",
+  "severity": "minor",
+  "finding": "This own-catalogue API story is said to be covered by SIMPL-33885 and SIMPL-31150, which are both about federated details. The coverage link looks misplaced.",
+  "evidence": "SIMPL-31769 note: \"covered with the implementation of SIMPL-33885 together with SIMPL-31150\"; SIMPL-33885 title: \"API to get detail of federated resource description\".",
+  "question": "Which story or ticket builds the own-catalogue detail API?",
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-044",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31148/AC1",
+   "SIMPL-31770/AC1",
+   "SIMPL-33885/AC1",
+   "SIMPL-31153/AC2",
+   "SIMPL-31150/AC4"
+  ],
+  "check": "AC-C04",
+  "severity": "blocker",
+  "finding": "Three stories require the schema to come back with a federated detail, while the Trustor and Trusted stories have the schema struck and the adapter contract says it returns no separate schema. The UI cannot render the detail without knowing where the schema comes from.",
+  "evidence": "SIMPL-31148/AC1: \"the Governance Authority successfully returns the Resource Description details and the associated schema\"; SIMPL-31770/AC1: \"the applicable schema ... is included in the returned result\"; SIMPL-33885/AC1: \"return the Resource Description details together with the related schema\"; SIMPL-31153/AC2: \"-along with the associated schema-\"; query-mapper-adapter-be GET /federated/resourceDescriptions/{id}: \"does not return a separate schema\".",
+  "question": "Is the schema part of the federated detail response, and if not, where does the UI get the Trustor's schema?",
+  "options": [
+   "schema returned with the detail (contract and SIMPL-31150/31153 to change)",
+   "no schema; UI uses a generic or SEARCH schema (SIMPL-31148/31770/33885 to change)"
+  ],
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-045",
+  "target": "SIMPL-31148",
+  "check": "AC-C01",
+  "severity": "minor",
+  "finding": "Failures map to an \"appropriate\" message; not-found and access-denied are not separated from a backend failure. A single generic message is a fair default.",
+  "evidence": "SIMPL-31148/AC2: \"the UI displays an appropriate error message\"; SIMPL-31148/AC3: \"an appropriate validation error message\".",
+  "question": "Is one generic message enough, or do not-found and access-denied need their own texts?",
+  "from_20a": [
+   "AC-W01"
+  ]
+ },
+ {
+  "id": "F-046",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31770/AC4",
+   "SIMPL-33885/AC4"
+  ],
+  "check": "AC-C02",
+  "severity": "major",
+  "finding": "Downstream failures must return \"the corresponding error response according to the defined API contract\", but the contract of the detail operation has only 400, 401, 404 and 500. The technical description asks for forbidden and timeout responses that the contract does not have, and SIMPL-33885/AC4 says 500 for unexpected errors.",
+  "evidence": "SIMPL-31770/AC4: \"the API returns the corresponding error response according to the defined API contract\"; SIMPL-31770 technical description: \"return defined not-found, forbidden, timeout, and downstream-error responses\"; SIMPL-33885/AC4: \"HTTP 500 Internal Server Error\"; catalogue-client-be GET /selfDescriptions/{selfDescriptionId}: 400, 401, 404, 500.",
+  "question": "Which statuses apply to policy-denied, Trustor timeout and Trustor unreachable (403, 504, 502, or 500 for all)?",
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-047",
+  "target": "cross",
+  "ids": [
+   "SIMPL-33885/AC1",
+   "SIMPL-33885/AC2",
+   "SIMPL-31770/AC1",
+   "SIMPL-31770/AC5"
+  ],
+  "check": "AC-C04",
+  "severity": "major",
+  "finding": "SIMPL-33885 adds a \"dataspace/catalogue identifier\" (one value or two?), while SIMPL-31770 says the API accepts \"the resource identifier returned by the federated search\" and keeps the own-catalogue path unchanged. The contract makes catalogueId required for every call, own catalogue included.",
+  "evidence": "SIMPL-33885/AC1: \"a valid dataspace/catalogue identifier\"; SIMPL-31770 technical description: \"accept the resource identifier returned by the federated search ... keep the own-catalogue lookup behavior unchanged\"; catalogue-client-be GET /selfDescriptions/{selfDescriptionId}: catalogueId required: true.",
+  "question": "Is the identifier a single catalogueId, and is it required for own-catalogue detail requests too?",
+  "from_20a": []
+ },
+ {
+  "id": "F-048",
+  "target": "SIMPL-31770",
+  "check": "AC-C04",
+  "severity": "minor",
+  "finding": "The ids jump from AC1 to AC4; AC2 and AC3 do not exist. Harmless for the build, but tickets may refer to missing ids.",
+  "evidence": "SIMPL-31770: \"## AC1\", \"## AC4\", \"## AC5\".",
+  "question": "Confirm that AC2 and AC3 were removed on purpose.",
+  "from_20a": []
+ },
+ {
+  "id": "F-049",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31150/AC2",
+   "SIMPL-31150/AC3"
+  ],
+  "check": "AC-C02",
+  "severity": "major",
+  "finding": "\"Refuses the request\" names no status. The adapter contract says gateway authentication and policy errors are outside it, and the technical description says the resource must not be exposed when it does not exist. A tester cannot tell 401, 403 or 404.",
+  "evidence": "SIMPL-31150/AC2, AC3: \"Simpl-Open refuses the request and does not return the protected resource description\"; query-mapper-adapter-be GET /federated/resourceDescriptions/{id}: \"Gateway-generated authentication and ABAC errors are outside this adapter response contract\", responses 200, 400, 404, 406, 500.",
+  "question": "Which status does the Trusted GA receive for an untrusted caller, missing attributes and a policy denial; is a denial disguised as 404?",
+  "options": [
+   "401 / 400 / 403",
+   "404 for all, to hide existence"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-050",
+  "target": "SIMPL-31150",
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The story's technical description puts authentication, attribute mapping and policy evaluation in the adapter operation, but the adapter contract says the gateway does these and the adapter does not repeat them. Which component a test targets depends on the answer.",
+  "evidence": "SIMPL-31150 technical description: \"The operation must: authenticate the calling Trusted Governance Authority ... invoke the R24 identity-attribute mapping\"; query-mapper-adapter-be GET /federated/resourceDescriptions/{id}: \"The gateway authenticates ... maps the Consumer's identity attributes, and evaluates discovery ABAC ... The adapter does not repeat gateway authorization\".",
+  "question": "Is mapping and policy evaluation built in the adapter or in the gateway?",
+  "options": [
+   "gateway (adapter only receives User-Attributes)",
+   "adapter"
+  ],
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-051",
+  "target": "SIMPL-31150",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "The technical description lists not-found, mapping-unavailable and downstream-error cases and test cases for them, but no criterion states their outcome. The contract has a 404.",
+  "evidence": "SIMPL-31150 technical description: \"must not expose the resource description when the resource does not exist ... the identity mapping is unavailable\"; \"Add positive, not-found, unauthorised, missing-attributes, policy-denied, federation-revoked-after-discovery, and downstream-error test cases\".",
+  "question": "What does the Trustor return for not-found, mapping unavailable and catalogue unavailable?",
+  "from_20a": []
+ },
+ {
+  "id": "F-052",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31153/AC1",
+   "SIMPL-31153/AC2",
+   "SIMPL-31153/AC3"
+  ],
+  "check": "AC-C05",
+  "severity": "blocker",
+  "finding": "The Trusted-side operations (xfsc-advsearch-be to the Trusted adapter, and Trusted adapter to Trustor adapter) are required by the story but are in no entry file; the only federated detail operation is the Trustor-side one. \"I forward the request\" has no observable contract.",
+  "evidence": "SIMPL-31153/AC1: \"Then I forward the request to the Trustor Governance Authority\"; SIMPL-31153 technical description: \"The API definition must cover both the xfsc-advsearch-be-to-Trusted-adapter request and response and the Trusted-adapter-to-Trustor-adapter request and response\"; entry files: only GET /federated/resourceDescriptions/{resourceDescriptionId} (Trustor side).",
+  "question": "Where is the Trusted-side inbound operation defined, and is the Trustor-side operation the forwarding target?",
+  "from_20a": []
+ },
+ {
+  "id": "F-053",
+  "target": "SIMPL-31153/AC3",
+  "check": "AC-C04",
+  "severity": "major",
+  "finding": "AC3 forwards the Trustor's error to the Consumer, while the technical description asks to translate errors without exposing federation details. These give different responses for the same error.",
+  "evidence": "SIMPL-31153/AC3: \"Simpl-Open forwards the error or not-found response to the Consumer\"; technical description: \"Errors received from the Trustor Governance Authority must be translated consistently without exposing internal federation details\".",
+  "question": "Is a Trustor error passed through unchanged or mapped to a fixed set of Consumer-facing errors?",
+  "options": [
+   "passed through",
+   "mapped to a fixed set"
+  ],
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-054",
+  "target": "SIMPL-31815",
+  "check": "AC-C05",
+  "severity": "blocker",
+  "finding": "The named operation catalogue-be POST /schemas takes a raw RDF or SHACL file, has no schemaType, name, title or resourceType field, requires no role (\"N/A\"), and has no 409 response. None of the three criteria can be met through this operation as defined.",
+  "evidence": "SIMPL-31815/AC1: \"POST /schemas with schemaType=\\\"SEARCH\\\", a schema name, a title, and a shacl definition\"; SIMPL-31815/AC3: \"409 Conflict\"; t1-fc-openapi.yaml POST /schemas: requestBody text/turtle string, \"Required RBAC roles: N/A\", responses 201, 400, 403, 500.",
+  "question": "Is POST /schemas in SIMPL-31815 the catalogue-be operation, or the schema management API referred to as SIMPL-30422 / SIMPL-33537?",
+  "options": [
+   "catalogue-be POST /schemas, contract to be extended",
+   "another component's schema API"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-055",
+  "target": "cross",
+  "ids": [
+   "SIMPL-30850",
+   "SIMPL-31815",
+   "SIMPL-31816",
+   "SIMPL-31817"
+  ],
+  "check": "AC-C06",
+  "severity": "blocker",
+  "finding": "The schema stories point to the \"Schema management API\" (SIMPL-30422) and SIMPL-33537, which are not in this component's input set. It is open whether the catalogue factory builds schema creation, versioning and the SEARCH type at all.",
+  "evidence": "SIMPL-30850 and SIMPL-31817 technical details: \"modify version capability of Schema management API (see API-Definition impl-30422l)\"; SIMPL-31816: \"modify Schema management API\"; SIMPL-31815: \"covered with the implementation of SIMPL-33537\".",
+  "question": "Which component owns schema management for these four stories, and are they in scope for the catalogue build?",
+  "options": [
+   "in scope: catalogue-be schema operations",
+   "out of scope: schema manager component"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-056",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31815/AC3",
+   "SIMPL-31816/AC2"
+  ],
+  "check": "AC-C04",
+  "severity": "blocker",
+  "finding": "The uniqueness rule differs: SIMPL-31815 rejects a second SEARCH schema only when another is published, SIMPL-31816 when one \"already exists\", and the technical notes say \"only one\". The hints add open questions on revoked schemas and name reuse.",
+  "evidence": "SIMPL-31815/AC3: \"there exists already another published federated search schema\"; SIMPL-31816/AC2: \"a federated search schema already exists\"; SIMPL-31815 hints: \"state that revoked schemas remain addressable as history, and define whether a new schema may reuse a revoked schema's name\".",
+  "question": "Is the limit one SEARCH schema in any state, or one published SEARCH schema? May a new schema reuse a revoked schema's name?",
+  "options": [
+   "one published SEARCH schema; drafts and revoked allowed",
+   "one SEARCH schema in any state"
+  ],
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-057",
+  "target": "SIMPL-31816/AC1",
+  "check": "AC-C03",
+  "severity": "blocker",
+  "finding": "The UI must let the user \"provide the schema properties, their data types, constraints, validation rules and any relationships\". This reads as a structured schema editor, while the related version story uses a file upload. Two very different UIs.",
+  "evidence": "SIMPL-31816/AC1: \"Simpl shall allow me to provide the schema properties, their data types, constraints, validation rules and any relationships or dependencies\"; SIMPL-30850/AC1: \"I upload a valid schema definition file (e.g., a .ttl file)\".",
+  "question": "Does creating a federated search schema in the UI mean uploading a SHACL file, or editing properties in a form?",
+  "options": [
+   "upload a SHACL file plus name, title, schemaType",
+   "form-based schema editor"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-058",
+  "target": "SIMPL-31816",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "No criterion covers an invalid file, an API error or a user without the role on the create form, unlike the version form in SIMPL-30850/AC4 and AC5.",
+  "evidence": "SIMPL-31816/AC1, AC2 are the only criteria; SIMPL-30850/AC5: \"When the API responds with an error, such as 400 Bad Request ... or 409 Conflict\".",
+  "question": "Do the error criteria of SIMPL-30850/AC4 and AC5 also apply to the create form?",
+  "from_20a": []
+ },
+ {
+  "id": "F-059",
+  "target": "cross",
+  "ids": [
+   "SIMPL-30850/AC1",
+   "SIMPL-30850/AC2",
+   "SIMPL-31815/AC1",
+   "SIMPL-31816/AC1",
+   "SIMPL-31102/AC1",
+   "SIMPL-31103/AC1"
+  ],
+  "check": "AC-C04",
+  "severity": "major",
+  "finding": "One permission has four names: a role \"authorising schema management\", governance-admin, GA_SCHEMA_ADMIN, and for search a role \"authorising searching\" against the API's ABAC roles. A tester cannot set up the user.",
+  "evidence": "SIMPL-30850/AC1: \"a role authorising schema management\"; SIMPL-30850/AC2: \"governance-admin role\"; SIMPL-31815/AC1: \"GA_SCHEMA_ADMIN role\"; SIMPL-31102/AC1: \"a role authorising searching\"; catalogue-be quickSearch: \"CATALOGUE_SEARCHER, DATA_PROVIDER_PUBLISHER, ...\".",
+  "question": "Confirm the role names: GA_SCHEMA_ADMIN for schema management, CATALOGUE_SEARCHER (or which set) for search?",
+  "from_20a": []
+ },
+ {
+  "id": "F-060",
+  "target": "SIMPL-35874/AC3",
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The UI must call the schema retrieval API with schemaType=SEARCH, but the schema list operation only has a resourceType parameter.",
+  "evidence": "SIMPL-35874/AC3: \"the schema retrieval API is invoked with the parameter schemaType=SEARCH\"; catalogue-client-be GET /schemas: parameter resourceType only; catalogue-be GET /schemas: no parameters.",
+  "question": "Which operation takes schemaType, and will the contract add it?",
+  "from_20a": []
+ },
+ {
+  "id": "F-061",
+  "target": "cross",
+  "ids": [
+   "SIMPL-35874/AC2",
+   "SIMPL-31142/AC1"
+  ],
+  "check": "AC-C04",
+  "severity": "blocker",
+  "finding": "With local and federated catalogues selected together, SIMPL-35874 shows only the SEARCH schema fields, while the SIMPL-31142 design searches the local catalogue with the filters of the selected resource schema. The local search in a mixed selection is built differently under each.",
+  "evidence": "SIMPL-35874/AC2: \"at least one federated catalogue is selected ... the UI automatically retrieves the schema of type SEARCH ... without requiring a schema selection\"; SIMPL-31142 technical design: \"Local Search -> invoke the local catalogue search API (catalogue-client-be POST /selfDescriptions) using ... the filters related to resource schema selected\".",
+  "question": "In a mixed selection, is the local catalogue searched with the SEARCH schema fields too?",
+  "options": [
+   "yes, SEARCH fields for all catalogues",
+   "no, the user also picks a resource schema for the local part"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-062",
+  "target": "SIMPL-35874/AC2",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "No criterion covers the case where no SEARCH schema exists yet or the retrieval fails, so the form's behaviour is unknown.",
+  "evidence": "SIMPL-35874/AC2: \"the UI automatically retrieves the schema of type SEARCH\".",
+  "question": "What does the form show when there is no published SEARCH schema?",
+  "from_20a": []
+ },
+ {
+  "id": "F-063",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31149",
+   "SIMPL-31151",
+   "SIMPL-31152"
+  ],
+  "check": "AC-C06",
+  "severity": "minor",
+  "finding": "Three stories have no criteria and say their scope is built in another story. They add no requirement as long as the covering stories hold.",
+  "evidence": "SIMPL-31149: \"The feature will be implemented in SIMPL-31153\"; SIMPL-31151, SIMPL-31152: \"covered with the implementation of SIMPL-31150\".",
+  "question": "Confirm that these stories add nothing beyond SIMPL-31150 and SIMPL-31153.",
+  "from_20a": [
+   "AC-S08"
+  ]
+ },
+ {
+  "id": "F-064",
+  "target": "cross",
+  "ids": [
+   "SIMPL-29292",
+   "SIMPL-29293",
+   "SIMPL-31114/AC1"
+  ],
+  "check": "AC-C04",
+  "severity": "minor",
+  "finding": "The searching actor has several names: Provider (title), Participant (user story), Consumer (other search stories), Customer (SIMPL-31114).",
+  "evidence": "SIMPL-29292 title: \"Provider use quick search\", user story: \"As a Participant\"; SIMPL-31114/AC1: \"the Customer's public identity attributes\".",
+  "question": "Confirm that Consumer is meant in all four cases.",
+  "from_20a": []
+ }
+]

@@ -49,7 +49,11 @@ def api_files(comp, manifest):
         if a.get("dest"):
             out[a["name"]] = [comp / "specs" / a["dest"]]
         else:
-            out[a["name"]] = sorted((comp / "specs/api" / a["name"]).rglob("*.y*ml"))
+            # Entry files first, -itb copies last, so evidence cites the file a reader would open.
+            entry = set(a.get("entry") or [])
+            files = sorted((comp / "specs/api" / a["name"]).rglob("*.y*ml"))
+            out[a["name"]] = sorted(files, key=lambda f: (str(f.relative_to(comp / "specs/api" / a["name"])) not in entry,
+                                                         "-itb" in f.name, str(f)))
     return out
 
 

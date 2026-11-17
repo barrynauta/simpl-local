@@ -4,17 +4,17 @@
   "stories": 55,
   "stories_replaced": 0,
   "stories_without_ac": 0,
-  "acs_live": 209,
+  "acs_live": 210,
   "acs_struck": 0,
-  "acs_label_derived": 189,
-  "acs_incomplete": 6,
+  "acs_label_derived": 185,
+  "acs_incomplete": 1,
   "apis": 1,
   "operations": 18,
-  "processes": 0,
-  "bp_requirements": 0,
+  "processes": 1,
+  "bp_requirements": 27,
   "stories_naming_an_operation": 22,
-  "processes_naming_a_story": 0,
-  "extraction_issues": 28
+  "processes_naming_a_story": 1,
+  "extraction_issues": 34
  },
  "stories": [
   {
@@ -199,6 +199,7 @@
      "GET /api/v1/schemas"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas",
      "schema_openapi:POST /schemas"
@@ -337,6 +338,7 @@
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas/{schemaName}/versions",
      "schema_openapi:POST /schemas/{schemaName}/versions"
@@ -413,6 +415,7 @@
      "GET /schemas/{schemaName}/versions"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas/{schemaName}/versions"
     ]
@@ -528,6 +531,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -698,6 +702,7 @@
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -736,7 +741,13 @@
       {
        "kw": "When",
        "text": "I complete the \"Create Schema\" form by:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Entering a new Schema Name (`name`, e.g., `DataAsset`).",
+        "Providing a human-readable Title and Description for the schema.",
+        "Selecting a `resourceType` from the available options (`data`, `infrastructure`, `application`).",
+        "Uploading a valid `.ttl` file containing the SHACL definition."
+       ]
       },
       {
        "kw": "And",
@@ -759,12 +770,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "- Entering a new Schema Name (`name`, e.g., `DataAsset`).",
-      "- Providing a human-readable Title and Description for the schema.",
-      "- Selecting a `resourceType` from the available options (`data`, `infrastructure`, `application`).",
-      "- Uploading a valid `.ttl` file containing the SHACL definition."
-     ],
+     "other_text": [],
      "id": "SIMPL-13355/AC1"
     },
     {
@@ -787,7 +793,13 @@
       {
        "kw": "When",
        "text": "I complete the \"Create Schema\" form by:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Entering a new Schema Name (`name`, e.g., `DataAsset`).",
+        "Providing a human-readable Title and Description for the schema.",
+        "Selecting a `resourceType` from the available options (`data`, `infrastructure`, `application`).",
+        "Uploading a valid `.ttl` file containing the SHACL definition."
+       ]
       },
       {
        "kw": "And",
@@ -801,10 +813,6 @@
       }
      ],
      "other_text": [
-      "- Entering a new Schema Name (`name`, e.g., `DataAsset`).",
-      "- Providing a human-readable Title and Description for the schema.",
-      "- Selecting a `resourceType` from the available options (`data`, `infrastructure`, `application`).",
-      "- Uploading a valid `.ttl` file containing the SHACL definition.",
       "- If the API returns an error (e.g., `400 Bad Request` or `409 Conflict`), the UI shall remain on the form and display a user-friendly message explaining the reason for the failure (e.g., \"The uploaded file contains invalid SHACL.\" or \"A schema with that name already exists.\").",
       "Technical Info:",
       "- [https://confluence.simplprogramme.eu/display/SIMPL/%5BWIP%5D+Schema+Metadata](https://confluence.simplprogramme.eu/display/SIMPL/%5BWIP%5D+Schema+Metadata)",
@@ -825,6 +833,7 @@
      "POST /schemas"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:POST /schemas"
     ]
@@ -870,7 +879,11 @@
       {
        "kw": "When",
        "text": "I send a `POST` request to the `/schemas/{schemaName}/versions` endpoint with a `multipart/form-data` body containing:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "A `metadata` part with a new, unique, and valid SemVer `version` (e.g., \"1.1.0\") and a `changelog` description.",
+        "A `file` part containing a valid SHACL definition in a `.ttl` file."
+       ]
       },
       {
        "kw": "Then",
@@ -903,10 +916,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "- A `metadata` part with a new, unique, and valid SemVer `version` (e.g., \"1.1.0\") and a `changelog` description.",
-      "- A `file` part containing a valid SHACL definition in a `.ttl` file."
-     ],
+     "other_text": [],
      "id": "SIMPL-13357/AC1"
     },
     {
@@ -1111,12 +1121,12 @@
    "refs": {
     "stories": [],
     "paths": [
-     "/blob/main/openapi/schema_openapi",
      "/schemas/{nonExistentSchemaName}/versions",
      "/schemas/{schemaName}/versions"
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas/{schemaName}/versions",
      "schema_openapi:POST /schemas/{schemaName}/versions"
@@ -1266,11 +1276,11 @@
    "refs": {
     "stories": [],
     "paths": [
-     "/blob/main/openapi/schema_openapi",
      "/schemas/{schemaName}/versions"
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas/{schemaName}/versions",
      "schema_openapi:POST /schemas/{schemaName}/versions"
@@ -1425,25 +1435,29 @@
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-13361",
-   "title": "[UI] Governance Authority revoking a schema via UI",
+   "title": "Technical details",
    "kind": "UI",
    "replaced": false,
    "status": "DevTeam PBI is ready for Implementation check",
    "type": "Story",
    "source": "https://jira.simplprogramme.eu/browse/SIMPL-13361 (collected 2026-10-28)",
    "file": "schema-manager/specs/stories/SIMPL-13361.md",
-   "user_story": {},
+   "user_story": {
+    "i want": "to revoke a schema through the schema management UI",
+    "so that": "I can prevent further use of an outdated or problematic schema in the dataspace"
+   },
    "acs": [
     {
      "label": "AC1",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Scenario",
      "group": "",
      "clauses": [
       {
@@ -1742,28 +1756,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "## Technical details:",
-      "|Revoke button should be available only for schemas which have status: PUBLISHED and should be hidden from the list of actions for REVOKED status|",
-      "|The UI shows confirmation popup on Revoke button click (mockup is below)|",
-      "|After clicking on Cancel button, the popup should be closed and revocation process should be stopped|",
-      "|After clicking on Revoke button: UI calls SMS API revocation method and waits for the response|",
-      "|The API endpoint for revoking a schema is PATCH /schemas/{schemaName} and request body {\"status\": \"REVOKED\"}",
-      "Implemented in: [https://jira.simplprogramme.eu/browse/SIMPL-13360]|",
-      "|Successful revocation returns a 200 OK response with the updated schema details|",
-      "|The UI updates schema status on the schema list to reflect the new status of the schema|",
-      "|Implement proper error handling for API failures or unauthorized access and use the 'detail' parameter of the response|",
-      "|The UI should adhere to the design principles: [https://confluence.simplprogramme.eu/pages/viewpage.action?pageId=48431839]|",
-      "# Mockups:",
-      "Figma link: [https://www.figma.com/design/Y2fWImqAY9iBpouebp41Dh/schema-managment?node-id=55-20841&t=gc2S95JVZCOKrP96-0]",
-      "# Additional notes",
-      "|[https://confluence.simplprogramme.eu/display/SIMPL/5.+Resolver+Interface]|",
-      "|[https://confluence.simplprogramme.eu/display/SIMPL/1.+Architecture+Overview]|",
-      "|[https://confluence.simplprogramme.eu/display/SIMPL/3.+API+Specification]|",
-      "|[https://confluence.simplprogramme.eu/display/SIMPL/R07.01+Schema+management]|",
-      "|[https://confluence.simplprogramme.eu/pages/viewpage.action?pageId=62884792]|",
-      "|[https://confluence.simplprogramme.eu/pages/viewpage.action?pageId=48431839]|"
-     ],
+     "other_text": [],
      "id": "SIMPL-13361/AC6"
     }
    ],
@@ -1778,6 +1771,7 @@
      "PATCH /schemas/{schemaName}"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:PATCH /schemas/{schemaName}"
     ]
@@ -1920,6 +1914,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -2041,12 +2036,13 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-14354",
-   "title": "Governance Authority – retaining revoked schema for referencing where the schema was revoked via API",
+   "title": "Technical information",
    "kind": "API",
    "replaced": false,
    "status": "Ready for DG Acceptance",
@@ -2088,10 +2084,7 @@
       }
      ],
      "other_text": [
-      "## Note:",
-      "The API behavior is already determined and set with the API definition story and the API implementation story for publish/revocation. This scenario covers an internal logic requirement that when a schema is revoked it's still persisted - it does not change the API behavior and data model that would need additional testing from that point of view",
-      "## Technical information",
-      "API definition: [https://jira.simplprogramme.eu/browse/SIMPL-16762](https://jira.simplprogramme.eu/browse/SIMPL-16762)"
+      "The API behavior is already determined and set with the API definition story and the API implementation story for publish/revocation. This scenario covers an internal logic requirement that when a schema is revoked it's still persisted - it does not change the API behavior and data model that would need additional testing from that point of view"
      ],
      "id": "SIMPL-14354/AC1"
     }
@@ -2103,12 +2096,13 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-14701",
-   "title": "Governance Authority – retaining revoked schema for referencing where the schema was revoked via UI",
+   "title": "Technical information",
    "kind": "UI",
    "replaced": false,
    "status": "Ready for DG Acceptance",
@@ -2144,12 +2138,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "## Technical information",
-      "API definition: [https://jira.simplprogramme.eu/browse/SIMPL-16762]",
-      "Notes:",
-      "The functionality for this exists and doesn't need implementation, but as a requirement we need to make sure we have test cases covering this."
-     ],
+     "other_text": [],
      "id": "SIMPL-14701/AC1"
     }
    ],
@@ -2160,6 +2149,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -2288,14 +2278,17 @@
        "struck": false
       },
       {
+       "kw": "Or",
+       "text": "Simpl does not verify the presence of the default properties",
+       "struck": false
+      },
+      {
        "kw": "Then",
        "text": "Simpl does not create the new schema.",
        "struck": false
       }
      ],
-     "other_text": [
-      "Or Simpl does not verify the presence of the default properties"
-     ],
+     "other_text": [],
      "id": "SIMPL-14703/AC3"
     },
     {
@@ -2326,13 +2319,17 @@
        "struck": false
       },
       {
+       "kw": "Or",
+       "text": "Simpl does not verify the presence of the default properties",
+       "struck": false
+      },
+      {
        "kw": "Then",
        "text": "Simpl does not create the new version of the schema.",
        "struck": false
       }
      ],
      "other_text": [
-      "Or Simpl does not verify the presence of the default properties",
       "Technical Info: Important links to start to develop or helpful data.",
       "Additional Notes: If is necessary mention somebody or relate important things inside the U.S.",
       "Default Properties are in this ticket: [https://jira.simplprogramme.eu/browse/SIMPL-16971](https://jira.simplprogramme.eu/browse/SIMPL-16971)"
@@ -2347,12 +2344,13 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-14709",
-   "title": "Governance Authority – notifying Providers about when publishing a new schema",
+   "title": "Additional Notes",
    "kind": "",
    "replaced": false,
    "status": "DevTeam PBI is ready for Implementation check",
@@ -2362,10 +2360,7 @@
    "user_story": {
     "as a": "Governance Authority,",
     "i want": "to notify Providers when publishing a new schema",
-    "so that": "Providers can take action to align resource descriptions with the schema changes.",
-    "extra": [
-     "I have a role authorising schema management"
-    ]
+    "so that": "Providers can take action to align resource descriptions with the schema changes."
    },
    "acs": [
     {
@@ -2375,6 +2370,16 @@
      "heading": "",
      "group": "",
      "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I have a role authorising schema management",
+       "struck": false
+      },
       {
        "kw": "When",
        "text": "I publish a new schema successfully",
@@ -2388,6 +2393,22 @@
       {
        "kw": "And",
        "text": "the notification includes links for instructions how to use the new schema and follow-up actions.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-14709/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user",
        "struck": false
       },
       {
@@ -2411,13 +2432,8 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "2. Given I am authenticated as a Governance Authority user",
-      "## Technical Info:",
-      "- [https://confluence.simplprogramme.eu/display/SIMPL/Notification+Service](https://confluence.simplprogramme.eu/display/SIMPL/Notification+Service)",
-      "## Additional Notes:"
-     ],
-     "id": "SIMPL-14709/AC1"
+     "other_text": [],
+     "id": "SIMPL-14709/AC2"
     }
    ],
    "refs": {
@@ -2425,6 +2441,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -2440,10 +2457,7 @@
    "user_story": {
     "as a": "Governance Authority,",
     "i want": "to notify Providers about the publication of a new version of an existing schema via e-mail",
-    "so that": "Providers can take action to align resource descriptions with the schema changes.",
-    "extra": [
-     "I have a role authorising schema management"
-    ]
+    "so that": "Providers can take action to align resource descriptions with the schema changes."
    },
    "acs": [
     {
@@ -2454,6 +2468,16 @@
      "group": "",
      "clauses": [
       {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I have a role authorising schema management",
+       "struck": false
+      },
+      {
        "kw": "When",
        "text": "I publish a new version of an existing schema successfully",
        "struck": false
@@ -2461,6 +2485,22 @@
       {
        "kw": "Then",
        "text": "Simpl notifies Providers about the change including the description of change, schema identifier, version (if applicable), timestamp, and any relevant instructions or links for follow-up actions via an e-mail.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-14712/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user",
        "struck": false
       },
       {
@@ -2484,13 +2524,11 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "2. Given I am authenticated as a Governance Authority user"
-     ],
-     "id": "SIMPL-14712/AC1"
+     "other_text": [],
+     "id": "SIMPL-14712/AC2"
     },
     {
-     "label": "AC2",
+     "label": "AC3",
      "explicit": false,
      "struck": false,
      "heading": "Negative scenario:",
@@ -2521,7 +2559,7 @@
       "Technical Notes:",
       "- We want to provide the email to which to send these notifications via a configuration key within the service's values"
      ],
-     "id": "SIMPL-14712/AC2"
+     "id": "SIMPL-14712/AC3"
     }
    ],
    "refs": {
@@ -2529,6 +2567,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -2544,10 +2583,7 @@
    "user_story": {
     "as a": "Governance Authority,",
     "i want": "to notify Providers about the revocation of a schema,",
-    "so that": "Providers can take action with respect to resource descriptions based on the schema.",
-    "extra": [
-     "I have a role authorising schema management"
-    ]
+    "so that": "Providers can take action with respect to resource descriptions based on the schema."
    },
    "acs": [
     {
@@ -2558,6 +2594,16 @@
      "group": "",
      "clauses": [
       {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user",
+       "struck": false
+      },
+      {
+       "kw": "And",
+       "text": "I have a role authorising schema management",
+       "struck": false
+      },
+      {
        "kw": "When",
        "text": "I revoke a schema successfully",
        "struck": false
@@ -2565,6 +2611,22 @@
       {
        "kw": "Then",
        "text": "Simpl notifies Providers about the revocation of the schema, including information about schema identifier, timestamp, and suggested follow-up actions.",
+       "struck": false
+      }
+     ],
+     "other_text": [],
+     "id": "SIMPL-14791/AC1"
+    },
+    {
+     "label": "AC2",
+     "explicit": false,
+     "struck": false,
+     "heading": "",
+     "group": "",
+     "clauses": [
+      {
+       "kw": "Given",
+       "text": "I am authenticated as a Governance Authority user",
        "struck": false
       },
       {
@@ -2589,11 +2651,10 @@
       }
      ],
      "other_text": [
-      "2. Given I am authenticated as a Governance Authority user",
       "Technical Notes:",
       "- We want to provide the email to which to send these notifications via a configuration key within the service's values"
      ],
-     "id": "SIMPL-14791/AC1"
+     "id": "SIMPL-14791/AC2"
     }
    ],
    "refs": {
@@ -2601,12 +2662,13 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-14795",
-   "title": "[API] Governance Authority – receiving an error message when submitting a syntactically invalid schema",
+   "title": "Technical Info",
    "kind": "API",
    "replaced": false,
    "status": "Ready for DG Acceptance",
@@ -2678,18 +2740,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "## Technical Info:",
-      "- Errors from Syntax Validation should come under",
-      "```java",
-      "{",
-      "...",
-      "detail: \"Syntax Error: <errorMessage>\"",
-      "...",
-      "}",
-      "```",
-      "* API definition: [https://jira.simplprogramme.eu/browse/SIMPL-12815](https://jira.simplprogramme.eu/browse/SIMPL-12815)"
-     ],
+     "other_text": [],
      "id": "SIMPL-14795/AC2"
     }
    ],
@@ -2700,12 +2751,13 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-14796",
-   "title": "[API] Governance Authority – receiving an error message about submitting an invalid schema - missing mandatory or default property",
+   "title": "Technical Info",
    "kind": "API",
    "replaced": false,
    "status": "Ready for DG Acceptance",
@@ -2782,33 +2834,22 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "## Technical Info:",
-      "- API Spec here: [https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/main/openapi/schema_openapi.yaml?ref_type=heads]",
-      "- Errors from Syntax Validation should come under",
-      "```java",
-      "{",
-      "...",
-      "detail: \"Mandatory properties error: <errorMessage>\"",
-      "...",
-      "}"
-     ],
+     "other_text": [],
      "id": "SIMPL-14796/AC2"
     }
    ],
    "refs": {
     "stories": [],
-    "paths": [
-     "/blob/main/openapi/schema_openapi"
-    ],
+    "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-14797",
-   "title": "[API] Governance Authority – receiving an error message about submitting a schema not complying with its validation rules",
+   "title": "Technical Info",
    "kind": "API",
    "replaced": false,
    "status": "DevTeam PBI is ready for Implementation check",
@@ -2952,20 +2993,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "## Technical Info:",
-      "- Errors from Syntax Validation should come under",
-      "```java",
-      "{",
-      "...",
-      "detail: \"Semantic Validation Error: <errorMessage>\"",
-      "...",
-      "}",
-      "```",
-      "* More info on implementation: [https://jira.simplprogramme.eu/browse/SIMPL-22407](https://jira.simplprogramme.eu/browse/SIMPL-22407)",
-      "* API definition: [https://jira.simplprogramme.eu/browse/SIMPL-12815](https://jira.simplprogramme.eu/browse/SIMPL-12815)",
-      "* API contract/API definition: [https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/main/openapi/schema_openapi.yaml?ref_type=heads](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/main/openapi/schema_openapi.yaml?ref_type=heads)"
-     ],
+     "other_text": [],
      "id": "SIMPL-14797/AC4"
     }
    ],
@@ -2974,11 +3002,10 @@
      "SIMPL-12815",
      "SIMPL-22407"
     ],
-    "paths": [
-     "/blob/main/openapi/schema_openapi"
-    ],
+    "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -3205,6 +3232,7 @@
      "GET /schemas"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas"
     ]
@@ -3641,12 +3669,13 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-19992",
-   "title": "API for Subscription Management of Publishing Events",
+   "title": "Notes",
    "kind": "API",
    "replaced": false,
    "status": "DevTeam PBI is ready for Implementation check",
@@ -3853,11 +3882,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "## Technical Documentation",
-      "* [https://confluence.simplprogramme.eu/display/SIMPL/3.+API+Specification](https://confluence.simplprogramme.eu/display/SIMPL/3.+API+Specification)",
-      "## Notes"
-     ],
+     "other_text": [],
      "id": "SIMPL-19992/AC5"
     }
    ],
@@ -3866,6 +3891,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -3878,13 +3904,16 @@
    "type": "Story",
    "source": "https://jira.simplprogramme.eu/browse/SIMPL-20067 (collected 2026-10-28)",
    "file": "schema-manager/specs/stories/SIMPL-20067.md",
-   "user_story": {},
+   "user_story": {
+    "i want": "to retrieve the contents of the latest version of a specific schema via UI",
+    "so that": "I can review and edit the SHACL content of the latest version of the schema"
+   },
    "acs": [
     {
      "label": "AC1",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Scenario",
      "group": "",
      "clauses": [
       {
@@ -3969,7 +3998,6 @@
       "|Download button should be added as a first point in the actions list|",
       "|UI should use API GET endpoint to retrieve schemas metadata and version information",
       "API implemented in: [https://jira.simplprogramme.eu/browse/SIMPL-13347]|",
-      "|UI should provide proper error messages for negative scenarios (above)|",
       "|The UI should adhere to the design principles: [https://confluence.simplprogramme.eu/pages/viewpage.action?pageId=48431839]|",
       "Mockups:",
       "Figma link: [https://www.figma.com/design/Y2fWImqAY9iBpouebp41Dh/schema-managment?node-id=55-20841&t=gc2S95JVZCOKrP96-0]",
@@ -3995,6 +4023,7 @@
      "GET /schemas/{schemaName}"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -4007,13 +4036,16 @@
    "type": "Story",
    "source": "https://jira.simplprogramme.eu/browse/SIMPL-20528 (collected 2026-10-28)",
    "file": "schema-manager/specs/stories/SIMPL-20528.md",
-   "user_story": {},
+   "user_story": {
+    "i want": "Simpl to automatically assign the initial version number, based on the applicable versioning algorithm, when creating a new schema",
+    "so that": "I could identify each schema version uniquely ensuring traceability"
+   },
    "acs": [
     {
      "label": "AC1",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Scenario",
      "group": "",
      "clauses": [
       {
@@ -4091,6 +4123,7 @@
      "POST /schemas"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:POST /schemas"
     ]
@@ -4105,13 +4138,16 @@
    "type": "Story",
    "source": "https://jira.simplprogramme.eu/browse/SIMPL-20529 (collected 2026-10-28)",
    "file": "schema-manager/specs/stories/SIMPL-20529.md",
-   "user_story": {},
+   "user_story": {
+    "i want": "to change the status of a validated schema to REVOKED or to PUBLISHED VIA an API",
+    "so that": "the schema can be used (PUBLISHED) or can not be used (REVOKED) for publication of new resource descriptions"
+   },
    "acs": [
     {
      "label": "AC1",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Scenario",
      "group": "",
      "clauses": [
       {
@@ -4150,16 +4186,14 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "|Scenario|The Governance Authority changes the state of a schema to REVOKED via API|"
-     ],
+     "other_text": [],
      "id": "SIMPL-20529/AC1"
     },
     {
      "label": "AC2",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Scenario",
      "group": "",
      "clauses": [
       {
@@ -4420,6 +4454,7 @@
      "PATCH /schemas/{schemaName}"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:PATCH /schemas/{schemaName}"
     ]
@@ -4434,13 +4469,16 @@
    "type": "Story",
    "source": "https://jira.simplprogramme.eu/browse/SIMPL-20530 (collected 2026-10-28)",
    "file": "schema-manager/specs/stories/SIMPL-20530.md",
-   "user_story": {},
+   "user_story": {
+    "i want": "to change the status of a validated schema to REVOKED or to PUBLISHED via UI",
+    "so that": "the schema can be used (PUBLISHED) or can not be used (REVOKED) for publication of new resource descriptions"
+   },
    "acs": [
     {
      "label": "AC1",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Scenario",
      "group": "",
      "clauses": [
       {
@@ -4484,16 +4522,14 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "|Scenario|The Governance Authority changes the status of a schema to PUBLISHED via the UI|"
-     ],
+     "other_text": [],
      "id": "SIMPL-20530/AC1"
     },
     {
      "label": "AC2",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Scenario",
      "group": "",
      "clauses": [
       {
@@ -4688,6 +4724,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -4700,13 +4737,16 @@
    "type": "Story",
    "source": "https://jira.simplprogramme.eu/browse/SIMPL-20534 (collected 2026-10-28)",
    "file": "schema-manager/specs/stories/SIMPL-20534.md",
-   "user_story": {},
+   "user_story": {
+    "i want": "Simpl to automatically assign the next version number, based on the applicable versioning algorithm, when creating a new schema version number",
+    "so that": "I can identify each schema version uniquely ensuring traceability"
+   },
    "acs": [
     {
      "label": "AC1",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Scenario",
      "group": "",
      "clauses": [
       {
@@ -4800,6 +4840,7 @@
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas/{schemaName}/versions",
      "schema_openapi:POST /schemas/{schemaName}/versions"
@@ -4808,7 +4849,7 @@
   },
   {
    "key": "SIMPL-20686",
-   "title": "Automatic status assignment when creating schemas by resourceType",
+   "title": "Acceptance Criteria: Schema Creation API Status Logic",
    "kind": "",
    "replaced": false,
    "status": "DevTeam PBI is ready for Implementation check",
@@ -4914,6 +4955,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -4926,13 +4968,16 @@
    "type": "Story",
    "source": "https://jira.simplprogramme.eu/browse/SIMPL-20770 (collected 2026-10-28)",
    "file": "schema-manager/specs/stories/SIMPL-20770.md",
-   "user_story": {},
+   "user_story": {
+    "i want": "Simpl to automatically assign the next version number, based on the applicable versioning algorithm",
+    "so that": "I can create a new schema version via UI without entering the version number"
+   },
    "acs": [
     {
      "label": "AC1",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Scenario",
      "group": "",
      "clauses": [
       {
@@ -4961,16 +5006,14 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "|Scenario|The Governance Authority creates new schema version|"
-     ],
+     "other_text": [],
      "id": "SIMPL-20770/AC1"
     },
     {
      "label": "AC2",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Scenario",
      "group": "",
      "clauses": [
       {
@@ -5105,6 +5148,7 @@
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas/{schemaName}/versions",
      "schema_openapi:POST /schemas/{schemaName}/versions"
@@ -5283,15 +5327,16 @@
       {
        "kw": "And",
        "text": "each error includes, where applicable:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "the affected schema property",
+        "the validation rule, relationship, or dependency that failed",
+        "the referenced vocabulary or vocabulary term involved",
+        "a human-readable error description"
+       ]
       }
      ],
-     "other_text": [
-      "* the affected schema property",
-      "* the validation rule, relationship, or dependency that failed",
-      "* the referenced vocabulary or vocabulary term involved",
-      "* a human-readable error description"
-     ],
+     "other_text": [],
      "id": "SIMPL-22407/AC3"
     },
     {
@@ -5354,19 +5399,16 @@
       {
        "kw": "And",
        "text": "each error includes, where applicable:",
-       "struck": false
-      },
-      {
-       "kw": "When",
-       "text": "doing semantic validation don't fail on first issue - perform a full semantic validation and return all semantic errors",
-       "struck": false
+       "struck": false,
+       "items": [
+        "the affected schema property",
+        "the validation rule, relationship, or dependency that failed",
+        "the referenced vocabulary or vocabulary term involved",
+        "a human-readable error description"
+       ]
       }
      ],
      "other_text": [
-      "* the affected schema property",
-      "* the validation rule, relationship, or dependency that failed",
-      "* the referenced vocabulary or vocabulary term involved",
-      "* a human-readable error description",
       "Technical Info: Important links to start to develop or helpful data.",
       "Additional Notes:",
       "Semantic validation is the overall validation process that ensures the schema is meaningful and consistent with the vocabularies it references. Validation rules, relationships, and dependencies are the specific checks performed as part of semantic validation:",
@@ -5377,6 +5419,7 @@
       "* checking that constraints defined by the referenced vocabularies are respected",
       "* we can only validate against self managed vocabularies as it wouldn't be safe to fetch external vocabularies",
       "* we issue warnings for external vocabularies that cannot be resolved",
+      "* when doing semantic validation don't fail on first issue - perform a full semantic validation and return all semantic errors",
       "Enforcement of validation rules, relationships, and dependencies is part of semantic validation."
      ],
      "id": "SIMPL-22407/AC4"
@@ -5387,12 +5430,13 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-24172",
-   "title": "[UI] Governance Authority – displaying an error message when submitting a syntactically invalid schema",
+   "title": "Technical Info",
    "kind": "UI",
    "replaced": false,
    "status": "Ready for DG Acceptance",
@@ -5536,33 +5580,22 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "## Technical Info:",
-      "- Errors from Syntax Validation should come under",
-      "- API Spec here: [https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/main/openapi/schema_openapi.yaml?ref_type=heads](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/main/openapi/schema_openapi.yaml?ref_type=heads)",
-      "```java",
-      "{",
-      "...",
-      "detail: \"Syntax Error: <errorMessage>\"",
-      "...",
-      "}"
-     ],
+     "other_text": [],
      "id": "SIMPL-24172/AC4"
     }
    ],
    "refs": {
     "stories": [],
-    "paths": [
-     "/blob/main/openapi/schema_openapi"
-    ],
+    "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-24173",
-   "title": "[UI] Governance Authority – receiving a notification about submitting an invalid schema - missing mandatory or default property",
+   "title": "Technical Info",
    "kind": "UI",
    "replaced": false,
    "status": "Ready for DG Acceptance",
@@ -5639,33 +5672,22 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "## Technical Info:",
-      "- API Spec here: [https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/main/openapi/schema_openapi.yaml?ref_type=heads]",
-      "- Errors from Syntax Validation should come under",
-      "```java",
-      "{",
-      "...",
-      "detail: \"Default Properties Error: <errorMessage>\"",
-      "...",
-      "}"
-     ],
+     "other_text": [],
      "id": "SIMPL-24173/AC2"
     }
    ],
    "refs": {
     "stories": [],
-    "paths": [
-     "/blob/main/openapi/schema_openapi"
-    ],
+    "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-24174",
-   "title": "[UI] Governance Authority – semantic validation message after submitting a schema",
+   "title": "Technical Info",
    "kind": "UI",
    "replaced": false,
    "status": "Ready for DG Acceptance",
@@ -5809,17 +5831,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "## Technical Info:",
-      "- Errors from Syntax Validation should come under [https://jira.simplprogramme.eu/browse/SIMPL-14703](https://jira.simplprogramme.eu/browse/SIMPL-14703)",
-      "- API definitions: [https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/main/openapi/schema_openapi.yaml?ref_type=heads](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/main/openapi/schema_openapi.yaml?ref_type=heads)",
-      "```java",
-      "{",
-      "...",
-      "detail: \"Semantic Validation Error: <errorMessage>\"",
-      "...",
-      "}"
-     ],
+     "other_text": [],
      "id": "SIMPL-24174/AC4"
     }
    ],
@@ -5827,11 +5839,10 @@
     "stories": [
      "SIMPL-14703"
     ],
-    "paths": [
-     "/blob/main/openapi/schema_openapi"
-    ],
+    "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -5965,6 +5976,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -6093,14 +6105,17 @@
        "struck": false
       },
       {
+       "kw": "Or",
+       "text": "Simpl does not verify the presence of the UUID and Version default properties",
+       "struck": false
+      },
+      {
        "kw": "Then",
        "text": "Simpl does not create the new schema.",
        "struck": false
       }
      ],
-     "other_text": [
-      "Or Simpl does not verify the presence of the UUID and Version default properties"
-     ],
+     "other_text": [],
      "id": "SIMPL-26105/AC3"
     },
     {
@@ -6131,13 +6146,17 @@
        "struck": false
       },
       {
+       "kw": "Or",
+       "text": "Simpl does not verify the presence of the UUID and Version default properties",
+       "struck": false
+      },
+      {
        "kw": "Then",
        "text": "Simpl does not create the new version of the schema.",
        "struck": false
       }
      ],
      "other_text": [
-      "Or Simpl does not verify the presence of the UUID and Version default properties",
       "Technical details:",
       "Additional default Properties for ALL resource types are in this ticket: [https://jira.simplprogramme.eu/browse/SIMPL-26100](https://jira.simplprogramme.eu/browse/SIMPL-26100)",
       "Default properties must be added to all schemas."
@@ -6153,6 +6172,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -6206,17 +6226,18 @@
       {
        "kw": "Then",
        "text": "the UI shows the properties of the contract clause of type 'Billing Schema':",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Title;",
+        "Billing model;",
+        "Source;",
+        "Billing unit;",
+        "Billing unit price;",
+        "Billing schedule."
+       ]
       }
      ],
-     "other_text": [
-      "- Title;",
-      "- Billing model;",
-      "- Source;",
-      "- Billing unit;",
-      "- Billing unit price;",
-      "- Billing schedule."
-     ],
+     "other_text": [],
      "id": "SIMPL-28815/AC1"
     },
     {
@@ -6254,7 +6275,15 @@
       {
        "kw": "When",
        "text": "I provide the values of the properties of the contract clause of type 'Billing Schema':",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Title (Text);",
+        "Billing model (Subscription, Pay-per-use, One-off);",
+        "Source (Upload a document*);",
+        "Billing unit (Text);",
+        "Billing unit price (Decimal(10,2));",
+        "Billing schedule (Text)."
+       ]
       },
       {
        "kw": "Then",
@@ -6273,12 +6302,6 @@
       }
      ],
      "other_text": [
-      "- Title (Text);",
-      "- Billing model (Subscription, Pay-per-use, One-off);",
-      "- Source (Upload a document*);",
-      "- Billing unit (Text);",
-      "- Billing unit price (Decimal(10,2));",
-      "- Billing schedule (Text).",
       "Note: The upload of the document is covered in [https://jira.simplprogramme.eu/browse/SIMPL-28846]"
      ],
      "id": "SIMPL-28815/AC2"
@@ -6522,6 +6545,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -6604,9 +6628,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "negative case:"
-     ],
+     "other_text": [],
      "id": "SIMPL-31098/AC2"
     },
     {
@@ -6614,7 +6636,7 @@
      "explicit": false,
      "struck": false,
      "heading": "",
-     "group": "",
+     "group": "negative case",
      "clauses": [
       {
        "kw": "Given",
@@ -6674,6 +6696,7 @@
      "POST /schemas"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:POST /schemas"
     ]
@@ -6694,26 +6717,6 @@
     "so that": "I can get a high-level overview of all registered schemas."
    },
    "acs": [
-    {
-     "label": "AC4",
-     "explicit": false,
-     "struck": false,
-     "heading": "",
-     "group": "",
-     "clauses": [
-      {
-       "kw": "When",
-       "text": "retrieving the available schemas, the schema type should be returned which can be: 'Resource description schema' or 'Federated search schema'.",
-       "struck": false
-      }
-     ],
-     "other_text": [
-      "**As a** Governance Authority,",
-      "**I want** to retrieve a list of all schemas available in the system via API,",
-      "**So that** I can get a high-level overview of all registered schemas."
-     ],
-     "id": "SIMPL-32258/AC4"
-    },
     {
      "label": "AC1",
      "explicit": true,
@@ -6821,7 +6824,7 @@
      "id": "SIMPL-32258/AC3"
     },
     {
-     "label": "AC5",
+     "label": "AC4",
      "explicit": false,
      "struck": false,
      "heading": "Negative Scenario:",
@@ -6844,10 +6847,10 @@
       }
      ],
      "other_text": [],
-     "id": "SIMPL-32258/AC5"
+     "id": "SIMPL-32258/AC4"
     },
     {
-     "label": "AC6",
+     "label": "AC5",
      "explicit": false,
      "struck": false,
      "heading": "",
@@ -6870,10 +6873,10 @@
       }
      ],
      "other_text": [],
-     "id": "SIMPL-32258/AC6"
+     "id": "SIMPL-32258/AC5"
     },
     {
-     "label": "AC7",
+     "label": "AC6",
      "explicit": false,
      "struck": false,
      "heading": "",
@@ -6909,7 +6912,7 @@
       "Design:* [https://confluence.simplprogramme.eu/spaces/SIMPL/pages/150798404/R25+Federated+cross+data+space+ca…](https://confluence.simplprogramme.eu/spaces/SIMPL/pages/150798404/R25+Federated+cross+data+space+catalogue+search+-+Technical+Description?focusedCommentId=177483857#comment-177483857)",
       "Functional Description: [https://confluence.simplprogramme.eu/spaces/SIMPL/pages/107811414/R25+Federated+cross+data+space+ca…](https://confluence.simplprogramme.eu/spaces/SIMPL/pages/107811414/R25+Federated+cross+data+space+catalogue+search+-+Functional+description)"
      ],
-     "id": "SIMPL-32258/AC7"
+     "id": "SIMPL-32258/AC6"
     }
    ],
    "refs": {
@@ -6925,6 +6928,7 @@
      "GET /schemas"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas"
     ]
@@ -7010,6 +7014,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -7091,6 +7096,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -7293,6 +7299,7 @@
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas/{schemaName}/versions",
      "schema_openapi:POST /schemas/{schemaName}/versions"
@@ -7371,6 +7378,7 @@
      "GET /schemas/{schemaName}/versions"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas/{schemaName}/versions"
     ]
@@ -7378,7 +7386,7 @@
   },
   {
    "key": "SIMPL-32788",
-   "title": "[ENHANCE] - Governance Authority - retrieving the contents of the latest version of a schema via API",
+   "title": "Technical Documentation",
    "kind": "API",
    "replaced": false,
    "status": "PBI INTERNAL QA",
@@ -7394,7 +7402,7 @@
      "label": "AC1",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Path: no optional schema type specified",
      "group": "",
      "clauses": [
       {
@@ -7453,16 +7461,14 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "**Path: specified schema type = RESOURCE**"
-     ],
+     "other_text": [],
      "id": "SIMPL-32788/AC1"
     },
     {
      "label": "AC2",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Path: specified schema type = RESOURCE",
      "group": "",
      "clauses": [
       {
@@ -7521,16 +7527,14 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "**Path: specified schema type = SEARCH**"
-     ],
+     "other_text": [],
      "id": "SIMPL-32788/AC2"
     },
     {
      "label": "AC3",
      "explicit": false,
      "struck": false,
-     "heading": "",
+     "heading": "Path: specified schema type = SEARCH",
      "group": "",
      "clauses": [
       {
@@ -7615,14 +7619,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "### Technical Design:",
-      "This US is covered with the implementation of https://jira.simplprogramme.eu/browse/SIMPL-33537 and only for linkage to the epic.",
-      "### Technical Documentation:",
-      "- Note additional attribute schemaType is optional. When schemaType is not explicitely stated the default value is \"RESOURCE\".",
-      "- enhance existing solution by adding new attribute schematype to distinguish RESOURCE for already implemented solution and \"SEARCH\" for Federated Search schemas. Ensure by explicitely setting filter for schemaType = RESOURCE for existing test cases they still work. In API for schemaType the default value is \"RESOURCE\"",
-      "- [https://confluence.simplprogramme.eu/spaces/SIMPL/pages/150798404/R25+Federated+cross+data+space+catalogue+search+-+Technical+Description]"
-     ],
+     "other_text": [],
      "id": "SIMPL-32788/AC4"
     }
    ],
@@ -7638,6 +7635,7 @@
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -7867,6 +7865,7 @@
      "GET /schemas"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas"
     ]
@@ -8009,6 +8008,7 @@
      "GET /schemas/{schemaName}/versions"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas/{schemaName}/versions"
     ]
@@ -8216,6 +8216,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -8259,7 +8260,12 @@
       {
        "kw": "When",
        "text": "I complete the \"Create Schema\" form by:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Entering a new Schema Name (`{}name{`}, e.g., `{}DataAsset{`}).",
+        "Providing a human-readable Title and Description for the schema.",
+        "Selecting a `resourceType` from the available options (`{}data{`}, `{}infrastructure{`}, `{}application{`})."
+       ]
       },
       {
        "kw": "And",
@@ -8288,9 +8294,6 @@
       }
      ],
      "other_text": [
-      "- Entering a new Schema Name (`{}name{`}, e.g., `{}DataAsset{`}).",
-      "- Providing a human-readable Title and Description for the schema.",
-      "- Selecting a `resourceType` from the available options (`{}data{`}, `{}infrastructure{`}, `{}application{`}).",
       "PATH creating initial Federated Search Schema"
      ],
      "id": "SIMPL-32800/AC1"
@@ -8325,7 +8328,12 @@
       {
        "kw": "When",
        "text": "I complete the \"Create Schema\" form by:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Entering a new Schema Name (`{}name{`}, e.g., `{}DataAsset{`}).",
+        "Providing a human-readable Title and Description for the schema.",
+        "Selecting the schemaType from the available options (RESOURCE, SEARCH)"
+       ]
       },
       {
        "kw": "And",
@@ -8358,11 +8366,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "- Entering a new Schema Name (`{}name{`}, e.g., `{}DataAsset{`}).",
-      "- Providing a human-readable Title and Description for the schema.",
-      "- Selecting the schemaType from the available options (RESOURCE, SEARCH)"
-     ],
+     "other_text": [],
      "id": "SIMPL-32800/AC2"
     },
     {
@@ -8395,7 +8399,14 @@
       {
        "kw": "When",
        "text": "I complete the \"Create Schema\" form by:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Entering the given Schema Name (`{}name{`}, e.g., `{}DataAsset{`}).",
+        "Providing a human-readable Title and Description for the schema.",
+        "Selecting the schemaType = RESOURCE",
+        "Selecting a `resourceType` from the available options (`{}data{`}, `{}infrastructure{`}, `{}application{`}).",
+        "Uploading a valid `.ttl` file containing the SHACL definition."
+       ]
       },
       {
        "kw": "And",
@@ -8414,11 +8425,6 @@
       }
      ],
      "other_text": [
-      "- Entering the given Schema Name (`{}name{`}, e.g., `{}DataAsset{`}).",
-      "- Providing a human-readable Title and Description for the schema.",
-      "- Selecting the schemaType = RESOURCE",
-      "- Selecting a `resourceType` from the available options (`{}data{`}, `{}infrastructure{`}, `{}application{`}).",
-      "- Uploading a valid `.ttl` file containing the SHACL definition.",
       "PATH creating a new Federated Search Schema for already existing schema file with given name"
      ],
      "id": "SIMPL-32800/AC3"
@@ -8453,7 +8459,11 @@
       {
        "kw": "When",
        "text": "I complete the \"Create Schema\" form by:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Entering the given Schema Name (`{}name{`}, e.g., `{}DataAsset{`}).",
+        "Providing a human-readable Title and Description for the schema."
+       ]
       },
       {
        "kw": "And",
@@ -8477,8 +8487,6 @@
       }
      ],
      "other_text": [
-      "- Entering the given Schema Name (`{}name{`}, e.g., `{}DataAsset{`}).",
-      "- Providing a human-readable Title and Description for the schema.",
       "- AND",
       "- ** Uploading a valid `.ttl` file containing the SHACL definition.",
       "PATH creating a new Federated Search Schema for already published federated schema file (no matter the schema name is)"
@@ -8515,7 +8523,11 @@
       {
        "kw": "When",
        "text": "I complete the \"Create Schema\" form by:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Entering the given Schema Name (`{}name{`}, e.g., `{}DataAsset{`}).",
+        "Providing a human-readable Title and Description for the schema."
+       ]
       },
       {
        "kw": "And",
@@ -8539,8 +8551,6 @@
       }
      ],
      "other_text": [
-      "- Entering the given Schema Name (`{}name{`}, e.g., `{}DataAsset{`}).",
-      "- Providing a human-readable Title and Description for the schema.",
       "- AND",
       "- ** Uploading a valid `.ttl` file containing the SHACL definition.",
       "Technical Info:",
@@ -8567,6 +8577,7 @@
      "POST /schemas"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:POST /schemas"
     ]
@@ -8574,7 +8585,7 @@
   },
   {
    "key": "SIMPL-32801",
-   "title": "[ENHANCE] - Automatic status assignment when creating schemas by resourceType",
+   "title": "Acceptance Criteria: Schema Creation API Status Logic",
    "kind": "",
    "replaced": false,
    "status": "PBI INTERNAL QA",
@@ -8772,6 +8783,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -9173,11 +9185,11 @@
      "SIMPL-33537"
     ],
     "paths": [
-     "/api/v1/schemas",
-     "/blob/feature/SIMPL-30422_api_definition_to_manage_federated_search_schema/openapi/schema_openapi"
+     "/api/v1/schemas"
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -9221,7 +9233,12 @@
       {
        "kw": "When",
        "text": "I send a `POST` request to the `/schemas/\\{schemaName}/versions` endpoint with a `multipart/form-data` body containing:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "schemaType is empty",
+        "A `metadata` part with schemaName, schemaType and a `changelog` description.",
+        "A `file` part containing a valid SHACL definition in a `.ttl` file."
+       ]
       },
       {
        "kw": "Then",
@@ -9255,9 +9272,6 @@
       }
      ],
      "other_text": [
-      "- schemaType is empty",
-      "- A `metadata` part with schemaName, schemaType and a `changelog` description.",
-      "- A `file` part containing a valid SHACL definition in a `.ttl` file.",
       "Path: Updating existing Resource Definition Schema with explicitely set schema type"
      ],
      "id": "SIMPL-32807/AC1"
@@ -9287,7 +9301,12 @@
       {
        "kw": "When",
        "text": "I send a `POST` request to the `/schemas/\\{schemaName}/versions` endpoint with a `multipart/form-data` body containing:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "schemaType = RESOURCE",
+        "A `metadata` part with schemaName, schemaType and a `changelog` description.",
+        "A `file` part containing a valid SHACL definition in a `.ttl` file."
+       ]
       },
       {
        "kw": "Then",
@@ -9321,9 +9340,6 @@
       }
      ],
      "other_text": [
-      "- schemaType = RESOURCE",
-      "- A `metadata` part with schemaName, schemaType and a `changelog` description.",
-      "- A `file` part containing a valid SHACL definition in a `.ttl` file.",
       "Path: Updating existing Federated Search Schema"
      ],
      "id": "SIMPL-32807/AC2"
@@ -9353,7 +9369,12 @@
       {
        "kw": "When",
        "text": "I send a `POST` request to the `/schemas/\\{schemaName}/versions` endpoint with a `multipart/form-data` body containing:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "schemaType = SEARCH",
+        "A `metadata` part with schemaName, schemaType and a `changelog` description.",
+        "A `file` part containing a valid SHACL definition in a `.ttl` file."
+       ]
       },
       {
        "kw": "Then",
@@ -9386,11 +9407,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "- schemaType = SEARCH",
-      "- A `metadata` part with schemaName, schemaType and a `changelog` description.",
-      "- A `file` part containing a valid SHACL definition in a `.ttl` file."
-     ],
+     "other_text": [],
      "id": "SIMPL-32807/AC3"
     },
     {
@@ -9413,7 +9430,12 @@
       {
        "kw": "When",
        "text": "I send a `POST` request to the `/schemas/\\{schemaName}/versions` endpoint with a `multipart/form-data` body containing:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "** schemaType is empty",
+        "A `metadata` part with not existing schemaName and a `changelog` description.",
+        "A `file` part containing a valid SHACL definition in a `.ttl` file."
+       ]
       },
       {
        "kw": "Then",
@@ -9422,9 +9444,6 @@
       }
      ],
      "other_text": [
-      "- ** schemaType is empty",
-      "- A `metadata` part with not existing schemaName and a `changelog` description.",
-      "- A `file` part containing a valid SHACL definition in a `.ttl` file.",
       "Path: Updating not existing Federated Search Schema"
      ],
      "id": "SIMPL-32807/AC4"
@@ -9449,7 +9468,12 @@
       {
        "kw": "When",
        "text": "I send a `POST` request to the `/schemas/\\{schemaName}/versions` endpoint with a `multipart/form-data` body containing:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "** schemaType = SEARCH",
+        "A `metadata` part with not existing schemaName and a `changelog` description.",
+        "A `file` part containing a valid SHACL definition in a `.ttl` file."
+       ]
       },
       {
        "kw": "Then",
@@ -9458,9 +9482,6 @@
       }
      ],
      "other_text": [
-      "- ** schemaType = SEARCH",
-      "- A `metadata` part with not existing schemaName and a `changelog` description.",
-      "- A `file` part containing a valid SHACL definition in a `.ttl` file.",
       "Path: Updating not existing Federated Search Schema, but Resource Definition of given schema name"
      ],
      "id": "SIMPL-32807/AC5"
@@ -9490,7 +9511,12 @@
       {
        "kw": "When",
        "text": "I send a `POST` request to `/schemas/\\{schemaName}/versions` with a `multipart/form-data` body containing:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "** schemaType = SEARCH",
+        "A `metadata` part with not existing schemaName and a `changelog` description.",
+        "A `file` part containing a valid SHACL definition in a `.ttl` file."
+       ]
       },
       {
        "kw": "Then",
@@ -9499,9 +9525,6 @@
       }
      ],
      "other_text": [
-      "- ** schemaType = SEARCH",
-      "- A `metadata` part with not existing schemaName and a `changelog` description.",
-      "- A `file` part containing a valid SHACL definition in a `.ttl` file.",
       "Path: Updating existing schema with invalid SHACL file."
      ],
      "id": "SIMPL-32807/AC6"
@@ -9536,7 +9559,12 @@
       {
        "kw": "When",
        "text": "I send a `POST` request to `/schemas/ \\{schemaName}/versions` with a `multipart/form-data` body containing:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "* schemaType is not explicitely set (default Value is RESOURCE)",
+        "A `metadata` part with existing schemaName and a `changelog` description.",
+        "A `file` part containing an invalid SHACL definition in a `.ttl` file."
+       ]
       },
       {
        "kw": "Then",
@@ -9550,9 +9578,6 @@
       }
      ],
      "other_text": [
-      "- * schemaType is not explicitely set (default Value is RESOURCE)",
-      "- A `metadata` part with existing schemaName and a `changelog` description.",
-      "- A `file` part containing an invalid SHACL definition in a `.ttl` file.",
       "-"
      ],
      "id": "SIMPL-32807/AC7"
@@ -9650,13 +9675,13 @@
      "SIMPL-33537"
     ],
     "paths": [
-     "/blob/main/openapi/schema_openapi",
      "/schemas",
      "/schemas/{schemaName}/versions",
      "/versions"
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas",
      "schema_openapi:GET /schemas/{schemaName}/versions",
@@ -9929,12 +9954,11 @@
      "SIMPL-30422"
     ],
     "paths": [
-     "/blob/develop/openapi/schema_openapi",
-     "/blob/main/openapi/schema_openapi",
      "/schemas/{schemaName}/versions"
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas/{schemaName}/versions",
      "schema_openapi:POST /schemas/{schemaName}/versions"
@@ -9956,29 +9980,6 @@
     "so that": "I can enable federated search across data spaces using a validated common schema without disrupting existing resource-schema clients."
    },
    "acs": [
-    {
-     "label": "AC6",
-     "explicit": false,
-     "struck": false,
-     "heading": "",
-     "group": "",
-     "clauses": [
-      {
-       "kw": "When",
-       "text": "a `schemaType` filter is supplied, return only schemas or versions that match the requested `RESOURCE` or `SEARCH` type. When it is omitted from a retrieval request, return only `RESOURCE` schemas and versions.",
-       "struck": false
-      }
-     ],
-     "other_text": [
-      "* Allow `schemaType` filtering to be combined with the supported `status` filter on `GET /schemas`. SEARCH schemas have no `resourceType` because they apply to all resource types; reject requests that supply `resourceType` for a SEARCH schema with `400 Bad Request`.",
-      "* Create and version Federated Search schemas, with server-generated version numbers.",
-      "* Allow at most one published Federated Search schema. A revoked Federated Search schema does not count as published.",
-      "* Validate submitted Federated Search SHACL content and the default properties applicable to `SEARCH` before creation or versioning. Validation failures must prevent creation.",
-      "* A revoked `SEARCH` schema must not be available for federated search.",
-      "* Keep existing clients and test cases backward compatible: requests that omit `schemaType` continue to use `RESOURCE` schemas and versions."
-     ],
-     "id": "SIMPL-33537/AC6"
-    },
     {
      "label": "AC1",
      "explicit": true,
@@ -10170,6 +10171,7 @@
      "GET /schemas/{schemaName}/{version}"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "schema_openapi:GET /schemas",
      "schema_openapi:GET /schemas/{schemaName}/versions",
@@ -10194,9 +10196,9 @@
    "acs": [
     {
      "label": "AC1",
-     "explicit": false,
+     "explicit": true,
      "struck": false,
-     "heading": "",
+     "heading": "1. New schema published",
      "group": "",
      "clauses": [
       {
@@ -10225,16 +10227,14 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "### 2. New schema version published"
-     ],
+     "other_text": [],
      "id": "SIMPL-33694/AC1"
     },
     {
      "label": "AC2",
-     "explicit": false,
+     "explicit": true,
      "struck": false,
-     "heading": "",
+     "heading": "2. New schema version published",
      "group": "",
      "clauses": [
       {
@@ -10263,16 +10263,14 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "### 3. Schema revoked"
-     ],
+     "other_text": [],
      "id": "SIMPL-33694/AC2"
     },
     {
      "label": "AC3",
-     "explicit": false,
+     "explicit": true,
      "struck": false,
-     "heading": "",
+     "heading": "3. Schema revoked",
      "group": "",
      "clauses": [
       {
@@ -10301,16 +10299,14 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "### 4. Failed schema lifecycle operation"
-     ],
+     "other_text": [],
      "id": "SIMPL-33694/AC3"
     },
     {
      "label": "AC4",
-     "explicit": false,
+     "explicit": true,
      "struck": false,
-     "heading": "",
+     "heading": "4. Failed schema lifecycle operation",
      "group": "",
      "clauses": [
       {
@@ -10339,16 +10335,14 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "### 5. SEARCH schema change"
-     ],
+     "other_text": [],
      "id": "SIMPL-33694/AC4"
     },
     {
      "label": "AC5",
-     "explicit": false,
+     "explicit": true,
      "struck": false,
-     "heading": "",
+     "heading": "5. SEARCH schema change",
      "group": "",
      "clauses": [
       {
@@ -10386,6 +10380,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   }
@@ -11122,17 +11117,278 @@
    ]
   }
  ],
- "processes": [],
- "bp_requirements": [],
+ "processes": [
+  {
+   "id": "BP02C",
+   "title": "BP02C - Manage resource description schemas",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md",
+   "story_refs": [
+    "SIMPL-11209",
+    "SIMPL-11264",
+    "SIMPL-11265",
+    "SIMPL-11267",
+    "SIMPL-11268",
+    "SIMPL-11269",
+    "SIMPL-11271",
+    "SIMPL-11275"
+   ]
+  }
+ ],
+ "bp_requirements": [
+  {
+   "id": "BP02C.01",
+   "process": "BP02C",
+   "kind": "step",
+   "title": "Create a new schema",
+   "text": "The _Governance Authority_ creates the schema by providing a comprehensive and structured definition, detailing its custom mandatory and custom recommended properties, data types, constraints, validation rules, and any relationships or dependencies.",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP02C.02",
+   "process": "BP02C",
+   "kind": "step",
+   "title": "Create a new version of the schema",
+   "text": "The _Governance Authority_ selects an existing schema from the data space catalogue. The _Governance Authority_ creates the new version of the schema by providing a comprehensive and structured definition, detailing its custom mandatory and custom recommended properties, data types, constraints, validation rules, and any relationships or dependencies.",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP02C.03",
+   "process": "BP02C",
+   "kind": "step",
+   "title": "Revoke a schema",
+   "text": "The _Governance Authority_ revokes an existing schema if it becomes obsolete, superseded, or no longer relevant to the data space.",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP02C.04",
+   "process": "BP02C",
+   "kind": "step",
+   "title": "Validate the schema",
+   "text": "Simpl-Open enriches the schema with default properties, then validates through: - Syntactic validation according to imposed structure and formatting. - Semantic validation of schema properties based on vocabularies used.",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP02C.05",
+   "process": "BP02C",
+   "kind": "step",
+   "title": "Publish the schema",
+   "text": "Upon successful validation, the new schema or new version of an existing schema is published in the data space catalogue. If it concerns the creation of a new version of an existing schema, the previous version is revoked.",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP02C.06",
+   "process": "BP02C",
+   "kind": "step",
+   "title": "Inform Providers about changes of the schema",
+   "text": "_Providers_ are notified about changes (e.g. via email).",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP02C.07",
+   "process": "BP02C",
+   "kind": "step",
+   "title": "Send report",
+   "text": "Simpl-Open sends a report to the _Governance Authority_ about validation issues of the schema.",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.1",
+   "process": "BP02C",
+   "kind": "requirement",
+   "title": "Governance Authority - retrieving schemas and their versions",
+   "text": "Simpl-Open shall allow the retrieval of schemas and their versions, enabling the Governance Authority to review them and take action.",
+   "issue": "SIMPL-11209",
+   "details_url": "https://simpl-programme.ec.europa.eu/book-page/2c1-governance-authority-retrieving-schemas-and-their-versions",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.2",
+   "process": "BP02C",
+   "kind": "requirement",
+   "title": "Governance Authority - creating a new schema",
+   "text": "Simpl-Open shall allow the Governance Authority to create a schema, so that resource descriptions created from it align with the standards and rules defined by the Governance Authority for its data space, and so that advanced search contains properties relevant for the selected catalogues during search. This applies to federated search.",
+   "issue": "SIMPL-11264",
+   "details_url": "https://simpl-programme.ec.europa.eu/book-page/2c2-governance-authority-creating-new-schema",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.3",
+   "process": "BP02C",
+   "kind": "requirement",
+   "title": "Governance Authority - creating a new version of an existing schema",
+   "text": "Simpl-Open shall enable the Governance Authority to create a new version of an existing schema, so that resource descriptions created from the new version align with the standards and rules defined by the Governance Authority for its data space.",
+   "issue": "SIMPL-11265",
+   "details_url": "https://simpl-programme.ec.europa.eu/book-page/2c3-governance-authority-creating-new-version-existing-schema",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.4",
+   "process": "BP02C",
+   "kind": "requirement",
+   "title": "Governance Authority - validating a schema",
+   "text": "Simpl-Open shall allow the Governance Authority to syntactically and semantically validate a schema. This includes verifying the structural correctness of the schema as well as ensuring the semantic integrity of its properties against the vocabularies used to define them. The validation process shall also confirm that Simpl's default properties are correctly applied, ensuring consistency with Simpl governance rules.",
+   "issue": "SIMPL-11268",
+   "details_url": "https://simpl-programme.ec.europa.eu/book-page/2c4-governance-authority-validating-schema",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.5",
+   "process": "BP02C",
+   "kind": "requirement",
+   "title": "Governance Authority - receiving feedback about schema validation issues",
+   "text": "Simpl-Open shall provide feedback to the Governance Authority about the validation issues of a schema.",
+   "issue": "SIMPL-11275",
+   "details_url": "https://simpl-programme.ec.europa.eu/book-page/2c5-governance-authority-receiving-feedback-about-schema-validation-issues",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.6",
+   "process": "BP02C",
+   "kind": "requirement",
+   "title": "Governance Authority - publishing a schema",
+   "text": "Simpl-Open shall enable the Governance Authority to publish and version schemas, ensuring that any resource descriptions published with one of the resource description schemas (or a version of it) within the data space adhere to the defined standards and rules, and that other types of schemas (federated search schema) can be made available.",
+   "issue": "SIMPL-11269",
+   "details_url": "https://simpl-programme.ec.europa.eu/book-page/2c6-governance-authority-publishing-schema",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.7",
+   "process": "BP02C",
+   "kind": "requirement",
+   "title": "Governance Authority - revoking and retaining a schema",
+   "text": "Simpl-Open shall allow the Governance Authority to revoke a schema when needed and retain it.",
+   "issue": "SIMPL-11267",
+   "details_url": "https://simpl-programme.ec.europa.eu/book-page/2c7-governance-authority-revoking-and-retaining-schema",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.8",
+   "process": "BP02C",
+   "kind": "requirement",
+   "title": "Governance Authority - notifying Providers about schema changes",
+   "text": "Simpl-Open shall notify Providers when a resource description schema is published, a new version of an existing resource description schema is published, or a resource description schema is revoked, so that Providers are aware and can, if required or relevant, adapt their resource descriptions accordingly.",
+   "issue": "SIMPL-11271",
+   "details_url": "https://simpl-programme.ec.europa.eu/book-page/2c8-governance-authority-notifying-providers-about-schema-changes",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.1.1",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "Governance Authority - retrieving schemas and schema versions",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.2.1",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "Governance Authority - creating a new schema for a new resource type",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.2.2",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "The Governance Authority versions a new schema",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.3.1",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "Governance Authority - creating a new version of an existing schema for a resource type",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.3.2",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "The Governance Authority versions a new version of a schema",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.4.1",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "Governance Authority - validating a schema's syntax, semantics, and default properties",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.5.1",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "Governance Authority - receiving feedback and report about schema validation issues",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.6.1",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "Governance Authority - publishing a validated schema",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.7.1",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "Governance Authority - ensuring that a revoked schema is not available for publishing a new resource description",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.7.2",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "Governance Authority - revoking a schema",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.7.3",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "Governance Authority - retaining a revoked schema for existing resource descriptions",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  },
+  {
+   "id": "BP2C.8.1",
+   "process": "BP02C",
+   "kind": "detailed requirement",
+   "title": "Governance Authority - notifying Providers about schema changes",
+   "text": "",
+   "details_url": "",
+   "file": "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md"
+  }
+ ],
  "extraction_issues": [
-  "SIMPL-14709/AC1: no Given clause",
-  "SIMPL-14712/AC1: no Given clause",
-  "SIMPL-14791/AC1: no Given clause",
   "SIMPL-19992/AC4: no Given clause",
-  "SIMPL-32258/AC4: no Given clause",
-  "SIMPL-32258/AC4: no Then clause",
-  "SIMPL-33537/AC6: no Given clause",
-  "SIMPL-33537/AC6: no Then clause",
   "schema_openapi:GET /schemas: no operationId",
   "schema_openapi:POST /schemas: no operationId",
   "schema_openapi:PATCH /schemas/{schemaName}: no operationId",
@@ -11149,9 +11405,22 @@
   "schema_openapi:GET /webhooks: no operationId",
   "schema_openapi:POST /webhooks: no operationId",
   "schema_openapi:DELETE /webhooks/{webhookId}: no operationId",
-  "schema-manager/specs/functional/bp02c-manage-resource-description-schemas.md: single-file process, not parsed into requirements",
+  "SIMPL-13343: names GET /api/v1/schemas, which is in no API entry file",
+  "SIMPL-13343: names /schemas without a method; 2 operations have that path, all linked",
+  "SIMPL-13345: names /schemas/{schemaName}/versions without a method; 2 operations have that path, all linked",
+  "SIMPL-13357: names /schemas/{nonExistentSchemaName}/versions without a method; 2 operations have that path, all linked",
+  "SIMPL-13357: names /schemas/{schemaName}/versions without a method; 2 operations have that path, all linked",
+  "SIMPL-13358: names /schemas/{schemaName}/versions without a method; 2 operations have that path, all linked",
   "SIMPL-20067: names GET /schemas/{schemaName}, but the OpenAPI has that path with another method",
+  "SIMPL-20534: names /schemas/{schemaName}/versions without a method; 2 operations have that path, all linked",
+  "SIMPL-20770: names /schemas/{schemaName}/versions without a method; 2 operations have that path, all linked",
+  "SIMPL-31098: names PATCH /schemas/FedSearch, which is in no API entry file",
   "SIMPL-31098: names GET /schemas/{schemaName}, but the OpenAPI has that path with another method",
+  "SIMPL-32258: names GET /api/v1/schemas, which is in no API entry file",
+  "SIMPL-32786: names /schemas/{schemaName}/versions without a method; 2 operations have that path, all linked",
+  "SIMPL-32807: names /schemas without a method; 2 operations have that path, all linked",
+  "SIMPL-32807: names /schemas/{schemaName}/versions without a method; 2 operations have that path, all linked",
+  "SIMPL-32808: names /schemas/{schemaName}/versions without a method; 2 operations have that path, all linked",
   "SIMPL-33537: names GET /schemas/{schemaName}, but the OpenAPI has that path with another method"
  ]
 }

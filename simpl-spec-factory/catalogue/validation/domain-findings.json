@@ -1,0 +1,427 @@
+[
+ {
+  "id": "D-001",
+  "target": "cross",
+  "rule": "DDD-01",
+  "severity": "blocker",
+  "finding": "The main business object has two live names. The stories, the business process and all three CDMs say resource description (CDM class ResourceDescription). The catalogue-be API says SelfDescription in every schema and path, the adapter uses both (/selfDescriptions for search, /resourceDescriptions for participant and federated detail), and catalogue-client-be uses selfDescriptions. The federated operations still to be defined (F-022, F-052) force a builder to pick one.",
+  "evidence": "BP05B and BP06 titles and steps: \"resource description\"; CDM:catalogue-be:ResourceDescription; catalogue-be common-components.yaml schemas SelfDescription, SelfDescriptions, SelfDescriptionResult, SelfDescriptionStatus; catalogue-be paths /self-descriptions and /selfDescriptions/quickSearch; query-mapper-adapter-be GET /selfDescriptions and GET /participants/resourceDescriptions/{resourceDescriptionId}, GET /federated/resourceDescriptions/{resourceDescriptionId}; catalogue-client-be GET /selfDescriptions/{selfDescriptionId}. The catalogue-client-be CDM already removed SelfDescription: \"SelfDescription is not a concept of the Federated Catalogue CDM, which owns the resource description as ResourceDescription\".",
+  "question": "Which name do new operations, schemas and events use, and is self-description kept only as a legacy wire name with a written mapping?",
+  "options": [
+   "Resource description in all new contracts and texts; existing SelfDescription schemas and /selfDescriptions paths stay as documented legacy names, mapped in the glossary",
+   "Rename the existing schemas and paths to ResourceDescription (breaking change, versioned API)",
+   "Keep self-description on the wire everywhere and resource description in business texts, with the mapping written down"
+  ],
+  "from_23a": [
+   "DDD-06 catalogue-be#SelfDescription",
+   "DDD-06 catalogue-be#SelfDescriptions",
+   "DDD-06 catalogue-be#SelfDescriptionStatus",
+   "DDD-07 catalogue-be#SelfDescriptionResult",
+   "DDD-06 catalogue-be.md#ResourceDescription",
+   "DDD-06 catalogue-be.md#ResourceDescriptionResult"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-002",
+  "target": "cross",
+  "rule": "DDD-09",
+  "severity": "blocker",
+  "finding": "A resource description is identified under at least eight names, and it is not stated which of them name the same value. The search result items carry only claimsGraphUri, the detail call takes selfDescriptionId, the adapter takes resourceDescriptionId, and catalogue-be has both a per-record id and a resourceKey \"stable across versions\". A tester cannot pass the identifier from a search result to the detail call with confidence, and a builder cannot tell whether revoke and QAR act on one version or on the whole resource description.",
+  "evidence": "CDM:catalogue-be:ResourceDescription.resourceIdentifier; catalogue-be SelfDescription.id, .sdHash, .resourceKey (\"Stable identifier for the resource across versions\"), path selfDescriptionId, DELETE /self-descriptions/{self_description_hash}, GET /self-descriptions filters ids and hashes; query-mapper-adapter-be path resourceDescriptionId and GET .../version \"list of resource descriptions with the same parent resource description id\"; search items n.claimsGraphUri (catalogue-be, adapter) and i.claimsGraphUri (catalogue-client-be v1); catalogue-client-be selfDescriptionId example did:web:registry.gaia-x.eu:DataOffering:...; SIMPL-31150, SIMPL-31153, SIMPL-31770 technical descriptions: \"resource identifier\".",
+  "question": "Which identifier names a resource description across its versions, which names one version, and is the claimsGraphUri of a search result the selfDescriptionId and resourceDescriptionId of the detail calls?",
+  "options": [
+   "resourceIdentifier (= resourceKey) for the resource description across versions, id for one version; search results expose resourceIdentifier; paths use {resourceDescriptionId}",
+   "One identifier only (the credential subject id, today claimsGraphUri); versions addressed by version number",
+   "Keep all names, and add a written mapping per API to the CDM identifier"
+  ],
+  "from_23a": [
+   "DDD-09 catalogue-be"
+  ],
+  "see": [
+   "F-047"
+  ]
+ },
+ {
+  "id": "D-003",
+  "target": "cross",
+  "rule": "DDD-01",
+  "severity": "blocker",
+  "finding": "The overall quality result has four names for the score and four for the classification. The criteria filter on overallCategory, which no API or CDM has. The Consumer-facing search (catalogue-client-be v1) returns qualityScore and qualityClassification, while catalogue-be and the adapter return overallScore and overallClassification. A test written from the criteria asserts on a field the response does not carry.",
+  "evidence": "SIMPL-29292/AC2, SIMPL-29293/AC2: \"overallScore\"; SIMPL-29292/AC3, SIMPL-29293/AC3: \"overallCategory\"; SIMPL-27998/AC1: \"overall score\"; SIMPL-31140 Scenario 4, SIMPL-31143/AC1, SIMPL-31769/AC1, BP6.7.3: \"metadata quality score\", \"quality classification\"; catalogue-be SearchResponsePayload n.overallScore, n.overallClassification and SelfDescriptionQualityOverallResult.score, .classification; query-mapper-adapter-be searchResponsePayload n.overallScore, n.overallClassification; catalogue-client-be v1 GET /selfDescriptions example i.qualityScore, i.qualityClassification; CDM:query-mapper-adapter-be:QualityAssessmentRecord.qualityScore and data-quality-rules.md QualityAssessmentRecord.qualityScore, qualityClassification, OverallQualityRating.weightedScore; catalogue-client-be.md: \"SelfDescriptionScore\".",
+  "question": "Which field names does a search result and a detail carry for the overall score and classification, and is overallCategory meant as overallClassification?",
+  "options": [
+   "Business terms overall quality score and overall quality classification; wire names overallScore and overallClassification in every API; CDM attributes renamed to match",
+   "Wire names qualityScore and qualityClassification as in the CDM and the Consumer-facing API; catalogue-be and adapter renamed",
+   "Keep both, with a written mapping per API, and correct the criteria to the Consumer-facing names"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-004",
+   "F-005"
+  ]
+ },
+ {
+  "id": "D-004",
+  "target": "cross",
+  "rule": "DDD-02",
+  "severity": "blocker",
+  "finding": "\"Federated catalogue\" names two different things. In the stories and the business process it is a catalogue of another (Trustor) data space. In the CDMs and API texts the Federated Catalogue is the catalogue-be service of the own data space, and the adapter's local search says it searches \"the Federated Catalogue\". A builder of the federated search can read a requirement on federated catalogues as one on the own catalogue service.",
+  "evidence": "SIMPL-31102/AC2: \"the list of federated catalogues\"; SIMPL-31768: \"only from the catalogues of federated data spaces\"; BP06 search scopes: \"Federated catalogue search: search across multiple data spaces\"; CDM:query-mapper-adapter-be:FederatedCatalogue (\"stores ResourceDescriptions and evaluates catalogue search requests\"), CDM:catalogue-client-be:FederatedCatalogue, schema-manager-be.md FederatedCatalogue; catalogue-be.md purpose: \"Federated Catalogue Service (simpl-fc-service)\"; query-mapper-adapter-be GET /selfDescriptions (local): \"Search the Federated Catalogue for Resource descriptions\"; federatedResourceDescriptionPayload: \"Complete Federated Catalogue resource description\"; catalogue-client-be v1 q: \"filter self-descriptions in the federated catalog\".",
+  "question": "Which name does the catalogue-be service carry in business texts and CDMs, so that federated catalogue only means a catalogue of a Trustor data space?",
+  "options": [
+   "Federated catalogue only for a Trustor data space's catalogue (as BP06); the service becomes catalogue service (catalogue-be) in CDMs and API texts",
+   "Keep Federated Catalogue for the service, and say catalogue of a federated data space (or Trustor catalogue) in stories and APIs",
+   "Define both meanings in the glossary and qualify each use"
+  ],
+  "from_23a": [],
+  "see": []
+ },
+ {
+  "id": "D-005",
+  "target": "ResourceDescription",
+  "rule": "DDD-12",
+  "severity": "major",
+  "finding": "The lifecycle of a resource description is not defined once. The CDM and API know active and revoked; the criteria and the process speak of submitted, valid, published, not published and stored. The process revokes the previous version when a new one is published, but no transition or state covers that. The publish operation can answer 202 \"accepted but the validation is not finished yet\", a pending state that no value set has. DELETE removes a description \"entirely\", a step the process does not have.",
+  "evidence": "CDM:catalogue-be:ResourceDescription.lifecycleStatus: active, revoked; catalogue-be SelfDescriptionStatus enum active, revoked; SIMPL-27998/AC1 to AC3: \"published in the catalogue\", \"not stored\"; BP05B.07 \"published\", BP05B.11 and BP5B.5.10 \"revokes the current (previous) resource description version\"; catalogue-be POST /self-descriptions 202: \"The request was accepted but the validation is not finished yet\"; DELETE /self-descriptions/{self_description_hash}; catalogue-be.md: \"Deletion removes it entirely from the catalogue\"; query-mapper-adapter-be PATCH /participants/resourceDescriptions/{resourceDescriptionId}: revoke, idempotent.",
+  "question": "Is published the business label of active, is there a pending state after submission, does a superseded version become revoked or a separate state, and is deletion part of the lifecycle?",
+  "options": [
+   "States published (stored value active) and revoked; superseded versions become revoked; no pending state (202 removed); delete is an administrative purge outside the lifecycle",
+   "Add states pending and superseded to the CDM value set and the API enum, with the transitions listed next to the CDM",
+   "Keep active and revoked as written and change the criteria to say active"
+  ],
+  "from_23a": [
+   "DDD-04 catalogue-be#SelfDescriptionStatus.(enum)"
+  ],
+  "see": [
+   "F-002"
+  ]
+ },
+ {
+  "id": "D-006",
+  "target": "cross",
+  "rule": "DDD-02",
+  "severity": "major",
+  "finding": "\"Active\" carries three meanings: a lifecycle value of a resource description, the Metadata Quality Profile resolved for the latest published schema version (whose own lifecycle has no active value), and a catalogue's federation flag. The trust relation behind that flag is also called trusted, no longer trusted, federation enabled and authenticated.",
+  "evidence": "catalogue-be SelfDescriptionStatus active; catalogue-client-be GET /schemas/{schemaName}/qualityProfiles/active: \"active Metadata Quality Profile resolved for the latest published schema version\"; schema-manager-be.md MetadataQualityProfile.lifecycleStatus: PUBLISHED, REVOKED; catalogue-client-be v1 CatalogueInfo.active and catalogue-client-be.md Catalogue: \"whether its federation status is active\"; SIMPL-31113/AC2 \"no longer consider trusted GA as trusted\"; SIMPL-31150/AC1 \"its federation with this Governance Authority is still enabled\"; SIMPL-31150/AC2 \"unauthenticated or no-longer-trusted\".",
+  "question": "Which word names each of the three concepts, and what are the values of the federation (trust) status?",
+  "options": [
+   "Resource description: published; profile: applicable (or active) Metadata Quality Profile, defined in the glossary; catalogue: federation enabled / disabled",
+   "Keep active for all three and define each use in the glossary"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-030"
+  ]
+ },
+ {
+  "id": "D-007",
+  "target": "QualityAssessmentRecord",
+  "rule": "DDD-13",
+  "severity": "major",
+  "finding": "The parts of a Quality Assessment Record have three sets of names. The owning CDM (Quality Scoring Service) has OverallQualityRating, DimensionRating and RuleOutcome. The catalogue-be API redefines them as SelfDescriptionQualityOverallResult, ...DimensionResult and ...RuleResult with other attribute names, and the Consumer-facing record uses SelfDescriptionScore, DimensionScore and RuleEvaluation. The record is also exposed twice: as an opaque JSON-LD graph and as a structured qualityAssessment in the publication response. The threshold source is called metadata quality definition, Metadata Quality Profile and Minimum Quality Profile.",
+  "evidence": "data-quality-rules.md: OverallQualityRating.weightedScore, thresholdStatus; DimensionRating.score, dimensionWeight, thresholdStatus; RuleOutcome.outcome, ruleType; catalogue-be SelfDescriptionQualityAssessment {rules, dimensions, overall}, SelfDescriptionQualityRuleResult {id, name, status}, SelfDescriptionQualityStatus PASSED, FAILED; catalogue-be QualityAssessmentRecord {@context, @graph}; SelfDescriptionPublicationResponse.qualityAssessment; catalogue-client-be.md: \"SelfDescriptionScore, DimensionScore and RuleEvaluation of the response are OverallQualityRating, DimensionRating and RuleOutcome\"; SIMPL-27998/AC1 \"metadata quality definition\", AC2 \"metadata quality definition (MQP)\"; SIMPL-29292/AC3 \"Metadata Quality Profile (MQP)\"; catalogue-client-be v1 GET /selfDescriptions: \"active Minimum Quality Profile (MQP)\".",
+  "question": "Does the catalogue API use the owner's names for the record's parts, and which representation is the Quality Assessment Record the catalogue stores and returns?",
+  "options": [
+   "Use the Quality Scoring Service names (OverallQualityRating, DimensionRating, RuleOutcome and their attributes) in every API; the JSON-LD graph is the record, the structured form is a documented projection",
+   "Keep the catalogue-be names as the catalogue's own read model, marked as a projection of the external record in the CDM"
+  ],
+  "from_23a": [
+   "DDD-06 catalogue-be#SelfDescriptionQualityAssessment",
+   "DDD-06 catalogue-be#SelfDescriptionQualityStatus",
+   "DDD-07 catalogue-be#SelfDescriptionQualityDimensionResult",
+   "DDD-07 catalogue-be#SelfDescriptionQualityOverallResult",
+   "DDD-07 catalogue-be#SelfDescriptionQualityRuleResult",
+   "DDD-07 catalogue-be#SelfDescriptionPublicationResponse",
+   "DDD-04 catalogue-be#SelfDescriptionQualityStatus.(enum)"
+  ],
+  "see": [
+   "F-041"
+  ]
+ },
+ {
+  "id": "D-008",
+  "target": "cross",
+  "rule": "DDD-04",
+  "severity": "major",
+  "finding": "Resource type and offering type look like one concept with two names and four spellings: lower case (data, application, infrastructure), upper case (DATA, APPLICATION), short forms (App, Infra, Data) and PascalCase shape names (Application, DataOffering). The schema stories reject a SEARCH schema when a resourceType is given, so the accepted values matter for the 400 tests.",
+  "evidence": "CDM:catalogue-be:GeneralServiceProperties.offeringType: data, infrastructure, application; catalogue-be search example offeringType infrastructure, data; catalogue-client-be v2 GET /schemas example resourceType APPLICATION, DATA, parameter example data; schema-manager-be.md: \"resourceType: open value set; PascalCase strings ..., e.g. Application, DataOffering\"; SIMPL-31815 hints: \"(App, Infra, Data)\"; SIMPL-31817/AC2: \"a resourceType for instance \\\"DATA\\\"\"; BP05B.01: \"resource type (data, application, or infrastructure)\"; catalogue-client-be.md OfferingType: \"Which representation ... is authoritative is not defined\".",
+  "question": "Are resource type and offering type the same concept, and which values and spelling do the API, the CDM and the criteria use?",
+  "options": [
+   "One concept, resource type, with the closed set data, application, infrastructure in lower case; offeringType kept as the shape's property name and mapped",
+   "Two concepts: offering type (closed set on the description) and resource type (open, PascalCase, on the schema), each defined in the glossary"
+  ],
+  "from_23a": [],
+  "see": []
+ },
+ {
+  "id": "D-009",
+  "target": "cross",
+  "rule": "DDD-02",
+  "severity": "major",
+  "finding": "\"Schema\" names different things in one component. catalogue-be's /schemas operations manage the original catalogue store of ontologies, shapes and vocabularies (OntologySchema, latest composite schema), while its CDM says schema management is external and those legacy endpoints are excluded. The Schema Manager schema has a schemaName, a schemaType and versions. The schema is identified as schemaId, schemaName, name or uri depending on the API. The stories send schema creation to \"POST /schemas\", which in catalogue-be is the legacy store.",
+  "evidence": "catalogue-be t1 GET/POST /schemas, GET/PUT/DELETE /schemas/{schemaId}, GET /schemas/latest; OntologySchema {ontologies, shapes, vocabularies}; catalogue-be.md assumption: \"it excludes legacy schema-management and session-management endpoints\"; schema-manager-be.md Schema.schemaName, schemaType RESOURCE, SEARCH; catalogue-client-be v2 GET /schemas/{schemaId}/content and GET /schemas/{schemaName}/qualityProfiles/active, list example {name: health, schemaId: applicationHealth}; catalogue-be POST /schemas/{schemaName}/recalcQualityScore; EventDataSchema.name, .uri; SIMPL-31815/AC1: \"the endpoint POST /schemas with schemaType=\\\"SEARCH\\\"\".",
+  "question": "Which schema concept do catalogue-be's /schemas operations expose, are they still in scope, and which identifier names a schema?",
+  "options": [
+   "The catalogue references the Schema Manager schema only, identified by schemaName; catalogue-be's legacy /schemas operations are removed from the contract",
+   "Keep the legacy store under another name (for example ontology store) and reserve schema for the Schema Manager concept"
+  ],
+  "from_23a": [
+   "DDD-06 catalogue-be#OntologySchema"
+  ],
+  "see": [
+   "F-054",
+   "F-055",
+   "F-011"
+  ]
+ },
+ {
+  "id": "D-010",
+  "target": "cross",
+  "rule": "DDD-13",
+  "severity": "major",
+  "finding": "Identity attributes, their federation mapping and discovery access policies carry the federated search criteria, but no CDM in the input set models them, as owned or as external. The only related class, AccessPolicyFilter, is owned by the Query Mapper, is \"interaction only\", and never appears in the stories. The same ideas have many names: identity attributes, public identity attributes, Consumer's attributes, mapped attributes, User-Attributes; discovery access policies, access policy values, discovery ABAC.",
+  "evidence": "SIMPL-31111, SIMPL-31112, SIMPL-31138/AC1, SIMPL-31139/AC1, SIMPL-31150/AC1 to AC3: \"discovery access policies\", \"mapped according to the federation-defined attribute mappings\"; SIMPL-31114/AC1 \"the Customer's public identity attributes\"; SIMPL-31138 technical design: remoteAuthorityAttribute, localAuthorityAttribute (IAA interface); BP6.3.1, BP6.7.6; CDM:query-mapper-adapter-be:AccessPolicyFilter; query-mapper-adapter-be GET /selfDescriptions: \"access policy values other than the one defined in the Client access token\"; GET /federated/resourceDescriptions/{resourceDescriptionId}: \"evaluates discovery ABAC\"; header User-Attributes in catalogue-be and adapter search operations.",
+  "question": "Which context owns identity attributes, the attribute mapping and the discovery access policy, and which external classes do the catalogue CDMs add for them?",
+  "options": [
+   "Identity attributes and attribute mapping external (IAA / authentication provider); discovery access policy part of the resource description (owned by the catalogue); AccessPolicyFilter renamed or explained in those terms",
+   "Keep them out of the catalogue CDMs and state in the CDM that the gateway owns all of it, removing the policy steps from the catalogue criteria"
+  ],
+  "from_23a": [
+   "DDD-06 query-mapper-adapter-be.md#AccessPolicyFilter",
+   "DDD-01 query-mapper-adapter-be.md#AccessPolicyFilter"
+  ],
+  "see": [
+   "F-024",
+   "F-050"
+  ]
+ },
+ {
+  "id": "D-011",
+  "target": "cross",
+  "rule": "DDD-06",
+  "severity": "major",
+  "finding": "The search result item is an anonymous node (n in catalogue-be and the adapter, i in catalogue-client-be v1) that holds the general service properties summary, the quality summary and claimsGraphUri. No CDM class names it. Its fields (name, description, inLanguage) differ from the catalogue-be CDM attributes (serviceName, serviceDescription, serviceLanguage), and the referencing CDM lists yet other ones. The stories call the same content \"the main properties\" without listing them.",
+  "evidence": "catalogue-be SearchResponsePayload.items[].n {claimsGraphUri, offeringType, name, inLanguage, description, serviceAccessPoint, overallScore, overallClassification}; query-mapper-adapter-be searchResponsePayload same, described as \"An array of general service properties nodes\"; catalogue-client-be v1 example items[].i also with catalogueId; CDM:catalogue-be:GeneralServiceProperties.serviceName, .serviceDescription, .serviceLanguage, .serviceAccessPoint, .offeringType; catalogue-client-be.md GeneralServiceProperties: \"name, description, serviceAccessPoint, keywords, inLanguage, offeringType, sharingMethodId, identifier, version\"; SIMPL-31141, SIMPL-31767, SIMPL-31768: \"for each resource description in the list I receive the main properties\"; BP6.7.1.",
+  "question": "Are the main properties the GeneralServiceProperties summary, and which attribute names does the CDM use for it?",
+  "options": [
+   "Main properties = GeneralServiceProperties summary; CDM attributes renamed to the shape names (name, description, inLanguage, offeringType, serviceAccessPoint); the result item gets a named schema (for example ResourceDescriptionSummary)",
+   "Keep the CDM names and document the mapping to the shape names"
+  ],
+  "from_23a": [
+   "DDD-07 catalogue-be#SearchResponsePayload",
+   "DDD-07 query-mapper-adapter-be#searchResponsePayload",
+   "DDD-06 catalogue-be.md#GeneralServiceProperties",
+   "DDD-01 catalogue-be.md#GeneralServiceProperties"
+  ],
+  "see": [
+   "F-039",
+   "F-033"
+  ]
+ },
+ {
+  "id": "D-012",
+  "target": "cross",
+  "rule": "API-01",
+  "severity": "major",
+  "finding": "Each API has a CDM, but the alignment tables no longer match the entry files. The catalogue-be CDM says legacy schema and session endpoints are excluded, yet the tier 1 entry file has them, and the generic /query operation has no concept at all. The Query Mapper CDM lists neither the Governance Authority search operations nor the federated detail operation, and its scope does not mention federation. The catalogue-client-be CDM lists /governanceAuthority operations that its v1 file does not have, and places the detail operation with catalogueId in v1 while it is in the v2 entry file.",
+  "evidence": "catalogue-be t1: GET /session, DELETE /session, schemas Session, Role; t2: GET /query, POST /query, schemas Statement, Parameters, QueryLanguage, Results; catalogue-be.md \"Alignment to API Endpoints\" (15 rows, none of these); query-mapper-adapter-be t1 GET /governanceAuthority/selfDescriptions, POST /governanceAuthority/selfDescriptions/advancedSearch, t2 GET /federated/resourceDescriptions/{resourceDescriptionId}, absent from query-mapper-adapter-be.md alignment table; catalogue-client-be.md rows GET /governanceAuthority/selfDescriptions, POST /governanceAuthority/selfDescriptions/advanced, GET /governanceAuthority/selfDescriptions/{selfDescriptionId}: no such path in openapi-xfscadvsearch-tier1-v1.yaml or -v2.yaml.",
+  "question": "Are the CDMs updated to the entry APIs, or are the extra operations (session, query, legacy schemas) removed from the contracts?",
+  "options": [
+   "Update the three CDMs: add the federated operations and their concepts; remove session, query and legacy schema operations from the catalogue-be contract",
+   "Keep the operations and add their concepts to the CDMs"
+  ],
+  "from_23a": [
+   "DDD-06 catalogue-be#Session",
+   "DDD-06 catalogue-be#Role",
+   "DDD-06 catalogue-be#Statement",
+   "DDD-06 catalogue-be#AnnotatedStatement",
+   "DDD-06 catalogue-be#Parameters",
+   "DDD-06 catalogue-be#QueryLanguage"
+  ],
+  "see": [
+   "F-022",
+   "F-052"
+  ]
+ },
+ {
+  "id": "D-013",
+  "target": "RecalcQualityScoreJob",
+  "rule": "DATA-04",
+  "severity": "major",
+  "finding": "RecalcQualityScoreJob is modelled as an owned business record, but the API only returns a 202 acknowledgement without an id that can be read again. The CDM also contradicts itself on the trigger: one note says the schema-events webhook \"is not the trigger for recalculation\", the endpoint table says a SchemaPublished or SchemaRevoked event \"triggers recalculation\". The attribute names differ from the API.",
+  "evidence": "CDM:catalogue-be:RecalcQualityScoreJob.status (ACCEPTED), .estimatedAffectedResourceDescriptionCount; catalogue-be POST /schemas/{schemaName}/recalcQualityScore 202 {status, schemaName, profileVersion, estimatedResourceCount}, x-simpl-roles: [], \"Required RBAC roles: N/A\"; catalogue-be.md relationship notes: \"it is not the trigger for recalculation of quality scores\"; endpoint table POST /webhooks/schema-events: \"A SchemaPublished or SchemaRevoked event triggers recalculation for all affected ResourceDescriptions\". No story covers recalculation.",
+  "question": "Is a recalculation a business record with its own identity and states, or only an acknowledged request, and which event triggers it?",
+  "options": [
+   "An acknowledged request: drop the class from the CDM (or make it a value in the response) and state that a Metadata Quality Profile change triggers it",
+   "A real job: give it an id, states and a read operation, and align the attribute names"
+  ],
+  "from_23a": [
+   "DDD-06 catalogue-be.md#RecalcQualityScoreJob",
+   "DDD-01 catalogue-be.md#RecalcQualityScoreJob"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-014",
+  "target": "cross",
+  "rule": "DDD-01",
+  "severity": "major",
+  "finding": "The catalogue selection of a search has many names and no CDM concept. The process calls it the search scope (own, federated, DOME). The APIs use catalogueIds (required for the adapter's local and Governance Authority searches, optional in the Consumer-facing quick search) and catalogueId for a detail; one story asks for a \"dataspace/catalogue identifier\". The client CDM says the Governance Authority scoping adds \"no additional concept\".",
+  "evidence": "BP06 overview: \"search scope, which defines the catalogue or catalogues in which the search is performed\"; query-mapper-adapter-be t1 catalogueIds (required, minItems 1); advancedSearchRequestPayload.catalogueIds required (also on local t2 POST /selfDescriptions/advancedSearch); catalogue-client-be v1 GET /selfDescriptions catalogueIds optional; v2 GET /selfDescriptions/{selfDescriptionId} catalogueId required; CatalogueInfo.id; SIMPL-33885/AC1, AC2 \"dataspace/catalogue identifier\"; catalogue-client-be.md: \"no additional concept is introduced\".",
+  "question": "Is the catalogue selection (search scope) a concept in the client CDM, and is the catalogue identifier one value named catalogueId everywhere?",
+  "options": [
+   "Add search scope (selected catalogues) to SearchQuery in the client CDM; the identifier is catalogueId (catalogueIds for a list) in every API and text",
+   "Keep catalogue selection as API mechanics only and fix the name in the glossary"
+  ],
+  "from_23a": [
+   "DDD-07 query-mapper-adapter-be#advancedSearchRequestPayload"
+  ],
+  "see": [
+   "F-047",
+   "F-028",
+   "F-019"
+  ]
+ },
+ {
+  "id": "D-015",
+  "target": "cross",
+  "rule": "DATA-01",
+  "severity": "minor",
+  "finding": "All three CDMs of this component, and the two context CDMs, are registered as In review and not approved. The factory builds on drafts.",
+  "evidence": "cdm/SOURCES.json and cdm-index.md: Federated Catalogue, Query Mapper, Search Client BE, Schema Manager, Quality Scoring Service: status In review, approved No.",
+  "question": "Are these CDM versions the baseline for the build, or is approval expected first?",
+  "options": [
+   "Use the pinned snapshot as baseline and record it",
+   "Wait for approval of the three own CDMs"
+  ],
+  "from_23a": [
+   "DATA-01 catalogue-be",
+   "DATA-01 query-mapper-adapter-be",
+   "DATA-01 catalogue-client-be"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-016",
+  "target": "cross",
+  "rule": "DATA-09",
+  "severity": "minor",
+  "finding": "Several CDM classes are not business nouns or describe transfer rather than the domain: ResourceDescriptionResult (a composite view of metadata and content), VerificationResult (an endpoint result), RecalcQualityScoreJob (abbreviation), and services modelled as classes (QueryMapper, FederatedCatalogue, CatalogueClient, ResourceDescriptionManager).",
+  "evidence": "catalogue-be.md: ResourceDescriptionResult \"Composite view of a Resource Description returned by the catalogue\"; VerificationResult \"returned by the catalogue verification endpoint\"; query-mapper-adapter-be.md <<external_service>> CatalogueClient, ResourceDescriptionManager, FederatedCatalogue; catalogue-be.md <<external_service>> QueryMapper.",
+  "question": "Keep these classes, or move views and services out of the class diagrams into the text?",
+  "options": [
+   "Keep services as stereotyped context elements; drop ResourceDescriptionResult and VerificationResult as API views",
+   "Keep as is"
+  ],
+  "from_23a": [
+   "DDD-01 catalogue-be.md#ResourceDescriptionResult",
+   "DDD-01 catalogue-be.md#VerificationResult"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-017",
+  "target": "cross",
+  "rule": "DDD-15",
+  "severity": "minor",
+  "finding": "There is no context map. Each CDM lists the CDMs it references, which is a partial map, but ownership statements differ. The catalogue-be CDM leaves the split of resource description ownership with SD Tooling as an open question; the client CDM names \"Provider\" (an actor, not a context) as owner of ServicePolicy, ContractTemplate, EdcConnector and ContractClauseDocument; the client CDM lists GeneralServiceProperties attributes that differ from the owner's.",
+  "evidence": "catalogue-be.md open question: \"Ownership of ResourceDescription is split across its lifecycle stages\"; catalogue-client-be.md: ServicePolicy \"External - Provider\", EdcConnector \"External - Provider\"; GeneralServiceProperties attributes in catalogue-be.md vs catalogue-client-be.md (see D-011).",
+  "question": "Who draws the context map for catalogue, Query Mapper, Search Client, Schema Manager, Quality Scoring, SD Tooling and IAA, and which context owns the resource description sub-components?",
+  "options": [
+   "One context map in the architecture repository, referenced from each CDM",
+   "Keep the per-CDM reference tables and align their ownership statements"
+  ],
+  "from_23a": [],
+  "see": []
+ },
+ {
+  "id": "D-018",
+  "target": "cross",
+  "rule": "DDD-01",
+  "severity": "minor",
+  "finding": "The search input has five names: search terms (stories, process), searchTerm (catalogue-be), searchString (adapter), q (Consumer-facing API) and keyword (CDM SearchQuery.keyword). Each API defines its own parameter, so no builder has to guess, but the mapping is nowhere written down.",
+  "evidence": "SIMPL-31111: \"at least one of the search terms\"; BP6.1.1 \"Providing one ore more search terms\"; catalogue-be GET /selfDescriptions/quickSearch searchTerm; query-mapper-adapter-be GET /selfDescriptions searchString; catalogue-client-be v1 GET /selfDescriptions q; CDM:catalogue-client-be:SearchQuery.keyword.",
+  "question": "Is search terms the business term, with the wire names mapped in the glossary?",
+  "options": [
+   "Business term search terms; CDM attribute renamed to searchTerms; wire names kept and mapped",
+   "Rename the parameters to one name in the next API version"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-026"
+  ]
+ },
+ {
+  "id": "D-019",
+  "target": "cross",
+  "rule": "DDD-01",
+  "severity": "minor",
+  "finding": "The own data space's catalogue is called own catalogue, local catalogue, catalogues of my own data space and own data space catalogue. The process uses own catalogue.",
+  "evidence": "BP06 search scopes: \"Own catalogue search\"; SIMPL-31143: \"an own catalogue of the data space\"; SIMPL-35874/AC1: \"only the local catalogue is selected\"; SIMPL-31767: \"my data space catalogues\"; SIMPL-31142 technical design: \"Local Search\".",
+  "question": "Is own catalogue the term, with local as UI wording only?",
+  "options": [
+   "Own catalogue everywhere",
+   "Own catalogue in specs, local catalogue as a UI label with a written mapping"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-019"
+  ]
+ },
+ {
+  "id": "D-020",
+  "target": "cross",
+  "rule": "DDD-01",
+  "severity": "minor",
+  "finding": "The federated search schema has five names (federated search schema, federated Search Schema, search schema, schema of type SEARCH, SEARCH schema) and the resource schema three (resource schema, resource definition schema, Ressource). The values RESOURCE and SEARCH agree with the Schema Manager CDM; the UI label \"Ressource\" has no written mapping.",
+  "evidence": "SIMPL-31815/AC3: \"published search schema\" and \"federated search schema\"; SIMPL-35874/AC2: \"the schema of type SEARCH\"; SIMPL-30850 heading: \"resource schema\", Given: \"resource definition schema\", technical details: \"Ressource for exiting one\"; schema-manager-be.md Schema.schemaType: RESOURCE, SEARCH.",
+  "question": "Confirm federated search schema (schemaType SEARCH) and resource schema (schemaType RESOURCE) as the terms, and the UI labels for both values.",
+  "options": [
+   "As proposed, UI labels Resource and Federated search",
+   "Other labels, written in the glossary"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-056"
+  ]
+ },
+ {
+  "id": "D-021",
+  "target": "catalogue-be",
+  "rule": "DDD-08",
+  "severity": "minor",
+  "finding": "Attribute names of exposed objects differ from the CDM: the schema change event and its parts, the resource description metadata, the version and the verification result. The concepts match; only the names differ, and some CDM attributes exist only in prose.",
+  "evidence": "catalogue-be SchemaChangeEvent, WebhookEventType, EventData, EventDataSchema, EventDataVersion, SchemaCategoryStatus vs CDM:catalogue-be:SchemaEvent.eventType, Schema.lifecycleStatus, SchemaVersion.versionNumber; SelfDescription.status, uploadDatetime, statusDatetime, currentVersion vs ResourceDescription.lifecycleStatus, uploadDate, statusChangeDate, currentVersion; versionHistoryResponsePayload n.version vs ResourceDescriptionVersion.versionNumber (no publicationDate in the API); VerificationResult attributes listed only in the CDM text.",
+  "question": "Align the names in the next CDM revision, or record the mapping in the glossary?",
+  "options": [
+   "Rename CDM attributes to the API names where the API name is a business word (uploadDate, statusDate)",
+   "Record the mapping only"
+  ],
+  "from_23a": [
+   "DDD-06 catalogue-be#SchemaChangeEvent",
+   "DDD-07 catalogue-be#EventData",
+   "DDD-06 catalogue-be#EventDataSchema",
+   "DDD-06 catalogue-be#EventDataVersion",
+   "DDD-06 catalogue-be#WebhookEventType",
+   "DDD-06 catalogue-be#SchemaCategoryStatus",
+   "DDD-06 catalogue-be.md#ResourceDescriptionVersion"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-022",
+  "target": "ResourceDescription",
+  "rule": "DDD-11",
+  "severity": "minor",
+  "finding": "Most changes go through the resource description: revoke and the Quality Assessment Record use its path. Two do not: DELETE addresses a content hash, not the resource description, and a new version is posted to /self-descriptions/resource without the resource description in the path, so the root it extends is found only in the body.",
+  "evidence": "catalogue-be DELETE /self-descriptions/{self_description_hash}: \"Completely delete a self-description\"; POST /self-descriptions/resource: \"Add a new Resource SelfDescription or a new version\"; POST /self-descriptions/{selfDescriptionId}/revoke; POST /self-descriptions/{selfDescriptionId}/qualityAssessmentRecord.",
+  "question": "Does DELETE remove one version or the whole resource description, and how does a new version name the resource description it belongs to?",
+  "options": [
+   "DELETE by resource description identifier removes all versions; a new version names its resource description by resourceIdentifier (resourceKey) in the body, as stated in the contract",
+   "Keep as is and document both"
+  ],
+  "from_23a": [],
+  "see": []
+ }
+]

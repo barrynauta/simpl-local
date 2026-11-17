@@ -11,15 +11,15 @@
   "apis": 3,
   "operations": 26,
   "processes": 11,
-  "bp_requirements": 14,
+  "bp_requirements": 31,
   "stories_naming_an_operation": 6,
   "processes_naming_a_story": 0,
-  "extraction_issues": 10
+  "extraction_issues": 14
  },
  "stories": [
   {
    "key": "SIMPL-19824",
-   "title": "[Replaced][API] - API to verify existing usage contract",
+   "title": "Additional Notes",
    "kind": "API",
    "replaced": true,
    "status": "DevTeam PBI In Progress",
@@ -363,31 +363,9 @@
        "kw": "And",
        "text": "the contract negotiation process is halted to prevent inconsistent contract states",
        "struck": false
-      },
-      {
-       "kw": "When",
-       "text": "EDC calls the provider’s Contract Manager endpoint, it only receives an ACK as confirmation of receipt of the message. This is because the EDC behaves as a state machine. The actual response is sent later in a separate call: *“notify EDC\":*",
-       "struck": false
       }
      ],
-     "other_text": [
-      "**Technical Info**:",
-      "* Response format in JSON",
-      "[https://confluence.simplprogramme.eu/display/SIMPL/TCV+Dynamic+-+BP+07+-+Consumer+and+Provider+establish+a+usage+contract+for+selected+catalogue+items]",
-      "* EDC Connector is used to ensure API availability and proper error handling",
-      "* Endpoint: POST /agreements/\\{contractNegotiationId}/search",
-      "* HTTP Status Codes:",
-      "200: OK",
-      "400: Bad Request - missing or invalid parameters",
-      "401: Unauthorized",
-      "405: Method Not Allowed - the HTTP method does not match the allowed methods for the endpoint",
-      "500: Internal Server Error - system errors",
-      "**Security & Compliance**:",
-      "* Error messages must not reveal sensitive internal system information",
-      "**Additional Notes**:",
-      "On the EDC side need:",
-      "* API: EDC - endpoint - to consume prepared response in defined and accepted format."
-     ],
+     "other_text": [],
      "id": "SIMPL-19824/AC6"
     }
    ],
@@ -400,6 +378,7 @@
      "POST /agreements/{contractNegotiationId}/search"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "contract-manager-be:POST /agreements/{contractNegotiationId}/search"
     ]
@@ -759,6 +738,7 @@
      "POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "contract-manager-be:POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create"
     ]
@@ -984,6 +964,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -1428,12 +1409,13 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-19934",
-   "title": "Provider signs the received contract previously signed by the Consumer",
+   "title": "Technical Info",
    "kind": "",
    "replaced": false,
    "status": "DevTeam PBI is ready for Implementation check",
@@ -1525,22 +1507,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "**Technical Info**:",
-      "* The Provider signature is performed automatically by backend services (VC Issuer + Digital Signature Service). Human UI interaction is not required.",
-      "* The Contract Manager completes the following steps to achieve the signing process:",
-      "** the Contract Manager requests the VC Issuer Service to create an unsigned Signature VC",
-      "** the Contract Manager invokes the Digital Signature Service to sign the Signature VC",
-      "** the Digital Signature Service signs the VC and returns the signed Signature VC to the Contract Manager",
-      "** the Contract Manager produces the final contract signed by both parties",
-      "* HTTP Status Codes:",
-      "**",
-      "```",
-      "500: Internal Server Error - system errors",
-      "```",
-      "*Useful documentation:*",
-      "Execution report for related Spikes: [https://confluence.simplprogramme.eu/display/SIMPL/Execution+report%3A+Conceptualize+a+service+interface+for+e-signature](https://confluence.simplprogramme.eu/display/SIMPL/Execution+report%3A+Conceptualize+a+service+interface+for+e-signature)"
-     ],
+     "other_text": [],
      "id": "SIMPL-19934/AC2"
     }
    ],
@@ -1549,12 +1516,13 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-19938",
-   "title": "Provider stores signed usage contract securely in digital wallet",
+   "title": "Technical info",
    "kind": "",
    "replaced": false,
    "status": "DevTeam PBI is ready for Implementation check",
@@ -1933,12 +1901,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "**Technical info**",
-      "- Use decentralized identifier (DID) to verify Consumer's signature (VC)",
-      "- Ensure contract content integrity (e.g., hash comparison)",
-      "**Additional Notes**: This Story (about archiving contracts at Provider side) is similar to SIMPL-19927 (at Consumer side)."
-     ],
+     "other_text": [],
      "id": "SIMPL-19938/AC5"
     }
    ],
@@ -1949,6 +1912,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -2142,12 +2106,13 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
   {
    "key": "SIMPL-21928",
-   "title": "Consumer signs the usage contract offer received from a Provider",
+   "title": "Technical Info",
    "kind": "",
    "replaced": false,
    "status": "DevTeam PBI is ready for Implementation check",
@@ -2306,15 +2271,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "**Technical Info**:",
-      "The signing process is backend-driven.",
-      "The UI / BFF may trigger the signing action, but UI button behaviour is outside the scope of this story.",
-      "Contract Manager orchestrates the Consumer signing process at usage contract offer level and uses the agreed signing / credential issuing services according to the implemented signing flow.",
-      "This story must not assume an “unsigned VC” as a formal intermediate artefact.",
-      "*Useful documentation:*",
-      "Execution report for related Spikes: [https://confluence.simplprogramme.eu/display/SIMPL/Execution+report%3A+Conceptualize+a+service+interface+for+e-signature](https://confluence.simplprogramme.eu/display/SIMPL/Execution+report%3A+Conceptualize+a+service+interface+for+e-signature)"
-     ],
+     "other_text": [],
      "id": "SIMPL-21928/AC4"
     }
    ],
@@ -2323,6 +2280,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -2761,7 +2719,6 @@
       "This should not be interpreted as a specific low-level delivery mechanism to one internal component only.",
       "After finalization, the Consumer side must keep its own contract copy/state/evidence required to consult and validate the finalized usage contract.",
       "Validation result / rejection reason mapping",
-      "|Scenario|Validation result|Contract status impact|Rejection reason|",
       "|Successful validation|SUCCESS|Contract marked as validated / finalized according to lifecycle|N/A|",
       "|Invalid Provider signature|REJECTED / FAILED|Not marked as successfully validated|INVALID_PROVIDER_SIGNATURE|",
       "|Payload integrity mismatch|REJECTED / FAILED|Not marked as successfully validated|PAYLOAD_INTEGRITY_MISMATCH|",
@@ -2782,6 +2739,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -2914,10 +2872,6 @@
       "* Signing/issue endpoint: /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/issue",
       "Suggested verification points:",
       "|AC|Suggested verification point|",
-      "|AC1 Consumer-signed offer is available to Provider|Verify that the Provider side can access the Consumer-signed offer or signing evidence through the agreed backend flow. Evidence may be existing Contract API result, persisted backend state or logs.|",
-      "|AC2 Provider can continue validation|Verify that Provider-side validation can continue after Consumer signing evidence is available.|",
-      "|AC3 Process does not continue if Consumer signing is missing|Verify that Provider-side validation/signing is not marked successful when Consumer signing evidence is missing or cannot be confirmed.|",
-      "|AC4 Delivery is traceable|Verify traceability using contractAgreementId / contractNegotiationId, correlationId where available, backend logs or persisted state.|",
       "Detailed retry, correlationId, lifecycle status and event behaviour should be covered by the related technical implementation / integration stories."
      ],
      "id": "SIMPL-21963/AC4"
@@ -2926,11 +2880,11 @@
    "refs": {
     "stories": [],
     "paths": [
-     "/blob/main/openapi/openapi3-v1",
      "/credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/issue"
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "contract-manager-be:POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/issue"
     ]
@@ -3184,11 +3138,10 @@
      "SIMPL-19943",
      "SIMPL-29268"
     ],
-    "paths": [
-     "/blob/main/docs/asyncApi/asyncapi"
-    ],
+    "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -3368,6 +3321,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -3632,6 +3586,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -3675,7 +3630,14 @@
       {
        "kw": "Then",
        "text": "Simpl-Open returns an overview of all my usage contracts (including those still being established) with following information:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Contract negotiation ID;",
+        "Resource description ID;",
+        "Resource name;",
+        "Provider name;",
+        "Status (Requested, Rejected, Accepted, Signed, Active)."
+       ]
       },
       {
        "kw": "And",
@@ -3693,13 +3655,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "* Contract negotiation ID;",
-      "* Resource description ID;",
-      "* Resource name;",
-      "* Provider name;",
-      "* Status (Requested, Rejected, Accepted, Signed, Active)."
-     ],
+     "other_text": [],
      "id": "SIMPL-30959/AC1"
     },
     {
@@ -3732,16 +3688,17 @@
       {
        "kw": "Then",
        "text": "Simpl-Open returns the structure of the overview of my usage contracts in an empty table:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Contract negotiation ID;",
+        "Resource description ID;",
+        "Resource name;",
+        "Provider name;",
+        "Status (Requested, Rejected, Accepted, Signed, Active)."
+       ]
       }
      ],
-     "other_text": [
-      "* Contract negotiation ID;",
-      "* Resource description ID;",
-      "* Resource name;",
-      "* Provider name;",
-      "* Status (Requested, Rejected, Accepted, Signed, Active)."
-     ],
+     "other_text": [],
      "id": "SIMPL-30959/AC2"
     },
     {
@@ -3776,6 +3733,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -3791,10 +3749,7 @@
    "user_story": {
     "as a": "Consumer,",
     "i want": "to consult the details of a usage contract or usage contract offer via UI",
-    "so that": "I can inspect the details of a usage contract or usage contract offer",
-    "extra": [
-     "I can decide whether to accept or reject a usage contract offer"
-    ]
+    "so that": "I can inspect the details of a usage contract or usage contract offer"
    },
    "acs": [
     {
@@ -3827,7 +3782,15 @@
       {
        "kw": "Then",
        "text": "Simpl-Open returns the details of the selected usage contract offer overview with following information:",
-       "struck": false
+       "struck": false,
+       "items": [
+        "Contract negotiation ID;",
+        "Resource description ID;",
+        "Resource name;",
+        "Provider name;",
+        "Status (Requested, Rejected, Accepted, Signed, Active);",
+        "Human readable version of the usage contract (offer) (resource description properties, policies, contract clauses)."
+       ]
       },
       {
        "kw": "And",
@@ -3835,14 +3798,7 @@
        "struck": false
       }
      ],
-     "other_text": [
-      "* Contract negotiation ID;",
-      "* Resource description ID;",
-      "* Resource name;",
-      "* Provider name;",
-      "* Status (Requested, Rejected, Accepted, Signed, Active);",
-      "* Human readable version of the usage contract (offer) (resource description properties, policies, contract clauses)."
-     ],
+     "other_text": [],
      "id": "SIMPL-30960/AC1"
     }
    ],
@@ -3851,6 +3807,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -4024,6 +3981,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -4161,6 +4119,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -4385,6 +4344,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -4532,6 +4492,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -4679,6 +4640,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -4821,6 +4783,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -4968,6 +4931,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -5107,6 +5071,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -5361,6 +5326,7 @@
      "POST /resourceDescriptions/{resourceDescriptionId}/validateExistenceContract"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -5565,6 +5531,7 @@
      "POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create"
     ],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": [
      "contract-manager-be:POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create"
     ]
@@ -5582,10 +5549,7 @@
    "user_story": {
     "as a": "Participant,",
     "i want": "to automatically generate audit data and aggregations based on the usage contract data from the Participant according to a supplied audit rule package,",
-    "so that": "the contract manager produces the audit data required by the Governance Authority through an endpoint",
-    "extra": [
-     "makes it available for storage in the local audit data repository of the Simpl-Open agent of the Participant"
-    ]
+    "so that": "the contract manager produces the audit data required by the Governance Authority through an endpoint"
    },
    "acs": [
     {
@@ -5627,6 +5591,7 @@
     "paths": [],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -5765,6 +5730,7 @@
      "BP07.09",
      "BP07.12"
     ],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -5864,7 +5830,6 @@
    "refs": {
     "stories": [],
     "paths": [
-     "/blob/main/openapi/openapi3-v1",
      "/contractOffers/{contractNegotiationId}",
      "/create",
      "/credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create"
@@ -5876,6 +5841,7 @@
      "BP07",
      "BP07.05"
     ],
+    "api_method_paths": [],
     "operations": [
      "contract-manager-be:POST /contractOffers/{contractNegotiationId}",
      "contract-manager-be:POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create",
@@ -6023,6 +5989,7 @@
      "BP07.09",
      "BP07.10"
     ],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -6154,7 +6121,6 @@
    "refs": {
     "stories": [],
     "paths": [
-     "/blob/main/openapi/openapi3-v1",
      "/contractOffers/{contractNegotiationId}/{operation}",
      "/signed",
      "/signed/{contractNegotiationId}/false",
@@ -6168,6 +6134,7 @@
      "BP07.06",
      "BP07.07"
     ],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -6329,6 +6296,7 @@
      "BP07",
      "BP07.12"
     ],
+    "api_method_paths": [],
     "operations": [
      "contract-manager-be:PUT /verifications/{contractNegotiationId}"
     ]
@@ -6484,6 +6452,7 @@
      "BP07",
      "BP07.06"
     ],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -6572,6 +6541,7 @@
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -6660,6 +6630,7 @@
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -6753,6 +6724,7 @@
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   },
@@ -6783,6 +6755,7 @@
     ],
     "method_paths": [],
     "bp_steps": [],
+    "api_method_paths": [],
     "operations": []
    }
   }
@@ -7742,6 +7715,114 @@
  ],
  "bp_requirements": [
   {
+   "id": "BP07.01",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Request usage contract offer",
+   "text": "The _Consumer_ requests a usage contract based on their selection of a desired resource from the data space catalogue (BP06).",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
+   "id": "BP07.02",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Verify access policy",
+   "text": "The _Provider_ verifies the _Consumer_ description details (as described in their self-description) to ensure that they are allowed to access the requested resource according to the access policies.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
+   "id": "BP07.03",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Verify existence usage contract",
+   "text": "The _Provider_ verifies whether the _Consumer_ already has an established usage contract in place for the desired resource from the data space catalogue.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
+   "id": "BP07.04",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Provide usage contract",
+   "text": "The _Provider_ creates a formal usage contract in response to the usage contract request from the _Consumer_.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
+   "id": "BP07.05",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Review terms and conditions of usage contract",
+   "text": "The _Consumer_ reviews the usage contract and decides whether to agree to the terms and conditions.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
+   "id": "BP07.06",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Sign usage contract",
+   "text": "If the _Consumer_ agrees to the terms and conditions, they sign the usage contract.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
+   "id": "BP07.07",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Store usage contract",
+   "text": "The _Consumer_ securely stores the finalised usage contract as part of their official business records for future reference, compliance, and operational needs.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
+   "id": "BP07.08",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Validate usage contract",
+   "text": "The _Provider_ validates that the _Consumer_ has formally agreed to the usage contract, ensuring they have accepted the terms and conditions established by the _Provider_.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
+   "id": "BP07.09",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Sign usage contract",
+   "text": "If the validation is successful, the _Provider_ signs the usage contract.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
+   "id": "BP07.10",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Store usage contract",
+   "text": "The _Provider_ securely stores the finalised usage contract as part of their official business records for future reference, compliance, and operational needs.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
+   "id": "BP07.11",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Notify Consumer",
+   "text": "The _Provider_ notifies the _Consumer_ that they have signed and stored the usage contract. The signed usage contract is made available to the _Consumer_.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
+   "id": "BP07.12",
+   "process": "BP07",
+   "kind": "step",
+   "title": "Confirm usage contract",
+   "text": "The _Consumer_ confirms the signed usage contract from the _Provider_ against the original usage contract request (from BP07.01), to ensure consistency and accuracy.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp07-establish-usage-contract/README.md"
+  },
+  {
    "id": "BP7.1.1",
    "process": "7.1",
    "title": "A Consumer initiates the request for a usage contract offer",
@@ -7852,6 +7933,51 @@
    "text": "Simpl-Open shall support the Consumer via UI and API to validate the signed usage contract.",
    "details_url": "https://simpl-programme.ec.europa.eu/book-page/781-consumer-validates-signed-usage-contract",
    "file": "contract-management/specs/functional/bp07-establish-usage-contract/bp78-consumer-validates-signed-usage-contract.md"
+  },
+  {
+   "id": "BP10.01",
+   "process": "BP10",
+   "kind": "step",
+   "title": "Prepare and store billing data",
+   "text": "The _Provider_ prepares the billing data from the billing schema, the _Consumer_ and _Provider_ information and the reference to the usage contract, and stores it for auditability.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp10-provider-bills-consumer-based-resource-consumption/README.md"
+  },
+  {
+   "id": "BP10.02",
+   "process": "BP10",
+   "kind": "step",
+   "title": "Make billing data available to the Provider's billing system",
+   "text": "The _Provider_ makes the billing data available to their own billing system for the generation of the invoice. Invoice generation is outside the scope of Simpl-Open.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp10-provider-bills-consumer-based-resource-consumption/README.md"
+  },
+  {
+   "id": "BP10.03",
+   "process": "BP10",
+   "kind": "step",
+   "title": "Send billing data to the Consumer",
+   "text": "The _Provider_ sends the prepared billing data to the _Consumer_.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp10-provider-bills-consumer-based-resource-consumption/README.md"
+  },
+  {
+   "id": "BP10.04",
+   "process": "BP10",
+   "kind": "step",
+   "title": "Store the Consumer's billing data",
+   "text": "The _Consumer_ stores the received billing data for auditability and traceability.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp10-provider-bills-consumer-based-resource-consumption/README.md"
+  },
+  {
+   "id": "BP10.05",
+   "process": "BP10",
+   "kind": "step",
+   "title": "Contract enforcement (BP11)",
+   "text": "The _Provider_ checks the credit status and takes the follow-up actions agreed in the contract, for example suspension, notifying both parties.",
+   "details_url": "",
+   "file": "contract-management/specs/functional/bp10-provider-bills-consumer-based-resource-consumption/README.md"
   }
  ],
  "extraction_issues": [
@@ -7864,6 +7990,10 @@
   "SIMPL-31076: label AC4 used 2 times; ids suffixed",
   "SIMPL-31116/AC2: no Then clause",
   "SIMPL-35889: no acceptance criteria found",
+  "SIMPL-32509: names POST /resourceDescriptions/{resourceDescriptionId}/validateExistenceContract, which is in no API entry file",
+  "SIMPL-35440: names GET /verifications/{contractNegotiationId}/vc, which is in no API entry file",
+  "SIMPL-35584: names POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/validateAndIssue, which is in no API entry file",
+  "SIMPL-35584: names GET /vcExchange/{contractNegotiationId}/request, which is in no API entry file",
   "SIMPL-35660: names POST /contractOffers/{contractNegotiationId}/{operation}, but the OpenAPI has that path with another method"
  ]
 }

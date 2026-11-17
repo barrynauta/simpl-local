@@ -1,0 +1,703 @@
+[
+ {
+  "id": "F-001",
+  "target": "cross",
+  "check": "AC-C03",
+  "severity": "blocker",
+  "finding": "The specs use two status levels, vocabulary status and version status, but no criterion says how they relate. A builder cannot tell what deprecating or reactivating a vocabulary does to its versions, which status the list shows, or whether a deprecated vocabulary can get a new version.",
+  "evidence": "SIMPL-18175/AC1: 'the API updates the vocabulary status to the requested value (`ACTIVE` or `DEPRECATED`)'; SIMPL-18170/AC2: 'the vocabulary status is `ACTIVE` by default and can later be manually changed to `DEPRECATED` or back to `ACTIVE`'; SIMPL-18186/AC1: 'the system automatically sets its status to ACTIVE' (vocabulary or version); BP02B.05: 'Full Vocabulary Deprecation - all versions deprecated when obsolete'; OpenAPI PATCH /vocabularies/{vocabularyName} returns VocabularyCategory with 'version: 3 ... status: DEPRECATED'; SIMPL-18559/AC2: 'there is no ACTIVE version available for this vocabulary'.",
+  "question": "When the vocabulary status is set to DEPRECATED or back to ACTIVE, what happens to the status of each version, which status does GET /vocabularies show, and can a new version be created for a DEPRECATED vocabulary (and if so, does the vocabulary become ACTIVE)?",
+  "options": [
+   "Vocabulary status is a separate flag; version statuses do not change",
+   "Deprecating the vocabulary deprecates all versions; reactivating restores only the latest version to ACTIVE",
+   "Vocabulary status is derived from the latest version status (one status, not two)"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-002",
+  "target": "cross",
+  "check": "AC-C03",
+  "severity": "blocker",
+  "finding": "The role model is named five different ways and the criteria do not say which role may read and which may write. With a read-only role and an admin role in the notes, the blanket 403 rule can be read two ways.",
+  "evidence": "SIMPL-18196/AC2: 'I do not have the vocabulary management role ... When I invoke any Vocabulary Management API endpoint Then the API returns a `403 Forbidden` response'; SIMPL-18196 notes: '`GA_VOCABULARY_VIEWER`: for read-only operations', '`GA_VOCABULARY_ADMIN`: for both read and write operations'; SIMPL-18196/AC4: 'the Tier1 Role validation'; SIMPL-18176/AC1: 'a role authorizing read access to the vocabulary history'; SIMPL-18559/AC1: 'with any role'; SIMPL-18184/AC1: 'vocabulary management admin rights'; OpenAPI OAuth2Auth scopes 'read', 'write'.",
+  "question": "Which roles exist for this component, which operations and screens does each role allow, and is 'the vocabulary management role' in the criteria GA_VOCABULARY_ADMIN only, or either of the two roles? Is the check done by the gateway (Tier 1) or by the service?",
+  "options": [
+   "GA_VOCABULARY_VIEWER may call all GET endpoints and see all read screens; only GA_VOCABULARY_ADMIN may create, version or change status; anyone else gets 403",
+   "Only GA_VOCABULARY_ADMIN may use the API and UI at all (viewer role not built)",
+   "Any authenticated Governance Authority user may read (SIMPL-18559 'any role'); write needs GA_VOCABULARY_ADMIN"
+  ],
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-003",
+  "target": "SIMPL-18184/AC2",
+  "check": "AC-C05",
+  "severity": "blocker",
+  "finding": "The criterion blocks a new version that references a deprecated vocabulary version, while the OpenAPI creates the version and returns a warning for exactly that case, and the process says deprecated vocabularies can still be referenced.",
+  "evidence": "SIMPL-18184/AC2: 'the validation fails for each referenced version with status _DEPRECATED_ And the new vocabulary version is not created'; OpenAPI POST /vocabularies/{vocabularyName}/versions 201 example: 'validationWarnings: code: deprecatedVocabularyReference, description: Referenced internal vocabulary 'LegacyVocabulary' version 1 is deprecated.'; BP 2B.6: 'A deprecated vocabulary can still be used and referenced, but this will be discouraged.'; SIMPL-18184/AC4 shows only a warning.",
+  "question": "Does a reference to a DEPRECATED internal vocabulary version block creation (400) or create the version with a warning (201 with validationWarnings)?",
+  "options": [
+   "Block: 400 with one issue per deprecated reference, nothing created (story)",
+   "Warn: 201 with a deprecatedVocabularyReference warning per reference (OpenAPI and BP)"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-004",
+  "target": "SIMPL-18183/AC2",
+  "check": "AC-C03",
+  "severity": "blocker",
+  "finding": "The negative scenario returns 'errors or warnings' and then does not create the vocabulary, so it reads as if warnings also block. The story note and the OpenAPI treat warnings as non-blocking.",
+  "evidence": "SIMPL-18183/AC2: 'a structured list of semantic errors or warnings is returned And the vocabulary or vocabulary version is not created'; SIMPL-18183 note: 'we issue warnings for external vocabularies that cannot be resolved'; OpenAPI VocabularyVersionMetadataResponse.validationWarnings: 'Non-blocking validation warnings returned when vocabulary creation succeeds despite warnings.'",
+  "question": "Do semantic warnings (for example an unresolved external namespace) stop creation, or is creation refused only when there is at least one semantic error?",
+  "options": [
+   "Only errors block; warnings are returned in the 201 response",
+   "Errors and warnings both block creation"
+  ],
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-005",
+  "target": "cross",
+  "check": "AC-C02",
+  "severity": "blocker",
+  "finding": "No spec lists the syntax, structure and semantic rules, so a tester cannot build a passing and a failing vocabulary for each criterion. The UI story also names a 'structure' check that the API stories do not have.",
+  "evidence": "SIMPL-18180/AC6: 'the uploaded or submitted vocabulary file violates required structure rules'; SIMPL-18183/AC1: 'the vocabulary has correct semantics'; SIMPL-18182 So that: 'terms are unique, consistent, and logically coherent'; SIMPL-18182/AC2: 'a vocabulary version is semantically valid'; SIMPL-18181 covers 'syntax validation only'; BP02B.01: 'according to defined syntactic and structural rules'; OpenAPI semanticError example: 'Literal value for object property'.",
+  "question": "Which rules make up structure validation and semantic validation (with one example per rule), and is 'structure' a separate step from 'semantic' or the same thing under another name?",
+  "options": [
+   "Structure validation is part of semantic validation (two steps: syntax, semantic)",
+   "Structure validation is a third step between syntax and semantic, with its own rule list"
+  ],
+  "from_20a": [
+   "AC-W01"
+  ]
+ },
+ {
+  "id": "F-006",
+  "target": "SIMPL-18180/AC1",
+  "check": "AC-C05",
+  "severity": "blocker",
+  "finding": "Validation must run when a file is uploaded, before submission, but the API offers no validate-only operation and the API story states there is no separate validation endpoint.",
+  "evidence": "SIMPL-18180/AC1: 'When I upload a vocabulary file in the UI Then the system automatically performs syntax and structure validation on the uploaded file'; SIMPL-18180/AC2: 'When I submit a new vocabulary via the UI Then the system performs syntax and structure validation as part of the submission flow'; SIMPL-18183 So that: 'without a separate validation endpoint'; OpenAPI: validation only on POST /vocabularies and POST /vocabularies/{vocabularyName}/versions.",
+  "question": "Where does validation on upload run: in the browser, through a new validate-only endpoint, or not at all (validation only on submit)?",
+  "options": [
+   "UI parses the Turtle file in the browser on upload (syntax only); full validation on submit",
+   "Add a validate-only endpoint to the API",
+   "No validation on upload; AC1 is met by validation on submit"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-007",
+  "target": "SIMPL-18169/AC1",
+  "check": "AC-C05",
+  "severity": "blocker",
+  "finding": "The creation form must not show a change log field, but the API requires a changelog to create a vocabulary.",
+  "evidence": "SIMPL-18169/AC1: 'the following required fields are available: Name, Description, File upload And no field for version or change log is displayed'; OpenAPI CreateVocabularyPayload required: 'vocabularyFile, name, description, changelog'.",
+  "question": "What changelog value does the UI send when creating a vocabulary, or should changelog be optional on POST /vocabularies?",
+  "options": [
+   "UI sends a fixed text such as 'Initial version.'",
+   "Make changelog optional for POST /vocabularies",
+   "Show a change log field on the creation form"
+  ],
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-008",
+  "target": "SIMPL-18172/AC2",
+  "check": "AC-C03",
+  "severity": "blocker",
+  "finding": "It is unclear whether a new version can be created from a metadata change alone. 'and/or' allows it, 'including ... uploading an updated file' and the API (file required) do not, and AC1 promises a form pre-filled with the content.",
+  "evidence": "SIMPL-18172/AC2: 'When I update the metadata and/or vocabulary content, including providing a change summary and uploading an updated file'; SIMPL-18172/AC1: 'a form pre-filled with the existing vocabulary metadata and content'; OpenAPI CreateNewVocabularyVersionPayload required: 'vocabularyFile, description, changelog'.",
+  "question": "Must the user upload a new file for every new version, or may the UI resend the current content when only the description changes? What does 'pre-filled with ... content' show?",
+  "options": [
+   "File upload is mandatory for each new version; the form shows the current file name only",
+   "Metadata-only change is allowed; the UI resubmits the current content as the file"
+  ],
+  "from_20a": [
+   "AC-W03",
+   "AC-S04"
+  ]
+ },
+ {
+  "id": "F-009",
+  "target": "SIMPL-18163/AC1",
+  "check": "AC-C05",
+  "severity": "blocker",
+  "finding": "The UI example filters on a part of the name in lower case, while the API name filter accepts only a full PascalCase name.",
+  "evidence": "SIMPL-18163/AC1: 'When I apply a filter (e.g., \"Vocabulary Status = Deprecated\" or \"Name contains 'shacl'\")'; OpenAPI VocabularyNameQuery: 'Filter by vocabulary name. Must be in PascalCase, alphanumeric', pattern '^[A-Z][a-zA-Z0-9]*$'.",
+  "question": "Is the name filter a case-insensitive 'contains' search or an exact name match?",
+  "options": [
+   "Contains, case-insensitive: the API name filter must change",
+   "Exact PascalCase match: the UI example is wrong",
+   "UI filters the loaded page on the client side"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-010",
+  "target": "SIMPL-28680",
+  "check": "AC-C06",
+  "severity": "blocker",
+  "finding": "The story is about a Schema Manager endpoint for Metadata Quality Profiles that is not in the Vocabulary Management API, and its note puts the only Vocabulary Manager part out of scope. A builder of this component cannot tell whether to build it.",
+  "evidence": "SIMPL-28680/AC1: 'I submit a `POST` request to `/metadataQualityProfiles/{metadataQualityProfileName}/versions`'; SIMPL-28680/AC2: 'When Schema Manager processes the update'; link: 'simpl-schema-manager/.../t1-schema-openapi.yaml'; note: 'the Metadata Quality Profile vocabulary needs to be present there (out of scope)'.",
+  "question": "Is SIMPL-28680 part of the Vocabulary Manager build, or only of Schema Manager? If the MQP vocabulary must exist in Vocabulary Manager, is that seed data for this component?",
+  "options": [
+   "Out of scope for Vocabulary Manager; drop from this component",
+   "In scope only as seed data: the MQP vocabulary is loaded into Vocabulary Manager",
+   "In scope: build the MQP endpoints here"
+  ],
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-011",
+  "target": "cross",
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "Several criteria require 403 and an authentication error, but no operation in the OpenAPI declares 401 or 403.",
+  "evidence": "SIMPL-18196/AC2: 'returns a `403 Forbidden` response'; SIMPL-18196/AC3: 'returns an authentication error response'; SIMPL-18162/AC3: 'error message 403 Forbidden'; SIMPL-18173/AC4: 'rejected due to insufficient permissions'; SIMPL-18173/AC5: 'not authenticated ... the request is rejected'; OpenAPI responses per operation: 200/201/204, 400, 404, 406, 409, 413, 415, 500 only; security 'OAuth2 authentication provided by the gateway'.",
+  "question": "Are 401 and 403 returned by the gateway or by the service, with which body (problem+json?), and should the OpenAPI list them?",
+  "options": [
+   "Gateway returns 401/403; service never sees unauthenticated calls",
+   "Service returns 401/403 as problem+json and the OpenAPI is extended"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-012",
+  "target": "cross",
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The process has a manual review in validation and a publish step by the Governance Authority, while the stories publish automatically right after automated validation.",
+  "evidence": "BP02B.02: 'semantic validation is performed through a combination of automated checks and manual review'; BP 2B.5: 'The Governance Authority publishes a new vocabulary'; SIMPL-18186 So that: 'I do not require a manual publication action'; SIMPL-18187: 'automatically persisted and made available'.",
+  "question": "Is the manual review a step outside the system (before upload), or does the component need a review or approval state before publication?",
+  "options": [
+   "Manual review happens before upload; no state in the system",
+   "Add a review state before a version becomes ACTIVE"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-013",
+  "target": "cross",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "The accepted file formats and the upload size limit are not stated in any criterion. The process names RDF Schema and OWL, the API accepts Turtle only and has a 5 MB limit.",
+  "evidence": "SIMPL-18169/AC2: 'The uploaded file format is supported'; BP02B.01: 'creates a new vocabulary using RDF Schema or OWL'; SIMPL-395: 'files are ttl'; OpenAPI vocabularyFile: 'Vocabulary file in Turtle format'; OpenAPI 413 example: 'The maximum allowed upload size is 5 MB'.",
+  "question": "Which file formats (Turtle only, or also RDF/XML, OWL/XML, JSON-LD) and which maximum size apply, and what does the UI show when the file is too large?",
+  "options": [
+   "Turtle only, 5 MB, as in the OpenAPI",
+   "Several RDF serialisations, converted to Turtle on upload"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-014",
+  "target": "cross",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "The version identifier format is left to 'the versioning algorithm' and 'the same versioning library as schema management', while the API uses an integer and SIMPL-18170 starts at 1.",
+  "evidence": "SIMPL-18189/AC1: 'the next version identifier based on the versioning algorithm'; SIMPL-18190/AC1: 'the subsequent version number based on the applicable versioning algorithm'; SIMPL-18173 and SIMPL-18190 technical info: 'incremental using the same versioning library as schema management'; OpenAPI version: 'type: integer, minimum: 1'; SIMPL-18170/AC1: 'version `1`'.",
+  "question": "Is the next version always the previous integer plus 1?",
+  "options": [
+   "Integer, previous plus 1",
+   "Another scheme from the schema management library (for example semantic versions)"
+  ],
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-015",
+  "target": "cross",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "The API lets a single version status be changed by hand, but no story covers it, and the stories assume only the newest version is ACTIVE. A builder must guess whether two versions may be ACTIVE and which ones a new version deprecates.",
+  "evidence": "OpenAPI PATCH /vocabularies/{vocabularyName}/versions/{version}: 'Update the status of a vocabulary version.'; OpenAPI POST .../versions 201: 'The previous active version is deprecated.'; SIMPL-18191/AC1: 'the system sets all previous versions of that vocabulary to DEPRECATED'; SIMPL-18172/AC2: 'all previous versions are automatically marked as DEPRECATED'.",
+  "question": "Is manual change of a version status in scope, may more than one version be ACTIVE, and does a new version deprecate all previous versions or only the active one?",
+  "options": [
+   "Out of scope: only automatic status changes; one ACTIVE version at most",
+   "In scope: manual version status change allowed; a new version deprecates all older versions"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-016",
+  "target": "SIMPL-18164/AC1",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "The date filters do not say what a match is: the same day, the exact instant, or a from-date.",
+  "evidence": "SIMPL-18164/AC1: 'supported filter and sort options on `name`, `status`, `creationDate` and `lastUpdated`'; OpenAPI CreationDateQuery: 'Filter by ISO 8601 creation date or date-time', pattern '^\\d{4}-\\d{2}-\\d{2}(T.*)?$'.",
+  "question": "For creationDate and lastUpdated, does a date match the whole day, does a date-time match exactly, or is it a lower bound?",
+  "options": [
+   "Date matches the whole day (UTC); date-time matches exactly",
+   "Value is a lower bound (on or after)"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-017",
+  "target": "SIMPL-18164/AC4",
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The criterion rejects an unsupported filter field, but the OpenAPI does not say that unknown query parameters are refused; many frameworks ignore them.",
+  "evidence": "SIMPL-18164/AC4: 'When I request vocabularies using an unsupported filter or sort field ... Then the API rejects the request with a validation error'; OpenAPI GET /vocabularies lists only name, status, creationDate, lastUpdated, sort, page, pageSize.",
+  "question": "Must an unknown query parameter (for example ?owner=x) return 400, or is only an unsupported sort value or invalid filter value rejected?",
+  "options": [
+   "Unknown query parameters return 400",
+   "Unknown parameters are ignored; only invalid values of known parameters return 400"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-018",
+  "target": "SIMPL-18162",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "Pagination limits are not named: there is no maximum page size and no rule for a page past the last one.",
+  "evidence": "SIMPL-18162/AC2: 'I ask with wrong query parameter for pagination Then Simpl-Open answers with error message 400'; OpenAPI PageSizeQuery: 'default: 20, minimum: 1' (no maximum); PageQuery 'minimum: 1'.",
+  "question": "What is the maximum pageSize, and what does a request for a page beyond totalPages return (200 with empty items, or 400)?",
+  "options": [
+   "Maximum 100; page beyond the end returns 200 with empty items",
+   "No maximum; page beyond the end returns 400"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-019",
+  "target": "SIMPL-18161/AC1",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "The list row shows 'date created', 'last updated' and 'creator', but the API list returns the metadata of the latest version, so these could be values of the vocabulary or of its latest version.",
+  "evidence": "SIMPL-18161/AC1: 'current version, vocabulary status (`Active`, `Deprecated`), date created, last updated, and creator'; OpenAPI GET /vocabularies: 'Get the latest version metadata for vocabularies.'",
+  "question": "Do 'date created' and 'creator' in the list mean when and by whom the vocabulary was first created, or the latest version?",
+  "options": [
+   "Vocabulary: first version's creation date and creator",
+   "Latest version's creation date and creator"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-020",
+  "target": "SIMPL-18161",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "The UI list story does not cover an empty list or more vocabularies than one page, while the API is paginated with a default of 20.",
+  "evidence": "SIMPL-18161/AC1: 'I see a list of all vocabularies'; OpenAPI GET /vocabularies: page, pageSize default 20, 'Empty result sets return an empty `items` array'.",
+  "question": "Does the UI page through the list (and with which page size), and what does it show when there are no vocabularies?",
+  "options": [
+   "UI pages with 20 rows and shows an empty-state message",
+   "UI loads all pages at once"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-021",
+  "target": "SIMPL-18163/AC2",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "The criterion does not say which columns are sortable or how the direction is chosen. The list shows eight columns, the API sorts on four.",
+  "evidence": "SIMPL-18163/AC2: 'I click on a sortable column header ... ordered according to that column in ascending or descending order'; SIMPL-18161/AC1 columns include description, current version, creator; OpenAPI VocabularyListSortQuery: name, status, creationDate, lastUpdated.",
+  "question": "Which columns are sortable, what is the default order, and does a second click reverse the direction?",
+  "from_20a": []
+ },
+ {
+  "id": "F-022",
+  "target": "cross",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "'Full details' of a downloaded version can mean the Turtle content only or the content plus metadata, and 'review its full details' has no observable outcome.",
+  "evidence": "SIMPL-18165/AC1: 'I can download the newest version of that vocabulary And I can review its full details'; SIMPL-18452/AC2: 'the system provides a file containing the full details of the selected version'; OpenAPI GET /content/{vocabularyName} and /content/{vocabularyName}/versions/{version}: 'Turtle content'.",
+  "question": "Is the download the Turtle file as returned by /content, and where does the user 'review full details' (a details screen, or the file)?",
+  "options": [
+   "Download is the Turtle file only; details are on the details page",
+   "Download includes metadata in the file"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-023",
+  "target": "SIMPL-18452/AC1",
+  "check": "AC-C02",
+  "severity": "major",
+  "finding": "'I can access that selected version' does not say what is shown, so there is no pass condition.",
+  "evidence": "SIMPL-18452/AC1: 'When I open a vocabulary and select a specific version for review Then I can access that selected version'.",
+  "question": "What does the user see after selecting a version (which fields, which actions)?",
+  "from_20a": []
+ },
+ {
+  "id": "F-024",
+  "target": "SIMPL-18166/AC1",
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The criterion asks for structure and metadata in one answer, while the API operation for a version returns metadata only and serves the content through a separate download.",
+  "evidence": "SIMPL-18166/AC1: 'the API returns the complete structure and metadata in a machine-readable format'; OpenAPI GET /vocabularies/{vocabularyName}/versions/{version}: 'Get metadata for a specific vocabulary version.' (VocabularyMetadata with contentHref); GET /content/{vocabularyName}/versions/{version}: 'text/turtle'.",
+  "question": "Is the criterion met by the metadata response with a contentHref link to the Turtle content, or must one response carry both?",
+  "options": [
+   "Metadata JSON with contentHref; content via /content (as in the OpenAPI)",
+   "One response with metadata and content"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-025",
+  "target": "SIMPL-18167/AC1",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "'Chronological' does not give the direction, and opening 'the history' leads to 'the vocabulary details page', which other stories call the history page.",
+  "evidence": "SIMPL-18167/AC1: 'Then I am redirected to the vocabulary details page And I see a chronological list of all versions'; SIMPL-18559/AC1: 'the vocabulary history page'.",
+  "question": "Is the version list newest first or oldest first, and are the details page and the history page the same screen?",
+  "options": [
+   "Newest first; one screen",
+   "Oldest first; one screen"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-026",
+  "target": "SIMPL-18167",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "The history story has no criterion for a load failure or a vocabulary that is not found, while the list story has one for errors.",
+  "evidence": "SIMPL-18167 has one criterion (positive path only); SIMPL-18161/AC2: 'I am informed that the vocabulary list could not be loaded'; OpenAPI GET /vocabularies/{vocabularyName}/versions: 404, 500.",
+  "question": "What does the history page show when loading fails or the vocabulary is not found?",
+  "from_20a": []
+ },
+ {
+  "id": "F-027",
+  "target": "SIMPL-18168/AC1",
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The criterion asks for a list of all versions with 'metadata needed for comparison', while the API returns a paginated list with a fixed field set.",
+  "evidence": "SIMPL-18168/AC1: 'the API returns a structured list of all versions with metadata needed for comparison'; OpenAPI GET /vocabularies/{vocabularyName}/versions: page, pageSize (default 20), items VocabularyMetadata.",
+  "question": "Is a paginated answer acceptable for 'all versions', and which fields count as 'metadata needed for comparison'?",
+  "options": [
+   "Paginated, VocabularyMetadata fields as in the OpenAPI",
+   "All versions in one response"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-028",
+  "target": "SIMPL-18176/AC2",
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The criterion assumes the user can search and filter vocabulary versions, but no UI story and no API operation offers search or filter on versions.",
+  "evidence": "SIMPL-18176/AC2: 'When I search, filter, or browse vocabulary versions'; OpenAPI GET /vocabularies/{vocabularyName}/versions parameters: sort, page, pageSize only.",
+  "question": "Is browsing the history of one vocabulary enough, or is a search or filter over versions required?",
+  "options": [
+   "Browse only (history page)",
+   "Add a version filter (for example by status)"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-029",
+  "target": "SIMPL-18176/AC3",
+  "check": "AC-C05",
+  "severity": "major",
+  "finding": "The criterion shows the creator of a version, but the API version metadata has no creator field.",
+  "evidence": "SIMPL-18176/AC3: 'all associated metadata (e.g., version identifier, creation date, creator, change summary)'; OpenAPI VocabularyMetadata properties: href, contentHref, latestVersionHref, name, version, description, changelog, status, creationDate, lastUpdateDate (no createdBy).",
+  "question": "Should version metadata include createdBy, or is the creator not shown for versions?",
+  "options": [
+   "Add createdBy to VocabularyMetadata",
+   "Drop creator from the version view"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-030",
+  "target": "SIMPL-18178/AC1",
+  "check": "AC-C02",
+  "severity": "major",
+  "finding": "The criterion does not say where the warning appears or what it looks like, and the list already shows the status, so a tester cannot tell what passes.",
+  "evidence": "SIMPL-18178/AC1: 'When I see a deprecated vocabulary Then the system shows a clear warning message indicating deprecation'; SIMPL-18161/AC1 already shows 'vocabulary status (`Active`, `Deprecated`)'.",
+  "question": "On which screens is the warning shown (list row, details page, download), in which form (icon, banner, tooltip), and with what text?",
+  "from_20a": [
+   "AC-W01"
+  ]
+ },
+ {
+  "id": "F-031",
+  "target": "SIMPL-18184/AC4",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "The UI has no control to select a referenced vocabulary version; references are inside the uploaded file. It is unclear when the warning appears.",
+  "evidence": "SIMPL-18184/AC4: 'When I select or reference a vocabulary version with status _DEPRECATED_ Then Simpl-Open displays a clear warning'; SIMPL-18172/AC2 form: metadata, change summary, file; OpenAPI warning location: 'prefix 'legacy' -> 'https://authority.example/vocabulary-manager/content/LegacyVocabulary/versions/1#''.",
+  "question": "Is the warning shown after the file is uploaded or submitted (from the API warnings), or does the form need a picker for referenced vocabularies?",
+  "options": [
+   "Show the API warnings after submission",
+   "Add a referenced-vocabulary picker to the form"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-032",
+  "target": "SIMPL-18184",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "The status check covers only new versions, while the process asks for it on new vocabularies too, and the criteria do not say how a reference to an internal vocabulary version is recognised in the file.",
+  "evidence": "SIMPL-18184 I want: 'check the status of vocabulary versions I reuse when creating a new version'; BP 2B.4.3: 'verifies the status of the vocabularies used to create a new vocabulary or a new version of a vocabulary'; SIMPL-18184 notes: 'this is only for INTERNAL vocabularies'; OpenAPI warning location uses the contentHref URL as namespace.",
+  "question": "Does the deprecated-reference check also run on POST /vocabularies, and is a reference internal when its namespace equals a vocabulary contentHref (latest or versioned)?",
+  "from_20a": [
+   "AC-S10"
+  ]
+ },
+ {
+  "id": "F-033",
+  "target": "SIMPL-18181/AC1",
+  "check": "AC-C02",
+  "severity": "major",
+  "finding": "The pass condition 'the API response or processing state indicates that syntax validation has passed' has no field in the API, and 'or' leaves two places to look.",
+  "evidence": "SIMPL-18181/AC1: 'the API response or processing state indicates that syntax validation has passed'; OpenAPI 201 VocabularyVersionMetadataResponse has no validation status field; SIMPL-18194/AC2: 'confirms successful validation as part of the creation ... response without separate error details'.",
+  "question": "Is a 201 response the indicator that syntax validation passed, or is a field needed?",
+  "options": [
+   "201 Created is the indicator",
+   "Add a validation status field to the response"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-034",
+  "target": "SIMPL-18181/AC2",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "'not created as an ACTIVE vocabulary' suggests the vocabulary could still be stored in another state after a syntax error.",
+  "evidence": "SIMPL-18181/AC2: 'the vocabulary is not created as an ACTIVE vocabulary And no new ACTIVE version is created'; SIMPL-18183/AC2: 'the vocabulary or vocabulary version is not created'; OpenAPI 400 VocabularyValidationBadRequestResponse.",
+  "question": "After a syntax error, is nothing stored at all, or is a non-active record kept?",
+  "options": [
+   "Nothing is stored",
+   "A non-active (draft or rejected) record is stored"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-035",
+  "target": "SIMPL-18169/AC2",
+  "check": "AC-C02",
+  "severity": "major",
+  "finding": "The field format rules and the error messages are not named in the story, so 'field formats are correct' and 'appropriate error messages' have no oracle. The API has the name rule.",
+  "evidence": "SIMPL-18169/AC2: 'Field formats are correct', 'if validation fails, I am informed with appropriate error messages in the UI'; OpenAPI CreateVocabularyPayload.name: 'minLength: 3, maxLength: 64, pattern: ^[A-Z][a-zA-Z0-9]*$'.",
+  "question": "Which format rules apply per field (name as in the OpenAPI? description length?), is uniqueness case-sensitive, and where is each error shown (per field or as one message)?",
+  "from_20a": [
+   "AC-W01"
+  ]
+ },
+ {
+  "id": "F-036",
+  "target": "SIMPL-18170",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "The API create story has no criterion for a duplicate name, a file that is too large, or a wrong content type, which the OpenAPI answers with 409, 413 and 415. The same gaps apply to new versions in SIMPL-18173.",
+  "evidence": "SIMPL-18170/AC3 covers only 'invalid or incomplete data'; OpenAPI POST /vocabularies responses '409', '413', '415'; SIMPL-18169/AC2: 'The vocabulary name is unique'.",
+  "question": "Confirm that a duplicate name returns 409, an oversized file 413 and a wrong content type 415, as in the OpenAPI.",
+  "from_20a": []
+ },
+ {
+  "id": "F-037",
+  "target": "SIMPL-18173/AC6",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "'Unsupported format' can mean a wrong request content type (415) or a file that is not Turtle (400).",
+  "evidence": "SIMPL-18173/AC6: 'Given I submit the request in an unsupported format When the system cannot process the request Then the request is rejected'; OpenAPI POST .../versions: 415 'Request content type is not supported', 400 'invalid vocabulary file content'.",
+  "question": "Which case does this criterion test, and which status code is expected?",
+  "options": [
+   "Wrong request content type, 415",
+   "Non-Turtle file, 400"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-038",
+  "target": "cross",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "Neither status story says what happens when the requested status equals the current one; the OpenAPI answers 409 for that case.",
+  "evidence": "SIMPL-18175/AC1: 'updates the vocabulary status to the requested value'; SIMPL-18174/AC1: 'I choose `ACTIVE` or `DEPRECATED`'; OpenAPI ConflictResponse example: 'Vocabulary is already in status ACTIVE'.",
+  "question": "Does a request for the current status return 409 (API) and does the UI offer only the other status?",
+  "options": [
+   "409 Conflict; UI offers only the other status",
+   "200 with no change (idempotent)"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-039",
+  "target": "SIMPL-18195/AC2",
+  "check": "AC-C03",
+  "severity": "major",
+  "finding": "'hidden or disabled' gives two behaviours, and an error on an attempt is only possible if the action is visible.",
+  "evidence": "SIMPL-18195/AC2: 'restricted actions are hidden or disabled And attempts to perform restricted actions display an authorization error message'.",
+  "question": "Are restricted actions hidden or shown disabled, and when does the authorization error message appear (for example on a direct URL)?",
+  "options": [
+   "Hidden; error only on direct navigation",
+   "Disabled; error on click"
+  ],
+  "from_20a": []
+ },
+ {
+  "id": "F-040",
+  "target": "SIMPL-18193",
+  "check": "AC-C01",
+  "severity": "major",
+  "finding": "The UI report story covers errors only. The API can return non-blocking warnings on success, and the story does not say whether or how the UI shows them.",
+  "evidence": "SIMPL-18193/AC2: 'I cannot complete the flow until the blocking validation errors are resolved'; OpenAPI VocabularyVersionMetadataResponse.validationWarnings: 'Non-blocking validation warnings returned when vocabulary creation succeeds despite warnings.'",
+  "question": "Does the UI show validation warnings after a successful creation, and where?",
+  "from_20a": []
+ },
+ {
+  "id": "F-041",
+  "target": "SIMPL-393",
+  "check": "AC-C06",
+  "severity": "major",
+  "finding": "The story has no Given/When/Then criteria and an open question with the customer. It is unclear whether this component must ship the CPSV vocabulary as seed data.",
+  "evidence": "SIMPL-393 AC: 'The onthology is visible while executing endpoint to fetch all onthologies', 'We are able to fetch details of stored onthology'; note: 'to de defined with customer, whether it is enough, that the mentioned schemas are already provided as initial setup in the catalogues ... or whether a generic solution ... is requested'.",
+  "question": "Must Vocabulary Manager be deployed with the Core Public Services vocabulary pre-loaded, and is GET /vocabularies listing it the acceptance test?",
+  "options": [
+   "Pre-load CPSV as seed data",
+   "No seed data; the generic upload covers it"
+  ],
+  "from_20a": [
+   "AC-S08"
+  ]
+ },
+ {
+  "id": "F-042",
+  "target": "SIMPL-395",
+  "check": "AC-C06",
+  "severity": "major",
+  "finding": "The story has no criteria, is still in grooming, and asks for things the other stories and the API do not have: removing a vocabulary and a UI that wraps the catalogue's vocabulary calls.",
+  "evidence": "SIMPL-395: 'Ovi will add further Subtasks + AC'; 'the user can either remove the vocabulary from the catalogue or download the vocabulary/schema'; 'the UI should wrap the vocabulary calls of the catalogue'; BP02B.05: 'Deprecation does not mean deletion'; OpenAPI has no DELETE for internal vocabularies.",
+  "question": "Is SIMPL-395 replaced by the SIMPL-181xx stories, or does it still add a requirement (deletion, catalogue integration)?",
+  "options": [
+   "Replaced; nothing to build from it",
+   "Still adds deletion or catalogue integration"
+  ],
+  "from_20a": [
+   "AC-S08"
+  ]
+ },
+ {
+  "id": "F-043",
+  "target": "cross",
+  "check": "AC-C04",
+  "severity": "minor",
+  "finding": "The same actor appears under several names.",
+  "evidence": "'Governance Authority' (most stories), 'Governance Authority user' (SIMPL-18169, 18172, 18189, 18191), 'governance authority agent' (SIMPL-393, 395), 'Governance Authority End User' (SIMPL-28680), 'user with the _Vocabulary Management_ role' (SIMPL-18181).",
+  "question": "Can all of these be read as one actor, the Governance Authority user?",
+  "from_20a": []
+ },
+ {
+  "id": "F-044",
+  "target": "cross",
+  "check": "AC-C04",
+  "severity": "minor",
+  "finding": "Screen names vary: management page, management screen, details page, history page, history interface.",
+  "evidence": "SIMPL-18161/AC1: 'Vocabulary Management screen'; SIMPL-18165/AC1: 'Vocabulary Management page'; SIMPL-18167/AC1: 'vocabulary details page'; SIMPL-18559/AC1: 'vocabulary history page'; SIMPL-18176/AC1: 'vocabulary management or history interface'.",
+  "question": "Which screens exist (list, details with history), and which name should the criteria use?",
+  "from_20a": []
+ },
+ {
+  "id": "F-045",
+  "target": "cross",
+  "check": "AC-C04",
+  "severity": "minor",
+  "finding": "Field names differ between stories and the API.",
+  "evidence": "SIMPL-18164/AC1 filter '`lastUpdated`' vs SIMPL-18162/AC1 and OpenAPI field 'lastUpdateDate'; SIMPL-18172/AC2 'change summary', SIMPL-18167/AC1 'Change log', OpenAPI 'changelog'; SIMPL-18161/AC1 'creator', OpenAPI 'createdBy'.",
+  "question": "Confirm the pairs mean the same field.",
+  "from_20a": []
+ },
+ {
+  "id": "F-046",
+  "target": "cross",
+  "check": "AC-C02",
+  "severity": "minor",
+  "finding": "Several API criteria say 'validation error' or 'rejected' without the status code; the OpenAPI gives it.",
+  "evidence": "SIMPL-18164/AC4 'rejects the request with a validation error'; SIMPL-18170/AC3 'rejects the request with a validation error'; SIMPL-18175/AC3 same; SIMPL-18173/AC3 'the request is rejected'; SIMPL-18190/AC2 'the API rejects the request'; SIMPL-18166/AC2 'an error indicating that the requested vocabulary version could not be found'.",
+  "question": "Confirm the OpenAPI codes apply (400 for validation, 404 for not found).",
+  "from_20a": []
+ },
+ {
+  "id": "F-047",
+  "target": "SIMPL-18559",
+  "check": "AC-C02",
+  "severity": "minor",
+  "finding": "The warning text and form are not given; the content is (deprecated, plus a link to the latest ACTIVE version), so a default is easy.",
+  "evidence": "SIMPL-18559/AC1 and AC2: 'Simpl-Open displays a clear warning message indicating that the version is deprecated'; OpenAPI VocabularyMetadata.latestVersionHref.",
+  "question": "Is there a fixed warning text or form (banner, icon) to follow?",
+  "from_20a": [
+   "AC-W01"
+  ]
+ },
+ {
+  "id": "F-048",
+  "target": "SIMPL-18180/AC8",
+  "check": "AC-C03",
+  "severity": "minor",
+  "finding": "AC8 repeats the blocking outcome of AC5 to AC7, and 'blocking' errors suggests non-blocking ones exist without saying which.",
+  "evidence": "SIMPL-18180/AC8: 'the system prevents continuation until all blocking syntax and structure errors are resolved'; SIMPL-18180/AC5 to AC7: 'Prevents completion of the current flow'.",
+  "question": "Are all syntax and structure errors blocking?",
+  "from_20a": []
+ },
+ {
+  "id": "F-049",
+  "target": "SIMPL-18174/AC2",
+  "check": "AC-C02",
+  "severity": "minor",
+  "finding": "There is no way to remove a vocabulary, so the test setup for 'no longer available' is unclear.",
+  "evidence": "SIMPL-18174/AC2: 'When I select the status-change action for a vocabulary that is no longer available'; OpenAPI has no DELETE for internal vocabularies; BP02B.05: 'Deprecation does not mean deletion'.",
+  "question": "How does a vocabulary become unavailable (404 from the API only), and should the test stub the API?",
+  "from_20a": []
+ },
+ {
+  "id": "F-050",
+  "target": "SIMPL-18182/AC1",
+  "check": "AC-C03",
+  "severity": "minor",
+  "finding": "The Given says syntax validation has already passed before the When submits, while syntax validation runs as part of submission.",
+  "evidence": "SIMPL-18182/AC1: 'Given a vocabulary or vocabulary version has passed syntax validation When the vocabulary version is submitted via the UI'; SIMPL-18181 I want: 'validate vocabulary syntax when I submit'.",
+  "question": "Read as: on submit, semantic validation runs after syntax validation passes?",
+  "from_20a": []
+ },
+ {
+  "id": "F-051",
+  "target": "SIMPL-18187/AC1",
+  "check": "AC-C04",
+  "severity": "minor",
+  "finding": "'vocabulary repository' and 'vocabulary registry' are used for the store, and 'an identifier indicating the vocabulary is available' does not name the field.",
+  "evidence": "SIMPL-18187/AC1: 'persisted in the vocabulary repository', 'the response includes an identifier indicating the vocabulary is available in the vocabulary registry'; BP Assumptions: 'centrally stored in the Vocabulary Hub'; OpenAPI 201: Location header, href, contentHref.",
+  "question": "Is the identifier the Location header and href of the 201 response?",
+  "from_20a": []
+ },
+ {
+  "id": "F-052",
+  "target": "SIMPL-18196/AC1",
+  "check": "AC-C03",
+  "severity": "minor",
+  "finding": "'any Vocabulary Management API endpoint' also covers /health, which the OpenAPI leaves open.",
+  "evidence": "SIMPL-18196/AC1 to AC3: 'When I invoke any Vocabulary Management API endpoint'; SIMPL-18196/AC4: 'all vocabulary-related endpoints require the authentication token'; OpenAPI GET /health: 'security: []'.",
+  "question": "Confirm /health is excluded from the access rules.",
+  "from_20a": []
+ },
+ {
+  "id": "F-053",
+  "target": "SIMPL-28680",
+  "check": "AC-C03",
+  "severity": "minor",
+  "finding": "AC6 (profile not found) asks for a 'syntax-focused description', copied from AC3, and the second block under the heading AC1 has no heading of its own, so its id AC2 depends on order.",
+  "evidence": "SIMPL-28680/AC6: 'I upload a new version for a non existing MQP ... an error is returned with a non-sensitive code and syntax-focused description'; source headings: 'AC1', 'AC3', 'AC4', 'AC5', 'AC6'.",
+  "question": "Should AC6 return a not-found error, and should the second block be headed AC2?",
+  "from_20a": [
+   "AC-S09"
+  ]
+ }
+]

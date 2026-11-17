@@ -1,0 +1,1535 @@
+{
+ "component": "schema-manager",
+ "counts": {
+  "blocker": 16,
+  "major": 47,
+  "minor": 28
+ },
+ "findings": [
+  {
+   "id": "F-001",
+   "target": "cross",
+   "check": "AC-C04",
+   "severity": "blocker",
+   "finding": "The stories use two different version identifiers. Older stories expect a SemVer string supplied by the client or set to 1.0.0; newer stories and the OpenAPI expect a server-generated integer. Tests and code built from different stories will disagree on the version value, the request body and the 409 and 400 cases.",
+   "evidence": "SIMPL-13353/AC1: 'initial schema version with versionInfo set to \"1.0.0\"'. SIMPL-13357/AC1: 'A metadata part with a new, unique, and valid SemVer version (e.g., \"1.1.0\")'; SIMPL-13357/AC3: 409 for a version that already exists; SIMPL-13357/AC5: 400 for 'invalid version format'. SIMPL-13358/AC1, AC2: 'a valid SemVer version string (e.g., \"1.3.0\")'. SIMPL-13364/AC3, SIMPL-32798/AC3: 'e.g. 1.1.0'. Versus SIMPL-20528 and SIMPL-20534 technical details: 'a number ... starting from 1 (e.g: 1, 2, 3, etc)', 'Schema Version number parameter should be removed'; SIMPL-20770/AC1: 'the UI does not include a field for providing the version number'; OpenAPI: version is 'Monotonically increasing integer represented as a string (e.g. \"1\", \"2\")' and CreateNewSchemaVersionPayload has no version field. SIMPL-20534 also shows a VersioningContext with changeType 'PATCH | MINOR | MAJOR' and example version \"1.2.0\". SIMPL-32802/AC1: 'according pre-defined standards'.",
+   "question": "Is the version a server-generated integer string (\"1\", \"2\", ...) everywhere, and are the SemVer criteria (client-supplied version, 409 on a duplicate version, 400 on a bad version format, the SemVer field in the UI) withdrawn?",
+   "options": [
+    "Server-generated integer per the OpenAPI and SIMPL-20528/20534/20770; SemVer criteria are obsolete",
+    "SemVer (generated or client-supplied) per SIMPL-13353/13357/13358 and the VersioningContext example; the OpenAPI changes"
+   ],
+   "from_20a": [
+    "AC-S10",
+    "AC-W01"
+   ],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-002",
+   "target": "cross",
+   "check": "AC-C05",
+   "severity": "blocker",
+   "finding": "Several criteria publish a schema by sending PATCH with status PUBLISHED. The OpenAPI allows only REVOKED in this request, so a builder following the contract rejects what these criteria require. One criterion also expects 201 Created from the PATCH.",
+   "evidence": "SIMPL-20529/AC1: 'PATCH /schemas/{schemaName} and Request Body: {\"status\": \"PUBLISHED\"} ... Then the service return shall return with 200 OK'. SIMPL-20530/AC2: 'with PUBLISH state in the body'. SIMPL-31098/AC2: 'PATCH /schemas/FedSearch with body \"PUBLISHED\" ... Then Simpl shall respond with a 201 Created'. SIMPL-33537/AC5: 'after revocation, a valid Federated Search schema can be published'. OpenAPI SchemaStatusUpdateRequest: 'enum: [REVOKED] ... Only REVOKED is supported for this endpoint'; PATCH /schemas/{schemaName} summary 'Revoke an existing resource description schema', success 200.",
+   "question": "Can a REVOKED schema be set back to PUBLISHED through PATCH /schemas/{schemaName}, and if so with which response code and body?",
+   "options": [
+    "Yes: extend the OpenAPI enum with PUBLISHED, response 200 with SchemaCategory",
+    "No: re-publication is not supported; SIMPL-20529/AC1, SIMPL-20530/AC2 to AC4 and SIMPL-31098/AC2 are withdrawn"
+   ],
+   "from_20a": [],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-003",
+   "target": "cross",
+   "check": "AC-C04",
+   "severity": "blocker",
+   "finding": "The stories disagree on what status a newly created schema gets. Some stories store a new schema as REVOKED when another schema of the same resource type is published; the business process publishes every schema that passes validation, and the notification stories notify on every new schema.",
+   "evidence": "SIMPL-20686/AC2 and SIMPL-32801/AC2: 'a schema exists for specific resourceType ... with status PUBLISHED ... Then the new schema's status must be set to REVOKED'. SIMPL-20529/AC8: 409 'only one schema per resource type can be published'. BP02C.05: 'Upon successful validation, the new schema or new version of an existing schema is published'. BP02C Overview: 'Each resource type (data, application, infrastructure) has one schema'. SIMPL-14709/AC1 and SIMPL-33694/AC1: 'When I publish a new schema successfully Then Simpl notifies Providers'. SIMPL-13353/AC1 and SIMPL-32802/AC1 say nothing about the status.",
+   "question": "When a new schema is created for a resource type that already has a PUBLISHED schema, is it stored as REVOKED (and are Providers then not notified), is it rejected with 409, or is it published and the other one revoked?",
+   "options": [
+    "Stored as REVOKED, no notification (SIMPL-20686/32801)",
+    "Rejected with 409 (one schema per resource type, BP02C overview)",
+    "Published, and the previously published schema is revoked (BP02C.05 reading)"
+   ],
+   "from_20a": [],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-004",
+   "target": "cross",
+   "check": "AC-C04",
+   "severity": "blocker",
+   "finding": "It is not clear whether status belongs to a schema version or to the schema concept. Two stories set the previous version to REVOKED when a new version is created; another story says versions have no status of their own. The UI stories show a status per version, but the versions response in the OpenAPI example has no status field.",
+   "evidence": "SIMPL-13357/AC1 and SIMPL-32807/AC1 to AC3: 'the new schema version has status PUBLISHED And the status of the previous version ... has changed from PUBLISHED to REVOKED'. SIMPL-20530 technical details: 'a new version does not have its own status - it inherits the status of the schema concept'. SIMPL-13346/AC1 and SIMPL-32787/AC1: table with 'Version number, Status, ...'. OpenAPI GET /schemas/{schemaName}/versions example items: name, graphName, version, changelog, created, schemaType (no status). OpenAPI POST /schemas/{schemaName}/versions summary: 'implicitly makes the previous version unavailable'.",
+   "question": "Does each version carry its own status (previous version becomes REVOKED), or does a version inherit the status of its schema? What does a revoked schema's version list show?",
+   "options": [
+    "Status per version, returned in the versions list",
+    "Status per schema concept only; versions inherit it and the version-level status criteria are reworded"
+   ],
+   "from_20a": [],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-005",
+   "target": "cross",
+   "check": "AC-C05",
+   "severity": "blocker",
+   "finding": "Retrieving the latest content of a schema uses GET /schemas/{schemaName}, which the OpenAPI does not offer. The stories also call it a Resolver Interface that is 'not a REST API', use another host, and say 'public' in the user story but 'authenticated' in the criteria. A builder cannot tell whether this endpoint belongs to this service and how it is secured.",
+   "evidence": "SIMPL-13347/AC1: 'GET request to the endpoint for the schema concept, for example, https://api.simpl.space/schemas/ApplicationAsset'; user story: 'a stable, public, unversioned URI'; Notes: 'As this is not a REST API we don't need an API Definition task'. SIMPL-13347/AC2 and SIMPL-32788/AC4: 'the Resolver Interface endpoint'. SIMPL-20067/AC1: 'UI calls GET /schemas/{schemaName}'. SIMPL-32788/AC1 to AC3; SIMPL-33537/AC4 'latest content'; SIMPL-31098 validation hints. OpenAPI: path /schemas/{schemaName} has only PATCH; server https://schema-manager.dev.simpl-europe.eu/v1.",
+   "question": "Is GET /schemas/{schemaName} (latest content, text/turtle, Content-Location header) part of this service's API? If yes, under which base path, with which authentication and roles, and will the OpenAPI be extended?",
+   "options": [
+    "Part of this service: add GET /schemas/{schemaName} to the OpenAPI, same OAuth2 and roles as other reads",
+    "A separate public Resolver component: out of scope for this build, the UI download uses GET /schemas/{schemaName}/{version} with the latest version"
+   ],
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-006",
+   "target": "cross",
+   "check": "AC-C04",
+   "severity": "blocker",
+   "finding": "The business process says Simpl-Open adds the default properties to a schema before validating it. The stories instead reject a schema that does not already contain them. The list of default properties is only in external tickets, so neither reading can be tested from the specs.",
+   "evidence": "BP02C.04: 'Simpl-Open enriches the schema with default properties, then validates'. SIMPL-26105 technical details: 'Default properties must be added to all schemas'. Versus SIMPL-14703/AC3 and AC4: 'Simpl does not verify the presence of the default properties Then Simpl does not create the new schema'; SIMPL-14796/AC1: 'When I submit an invalid schema (not including default or mandatory properties) Then the schema validation fails'; SIMPL-24173/AC1 (UI); SIMPL-26105/AC3, AC4 (UUID and Version). Lists: SIMPL-14703 'Default Properties are in this ticket: SIMPL-16971'; SIMPL-26105 'in this ticket: SIMPL-26100'.",
+   "question": "Does Simpl-Open add missing default properties to a submitted schema, or reject the schema? Which exact properties (IRIs, constraints) are the default properties, including UUID and Version, per resource type?",
+   "options": [
+    "Enrich: Simpl-Open adds them; a schema without them is accepted",
+    "Reject: the Governance Authority must include them; missing ones give 400 with a reason"
+   ],
+   "from_20a": [
+    "AC-S04",
+    "AC-S10"
+   ],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-007",
+   "target": "cross",
+   "check": "AC-C04",
+   "severity": "blocker",
+   "finding": "The stories do not agree on what makes a schema name unique. This decides when POST returns 409 and which schema PATCH /schemas/{schemaName} and GET by name address.",
+   "evidence": "SIMPL-13353/AC2: 409 when 'a schema with the same name as in the metadata already exists'. SIMPL-32802/AC4: 409 when 'a schema with the same name ... and same resourceType already exists ... for schema type = RESOURCE'. SIMPL-32800/AC3: 409 for an existing name 'for schema type = RESOURCE'. SIMPL-32798 hints: 'For schema-type = RESOURCE and a given schema name there can be three different instances for each resource type (App, Infra, Data)'. OpenAPI GET /schemas/{schemaName}/{version}: 'the same schemaName can exist for both RESOURCE and SEARCH'; PATCH and GET take optional resourceType and schemaType query parameters.",
+   "question": "What is the uniqueness key of a schema: name, name plus schemaType, or name plus schemaType plus resourceType? Which resource is addressed when a request names only the schemaName?",
+   "options": [
+    "name only",
+    "name + schemaType",
+    "name + schemaType + resourceType (three RESOURCE schemas may share a name)"
+   ],
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-008",
+   "target": "cross",
+   "check": "AC-C03",
+   "severity": "blocker",
+   "finding": "The rule 'only one federated search schema' has two readings: any SEARCH schema, or only a published one. Three stories leave open, in their own notes, whether a new schema may reuse a revoked schema's name, and the way to publish a SEARCH schema again after revocation differs between stories.",
+   "evidence": "SIMPL-31098/AC3: 409 'When there is already a federated search schema defined'. SIMPL-32801/AC6: 'Given a schema exist for schemaType=\"SEARCH\" ... 409'. Versus SIMPL-32801/AC5 (only REVOKED SEARCH schemas exist, new one is PUBLISHED), SIMPL-32802/AC6 and SIMPL-32800/AC5 ('a published federated search schema'), SIMPL-33537/AC2 and scope: 'A revoked Federated Search schema does not count as published'. SIMPL-32258 hints, SIMPL-32801 NOTE and SIMPL-32802 technical info: 'define whether a new schema may reuse a revoked schema's name'. SIMPL-33537/AC5: 'after revocation, a valid Federated Search schema can be published'; SIMPL-31098/AC2 uses PATCH with PUBLISHED.",
+   "question": "Does 409 apply when any SEARCH schema exists, or only when a PUBLISHED one exists? May a new SEARCH schema reuse a revoked SEARCH schema's name? After revocation, is a SEARCH schema published again by creating a new schema, a new version, or by PATCH?",
+   "options": [
+    "Only a PUBLISHED SEARCH schema blocks creation (SIMPL-33537 scope); a revoked name may not be reused",
+    "Any SEARCH schema blocks creation (SIMPL-31098/AC3, SIMPL-32801/AC6)"
+   ],
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-009",
+   "target": "cross",
+   "check": "AC-C03",
+   "severity": "blocker",
+   "finding": "Provider notifications have no defined recipients or channel. The criteria say 'all Providers', the technical notes say one e-mail address from configuration, only some criteria say e-mail, and a separate story offers webhooks. A tester cannot check that 'Providers' were notified.",
+   "evidence": "SIMPL-14709/AC1: 'Simpl notifies Providers with the name, title, version, description and resource type'. SIMPL-14712/AC1: 'via an e-mail'; technical notes of SIMPL-14712 and SIMPL-14791: 'provide the email to which to send these notifications via a configuration key within the service's values'. SIMPL-33694/AC1, AC3: 'notifies all Providers' (no channel); SIMPL-33694/AC2: 'via an e-mail'. SIMPL-19992: webhook subscriptions for SchemaPublished and SchemaRevoked. BP02C.06: 'Providers are notified about changes (e.g. via email)'.",
+   "question": "Who receives the notification (one configured mailbox, every Provider known to the data space, or webhook subscribers), through which channel, and how does a test observe it?",
+   "options": [
+    "One e-mail to a configured address (technical notes)",
+    "One e-mail per Provider from a participant directory",
+    "Webhook events only (SIMPL-19992)"
+   ],
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-010",
+   "target": "SIMPL-19992",
+   "check": "AC-C01",
+   "severity": "blocker",
+   "finding": "The story covers creating, listing and deleting webhook subscriptions, but no criterion and no part of the OpenAPI describes the event that is delivered to the target URL. A builder has to invent the payload, the trigger points and the failure handling; the subscribers depend on exactly these.",
+   "evidence": "SIMPL-19992 user story: 'subscribe to event notifications for a schema's status changes'. SIMPL-19992/AC1 to AC5 cover only subscribe, list and delete. OpenAPI Webhook: 'The URL to which webhook events will be sent via HTTP POST', events SchemaPublished, SchemaRevoked; no callback or event schema.",
+   "question": "What does the HTTP POST to the target URL contain, which actions raise SchemaPublished (new schema, new version, re-publication) and SchemaRevoked (revocation, implicit revocation of a previous version), and what happens when delivery fails (retries, timeout)?",
+   "from_20a": [],
+   "code": "AC-C01",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-011",
+   "target": "SIMPL-32798/AC3",
+   "check": "AC-C03",
+   "severity": "blocker",
+   "finding": "The user story asks for the content of a schema version, but both positive criteria expect 'schema meta datas'. The OpenAPI returns the Turtle content. A builder and a tester will read this differently.",
+   "evidence": "SIMPL-32798 user story: 'retrieve the content for a specific version of a schema'. SIMPL-32798/AC3 and AC4: 'provide the schema meta datas corresponding to given schema name, schema type ... and version'. Hint: 'This is simply a new attribute in the details view'. OpenAPI GET /schemas/{schemaName}/{version}: 200 'text/turtle ... The schema content in Turtle (TTL) format'.",
+   "question": "Does GET /schemas/{schemaName}/{version} return the Turtle content (as the OpenAPI says) or the version metadata as JSON?",
+   "options": [
+    "Turtle content per the OpenAPI; 'meta datas' is a wording slip",
+    "JSON metadata; the OpenAPI changes"
+   ],
+   "from_20a": [],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-012",
+   "target": "SIMPL-32807/AC6",
+   "check": "AC-C03",
+   "severity": "blocker",
+   "finding": "This negative criterion contradicts itself: the Given says the schema exists for schema type SEARCH, the request asks for SEARCH, yet the expected result is 404. Its heading says the opposite case was meant.",
+   "evidence": "SIMPL-32807/AC6 heading: 'Updating not existing Federated Search Schema, but Resource Definition of given schema name'. Given: 'a schema with the name {schemaName} does not exist for schema type = RESOURCE, but for schema type = SEARCH, And a version number of it: {schemaVersion} that already exists'; When: 'schemaType = SEARCH ... A metadata part with not existing schemaName'; Then: '404 Not Found'.",
+   "question": "Is the case 'name exists as RESOURCE only, request with schemaType SEARCH, expect 404'? And is the 'version number that already exists' line still relevant now that versions are server-generated?",
+   "options": [
+    "Name exists as RESOURCE only, request SEARCH, 404 (heading reading)",
+    "Name exists as SEARCH, request SEARCH, 404 (as written)"
+   ],
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-013",
+   "target": "cross",
+   "check": "AC-C05",
+   "severity": "blocker",
+   "finding": "The resourceType values in the criteria do not match the OpenAPI pattern. The stories use lowercase or hyphenated values; the OpenAPI requires PascalCase alphanumeric. A request built from the story would be rejected with 400 by a service built from the contract.",
+   "evidence": "SIMPL-13353/AC1 and SIMPL-32802/AC1: '\"resourceType\": \"data\"'. SIMPL-13343/AC2 and SIMPL-32258/AC3: 'resourceType=data-schema'. SIMPL-13355/AC1, SIMPL-32800/AC1: options 'data, infrastructure, application'. SIMPL-15837/AC2, SIMPL-32790/AC2: 'a resourceType (e.g., \"application\")'. SIMPL-32802 technical info: 'resourceType (APP, INFRA, DATA)'. OpenAPI resourceType: 'Must be in PascalCase, alphanumeric', pattern '^[A-Z][a-zA-Z0-9]*$', example 'Application'.",
+   "question": "Which resourceType values are valid (exact spelling and case), is the set closed (data, application, infrastructure) or free text, and does the API compare them case-sensitively?",
+   "options": [
+    "Closed set in PascalCase: Data, Application, Infrastructure",
+    "Free PascalCase string per the OpenAPI pattern; the UI offers three fixed values"
+   ],
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-014",
+   "target": "cross",
+   "check": "AC-C05",
+   "severity": "major",
+   "finding": "Several criteria expect 401 Unauthorized for a missing or invalid token, but no schema or webhook operation in the OpenAPI declares 401. The OpenAPI defines an UnauthorizedErrorResponse but uses it only on the Metadata Quality Profile operations.",
+   "evidence": "SIMPL-13343/AC3 and SIMPL-32258/AC5: 'without a valid authentication token ... 401 Unauthorized'. SIMPL-15837/AC4: 'my session is expired'. SIMPL-24175/AC3: 'a Participant that is not authenticated'. OpenAPI GET /schemas responses: 200, 400, 403, 406, 500; 401 only on PATCH and DELETE /metadataQualityProfiles/{metadataQualityProfileName}.",
+   "question": "Does this service return 401 itself for a missing or invalid token (and should the OpenAPI list it on every operation), or is 401 produced by the gateway in front of it?",
+   "options": [
+    "Service returns 401 with Problem details; add 401 to the OpenAPI",
+    "Gateway returns 401; the service tests cover 403 only"
+   ],
+   "from_20a": [],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-015",
+   "target": "cross",
+   "check": "AC-C04",
+   "severity": "major",
+   "finding": "Role names differ between stories. Most use GA_SCHEMA_ADMIN and GA_SCHEMA_VIEWER; three criteria use governance-admin and governance-viewer. A builder must know which role names to check in the token.",
+   "evidence": "SIMPL-13343/AC4: 'without the required governance-viewer or governance-admin role'. SIMPL-13358/AC1 and SIMPL-32808/AC2: 'a logged-in user with the governance-admin role'. SIMPL-17066 technical info: 'roles are GA_SCHEMA_ADMIN ... GA_SCHEMA_VIEWER'. SIMPL-13343/AC1: 'granting the GA_SCHEMA_VIEWER or GA_SCHEMA_ADMIN role'.",
+   "question": "Are governance-admin and governance-viewer the same roles as GA_SCHEMA_ADMIN and GA_SCHEMA_VIEWER, and which exact role names appear in the token?",
+   "options": [
+    "Aliases: use GA_SCHEMA_ADMIN and GA_SCHEMA_VIEWER everywhere",
+    "Separate roles that also grant access"
+   ],
+   "from_20a": [],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-016",
+   "target": "cross",
+   "check": "AC-C02",
+   "severity": "major",
+   "finding": "List criteria require 'all the relevant metadata' or 'all its metadata' without naming the fields. For the versions list the OpenAPI response schema is a reference to a file that is not in the specs, so the field list is only known from an example.",
+   "evidence": "SIMPL-13343/AC1: 'each resource in the list shall include all the relevant metadata'. SIMPL-32258/AC1, AC2: 'shall include all metadata'. SIMPL-13345/AC1, SIMPL-32786/AC1, AC2: 'each schema version in the list must include all its metadata'. OpenAPI GetSchemaVersionsResponsePayload: '$ref: ./common/common-components.yaml#/components/schemas/GetSchemaVersionsResponsePayload' (file not provided).",
+   "question": "Which fields must each list item contain, for the schema list and for the versions list? Is the OpenAPI GetAllSchemasResponsePayload and the versions example (name, graphName, version, changelog, created, schemaType) the full list?",
+   "from_20a": [
+    "AC-W01"
+   ],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-017",
+   "target": "cross",
+   "check": "AC-C05",
+   "severity": "major",
+   "finding": "The UI tables show columns that the API does not return. The schema list has no creation date and no creator; the versions list has no status, resource type or creator.",
+   "evidence": "SIMPL-15837/AC1 and SIMPL-32790/AC1: 'Latest Version, Status, Creation Date, and Creator'. SIMPL-13346/AC1: 'Version number, Status, Creation Date, Creator, and Latest Change'. SIMPL-32787/AC1: 'Version number, Status, SchemaType, ResourceType, Creation Date, Creator, and Latest Change'. OpenAPI GetAllSchemasResponsePayload items: name, description, title, resourceType, schemaType, version, changelog, status. Versions example items: name, graphName, version, changelog, created, schemaType.",
+   "question": "Should the API add creator and creation date to the schema list, and status, resourceType and creator to the versions list, or should the UI drop these columns?",
+   "options": [
+    "Extend the API responses",
+    "Drop or leave empty the columns the API does not provide"
+   ],
+   "from_20a": [],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-018",
+   "target": "cross",
+   "check": "AC-C03",
+   "severity": "major",
+   "finding": "The UI lists must be sortable, but the schema and version endpoints have no sort parameter and return pages. Sorting can mean the current page only or the whole result set.",
+   "evidence": "SIMPL-15837/AC1, SIMPL-32790/AC1: 'controls to sort by key columns like Schema Name and Title' and 'the list shall be paginated'. SIMPL-13346/AC1, SIMPL-32787/AC1: 'sortable by columns like Version and Creation Date'. OpenAPI GET /schemas and GET /schemas/{schemaName}/versions: parameters status, resourceType, schemaType, page, pageSize (no sort); /vocabularies does have a sort parameter.",
+   "question": "Does sorting apply to the whole result (needs a sort parameter in the API) or only to the rows of the current page? Which columns exactly are sortable?",
+   "options": [
+    "Server-side sort: add a sort parameter like the vocabularies endpoints",
+    "Client-side sort of the current page only"
+   ],
+   "from_20a": [],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-019",
+   "target": "cross",
+   "check": "AC-C05",
+   "severity": "major",
+   "finding": "The create criteria describe the request and the Location header differently from the OpenAPI. The stories send 'JSON metadata' as one multipart part and point Location to the schema concept; the OpenAPI has separate form fields and its Location example points to a version URI with a UUID.",
+   "evidence": "SIMPL-13353/AC1 and SIMPL-32802/AC1, AC2: 'POST request to the /api/v1/schemas endpoint with the .ttl file and the JSON metadata as multipart/form-data' and 'include a Location header pointing to the URI of the newly created schema concept resource'. OpenAPI CreateSchemaPayload: separate fields schemaFile, name, description, title, resourceType, schemaType; 201 Location example 'https://schema-manager.dev.simpl-europe.eu/v1/schemas/8667b168-d462-40b8-9226-b955bab7b2da/version/1'; server base '/v1', not '/api/v1'.",
+   "question": "Is the request body flat form fields as in the OpenAPI? What exactly is the Location URI: the schema concept by name, or a version URI, and with a name or a UUID?",
+   "options": [
+    "Follow the OpenAPI: flat fields; Location is the version URI",
+    "Follow the stories: one JSON metadata part; Location is the concept URI"
+   ],
+   "from_20a": [],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-020",
+   "target": "cross",
+   "check": "AC-C05",
+   "severity": "major",
+   "finding": "The new-version criteria describe a 'metadata' part and a 'file' part, and in SIMPL-32807 schemaType appears both as its own field and inside the metadata part. The OpenAPI has flat fields schemaFile, changelog, resourceType and schemaType, with the schema name only in the path.",
+   "evidence": "SIMPL-13357/AC1: 'A metadata part with a new, unique, and valid SemVer version ... and a changelog description. A file part containing a valid SHACL definition'. SIMPL-32807/AC1: 'schemaType is empty; A metadata part with schemaName, schemaType and a changelog description; A file part'. OpenAPI CreateNewSchemaVersionPayload: required schemaFile, changelog; optional resourceType, schemaType.",
+   "question": "Is the version request body exactly the OpenAPI CreateNewSchemaVersionPayload (flat fields, no schemaName in the body)? If schemaType is sent and does not match the stored schema, what is the response?",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-021",
+   "target": "cross",
+   "check": "AC-C01",
+   "severity": "major",
+   "finding": "No criterion says what happens when a new version is posted for a REVOKED schema. The revocation story says revocation prevents any version from being used, and the status stories give versions their own status, so the builder has to guess between 201 (and re-publication) and an error.",
+   "evidence": "SIMPL-13360 user story: 'prevent any version of that schema from being used for new (versions of) resource descriptions'. SIMPL-13357/AC1 and SIMPL-32807/AC1 to AC3 only cover 'the latest version of that schema can be uniquely identified by its status PUBLISHED'. SIMPL-33537/AC1: 'there is no published (not revoked) Federated Search schema When I create a new Federated Search schema or a new version of it ... Then Simpl-Open publish the schema or schema version'.",
+   "question": "What does POST /schemas/{schemaName}/versions return for a REVOKED schema: 201 with the new version PUBLISHED (re-publishing the schema), 201 with the version REVOKED, or an error (which code)?",
+   "from_20a": [],
+   "code": "AC-C01",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-022",
+   "target": "SIMPL-20529/AC7",
+   "check": "AC-C05",
+   "severity": "major",
+   "finding": "This criterion expects 409 when the requested status equals the current one, but the OpenAPI for PATCH /schemas/{schemaName} has no 409 response, and the revoke story is silent on revoking an already revoked schema.",
+   "evidence": "SIMPL-20529/AC7: 'When I request a status change to a state the schema is already in Then the service shall respond with 409 Conflict'. SIMPL-20529/AC8 also uses 409. OpenAPI PATCH /schemas/{schemaName} responses: 200, 400, 403, 404, 406, 415, 500. SIMPL-13360 has no criterion for an already REVOKED schema.",
+   "question": "Is revoking an already revoked schema a 409 (add it to the OpenAPI) or an idempotent 200?",
+   "options": [
+    "409 Conflict, added to the OpenAPI",
+    "200 OK, no change (idempotent)"
+   ],
+   "from_20a": [],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-023",
+   "target": "cross",
+   "check": "AC-C03",
+   "severity": "major",
+   "finding": "The content returned for a version is called 'the complete, raw SHACL content', and creation stores 'the submitted SHACL file'. If Simpl-Open enriches the schema with default properties, the returned content differs from the uploaded file. A test cannot compare without knowing which one is stored.",
+   "evidence": "SIMPL-13353/AC1, SIMPL-32802/AC1: 'store the submitted SHACL file as its content'. SIMPL-13347/AC1, SIMPL-32788/AC1: 'the complete, raw SHACL content of version \"1.2.0\"'. SIMPL-13364/AC3: 'provide the full schema content corresponding to version 1.1.0'. BP02C.04: 'Simpl-Open enriches the schema with default properties'.",
+   "question": "Is the content returned by the retrieval endpoints byte-identical to the uploaded file, or the stored (possibly enriched or normalised) graph? What may a test compare?",
+   "options": [
+    "Byte-identical to the upload",
+    "Semantically equal graph (isomorphic), possibly enriched with default properties"
+   ],
+   "from_20a": [],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-024",
+   "target": "cross",
+   "check": "AC-C03",
+   "severity": "major",
+   "finding": "The negative retrieval criteria return 404 for a version that 'has not been published'. A revoked version was published once; the retention stories require revoked schemas to stay retrievable. It is open whether a revoked version gives 200 or 404.",
+   "evidence": "SIMPL-13364/AC1 and SIMPL-32798/AC1: 'a specific version of a schema (e.g. 9.9.9) has not been published ... 404 Not Found'. SIMPL-13364/AC2, SIMPL-32798/AC2: 'a schema with a specific name has not been published ... 404'. SIMPL-14354/AC1: 'a schema has been revoked When I retrieve, via API, that schema ... Then the schema and its properties are returned'.",
+   "question": "Do the retrieval endpoints return revoked versions (200) and return 404 only for versions that do not exist?",
+   "from_20a": [],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-025",
+   "target": "cross",
+   "check": "AC-C06",
+   "severity": "major",
+   "finding": "Four retention criteria are about resource descriptions in the catalogue and about federated search, which live outside the schema manager. The outcome cannot be observed through this component's API, and one story says the function already exists.",
+   "evidence": "SIMPL-14701/AC1, SIMPL-32436/AC1, SIMPL-32497/AC1: 'Then the reference in the published resource description is still valid and retrievable'. SIMPL-32436/AC2, SIMPL-32497/AC2: 'Then the federated search across multiple trustor GA is disabled'. SIMPL-14701 notes: 'The functionality for this exists and doesn't need implementation'. SIMPL-32497 is a UI story but its criteria say 'via the UI or the API', the same text as SIMPL-32436.",
+   "question": "For the schema manager, is the testable requirement only that a revoked schema and its versions stay retrievable by name and version? Who owns the catalogue and federated search checks?",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C06",
+   "step": "20b",
+   "theme": "Scope"
+  },
+  {
+   "id": "F-026",
+   "target": "cross",
+   "check": "AC-C02",
+   "severity": "major",
+   "finding": "The notification content cannot be checked: 'links for instructions', 'relevant instructions or links' and 'suggested follow-up actions' are not defined, and the revocation criterion of the newer story gives no content at all.",
+   "evidence": "SIMPL-14709/AC1: 'the notification includes links for instructions how to use the new schema and follow-up actions'. SIMPL-14712/AC1 and SIMPL-33694/AC2: 'version (if applicable), timestamp, and any relevant instructions or links for follow-up actions'. SIMPL-14791/AC1: 'suggested follow-up actions'. SIMPL-33694/AC3: 'notifies all Providers about the revocation'.",
+   "question": "What exactly does each notification contain (fields, link targets, fixed text), for a new schema, a new version and a revocation?",
+   "from_20a": [
+    "AC-W01"
+   ],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-027",
+   "target": "cross",
+   "check": "AC-C04",
+   "severity": "major",
+   "finding": "The expected error 'detail' texts differ between stories and from the OpenAPI. The same failure (missing default properties) has two different prefixes, and no API criterion names the status code.",
+   "evidence": "SIMPL-14795 and SIMPL-24172: 'detail: \"Syntax Error: <errorMessage>\"'. SIMPL-14796: 'detail: \"Mandatory properties error: <errorMessage>\"'. SIMPL-24173: 'detail: \"Default Properties Error: <errorMessage>\"'. SIMPL-14797 and SIMPL-24174: 'detail: \"Semantic Validation Error: <errorMessage>\"'. OpenAPI SchemaValidationBadRequestResponse: 'detail: Syntax validation errors detected in provided file.' with an issues list. SIMPL-14795/AC1: 'Simpl returns with an error message about the syntax error' (no status).",
+   "question": "Which status code and which detail text (or issues[].code) identify a syntax error, a missing default or mandatory property, and a semantic error? Is the detail prefix part of the contract that tests may assert?",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-028",
+   "target": "cross",
+   "check": "AC-C02",
+   "severity": "major",
+   "finding": "The UI validation criteria require 'an error message about the schema validation failure and the reason' without saying where it appears or what it shows. Other UI stories describe the error location and text in different ways.",
+   "evidence": "SIMPL-24172/AC1, AC2, SIMPL-24173/AC1, SIMPL-24174/AC1, AC2: 'Simpl provides an error message about the schema validation failure and the reason'. SIMPL-13358/AC3: 'error message at the top of the form'. SIMPL-20770/AC3: 'the UI remains on the list of schema's page and displays an error message ... (e.g., showing the details field content of the response)'. SIMPL-13361 technical details: 'use the detail parameter of the response'.",
+   "question": "Where does the UI show validation errors (top of the form, toast, inline), and does it show the Problem detail, the issues list, or a fixed text?",
+   "from_20a": [],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-029",
+   "target": "cross",
+   "check": "AC-C04",
+   "severity": "major",
+   "finding": "Two UI stories describe revocation differently: one with a confirmation popup and one success text, the other without a popup and with another success text.",
+   "evidence": "SIMPL-13361/AC1: 'I confirm the action in the popup' and 'Schema \"{schema_name}\" revoked successfully.'. SIMPL-20530/AC1: 'When I click on Revoke button And the UI calls PATCH ...' and 'Success notification message shows: \"Schema state changed.\"'.",
+   "question": "Is there a confirmation popup before revoking, and which success text is shown?",
+   "from_20a": [],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-030",
+   "target": "cross",
+   "check": "AC-C06",
+   "severity": "major",
+   "finding": "Eleven [ENHANCE] stories, and stories marked 'covered with the implementation of SIMPL-33537', restate earlier stories with changes. The specs do not say whether the earlier criteria still apply. Several of them now conflict (version field, redirect target, roles, default schema type).",
+   "evidence": "SIMPL-32786, SIMPL-32788, SIMPL-32798, SIMPL-32802, SIMPL-32807, SIMPL-31098, SIMPL-32258: 'This US is covered with the implementation of SIMPL-33537 and only for linkage to the epic'. Pairs: SIMPL-13358 (SemVer field) and SIMPL-20770/SIMPL-32808 (no version field); SIMPL-13343 and SIMPL-32258; SIMPL-13345 and SIMPL-32786; SIMPL-13347 and SIMPL-32788; SIMPL-13353 and SIMPL-32802; SIMPL-13357 and SIMPL-32807; SIMPL-15837 and SIMPL-32790; SIMPL-20686 and SIMPL-32801; SIMPL-14709, SIMPL-14712, SIMPL-14791 and SIMPL-33694.",
+   "question": "For each pair, does the newer story replace the older one (older criteria no longer tested) or extend it (both sets must pass)?",
+   "options": [
+    "Newer replaces older",
+    "Newer extends older; conflicts are resolved case by case"
+   ],
+   "from_20a": [],
+   "code": "AC-C06",
+   "step": "20b",
+   "theme": "Scope"
+  },
+  {
+   "id": "F-031",
+   "target": "cross",
+   "check": "AC-C04",
+   "severity": "major",
+   "finding": "SIMPL-13343 asks for a list of all schemas, but since the schema type was introduced, GET /schemas without a filter returns only RESOURCE schemas. A test written from SIMPL-13343 may expect SEARCH schemas in the list.",
+   "evidence": "SIMPL-13343 user story: 'retrieve a list of all schemas metadata available in the system'; SIMPL-13343/AC1: 'a paginated list of schemas'. SIMPL-32258/AC1: 'without optional filter schema type (default value: schema type = RESOURCE)'. OpenAPI schemaType: 'If omitted, defaults to RESOURCE'.",
+   "question": "Confirm that GET /schemas without schemaType returns only RESOURCE schemas, and that there is no way to list both types in one call.",
+   "from_20a": [],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-032",
+   "target": "SIMPL-13355/AC2",
+   "check": "AC-C02",
+   "severity": "major",
+   "finding": "The negative scenario has the same Given and When as the positive one (a new name and a valid file), so the error is never triggered. Its only expected outcome is in a bullet after the Then.",
+   "evidence": "SIMPL-13355/AC2: 'Entering a new Schema Name ... Uploading a valid .ttl file containing the SHACL definition ... Then the UI shall call the backend POST /schemas endpoint ... - If the API returns an error (e.g., 400 Bad Request or 409 Conflict), the UI shall remain on the form and display a user-friendly message'.",
+   "question": "Which inputs trigger the error case (invalid file, existing name), and which message is shown for each status?",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-033",
+   "target": "SIMPL-13364",
+   "check": "AC-C03",
+   "severity": "major",
+   "finding": "The story names no endpoint, no role and no content type, and its note says it is 'not a REST API'. The OpenAPI offers GET /schemas/{schemaName}/{version} returning text/turtle, so it is unclear whether this story is that operation or the Resolver.",
+   "evidence": "SIMPL-13364/AC3: 'When I request the content of this specific version of the schema, Then Simpl shall answer with 200 OK'. Given: 'I am an authenticated Governance Authority user' (no role). Notes: 'As this is not a REST API we don't need an API Definition task'. OpenAPI GET /schemas/{schemaName}/{version}: 200 text/turtle, 403.",
+   "question": "Is this story implemented by GET /schemas/{schemaName}/{version}? Which roles may call it, and is 403 expected without one?",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-034",
+   "target": "SIMPL-14354/AC1",
+   "check": "AC-C02",
+   "severity": "major",
+   "finding": "The criterion does not say which request is used, what 'identifier' means, or which fields form 'the schema and its properties'. A tester has no oracle.",
+   "evidence": "SIMPL-14354/AC1: 'When I retrieve, via API, that schema using its identifier Then the schema and its properties are returned'. Note: 'This scenario covers an internal logic requirement that when a schema is revoked it's still persisted'.",
+   "question": "Which operation and identifier (name, name plus version) are meant, and what must the response contain for a revoked schema?",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-035",
+   "target": "SIMPL-22407",
+   "check": "AC-C03",
+   "severity": "major",
+   "finding": "The criteria say any failed semantic check blocks creation. The story notes and the OpenAPI also have non-blocking warnings. A builder cannot tell which checks block and which only warn, nor against which vocabularies the schema is checked.",
+   "evidence": "SIMPL-22407/AC3: 'one or more semantic validation checks fail Then Simpl does not create the new schema'. Notes: 'we can only validate against self managed vocabularies', 'we issue warnings for external vocabularies that cannot be resolved'. OpenAPI CreateSchemaResponsePayload.validationWarnings: 'Non-blocking semantic validation warnings', example code 'externalReferenceSkipped'. BP02C Prerequisites: internal vocabularies configured (BP02B).",
+   "question": "Which semantic issues are errors (400, nothing created) and which are warnings (201 with validationWarnings)? Which vocabularies count as 'self managed' (the /vocabularies of this service)?",
+   "from_20a": [],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-036",
+   "target": "SIMPL-22407/AC3",
+   "check": "AC-C05",
+   "severity": "major",
+   "finding": "The fields each semantic error must carry do not match the OpenAPI issue object, and the status code is not named.",
+   "evidence": "SIMPL-22407/AC3 and AC4: 'each error includes, where applicable: the affected schema property; the validation rule, relationship, or dependency that failed; the referenced vocabulary or vocabulary term involved; a human-readable error description' and 'the API returns a structured error response'. OpenAPI SchemaValidationIssue: code, description, location; returned in Problem.issues with 400.",
+   "question": "Map the four required items to the OpenAPI issue fields (code, description, location), or extend the issue object. Is the status 400?",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-037",
+   "target": "SIMPL-24175",
+   "check": "AC-C02",
+   "severity": "major",
+   "finding": "The outcomes 'handles the request' and 'does not handle the request' have no observable result, and the technical info says the check happens in the Tier 2 gateway because the service has no ingress. It is unclear what this component must do and how a test observes it.",
+   "evidence": "SIMPL-24175/AC1: 'the Governance authority handles the request'; AC2, AC3: 'the Governance authority does not handle the request'. Technical info: 'we only allow it via the T2 gateway but without ABAC', 'service has no ingress'. OpenAPI webhook operations declare 403 but no 401.",
+   "question": "Which status codes are returned without Tier 2 credentials and without authentication, and is this enforced by the gateway (out of scope here) or by the service?",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-038",
+   "target": "SIMPL-17066/AC4",
+   "check": "AC-C05",
+   "severity": "major",
+   "finding": "There is no 'publish a schema' operation to protect. Publication happens on creation, and the only status change in the OpenAPI is revocation.",
+   "evidence": "SIMPL-17066/AC4: 'When I attempt to perform a publish a schema action Then Simpl authorises publishing a schema action'; SIMPL-17066/AC10 the negative. OpenAPI: POST /schemas, POST /schemas/{schemaName}/versions, PATCH /schemas/{schemaName} (REVOKED only).",
+   "question": "Which request is the 'publish a schema' action? If none, are AC4 and AC10 covered by the create criteria AC1, AC2, AC7, AC8?",
+   "from_20a": [],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-039",
+   "target": "SIMPL-17066/AC5",
+   "check": "AC-C03",
+   "severity": "major",
+   "finding": "'List schema details' matches no single operation. It can mean the schema list, the content of a version, or the latest content.",
+   "evidence": "SIMPL-17066/AC5: 'When I attempt to perform a list schema details action'; SIMPL-17066/AC11 the negative. OpenAPI read operations: GET /schemas, GET /schemas/{schemaName}/versions, GET /schemas/{schemaName}/{version}.",
+   "question": "Which operations does 'list schema details' cover, and do GA_SCHEMA_VIEWER rules also apply to webhooks and to SEARCH schemas?",
+   "from_20a": [],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-040",
+   "target": "SIMPL-17066",
+   "check": "AC-C02",
+   "severity": "major",
+   "finding": "The negative criteria say Simpl 'does not authorise ... and does not allow to perform it' without a status code or a UI behaviour.",
+   "evidence": "SIMPL-17066/AC7 to AC12: 'Then Simpl does not authorise creating a new schema action and does not allow to perform it'. Other stories: SIMPL-13360/AC3, SIMPL-20529/AC4 expect '403 Forbidden'.",
+   "question": "Confirm 403 Forbidden with a Problem body for every denied action, and say what the UI does (hide the action or show an error).",
+   "from_20a": [],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-041",
+   "target": "SIMPL-19992/AC1",
+   "check": "AC-C03",
+   "severity": "major",
+   "finding": "'The system validates the endpoint URL' can mean a format check or a reachability check (calling the URL).",
+   "evidence": "SIMPL-19992/AC1: 'Then the system validates the endpoint URL And the subscription is created successfully'. SIMPL-19992/AC4: 'the system should only accept standard http/https urls'. OpenAPI targetUrl: format uri.",
+   "question": "Is validation a syntax check only (http or https absolute URL), or must the service also reach the URL before accepting it?",
+   "options": [
+    "Syntax only",
+    "Syntax plus a reachability call"
+   ],
+   "from_20a": [],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-042",
+   "target": "SIMPL-19992/AC4",
+   "check": "AC-C05",
+   "severity": "major",
+   "finding": "For an unknown event type the story gives no status code, and the OpenAPI returns 406 Not Acceptable for it, which is an unusual code for a body validation error. A test cannot assert the code.",
+   "evidence": "SIMPL-19992/AC4 (third case): 'When I request to subscribe to the event SchemaExploded Then the system rejects the request And the system returns an error indicating SchemaExploded is not a valid event type'. OpenAPI POST /webhooks 406: 'Returned for an unsupported webhook event value', detail \"'test' is not a valid event type\".",
+   "question": "Is an unknown event type answered with 406 (as in the OpenAPI) or 400 like the other body errors?",
+   "options": [
+    "406 per the OpenAPI",
+    "400 Bad Request; the OpenAPI changes"
+   ],
+   "from_20a": [],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-043",
+   "target": "SIMPL-20530/AC2",
+   "check": "AC-C04",
+   "severity": "major",
+   "finding": "After a successful Publish the criterion expects the status to become REVOKED, sends 'PUBLISH' instead of 'PUBLISHED', and gives a success text that differs from the technical details.",
+   "evidence": "SIMPL-20530/AC2: 'with PUBLISH state in the body ... Then Success notification message shows: \"Schema state changed.\" And \"Status\" is updated to REVOKED in the schema list'. Technical details: 'The UI updates schema list to status PUBLISHED ... and show notification message: \"Schema {schema_name} published successfully!\"'. SIMPL-20529/AC1: body {\"status\": \"PUBLISHED\"}.",
+   "question": "Confirm: body value PUBLISHED, status shown PUBLISHED, and which success text.",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-044",
+   "target": "SIMPL-28815",
+   "check": "AC-C06",
+   "severity": "major",
+   "finding": "This story is about a Provider adding a billing contract clause in the resource description wizard. It names no schema manager operation and no BP02C step, so it most likely belongs to another component.",
+   "evidence": "SIMPL-28815 user story: 'As a Provider end user I want to add the data of the contract clause Billing Schema to a new resource description via UI'. SIMPL-28815/AC1 to AC6: wizard step 'Contract Clauses', 'Sign & Submit'. BP02C Assumptions: 'Contract clauses schema (... billing schema) are default properties imposed by Simpl-Open'.",
+   "question": "Is SIMPL-28815 out of scope for the schema manager build? If not, which schema manager behaviour does it require (for example a billing default property)?",
+   "from_20a": [],
+   "code": "AC-C06",
+   "step": "20b",
+   "theme": "Scope"
+  },
+  {
+   "id": "F-045",
+   "target": "SIMPL-32790/AC2",
+   "check": "AC-C01",
+   "severity": "major",
+   "finding": "The UI may combine a schemaType SEARCH filter with a resourceType filter, which the API rejects with 400. The criterion does not say how the UI prevents or shows this.",
+   "evidence": "SIMPL-32790/AC2: 'select a status ... or a resourceType ... or a schemaType (e.g. RESOURCE or SEARCH, Then the UI shall re-call the GET /schemas endpoint'. OpenAPI GET /schemas resourceType: 'Not accepted when schemaType is SEARCH'; 400 example 'Query parameter resourceType is not allowed when schemaType is SEARCH'. SIMPL-33537/AC3.",
+   "question": "When SEARCH is selected, does the UI disable and clear the resourceType filter, or show the 400 error?",
+   "from_20a": [],
+   "code": "AC-C01",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-046",
+   "target": "SIMPL-32797",
+   "check": "AC-C05",
+   "severity": "major",
+   "finding": "The download criteria point to the versions list endpoint, which returns metadata, not the file. The file content comes from GET /schemas/{schemaName}/{version}.",
+   "evidence": "SIMPL-32797 technical info: 'BE endpoint is /schemas/{schemaName}/versions with optional filter schemaType, e.g. GET /schemas/{schemaName}/versions?schemaType=\"RESOURCE\"'. SIMPL-32797/AC1: 'my browser downloads the file of the specific schema definition'. OpenAPI GET /schemas/{schemaName}/{version}: text/turtle content.",
+   "question": "Confirm that the download uses GET /schemas/{schemaName}/{version}?schemaType=... and give the expected file name and extension.",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-047",
+   "target": "SIMPL-32800/AC1",
+   "check": "AC-C05",
+   "severity": "major",
+   "finding": "The UI must send 'schemaName, schemaType, title, description and file' but not resourceType, although the user selects it and the status rules depend on it. The OpenAPI field is 'name', not 'schemaName'.",
+   "evidence": "SIMPL-32800/AC1: 'Selecting a resourceType from the available options ... the UI shall call the backend POST /schemas endpoint on my behalf, passing the form data schemaName, schemaType, title, description and file'. OpenAPI CreateSchemaPayload: name, title, description, schemaFile, resourceType, schemaType. SIMPL-32802 technical info: 'for schemaType=\"RESOURCE\" the attribute resourceType ... is mandatory'.",
+   "question": "Confirm that the UI sends resourceType for RESOURCE schemas and uses the OpenAPI field names (name, schemaFile).",
+   "from_20a": [],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-048",
+   "target": "SIMPL-32802",
+   "check": "AC-C01",
+   "severity": "major",
+   "finding": "The technical info makes resourceType mandatory for RESOURCE schemas, but the OpenAPI marks it optional and no criterion covers a RESOURCE schema without resourceType.",
+   "evidence": "SIMPL-32802 technical info: 'for schemaType=\"RESOURCE\" the attribute resourceType (APP, INFRA, DATA) is mandatory'. OpenAPI CreateSchemaPayload required: schemaFile, name, description, title. SIMPL-32802/AC3 covers only resourceType given for SEARCH (400).",
+   "question": "What does POST /schemas return for a RESOURCE schema without resourceType: 400, or 201 with no resource type?",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C01",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-049",
+   "target": "SIMPL-32808/AC2",
+   "check": "AC-C03",
+   "severity": "major",
+   "finding": "The new-version form lets the user choose a schemaType, although the version belongs to an existing schema whose type is known. The criteria do not say what happens when the chosen type differs from the schema's type.",
+   "evidence": "SIMPL-32808/AC2: 'I fill in all required fields in the form, i.e. a changelog message and schemaType field (either RESOURCE or SEARCH)'. SIMPL-32808/AC1: 'do not fill schemaType ... set to RESOURCE as default'. SIMPL-32808/AC3: details page 'for the federated search schema' with 'schemaType = SEARCH'.",
+   "question": "Should the form take the schemaType from the schema being viewed (no free choice), or keep a selection box, and what happens on a mismatch?",
+   "from_20a": [],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-050",
+   "target": "SIMPL-32808/AC5",
+   "check": "AC-C04",
+   "severity": "major",
+   "finding": "This criterion expects 409 when no former version exists for the chosen schemaType; the API story expects 404 for the same case.",
+   "evidence": "SIMPL-32808/AC5: '409 Conflict (if a former version for the given schemaType does not exist)'. SIMPL-32807/AC4, AC5: 'schema with name ... doesn't exist for schema type = ... Then the service shall respond with a 404 Not Found'. OpenAPI POST /schemas/{schemaName}/versions: 404 SchemaNotFoundResponse.",
+   "question": "Is the response 404 (schema of that type not found) as in SIMPL-32807, and which case gives 409 on this endpoint?",
+   "from_20a": [],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-051",
+   "target": "SIMPL-33537/AC1",
+   "check": "AC-C03",
+   "severity": "major",
+   "finding": "SEARCH schemas must be validated against 'the rules and default properties for SEARCH', which no spec defines.",
+   "evidence": "SIMPL-33537/AC1: 'Simpl-Open successfully validates the submitted schema according to the rules and default properties for SEARCH'. Scope: 'Validate submitted Federated Search SHACL content and the default properties applicable to SEARCH'.",
+   "question": "Which default properties and validation rules apply to SEARCH schemas, and do they differ from RESOURCE?",
+   "from_20a": [
+    "AC-S04"
+   ],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-052",
+   "target": "cross",
+   "check": "AC-C02",
+   "severity": "minor",
+   "finding": "Several criteria make an internal failure the trigger ('Simpl fails to assign the version number', 'an unexpected server-side error occurs'). These cannot be caused from outside, so they are only testable with injected faults.",
+   "evidence": "SIMPL-20528/AC2, SIMPL-20534/AC2: 'And Simpl fails to assign the initial/next version number ... Then 500 Internal Server Error'. SIMPL-13357/AC6, SIMPL-32807/AC9: 'When an unexpected server-side error occurs ... 500 Error'. SIMPL-20529/AC9: 'Given a server-side error occurs ... no changes shall be persisted'.",
+   "question": "Are these criteria verified by fault injection in component tests, or only by review?",
+   "from_20a": [
+    "AC-S04"
+   ],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-053",
+   "target": "SIMPL-20529/AC1",
+   "check": "AC-C02",
+   "severity": "minor",
+   "finding": "The When part contains the outcome ('the status of the schema updated'), and AC2 says 'to publish a schema' while sending REVOKED.",
+   "evidence": "SIMPL-20529/AC1: 'When I send a PATCH request ... And the status of the schema updated to \"PUBLISHED\" Then ...'. SIMPL-20529/AC2: 'I send a PATCH request to publish a schema: PATCH /schemas/{schemaName} and Request Body: {\"status\": \"REVOKED\"} And the status of the schema updated to \"REVOKED\"'.",
+   "question": "Move the status change to the Then part and correct the wording of AC2.",
+   "from_20a": [
+    "AC-S04"
+   ],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-054",
+   "target": "SIMPL-14703/AC3",
+   "check": "AC-C03",
+   "severity": "minor",
+   "finding": "'When Simpl does not validate the structural correctness' can be read as 'validation fails' or as 'Simpl skips validation'. The 'Or' line is lost in the inventory, and the criteria give no response code.",
+   "evidence": "SIMPL-14703/AC3, AC4 and SIMPL-26105/AC3, AC4: 'When Simpl does not validate the structural correctness of the schema Or Simpl does not verify the presence of the default properties Then Simpl does not create the new schema'. SIMPL-14703/AC1: 'When Simpl validates ... And Simpl verifies ...'.",
+   "question": "Reword as 'the schema fails syntax validation or lacks a default property' and name the response (400 with Problem details).",
+   "from_20a": [
+    "AC-S04",
+    "AC-S10"
+   ],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-055",
+   "target": "SIMPL-15837/AC4",
+   "check": "AC-C03",
+   "severity": "minor",
+   "finding": "One criterion merges a load failure, an expired session and a missing role, and the Retry option is optional ('should ideally').",
+   "evidence": "SIMPL-15837/AC4 and SIMPL-32790/AC4: 'the call fails for any reason (e.g., a network error, a 5xx server error, or my session is expired) - OR When my user account does not have the required ... role' and 'the page should ideally provide a \"Retry\" or \"Reload\" option if the error was temporary'.",
+   "question": "Is the Retry option required, for which errors, and does an expired session redirect to login instead of showing the error?",
+   "from_20a": [
+    "AC-W03",
+    "AC-W05",
+    "AC-S10"
+   ],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-056",
+   "target": "cross",
+   "check": "AC-C04",
+   "severity": "minor",
+   "finding": "UI stories place errors and redirects in different places for similar flows, and some refer to a form where there is none.",
+   "evidence": "After creating a version: SIMPL-13358/AC1, SIMPL-32808/AC1 'redirected back to the schema's detail page'; SIMPL-20770/AC2 'redirected back to the list of schema's page'. On error: SIMPL-13358/AC3 'remain on the form'; SIMPL-20770/AC3 'the UI remains on the list of schema's page'. SIMPL-20067/AC2 and SIMPL-20530/AC4 'remains on the form' for actions started from the schema list.",
+   "question": "Where does the user land after creating a version, and where are action errors shown?",
+   "from_20a": [],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-057",
+   "target": "cross",
+   "check": "AC-C04",
+   "severity": "minor",
+   "finding": "Status code names are misspelled in some criteria ('409 CONFIG', '409 Config', '500 Error', '{schemaName{}}').",
+   "evidence": "SIMPL-32800/AC3: '409 CONFIG'; SIMPL-32800/AC4, AC5 and SIMPL-32802/AC6: '409 Config'; SIMPL-13357/AC6: '500 Error'; SIMPL-13360/AC1: '/schemas/{schemaName{}}'.",
+   "question": "Confirm these mean 409 Conflict, 500 Internal Server Error and /schemas/{schemaName}.",
+   "from_20a": [],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-058",
+   "target": "SIMPL-13365/AC1",
+   "check": "AC-C02",
+   "severity": "minor",
+   "finding": "The download criteria do not give the file name, the file type, the success text or which errors count as 'an error during the download'.",
+   "evidence": "SIMPL-13365/AC1, SIMPL-32797/AC1: 'my browser downloads the file of the specific schema definition (e.g. 1) And Simpl provides a success message'. SIMPL-13365/AC2, SIMPL-32797/AC2: 'When an error occurs during the download ... Then Simpl provides an error message'.",
+   "question": "Give the expected file name pattern, extension (.ttl), and the success and error texts.",
+   "from_20a": [],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-059",
+   "target": "SIMPL-13361/AC2",
+   "check": "AC-C02",
+   "severity": "minor",
+   "finding": "The 403 case starts from a user who has the GA_SCHEMA_ADMIN role, so a real call would not return 403. It can only be tested with a stubbed API.",
+   "evidence": "SIMPL-13361/AC2: 'Given I am logged into the UI ... with a user account that has the GA_SCHEMA_ADMIN role ... And the call returns with 403 Forbidden error'.",
+   "question": "Is this a UI test with a mocked 403 response? If so, say so in the Given.",
+   "from_20a": [],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-060",
+   "target": "SIMPL-19992/AC3",
+   "check": "AC-C05",
+   "severity": "minor",
+   "finding": "The delete criterion accepts '204 or 200'; the OpenAPI defines only 204.",
+   "evidence": "SIMPL-19992/AC3: 'the system returns a HTTP 204 or 200 success response'. OpenAPI DELETE /webhooks/{webhookId}: 204 No Content.",
+   "question": "Confirm 204 only.",
+   "from_20a": [],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-061",
+   "target": "SIMPL-19992",
+   "check": "AC-C01",
+   "severity": "minor",
+   "finding": "The OpenAPI returns 409 for a duplicate subscription (same targetUrl and events); no criterion covers it.",
+   "evidence": "OpenAPI POST /webhooks 409: 'Webhook with the same targetUrl and events already exists.' SIMPL-19992/AC1 to AC5 have no duplicate case.",
+   "question": "Is a duplicate subscription rejected with 409, and is a subscription with the same URL but other events a duplicate?",
+   "from_20a": [],
+   "code": "AC-C01",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-062",
+   "target": "SIMPL-31098/AC1",
+   "check": "AC-C05",
+   "severity": "minor",
+   "finding": "The create request lists name, title and SHACL definition but not description, which the OpenAPI requires. A state ('no federated search schema exist') sits in the When part.",
+   "evidence": "SIMPL-31098/AC1: 'When no federated search schema exist And I create a new schema using the endpoint POST /schemas with schemaType=\"SEARCH\", a schema name, a title, and a shacl definition'. OpenAPI CreateSchemaPayload required: schemaFile, name, description, title.",
+   "question": "Confirm that description is required for SEARCH schemas too.",
+   "from_20a": [],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-063",
+   "target": "SIMPL-32801/AC6",
+   "check": "AC-C04",
+   "severity": "minor",
+   "finding": "The NOTE says one SEARCH schema exists 'for each resourceType' and in the same sentence that resourceType is empty for SEARCH.",
+   "evidence": "SIMPL-32801 NOTE: 'According to ADR-009 only one schema of schemaType=\"SEARCH\" for each resourceType exists ... i.e. when schema type = SEARCH the value for resource type should be empty'. Inventory review: ADR-008 and ADR-009 are both cited for the same rule.",
+   "question": "Confirm: at most one published SEARCH schema globally, with no resourceType.",
+   "from_20a": [
+    "AC-S10"
+   ],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-064",
+   "target": "SIMPL-32788/AC3",
+   "check": "AC-C04",
+   "severity": "minor",
+   "finding": "The SEARCH path uses the example URL of the RESOURCE schema.",
+   "evidence": "SIMPL-32788/AC3: 'a schema concept (e.g., FederatedSearchAsset) ... When I send a GET request ... for example, /schemas/ApplicationAsset' and Content-Location link target '.../schemas/ApplicationAsset/1.2.0'.",
+   "question": "Confirm the example should be /schemas/FederatedSearchAsset?schemaType=SEARCH.",
+   "from_20a": [],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-065",
+   "target": "SIMPL-33694/AC5",
+   "check": "AC-C05",
+   "severity": "minor",
+   "finding": "The criterion mentions 'update' of a SEARCH schema; the API has no update operation for schemas (UpdateSchemaPayload exists but no path uses it).",
+   "evidence": "SIMPL-33694/AC5: 'When I successfully publish, update, version, or revoke a SEARCH schema'. OpenAPI paths: no PUT or PATCH for schema metadata other than status.",
+   "question": "Is 'update' a separate operation in scope, or can it be removed?",
+   "from_20a": [],
+   "code": "AC-C05",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-066",
+   "target": "SIMPL-14712/AC3",
+   "check": "AC-C03",
+   "severity": "minor",
+   "finding": "The Given mixes 'without a valid authentication token' (401) and 'without the GA_SCHEMA_ADMIN role' (403), but expects only 403.",
+   "evidence": "SIMPL-14712/AC2: 'Given I am a Governance Authority user without a valid authentication token granting the GA_SCHEMA_ADMIN role ... Then Simpl responds with a 403 Forbidden'.",
+   "question": "Is this the case 'valid token, no admin role'?",
+   "from_20a": [],
+   "code": "AC-C03",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-067",
+   "target": "SIMPL-20686",
+   "check": "AC-C02",
+   "severity": "minor",
+   "finding": "The criteria have no actor, role or request in the Given and When ('When I create a new schema'), so the API call and its response code are implied.",
+   "evidence": "SIMPL-20686/AC1 to AC3: 'Given no schemas exist for a specific resourceType When I create a new schema for that resourceType Then the new schema's status must be set to PUBLISHED'.",
+   "question": "Confirm these are POST /schemas calls by a GA_SCHEMA_ADMIN that return 201, with the status visible in GET /schemas.",
+   "from_20a": [],
+   "code": "AC-C02",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-068",
+   "target": "SIMPL-13346",
+   "check": "AC-C01",
+   "severity": "minor",
+   "finding": "The user story mentions comparing and downloading versions, and no criterion covers them here; there is also no criterion for an empty or failing versions list.",
+   "evidence": "SIMPL-13346 user story: 'So that I can review their history, compare changes, and download specific versions'. SIMPL-13346/AC1 covers loading the table only. Download is in SIMPL-13365.",
+   "question": "Is compare in scope? Which message is shown when the versions call fails?",
+   "from_20a": [],
+   "code": "AC-C01",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "F-069",
+   "target": "SIMPL-20067/AC1",
+   "check": "AC-C06",
+   "severity": "minor",
+   "finding": "The user story says the user can 'review and edit the SHACL content', but no criterion or operation supports editing.",
+   "evidence": "SIMPL-20067 user story: 'so that I can review and edit the SHACL content of the latest version of the schema'. SIMPL-20067/AC1: download only.",
+   "question": "Is editing out of scope (download only)?",
+   "from_20a": [],
+   "code": "AC-C06",
+   "step": "20b",
+   "theme": "Scope"
+  },
+  {
+   "id": "F-070",
+   "target": "SIMPL-32258",
+   "check": "AC-C04",
+   "severity": "minor",
+   "finding": "The testing hint says GET /schemas retrieves 'all schemas and all versions of them', but the endpoint returns one entry per schema.",
+   "evidence": "SIMPL-32258 hints: 'use endpoint GET /schemas to retrieve all schemas and all versions of them'. OpenAPI GET /schemas: 'Get all schema metadata'; versions come from GET /schemas/{schemaName}/versions.",
+   "question": "Confirm that GET /schemas returns one row per schema with its latest version.",
+   "from_20a": [],
+   "code": "AC-C04",
+   "step": "20b",
+   "theme": "Behaviour and interactions"
+  },
+  {
+   "id": "F-071",
+   "target": "SIMPL-13353",
+   "check": "AC-C01",
+   "severity": "minor",
+   "finding": "The create criteria cover a duplicate name and an invalid file, but not missing required fields, an invalid name pattern or a wrong media type, which the OpenAPI lists (400, 415).",
+   "evidence": "SIMPL-13353/AC2, AC3 and SIMPL-32802/AC3 to AC7. OpenAPI CreateSchemaPayload required: schemaFile, name, description, title; name pattern '^[A-Z][a-zA-Z0-9]*$'; responses 400, 415.",
+   "question": "Confirm 400 with Problem details for a missing field or a bad name, and 415 for a non-multipart body.",
+   "from_20a": [],
+   "code": "AC-C01",
+   "step": "20b",
+   "theme": "Error cases and testability"
+  },
+  {
+   "id": "D-001",
+   "target": "cross",
+   "rule": "DDD-09",
+   "severity": "blocker",
+   "finding": "The identity of a schema has two live names in the API and the stories: 'schemaName' and 'name'. The create request and every list or detail response call it 'name'; the path, the create response and the CDM call it 'schemaName'. The CDM also says 'schemaName identifies the schema', while the API and the stories address a schema by name plus schemaType and sometimes resourceType. A test writer and a code writer will each pick one field name and one key.",
+   "evidence": "API: CreateSchemaPayload.name, GetAllSchemasResponsePayload.metadata[].name, SchemaCategory.name, CreateNewVersionSchemaResponsePayload.name, UpdateSchemaResponsePayload.name; versus path parameter {schemaName} on 7 operations and CreateSchemaResponsePayload.schemaName. CDM: Schema.schemaName ('The contract field schemaName identifies the schema, while SchemaMetadata.name is the metadata summary field'). Stories: SIMPL-13353/AC1 '{\"name\": \"DataAsset\"...}'; SIMPL-32800/AC1 'passing the form data schemaName, schemaType, title, description and file'; SIMPL-32807/AC1 'A metadata part with schemaName'. Key: GET and PATCH /schemas/{schemaName} take query parameters schemaType and resourceType; SIMPL-32798 hint 'for schema-type = RESOURCE and a given schema name there can be three different instances for each resource type'; SIMPL-32802/AC4 409 only for 'same name ... and same resourceType'.",
+   "question": "Which single name does the schema identity carry in requests, responses and the CDM, and does the CDM record the full identity key of a schema?",
+   "options": [
+    "'schemaName' everywhere (path, CDM, create response); rename the 'name' fields in the payloads",
+    "'name' in bodies and 'schemaName' only as the path parameter, written down in the glossary as the same identity",
+    "Keep both, but add the key (name, schemaType, resourceType) to the CDM as the schema identity"
+   ],
+   "from_23a": [
+    "DDD-06 schema-manager-be.md#Schema",
+    "DDD-07 schema-manager-be#CreateSchemaResponsePayload"
+   ],
+   "see": [
+    "F-007",
+    "F-047"
+   ],
+   "code": "DDD-09",
+   "step": "23b",
+   "theme": "Entities, identities and states"
+  },
+  {
+   "id": "D-002",
+   "target": "cross",
+   "rule": "DDD-09",
+   "severity": "blocker",
+   "finding": "The identifier of a schema version has five names: 'version', 'schemaVersion', 'latestVersion', 'versionNumber' and 'versionInfo'. The metadata quality profile adds 'mqpVersion' and 'profileVersion'. The same create flow returns 'schemaVersion' for a new schema and 'version' for a new version.",
+   "evidence": "API: CreateSchemaResponsePayload.schemaVersion; CreateNewVersionSchemaResponsePayload.version; GetAllSchemasResponsePayload.metadata[].version; SchemaCategory.latestVersion; path parameter {version} on GET /schemas/{schemaName}/{version}; CreateMetadataQualityProfileResponsePayload.mqpVersion. CDM: SchemaVersion.versionNumber, SchemaMetadata.version, MetadataQualityProfile.profileVersion, MetadataQualityProfileVersion.versionNumber. Stories: SIMPL-13353/AC1 'versionInfo set to \"1.0.0\"'; SIMPL-13357/AC1 'valid SemVer version'; SIMPL-20528 'version number'.",
+   "question": "Which one name does the version identifier carry in the API and the CDM, for schemas and for metadata quality profiles?",
+   "options": [
+    "'version' in the API and 'version' in the CDM (rename versionNumber, schemaVersion, mqpVersion)",
+    "'versionNumber' everywhere, matching the CDM and the stories' 'version number'",
+    "Keep 'latestVersion' only as a derived pointer on the schema, documented as such"
+   ],
+   "from_23a": [
+    "DDD-07 schema-manager-be#CreateSchemaResponsePayload"
+   ],
+   "see": [
+    "F-001"
+   ],
+   "code": "DDD-09",
+   "step": "23b",
+   "theme": "Entities, identities and states"
+  },
+  {
+   "id": "D-003",
+   "target": "cross",
+   "rule": "DDD-04",
+   "severity": "blocker",
+   "finding": "The state of a version that a newer version replaces has three names. The business process and the stories call it REVOKED. The CDM and the API call it 'unavailable' for new resource descriptions. One story says a version has no status of its own. A builder cannot tell whether 'superseded' is a value of the status set or a different concept.",
+   "evidence": "BP02C.05: 'If it concerns the creation of a new version of an existing schema, the previous version is revoked.' SIMPL-13357/AC1 and SIMPL-32807/AC1 to AC3: 'the status of the previous version ... has changed from PUBLISHED to REVOKED'. CDM relationship notes: 'a new version transitions the previous version to implicit *unavailable* status'; CDM SchemaVersion: 'Each new version supersedes the previous'. API POST /schemas/{schemaName}/versions summary: 'implicitly makes the previous version unavailable for creating new resource descriptions'. SIMPL-20530 technical details: 'a new version does not have its own status - it inherits the status of the schema concept'. CDM value set SchemaVersion.lifecycleStatus: PUBLISHED, REVOKED (no 'unavailable').",
+   "question": "Is a replaced version REVOKED (same value as a revoked schema), a separate state such as SUPERSEDED, or not a state at all because only the schema carries a status?",
+   "options": [
+    "REVOKED: one value set for schema and version; drop 'unavailable' from the CDM and the API text",
+    "A distinct value (for example SUPERSEDED) added to SchemaVersion.lifecycleStatus and the API enum",
+    "No version status: only Schema.lifecycleStatus; 'latest version' decides what Providers may use"
+   ],
+   "from_23a": [],
+   "see": [
+    "F-004",
+    "F-024"
+   ],
+   "code": "DDD-04",
+   "step": "23b",
+   "theme": "One language for the domain"
+  },
+  {
+   "id": "D-004",
+   "target": "Schema",
+   "rule": "DDD-12",
+   "severity": "major",
+   "finding": "The schema lifecycle is not defined in one place. The CDM gives only the value set PUBLISHED, REVOKED and no transitions. The transitions are spread over stories, the API and the business process, and they disagree: creation may give PUBLISHED or REVOKED, PATCH allows only REVOKED in the API but PUBLISHED in three stories, and the CDM says every POST /schemas 'generates SchemaPublished event'.",
+   "evidence": "CDM 'State/value sets': 'Schema.lifecycleStatus: *PUBLISHED*, *REVOKED*' (no transition table). CDM endpoint table, POST /schemas: 'Triggers validation and generates SchemaPublished event.' SIMPL-20686/AC2 and SIMPL-32801/AC2: 'the new schema's status must be set to REVOKED'. API SchemaStatusUpdateRequest.status enum [REVOKED] 'Only REVOKED is supported'. SIMPL-20529/AC1, SIMPL-20530/AC2, SIMPL-31098/AC2: PATCH to PUBLISHED. SIMPL-33537 scope: 'Allow at most one published Federated Search schema. A revoked Federated Search schema does not count as published.' SIMPL-20529 technical details: 'ONLY 1 SCHEMA / RESOURCE TYPE CAN BE PUBLISHED AT THE SAME TIME'.",
+   "question": "Can the spec owners add one state and transition table for Schema (and for SchemaVersion, see D-003) next to the CDM, with the operation and the event for each transition?",
+   "options": [
+    "Add the table to the CDM: create (to PUBLISHED or REVOKED by the one-published rule), revoke (PUBLISHED to REVOKED), re-publish (REVOKED to PUBLISHED, if kept), with the event raised by each",
+    "Keep the CDM as is and put the table in the glossary, owned by the stories"
+   ],
+   "from_23a": [],
+   "see": [
+    "F-002",
+    "F-003",
+    "F-008",
+    "F-021",
+    "F-022"
+   ],
+   "code": "DDD-12",
+   "step": "23b",
+   "theme": "Entities, identities and states"
+  },
+  {
+   "id": "D-005",
+   "target": "cross",
+   "rule": "DDD-02",
+   "severity": "major",
+   "finding": "The word 'publish' names four different things: a new schema that passes validation, a new version that passes validation, a status change from REVOKED to PUBLISHED, and the SchemaPublished event. The CDM says version creation raises no event, while the business process and the notification stories treat a new version as 'published'. Provider notification by e-mail and the webhook event are two concepts, but only the event is in the CDM.",
+   "evidence": "BP02C.05: 'the new schema or new version of an existing schema is published'. BP 2C.8: 'notify Providers when ... a new version ... is published'. SIMPL-14712/AC1 and SIMPL-33694/AC2: 'publish a new version ... Simpl notifies Providers ... via an e-mail'. CDM: 'version creation does not emit a lifecycle event; events are only emitted for SchemaPublished and SchemaRevoked transitions'. SIMPL-20529/AC1: 'PATCH request to publish a schema'. SIMPL-17066/AC4 'publish a schema action'. API Webhook.events enum: SchemaPublished, SchemaRevoked. CDM classes: SchemaEvent, Webhook; no class for the Provider notification of BP02C.06.",
+   "question": "Which actions count as 'publish' in this component, and does the CDM need a concept for the Provider notification next to SchemaEvent?",
+   "options": [
+    "'Publish' = a schema or version becomes PUBLISHED by any route; SchemaPublished is raised for each, and the e-mail Provider notification is a separate CDM concept",
+    "'Publish' = only the status transition to PUBLISHED; creation is 'create', and new versions raise no event"
+   ],
+   "from_23a": [
+    "DDD-06 schema-manager-be.md#SchemaEvent",
+    "DDD-01 schema-manager-be.md#SchemaEvent"
+   ],
+   "see": [
+    "F-009",
+    "F-010",
+    "F-038"
+   ],
+   "code": "DDD-02",
+   "step": "23b",
+   "theme": "One language for the domain"
+  },
+  {
+   "id": "D-006",
+   "target": "Schema",
+   "rule": "DDD-06",
+   "severity": "major",
+   "finding": "The aggregate the CDM calls Schema is called 'schema category' in the API and 'schema concept' in the stories. 'Category' appears in no story, in no process step and in no CDM. A builder could read 'category' as a grouping of schemas (for example per resource type), which is a different concept.",
+   "evidence": "API: response schema SchemaCategory on PATCH /schemas/{schemaName} ('The name of the schema category', fields name, title, description, resourceType, schemaType, status, latestVersion, created, modified); GET /schemas/{schemaName}/versions: 'Returns version metadata subjects for the selected schema category', 'legacy categories without a stored type', 'SEARCH categories have no resourceType'. Stories: 'schema concept' in 10 stories (36 hits), for example SIMPL-13353/AC1, SIMPL-15837/AC1, SIMPL-20529 technical details. BP and CDM: 'schema' / Schema.",
+   "question": "Can the API rename SchemaCategory to Schema and drop 'category' from its descriptions, and can the stories drop 'schema concept' for 'schema'?",
+   "options": [
+    "Term 'schema' (CDM class Schema); rename SchemaCategory to Schema and retire 'schema concept' and 'schema category'",
+    "Keep 'schema concept' as a defined synonym for the versionless schema in the glossary"
+   ],
+   "from_23a": [
+    "DDD-06 schema-manager-be#SchemaCategory",
+    "DDD-06 schema-manager-be.md#Schema"
+   ],
+   "see": [],
+   "code": "DDD-06",
+   "step": "23b",
+   "theme": "Entities, identities and states"
+  },
+  {
+   "id": "D-007",
+   "target": "SchemaValidationWarning",
+   "rule": "DDD-02",
+   "severity": "major",
+   "finding": "One API object, SchemaValidationIssue, carries both blocking errors (inside the 400 problem response) and non-blocking warnings (in the 201 response). The CDM calls it SchemaValidationWarning, which suggests warnings only. The stories call it 'error message', 'structured error response' or 'validation error details', and the business process calls the outcome a 'report' and 'feedback'. The issue has no severity field to tell the two apart.",
+   "evidence": "API: Problem.issues 'Structured schema validation issues' (items SchemaValidationIssue), example in SchemaValidationBadRequestResponse; CreateSchemaResponsePayload.validationWarnings 'Non-blocking semantic validation warnings' (same items). CDM: SchemaValidationWarning 'Validation issue or non-fatal warning ... aligns with the contract field SchemaValidationIssue'. SIMPL-22407/AC3 'structured error response ... validation error details'; SIMPL-22407 notes 'we issue warnings for external vocabularies that cannot be resolved'; SIMPL-14795/AC1 'error message'; BP02C.07 'Send report'; BP 2C.5 'receiving feedback about schema validation issues'. API example code 'externalReferenceSkipped' is a value of the Vocabulary Manager CDM set VocabularyValidationWarning.warningCode.",
+   "question": "Is a validation issue one concept with a severity (error or warning), and what is its one name in the CDM, the API and the stories?",
+   "options": [
+    "Term 'validation issue' (CDM class renamed SchemaValidationIssue) with a severity attribute (error, warning); 'report' and 'feedback' are the set of issues returned",
+    "Two concepts: 'validation error' (blocks, in the 400 response) and 'validation warning' (does not block, in the 201 response), each with its own schema"
+   ],
+   "from_23a": [
+    "DDD-06 schema-manager-be#SchemaValidationIssue",
+    "DDD-06 schema-manager-be.md#SchemaValidationWarning",
+    "DDD-01 schema-manager-be.md#SchemaValidationWarning"
+   ],
+   "see": [
+    "F-027",
+    "F-035",
+    "F-036"
+   ],
+   "code": "DDD-02",
+   "step": "23b",
+   "theme": "One language for the domain"
+  },
+  {
+   "id": "D-008",
+   "target": "Vocabulary",
+   "rule": "DDD-13",
+   "severity": "major",
+   "finding": "The API offers six vocabulary operations that manage a concept owned by the Vocabulary Manager. The Schema Manager CDM calls them legacy and does not model Vocabulary at all; the Vocabulary Manager CDM names the concept InternalVocabulary and InternalVocabularyVersion. The API does not mark the operations as deprecated, no story covers them, and the status request adds 'reason' and 'effectiveDate', which the Vocabulary Manager CDM lists as an open question.",
+   "evidence": "API: GET/POST /vocabularies, PATCH /vocabularies/{vocabularyName}, GET/POST /vocabularies/{vocabularyName}/versions, GET /vocabularies/{vocabularyName}/versions/{version}; schemas VocabularyListItem, VocabularyVersionMetadata, VocabularyStatusUpdateRequest (status ACTIVE, DEPRECATED; reason; effectiveDate); no 'deprecated: true'. Schema Manager CDM: 'Historical /vocabularies endpoints in Schema Manager OpenAPI are **legacy** ... The authoritative vocabulary registry is the Vocabulary Manager.' Vocabulary Manager CDM: InternalVocabulary.status and InternalVocabularyVersion.status ACTIVE, DEPRECATED; open question SIMPL-18201 'neither the contract nor the model currently carries these attributes' (reason, effective date). 12b: these six operations have no criterion.",
+   "question": "Are the /vocabularies operations part of the Schema Manager contract to build and test, or should they be marked deprecated or removed in favour of the Vocabulary Manager?",
+   "options": [
+    "Out of scope: mark them deprecated in the API, leave them out of the glossary as Schema Manager terms, and point to the Vocabulary Manager",
+    "In scope: model Vocabulary as an external concept in the CDM, use the owner's names (InternalVocabulary), and write stories for them"
+   ],
+   "from_23a": [
+    "DDD-06 schema-manager-be#VocabularyListItem",
+    "DDD-06 schema-manager-be#VocabularyVersionMetadata",
+    "DDD-07 schema-manager-be#VocabularyStatusUpdateRequest",
+    "DDD-04 schema-manager-be#VocabularyStatusUpdateRequest.status (2 hits)",
+    "DDD-04 schema-manager-be#VocabularyListItem.status (2 hits)",
+    "DDD-04 schema-manager-be#VocabularyVersionMetadata.status (2 hits)"
+   ],
+   "see": [],
+   "code": "DDD-13",
+   "step": "23b",
+   "theme": "Boundaries with other components"
+  },
+  {
+   "id": "D-009",
+   "target": "MetadataQualityProfile",
+   "rule": "DDD-01",
+   "severity": "major",
+   "finding": "Metadata quality profiles are in the API and in the CDM (ten classes), but in no story and no process step, so the specs give no language to agree on. Inside the API the concept has four names: 'Metadata Quality Profile', 'Quality profile', 'mqp' and the JSON-LD type 'simpl:QualityProfile'. Its fields differ from the CDM, and the status update returns a schema named for creation.",
+   "evidence": "API: tag 'Quality profile'; path /metadataQualityProfiles/{metadataQualityProfileName} and /schemas/{schemaName}/qualityProfiles/active; operationId getActiveQualityProfile; field mqpVersion; JSON-LD '@type': simpl:QualityProfile; PATCH response CreateMetadataQualityProfileResponsePayload. CDM: MetadataQualityProfile.profileName, profileVersion, lifecycleStatus; MetadataQualityProfileVersion.versionNumber. Two operations make the same transition: DELETE 'Revoke a Metadata Quality Profile' and PATCH with status REVOKED. BP02C has no step on quality profiles; no story mentions them (12b: PATCH, DELETE and GET active have no criterion).",
+   "question": "Is metadata quality profile management in the scope of this component's specs, and if so which one name and which field names does it use?",
+   "options": [
+    "In scope: write stories and a process step; term 'metadata quality profile' with fields metadataQualityProfileName and version; one revoke operation",
+    "Out of scope for this factory run: leave the three operations and the ten CDM classes out of the build, and record the term as owned but unspecified"
+   ],
+   "from_23a": [
+    "DDD-06 schema-manager-be.md#MetadataQualityProfile",
+    "DDD-07 schema-manager-be#CreateMetadataQualityProfileResponsePayload",
+    "DDD-01 schema-manager-be.md#MetadataQualityProfile",
+    "DDD-01 schema-manager-be.md#MetadataQualityProfileVersion",
+    "DDD-01 schema-manager-be.md#QualityDimension",
+    "DDD-01 schema-manager-be.md#QualityRule",
+    "DDD-01 schema-manager-be.md#ExistenceRule",
+    "DDD-01 schema-manager-be.md#IsInRule",
+    "DDD-01 schema-manager-be.md#CustomShaclRule",
+    "DDD-01 schema-manager-be.md#Threshold",
+    "DDD-01 schema-manager-be.md#ScoreRange",
+    "DDD-01 schema-manager-be.md#Classification"
+   ],
+   "see": [],
+   "code": "DDD-01",
+   "step": "23b",
+   "theme": "One language for the domain"
+  },
+  {
+   "id": "D-010",
+   "target": "schema-manager-be",
+   "rule": "API-01",
+   "severity": "major",
+   "finding": "A CDM exists next to the API, but it describes another revision of it and is not approved. Its endpoint table lists four metadata quality profile operations the frozen API does not have, it names two gateway APIs that are not in the specs, and it is 'In review, approved No' in the register. The versions response of the API points to a file outside the specs, so the CDM cannot be checked against it.",
+   "evidence": "CDM 'Metadata Quality Profile Management Endpoints': GET /metadataQualityProfiles, POST /metadataQualityProfiles, GET and POST /metadataQualityProfiles/{metadataQualityProfileName}/versions; API at ref f9e5205 has only PATCH and DELETE on /metadataQualityProfiles/{metadataQualityProfileName} and GET /schemas/{schemaName}/qualityProfiles/active. CDM 'API definitions': t1-schema-openapi.yaml, t2-schema-openapi.yaml (not in specs/api). cdm-index.md: 'Schema Manager | C&C Team | In review | No'. SOURCES.json: CDM from branch feature/add-cdm, API from ref f9e5205. API GetSchemaVersionsResponsePayload: '$ref: ./common/common-components.yaml#/components/schemas/GetSchemaVersionsResponsePayload'.",
+   "question": "Can the CDM be aligned with the API revision the factory builds (or the API with the CDM), and approved, before step 40 uses the glossary?",
+   "options": [
+    "Align the CDM endpoint table with ref f9e5205 and include common-components.yaml in the frozen set",
+    "Freeze a newer API that has the CDM's quality profile operations"
+   ],
+   "from_23a": [
+    "DATA-01 schema-manager-be",
+    "DDD-06 schema-manager-be.md#MetadataQualityProfileVersion",
+    "DDD-07 schema-manager-be#GetSchemaVersionsResponsePayload"
+   ],
+   "see": [
+    "F-016"
+   ],
+   "code": "API-01",
+   "step": "23b",
+   "theme": "Data model governance"
+  },
+  {
+   "id": "D-011",
+   "target": "cross",
+   "rule": "DDD-02",
+   "severity": "major",
+   "finding": "'Default property' and 'mandatory property' are used as if they were one concept, while the business process separates them: default properties are imposed by Simpl-Open, and both default and custom properties can be mandatory or recommended. The main CDM has no class for either; the only model of default properties is a flowchart that is not in the CDM register.",
+   "evidence": "BP Overview: 'Properties include default mandatory properties from Simpl-Open and custom properties defined by the Governance Authority.' BP02C.01: 'custom mandatory and custom recommended properties'. BP02C.04: 'enriches the schema with default properties'. SIMPL-14796 user story: 'not including default or mandatory properties'; technical info detail 'Mandatory properties error'; SIMPL-24173 detail 'Default Properties Error'; SIMPL-26105 'UUID and Version default properties'. schema-manager-be.md: no class for property; schema-manager-be-default-properties.md: flowchart, 'not in register' (SOURCES.json).",
+   "question": "Are 'default property' and 'mandatory property' two concepts (who defines it, and whether it is required), and should the CDM name them?",
+   "options": [
+    "Two terms: 'default property' (defined by Simpl-Open, added to every schema) and 'mandatory property' (required in a resource description, default or custom); add both to the glossary and link the default-properties model from the CDM",
+    "One term 'default property'; retire 'mandatory property' from the stories and error texts"
+   ],
+   "from_23a": [],
+   "see": [
+    "F-006",
+    "F-027"
+   ],
+   "code": "DDD-02",
+   "step": "23b",
+   "theme": "One language for the domain"
+  },
+  {
+   "id": "D-012",
+   "target": "cross",
+   "rule": "DDD-04",
+   "severity": "major",
+   "finding": "The resource type of a schema has four value spellings, and a fifth term for what may be the same set. The stories and the UI use data, application, infrastructure; one story uses APP, INFRA, DATA; the CDM and the API use an open set of PascalCase names (Application, LegalPerson); the default-properties model and the catalogue CDM call the set offeringType with application, data, infrastructure. No mapping from UI label to stored value is written down.",
+   "evidence": "SIMPL-13355/AC1 and SIMPL-32800/AC1: 'available options (data, infrastructure, application)'; SIMPL-32802 technical info: 'resourceType (APP, INFRA, DATA) is mandatory'; SIMPL-13343/AC2 'resourceType=data-schema'; BP Overview: 'Each resource type (data, application, infrastructure) has one schema'. CDM: 'resourceType: open value set; contract allows PascalCase strings from 3 to 64 characters, e.g. *Application*, *DataOffering*'; API pattern '^[A-Z][a-zA-Z0-9]*$', example 'LegalPerson' on SchemaCategory. schema-manager-be-default-properties.md 'Offering type (offeringType) ... One of application, data, infrastructure'; catalogue-be.md GeneralServiceProperties.offeringType: data, infrastructure, application.",
+   "question": "Is the schema's resourceType a closed set equal to the resource description's offeringType, or an open set of names, and what is the written mapping from UI label to stored value?",
+   "options": [
+    "Closed set equal to offeringType; one spelling for the stored value and a label table for the UI",
+    "Open PascalCase set as in the CDM and the API; the stories' lowercase values are UI labels with a written mapping"
+   ],
+   "from_23a": [],
+   "see": [
+    "F-013",
+    "F-048"
+   ],
+   "code": "DDD-04",
+   "step": "23b",
+   "theme": "One language for the domain"
+  },
+  {
+   "id": "D-013",
+   "target": "cross",
+   "rule": "DDD-01",
+   "severity": "minor",
+   "finding": "The two schema types have several prose names. For RESOURCE: 'resource description schema', 'Resource Definition Schema', 'resource schema' and 'RESOURCE schema'. For SEARCH: 'federated search schema', 'Federated Search schema' and 'SEARCH schema'. The enum values RESOURCE and SEARCH agree everywhere; only the prose differs, but 'resource definition' sits close to 'resource description' and may be read as another artefact.",
+   "evidence": "BP title and API summaries: 'resource description schema'; SIMPL-32800/AC1, SIMPL-32802/AC1, SIMPL-32807/AC1 headings: 'Resource Definition Schema'; SIMPL-32258/AC1 'resource schema definitions'; SIMPL-33694 'RESOURCE schema'; CDM relationship notes 'resource-definition schemas'; SIMPL-33537 'Federated Search schema'; BP 2C.6 '(federated search schema)'.",
+   "question": "Can the specs use 'resource description schema' for RESOURCE and 'federated search schema' for SEARCH?",
+   "options": [
+    "Yes: the business process and the API summaries already use these two",
+    "Use the enum words 'RESOURCE schema' and 'SEARCH schema' in prose"
+   ],
+   "from_23a": [],
+   "see": [
+    "F-030"
+   ],
+   "code": "DDD-01",
+   "step": "23b",
+   "theme": "One language for the domain"
+  },
+  {
+   "id": "D-014",
+   "target": "cross",
+   "rule": "DDD-08",
+   "severity": "minor",
+   "finding": "Several attributes of exposed objects have other names than in the CDM, and two placements differ. These are naming differences, not different concepts, except title and description: the API sets them once per schema, the CDM puts description on SchemaVersion and title only on the SchemaMetadata view.",
+   "evidence": "CDM Schema.lifecycleStatus versus API 'status' (all schema responses); CDM Schema.createdAt, modifiedAt versus SchemaCategory.created, modified; CDM SchemaVersion.rdfContent versus API schemaFile (upload) and the text/turtle body; SchemaCategory.latestVersion has no CDM attribute; versions example field 'graphName' and stories' 'named graph' (SIMPL-13347/AC1, SIMPL-32788/AC1) have no CDM attribute. CreateSchemaPayload has title and description; CreateNewSchemaVersionPayload has neither; CDM SchemaVersion has 'description', Schema has no title or description.",
+   "question": "Do title and description belong to the schema or to each version, and can the CDM use the API field names (status, created, modified)?",
+   "options": [
+    "Title and description on Schema; CDM attribute names follow the API",
+    "Description per version (as for vocabularies); the API adds it to the new-version request"
+   ],
+   "from_23a": [],
+   "see": [
+    "F-016",
+    "F-023"
+   ],
+   "code": "DDD-08",
+   "step": "23b",
+   "theme": "Entities, identities and states"
+  },
+  {
+   "id": "D-015",
+   "target": "Webhook",
+   "rule": "DDD-01",
+   "severity": "minor",
+   "finding": "The CDM and the API call the subscription 'Webhook'; the stories call it 'subscription' or 'webhook subscription', and the API descriptions also say 'webhook subscription'. One criterion speaks of 'active' subscriptions, a state that neither the CDM nor the API has. The subscriber has three names and no CDM concept.",
+   "evidence": "API schema Webhook, field webhookId 'Unique identifier for the webhook subscription'; CDM Webhook 'Event subscription'. SIMPL-19992/AC1 'the subscription is created'; SIMPL-19992/AC2 'a list of all active webhook subscriptions'; SIMPL-24175/AC1 'request for subscription to schema publishing events'. Subscriber: SIMPL-19992 'governance authority service', SIMPL-24175 'Participant', API example targetUrl 'https://catalogue.example.com/internal/events/simpl-sms' while catalogue-be.md names its callback '/webhooks/schema-events'.",
+   "question": "Can the glossary use 'webhook subscription' (class Webhook) and drop 'active', or does a subscription have states?",
+   "options": [
+    "'Webhook subscription', no states; 'subscriber' is the system at targetUrl",
+    "Add a status to Webhook if subscriptions can be paused or fail"
+   ],
+   "from_23a": [],
+   "see": [
+    "F-010",
+    "F-037"
+   ],
+   "code": "DDD-01",
+   "step": "23b",
+   "theme": "One language for the domain"
+  },
+  {
+   "id": "D-016",
+   "target": "cross",
+   "rule": "DDD-02",
+   "severity": "minor",
+   "finding": "'Governance Authority' names both the actor (a person or organisation managing schemas) and the system that receives requests. The system side also has five names: Simpl, Simpl-Open, Schema Management Service (SMS), the service and the system.",
+   "evidence": "BP Actors: 'Governance Authority'. SIMPL-24175/AC1: 'submits a valid request ... to the Governance Authority', 'the Governance Authority verifies and confirms'. System names: SIMPL-14703/AC1 'Simpl', SIMPL-33537/AC1 'Simpl-Open', SIMPL-13353/AC1 'Schema Management Service (SMS)', SIMPL-13343/AC1 'the service', SIMPL-19992/AC1 'the system'. CDM: 'Schema Manager component (simpl-schema-manager)'.",
+   "question": "Can 'Governance Authority' be kept for the actor only, and one name used for the component?",
+   "options": [
+    "Actor 'Governance Authority'; component 'Schema Manager' (CDM name); 'Simpl-Open' for the platform as in the business process"
+   ],
+   "from_23a": [],
+   "see": [],
+   "code": "DDD-02",
+   "step": "23b",
+   "theme": "One language for the domain"
+  },
+  {
+   "id": "D-017",
+   "target": "schema-manager-be.md",
+   "rule": "DATA-04",
+   "severity": "minor",
+   "finding": "Some CDM classes describe implementation, not the business: RdfValidator is 'implemented with Apache Jena', and SchemaMetadata is described as 'the read model used for ... list responses'. All quality profile parts are marked owned_entity, also those that read as value objects (ScoreRange, Threshold).",
+   "evidence": "CDM: '<<owned_service>> RdfValidator', 'Internal Schema Manager validation service, implemented with Apache Jena'; SchemaMetadata 'This is the read model used for schema discovery and list responses'; '<<owned_entity>> ScoreRange', '<<owned_entity>> Threshold'.",
+   "question": "Can RdfValidator leave the CDM (validation is a step, not a business object), SchemaMetadata be marked as a view of Schema and SchemaVersion, and value objects be marked as such?",
+   "options": [
+    "Yes, as proposed",
+    "Keep RdfValidator as an owned service, but without the technology"
+   ],
+   "from_23a": [
+    "DDD-06 schema-manager-be.md#RdfValidator",
+    "DDD-01 schema-manager-be.md#RdfValidator",
+    "DDD-06 schema-manager-be.md#SchemaMetadata"
+   ],
+   "see": [],
+   "code": "DATA-04",
+   "step": "23b",
+   "theme": "Data model governance"
+  },
+  {
+   "id": "D-018",
+   "target": "cross",
+   "rule": "DDD-02",
+   "severity": "minor",
+   "finding": "'Update' means three things: creating a new version (SIMPL-32807 headings), a rejected duplicate create (SIMPL-32802), and a metadata update for which the API has request and response schemas but no operation.",
+   "evidence": "SIMPL-32807/AC1 heading 'Updating existing Resource Definition Schema' for POST /schemas/{schemaName}/versions; SIMPL-32802/AC4 heading 'Update an already existing Resource Definition Schema' for a 409 on POST /schemas; API UpdateSchemaPayload and UpdateSchemaResponsePayload used by no path; SIMPL-33694/AC5 'publish, update, version, or revoke a SEARCH schema'.",
+   "question": "Can 'update' be reserved for a metadata change (if that operation exists) and 'new version' used for a new definition?",
+   "options": [
+    "Yes; remove the two orphan Update schemas if no update operation is planned",
+    "Add an update operation for title and description and keep the schemas"
+   ],
+   "from_23a": [
+    "DDD-07 schema-manager-be#UpdateSchemaPayload",
+    "DDD-07 schema-manager-be#UpdateSchemaResponsePayload"
+   ],
+   "see": [
+    "F-065"
+   ],
+   "code": "DDD-02",
+   "step": "23b",
+   "theme": "One language for the domain"
+  },
+  {
+   "id": "D-019",
+   "target": "cross",
+   "rule": "DDD-14",
+   "severity": "minor",
+   "finding": "The word 'schema' is also used for a contract clause type, 'Billing Schema', which is a part of a resource description, not a schema this component manages. The story that uses it belongs to the resource description context.",
+   "evidence": "BP Assumptions: 'Contract clauses schema (Service level agreement, license agreement, billing schema) are default properties'; SIMPL-28815/AC1 'contract clause of type 'Billing Schema''; schema-manager-be-default-properties.md 'Billing schema (billingSchema)'.",
+   "question": "Can the glossary mark 'billing schema' as a contract clause name owned by the contract or resource description context, not a Schema?",
+   "options": [
+    "Yes, list it under synonyms to avoid",
+    "Rename the clause to 'billing terms' in the specs"
+   ],
+   "from_23a": [],
+   "see": [
+    "F-044"
+   ],
+   "code": "DDD-14",
+   "step": "23b",
+   "theme": "Boundaries with other components"
+  },
+  {
+   "id": "D-020",
+   "target": "schema-manager-be.md",
+   "rule": "DDD-15",
+   "severity": "minor",
+   "finding": "The CDM lists the CDMs it refers to and those that refer to it, which serves as a partial context map. The register's concept reference index is missing, and the catalogue CDM's copy of Schema lacks schemaType, so the catalogue cannot tell a federated search schema from a resource description schema.",
+   "evidence": "CDM sections 'External CDMs referenced' and 'CDMs referencing this CDM'; cdm-index.md links './cdm-concept-reference-index.md' (not in the snapshot). catalogue-be.md: 'class Schema { schemaName resourceType lifecycleStatus }', external_entity, no schemaType; schema-manager-be.md Schema.schemaType RESOURCE, SEARCH.",
+   "question": "Should the catalogue CDM add schemaType to its external Schema, and who publishes the concept reference index?",
+   "options": [
+    "Add schemaType to the catalogue's external Schema; publish the index with the register",
+    "Leave it: the catalogue receives only RESOURCE schemas"
+   ],
+   "from_23a": [],
+   "see": [
+    "F-025"
+   ],
+   "code": "DDD-15",
+   "step": "23b",
+   "theme": "Boundaries with other components"
+  }
+ ]
+}

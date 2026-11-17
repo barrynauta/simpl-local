@@ -31,6 +31,11 @@ PLACEHOLDER = [r"\bTBD\b", r"\bTBC\b", r"\bTODO\b", r"\bXXX\b", r"to be (?:defin
                r"\?\s*$", r"\bto check\b"]
 OPTIONAL = [r"\band/or\b", r"\bmay\b", r"\bmight\b", r"\bcould\b(?! not)", r"\bpossibly\b", r"\boptionally\b",
             r"\beither\b", r"\bshould\b"]
+ACTION = re.compile(r"(?i)\b(click|clicks|select|selects|submit|submits|send|sends|call|calls|upload|uploads|enter|enters|"
+                    r"navigate|navigates|open|opens|press|presses|choose|chooses|request|requests|create|creates|"
+                    r"delete|deletes|update|updates|invoke|invokes|fill|fills|confirm|confirms|provide|provides|"
+                    r"type|types|drag|search|searches|filter|filters|download|downloads|sign|signs|accept|accepts|reject|rejects)\b")
+INFO = {"AC-S09", "AC-S10"}  # reported for completeness, not a pointer for 20b
 LIMIT_WORDS = r"\b(limit|maximum|minimum|max|min|timeout|time-out|within|retention|retry|retries|threshold|size)\b"
 
 
@@ -66,7 +71,8 @@ def check_story(st):
         # Several actions: an And between When and Then.
         if "When" in kws and "Then" in kws:
             wi, ti = kws.index("When"), kws.index("Then")
-            extra = [c["text"] for c in a["clauses"][wi + 1:ti] if c["kw"] in ("And", "But")]
+            # Only a second action counts; "And the file is valid" is a condition, not an action.
+            extra = [c["text"] for c in a["clauses"][wi + 1:ti] if c["kw"] in ("And", "But") and ACTION.search(c["text"])]
             if extra:
                 f(a["id"], "AC-S04", f"{1 + len(extra)} actions in the When part", extra[0])
             if kws.count("When") > 1:
@@ -98,7 +104,7 @@ def check_story(st):
     texts = [(a["id"], " ".join(c["text"] for c in a["clauses"]).lower()) for a in live]
     for i in range(len(texts)):
         for j in range(i + 1, len(texts)):
-            if texts[i][1] and difflib.SequenceMatcher(None, texts[i][1], texts[j][1]).ratio() > 0.9:
+            if texts[i][1] and difflib.SequenceMatcher(None, texts[i][1], texts[j][1]).ratio() > 0.97:
                 f(texts[j][0], "AC-S12", f"nearly the same text as {texts[i][0]}")
     return out
 
@@ -119,11 +125,14 @@ def main():
     comp = FACTORY / sys.argv[1]
     inv = json.loads((comp / "inventory/inventory.json").read_text(encoding="utf-8"))
     findings = [x for st in inv["stories"] for x in check_story(st)]
+    for x in findings:
+        x["level"] = "info" if x["check"] in INFO else "pointer"
     live = [a for st in inv["stories"] for a in st["acs"] if not a["struck"]]
     by_code = Counter(x["check"] for x in findings)
-    acs_hit = {x["id"] for x in findings if "/" in x["id"]}
+    acs_hit = {x["id"] for x in findings if "/" in x["id"] and x["level"] == "pointer"}
     summary = {"component": sys.argv[1], "stories": len(inv["stories"]), "acs_live": len(live),
-               "acs_with_a_finding": len(acs_hit), "findings": len(findings),
+               "acs_with_a_finding": len(acs_hit), "findings": sum(x["level"] == "pointer" for x in findings),
+               "info": sum(x["level"] == "info" for x in findings),
                "by_check": dict(sorted(by_code.items()))}
     out = comp / "validation"
     out.mkdir(exist_ok=True)
@@ -134,10 +143,11 @@ def main():
           "Mechanical checks only: structure and wording. A hit is a pointer for step 20b, not a verdict: "
           "a vague word can be harmless in context.", "",
           f"{len(live)} live ACs in {len(inv['stories'])} stories; {len(acs_hit)} ACs with at least one finding; "
-          f"{len(findings)} findings.", "", "| Check | What | Findings |", "|---|---|---|"]
-    md += [f"| {k} | {DESCR[k]} | {v} |" for k, v in sorted(by_code.items())]
+          f"{summary['findings']} pointers and {summary['info']} info lines (AC-S09, AC-S10: reported, not pointers).", "",
+          "| Check | What | Level | Hits |", "|---|---|---|---|"]
+    md += [f"| {k} | {DESCR[k]} | {'info' if k in INFO else 'pointer'} | {v} |" for k, v in sorted(by_code.items())]
     md += ["", "## Findings", "", "| Id | Check | Detail | Evidence |", "|---|---|---|---|"]
-    for x in findings:
+    for x in sorted(findings, key=lambda x: x["level"] == "info"):
         ev = x["evidence"].replace("|", "/")
         md.append(f"| `{x['id']}` | {x['check']} | {x['detail']} | {ev} |")
     (out / "ac-checks.md").write_text("\n".join(md) + "\n", encoding="utf-8")

@@ -6,10 +6,10 @@ Step 29 of the spec factory, assembled on 17 Nov 2026 by [`pipeline/build_feedba
 
 ## In short
 
-- **Input:** 36 stories with 138 live acceptance criteria, 26 API operations, 14 business process requirements, and the CDMs of each API.
+- **Input:** 36 stories with 138 live acceptance criteria, 26 API operations, 31 business process requirements, and the CDMs of each API.
 - **Findings:** 85: **20 to decide before building**, 47 to confirm, 18 small.
-- **Mechanical checks:** 86 hits on the acceptance criteria and 78 on the API and CDM names; the agents triaged them, and the real ones are part of the findings above.
-- **Coverage:** 54 of 138 criteria link to no operation and no process requirement; 13 of 26 operations and 1 of 14 process requirements have no criterion.
+- **Mechanical checks:** 45 hits on the acceptance criteria and 78 on the API and CDM names; the agents triaged them, and the real ones are part of the findings above.
+- **Coverage:** 54 of 138 criteria link to no operation and no process requirement; 13 of 26 operations and 18 of 31 process requirements have no criterion.
 
 ## Decide first
 
@@ -223,7 +223,7 @@ The 18 minor findings (wording, numbering, duplicates) are in [`ac-findings.json
 From the links between criteria, operations and process requirements (step 12b, [`../inventory/inventory-review.md`](../inventory/inventory-review.md)). A gap is not always wrong, but each one is a place where the specs do not say how the parts connect.
 
 - Operations with no criterion (13): `contract-consumption-adapter-be:GET /transfers/{transferProcessId}/dataAddress`, `contract-consumption-adapter-be:GET /resourceAddresses/templates/{templateId}/schema`, `contract-consumption-adapter-be:POST /transfers`, `contract-consumption-adapter-be:GET /resourceAddresses/sharingMethods/{sharingMethodId}/templates`, `contract-consumption-adapter-be:GET /resourceAddresses/templates/{templateId}/uiSchema`, `contract-consumption-adapter-be:POST /connectorCatalog/assets`, `contract-consumption-adapter-be:GET /contracts/{contractNegotiationId}`, `contract-consumption-adapter-be:GET /transfers/{transferProcessId}`, `contract-manager-be:GET /health`, `contract-manager-be:GET /agreements/{contractAgreementId}/file`, `contract-manager-be:POST /agreements/search`, `contract-manager-be:PUT /contractOffers/{contractNegotiationId}/update`, `contract-ui-be:GET /health`
-- Process requirements with no criterion (1): `BP7.3.2`
+- Process requirements with no criterion (18): `BP07.01`, `BP07.02`, `BP07.03`, `BP07.04`, `BP07.05`, `BP07.06`, `BP07.07`, `BP07.08`, `BP07.09`, `BP07.10`, `BP07.11`, `BP07.12`, `BP7.3.2`, `BP10.01`, `BP10.02`, `BP10.03`, `BP10.04`, `BP10.05`
 - Criteria with no operation and no process requirement: 54, listed in the review.
 
 ## The data models (CDMs)

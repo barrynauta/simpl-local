@@ -1,0 +1,387 @@
+[
+ {
+  "id": "D-001",
+  "target": "vocabulary-manager-be#VocabularyCategory",
+  "rule": "DDD-06",
+  "severity": "blocker",
+  "finding": "The vocabulary has three names: 'vocabulary' in the stories and the process, InternalVocabulary in the CDM and VocabularyCategory in the API. 'Category' appears in no story, no process step and no CDM class. The schema also mixes two CDM classes: it is described as the latest version metadata, but it carries the vocabulary-level status. A builder cannot tell whether this object is the vocabulary or a view of its latest version.",
+  "evidence": "CDM:vocabulary-manager-be:InternalVocabulary ('Identified by a unique `name`; `latestVersion` identifies the most recently created version; `status` is the vocabulary-level lifecycle status'); OpenAPI GET /vocabularies summary 'Get the latest version metadata for vocabularies.' with items VocabularyCategory; GET /vocabularies/{vocabularyName} 'Get the latest metadata for a vocabulary.' returns VocabularyCategory; PATCH /vocabularies/{vocabularyName} 'Update the status of an existing vocabulary.' returns VocabularyCategory; VocabularyCategory fields 'version', 'createdBy' have no CDM attribute of that name (CDM has latestVersion, no creator); SIMPL-18161/AC1 'a list of all vocabularies'; SIMPL-18175/AC1 'responds with the updated vocabulary metadata'.",
+  "question": "Is the object returned by GET /vocabularies, GET and PATCH /vocabularies/{vocabularyName} the vocabulary itself (CDM InternalVocabulary), or a read view of its latest version, and which one name should the CDM and the API use for it?",
+  "options": [
+   "It is the vocabulary: name the CDM class and the schema Vocabulary, and rename the field version to latestVersion (stories use 'vocabulary' most)",
+   "It is the vocabulary: keep the CDM name InternalVocabulary and rename the schema to InternalVocabulary",
+   "It is a read view of the latest version: add it to the CDM as a named read model (as Schema Manager does with SchemaMetadata) and name the schema after it, for example VocabularySummary"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be#VocabularyCategory (DDD-06)",
+   "vocabulary-manager-be.md#InternalVocabulary (DDD-06, not exposed)",
+   "vocabulary-manager-be.md#InternalVocabulary (DDD-01)"
+  ],
+  "see": [
+   "F-001",
+   "F-019"
+  ]
+ },
+ {
+  "id": "D-002",
+  "target": "vocabulary-manager-be#VocabularyMetadata",
+  "rule": "DDD-06",
+  "severity": "blocker",
+  "finding": "The vocabulary version has four names: 'vocabulary version' in the stories, InternalVocabularyVersion in the CDM, and VocabularyMetadata, VocabularyVersionMetadataResponse and (in part) VocabularySearchItem in the API. The API name VocabularyMetadata also clashes with the stories, where 'vocabulary metadata' means the vocabulary-level data (DDD-02).",
+  "evidence": "CDM:vocabulary-manager-be:InternalVocabularyVersion; OpenAPI GET and PATCH /vocabularies/{vocabularyName}/versions/{version} return VocabularyMetadata; GET /vocabularies/{vocabularyName}/versions returns items VocabularyMetadata; POST /vocabularies and POST /vocabularies/{vocabularyName}/versions return VocabularyVersionMetadataResponse (same fields plus validationWarnings, without latestVersionHref); POST /vocabularies/searches returns VocabularySearchItem; SIMPL-18166/AC1 'a specific vocabulary version'; SIMPL-18176/AC2 'vocabulary versions marked as DEPRECATED'; SIMPL-18452/AC1 'select a specific version'; SIMPL-18162 title 'Retrieve metadata of all vocabularies via API' (answered by VocabularyCategory, not VocabularyMetadata); SIMPL-18172/AC1 'pre-filled with the existing vocabulary metadata'.",
+  "question": "Which one name should the version carry in the CDM and the API, and is the creation response a separate concept or the same version object with warnings attached?",
+  "options": [
+   "VocabularyVersion in CDM and API (stories say 'vocabulary version'); the 201 response is VocabularyVersion plus a validationWarnings list, named as a wrapper",
+   "Keep the CDM name InternalVocabularyVersion and use it for the API schema too"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be#VocabularyMetadata (DDD-06)",
+   "vocabulary-manager-be#VocabularyVersionMetadataResponse (DDD-07)",
+   "vocabulary-manager-be#VocabularySearchItem (DDD-06)",
+   "vocabulary-manager-be.md#InternalVocabularyVersion (DDD-06, not exposed)",
+   "vocabulary-manager-be.md#InternalVocabularyVersion (DDD-01)"
+  ],
+  "see": [
+   "F-024",
+   "F-027"
+  ]
+ },
+ {
+  "id": "D-003",
+  "target": "vocabulary-manager-be.md#VocabularyValidationWarning",
+  "rule": "DDD-02",
+  "severity": "blocker",
+  "finding": "The CDM uses 'validation warning' for two concepts: blocking errors and non-blocking warnings. Its warning codes include syntaxError and semanticError, which the API treats as blocking errors (400, no vocabulary created). The API keeps them apart: VocabularyValidationIssue in the 400 report, VocabularyValidationWarning in the 201 response. The API warning code deprecatedVocabularyReference is not in the CDM value set. A code writer working from the CDM would return syntax errors as warnings on a created version.",
+  "evidence": "CDM VocabularyValidationWarning: 'A validation issue or non-fatal problem detected during Turtle syntax check, semantic validation, or OWL consistency reasoning'; CDM value set 'VocabularyValidationWarning.warningCode: syntaxError, semanticError, externalReferenceSkipped, semanticReasoningSkipped'; OpenAPI VocabularyValidationBadRequestResponse examples 'syntaxError', 'semanticError' (400, issues of VocabularyValidationIssue); OpenAPI VocabularyVersionMetadataResponse.validationWarnings 'Non-blocking validation warnings returned when vocabulary creation succeeds despite warnings', example codes 'externalReferenceSkipped' and 'deprecatedVocabularyReference'; SIMPL-18193/AC2 'blocking validation errors'; SIMPL-18183 note 'we issue warnings for external vocabularies that cannot be resolved'.",
+  "question": "Are blocking validation errors and non-blocking validation warnings two concepts, and what is the full code set of each?",
+  "options": [
+   "Two CDM concepts: VocabularyValidationError (listed in the validation report, blocks creation) and VocabularyValidationWarning (returned with the created version), each with its own code set",
+   "One CDM concept VocabularyValidationIssue with a severity (error or warning) and one code set; API schemas named after it"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be#VocabularyValidationIssue (DDD-06)",
+   "vocabulary-manager-be#VocabularyValidationWarning.code (DDD-08)"
+  ],
+  "see": [
+   "F-003",
+   "F-004",
+   "F-005"
+  ]
+ },
+ {
+  "id": "D-004",
+  "target": "vocabulary-manager-be#VocabularyValidationProblem",
+  "rule": "DDD-07",
+  "severity": "major",
+  "finding": "The validation report is a business concept in the process and the stories, but the CDM has no class for it, and it has five names across the sources. The API carries it in an error wrapper, which is fine as a transport, but the concept behind it is missing from the CDM.",
+  "evidence": "BP02B.06 'Simpl-Open sends a report to the Governance Authority highlighting any validation issues detected'; 2B.4.4 'receives a notification about vocabulary validation errors'; SIMPL-18193 title 'Receive vocabulary validation report via UI'; SIMPL-18194/AC1 'a structured report listing all errors'; SIMPL-18182/AC3 'a structured report detailing semantic errors'; SIMPL-18181/AC2 'a structured error response'; SIMPL-18173/AC2 'rejected with validation feedback'; OpenAPI VocabularyValidationProblem (400); CDM 'Validation results are computed during version creation but not persisted as metadata'.",
+  "question": "Should the CDM name the validation report as a (transient) concept, and which name should the stories and the API use?",
+  "options": [
+   "Add 'validation report' to the CDM as a transient value object listing validation errors; keep VocabularyValidationProblem as its transport and say so",
+   "Leave it out of the CDM as a pure transport; settle the story wording on 'validation report' only"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be#VocabularyValidationProblem (DDD-07)"
+  ],
+  "see": [
+   "F-033",
+   "F-046"
+  ]
+ },
+ {
+  "id": "D-005",
+  "target": "cross",
+  "rule": "DDD-07",
+  "severity": "major",
+  "finding": "The vocabulary reference drives the status check of the process and the deprecation warning, but the CDM has no concept for it. It is not stated how a reference inside the uploaded content identifies an internal vocabulary version. The API examples suggest the namespace of an internal version is its content URL, while the CDM gives a namespace only to external vocabularies.",
+  "evidence": "2B.4.3 'verifies the status of the vocabularies used to create a new vocabulary'; SIMPL-18184/AC1 'I reference one or more existing vocabulary versions'; SIMPL-18184/AC3 'I reference a vocabulary version that does not exist'; OpenAPI warning location \"prefix 'legacy' -> 'https://authority.example/vocabulary-manager/content/LegacyVocabulary/versions/1#'\"; OpenAPI searchVocabularies 'for semantic reference resolution'; ExternalVocabularyContentRequest.namespaceUri 'Namespace URI as used in the vocabulary definition prefix'; CDM InternalVocabulary has no namespace attribute, ExternalVocabulary has namespaceUri; context CDM schema-manager-be: 'Schema Manager calls Vocabulary Manager to resolve vocabulary references and validate namespace URIs'.",
+  "question": "What is a vocabulary reference (a namespace prefix in the content?), how does it point to a specific internal vocabulary version, and should the CDM model it?",
+  "options": [
+   "Add VocabularyReference (namespace URI found in the content) to the CDM, resolving to an internal vocabulary version by its content URL or to an external vocabulary by namespace or alias URI",
+   "Give InternalVocabularyVersion a namespaceUri attribute and define the reference as a namespace URI match, in the CDM text"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-003",
+   "F-031",
+   "F-032"
+  ]
+ },
+ {
+  "id": "D-006",
+  "target": "cross",
+  "rule": "DDD-02",
+  "severity": "major",
+  "finding": "'Latest version' can mean two things: the most recently created version (CDM, API), or the most recent ACTIVE version (stories). The stories also say 'current' and 'newest'. Once a version status can be changed by hand, the latest version may be DEPRECATED, and the two meanings give different results for the list, the download and the search.",
+  "evidence": "CDM InternalVocabulary: '`latestVersion` identifies the most recently created version'; OpenAPI VocabularySearchItem.latest 'True when the result came from latest vocabulary metadata'; GET /content/{vocabularyName} 'Download the latest vocabulary content'; VocabularyMetadata.latestVersionHref; SIMPL-18170/AC1 'version `1` as the latest version'; SIMPL-18161/AC1 'current version'; SIMPL-18165/AC1 'the newest version of that vocabulary'; SIMPL-18184/AC2 'recommends using the latest _ACTIVE_ version'; SIMPL-18559/AC1 'a more recent ACTIVE version', 'the latest ACTIVE version'; OpenAPI PATCH /vocabularies/{vocabularyName}/versions/{version}.",
+  "question": "Does 'latest version' mean the highest version number whatever its status, or the most recent ACTIVE version, and should 'current' and 'newest' be retired?",
+  "options": [
+   "Latest version = highest version number, whatever its status; 'latest ACTIVE version' is a separate, explicit term",
+   "Latest version = most recent ACTIVE version; the CDM text and the API descriptions change to match"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-001",
+   "F-015"
+  ]
+ },
+ {
+  "id": "D-007",
+  "target": "cross",
+  "rule": "DDD-12",
+  "severity": "major",
+  "finding": "The states of the vocabulary and of the version are listed in the CDM, but the allowed transitions are not written down in one place, and the CDM text and the stories differ on what a new version deprecates. Each operation that changes a status cannot be checked against a transition table.",
+  "evidence": "CDM value sets 'InternalVocabulary.status: ACTIVE, DEPRECATED', 'InternalVocabularyVersion.status: ACTIVE, DEPRECATED'; CDM relationship note 'Creating an InternalVocabularyVersion makes it ACTIVE and deprecates the previous active version'; SIMPL-18191/AC1 'sets all previous versions of that vocabulary to DEPRECATED'; SIMPL-18172/AC2 and SIMPL-18173/AC1 'all previous versions'; SIMPL-18170/AC2 'can later be manually changed to `DEPRECATED` or back to `ACTIVE`'; BP02B.05 'Full Vocabulary Deprecation - all versions deprecated when obsolete'; OpenAPI ConflictResponse 'Vocabulary is already in status ACTIVE'; CDM open question SIMPL-18201 (reason and effective date for status changes).",
+  "question": "Can the spec owners add one transition table per entity (vocabulary, vocabulary version) next to the CDM, naming for each transition the operation and the criteria that cause it?",
+  "options": [
+   "Add a state table to the CDM: vocabulary ACTIVE <-> DEPRECATED by PATCH /vocabularies/{vocabularyName}; version created ACTIVE by POST, ACTIVE -> DEPRECATED by a new version or by PATCH .../versions/{version}; same-status request gives 409",
+   "Drop the manual version transition and keep only the automatic one, then write the table"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-001",
+   "F-015",
+   "F-038",
+   "F-012"
+  ]
+ },
+ {
+  "id": "D-008",
+  "target": "vocabulary-manager-be#ExternalVocabulary",
+  "rule": "DDD-09",
+  "severity": "major",
+  "finding": "The identity of an external vocabulary is stated two ways. The CDM says it is identified by its canonical namespace URI (plus aliases); the API addresses it by name in every path and also looks up its content by namespace URI. For the internal vocabulary the identity is the name, but it is called vocabularyName in paths and name in bodies, queries and the search, while the external path parameter is called name.",
+  "evidence": "CDM ExternalVocabulary: 'Identified by a canonical namespace URI and zero or more alias URIs'; OpenAPI paths /external-vocabularies/{name}, /external-vocabularies/{name}/content, Location '/external-vocabularies/DublinCoreTerms'; POST /external-vocabularies/content 'Resolves the cached external vocabulary by the namespace URI'; ExternalVocabularyNotFoundResponse \"External vocabulary with namespaceUri 'http://purl.org/dc/terms' was not found.\"; parameters VocabularyNamePath 'vocabularyName', ExternalVocabularyNamePath 'name', VocabularyNameQuery 'name'; CreateVocabularyPayload.name; VocabularySearchItemRequest.name.",
+  "question": "Is an external vocabulary identified by its name or by its namespace URI, and should the name parameter of both vocabulary kinds use one spelling?",
+  "options": [
+   "Name is the identity for both kinds; the namespace URI and aliases are unique lookup keys; the CDM text says so",
+   "Namespace URI is the identity of an external vocabulary; the name is a label; paths keep the name as a convenience key, written down as such"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be#ExternalVocabularySearchRequest.namespaceUri (DDD-08)"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-009",
+  "target": "vocabulary-manager-be",
+  "rule": "DATA-01",
+  "severity": "major",
+  "finding": "The CDM of this component and the context CDM of Schema Manager exist and point to their APIs, but neither is approved for delivery. A glossary built on them can still change.",
+  "evidence": "cdm-index.md and SOURCES.json: 'Vocabulary Manager | C&C Team | In review | No' (branch feature/add-cdm, commit 70f951f, 2026-11-03); 'Schema Manager | C&C Team | In review | No' (commit 3268a45); CDM open questions SIMPL-18201.",
+  "question": "When will the Vocabulary Manager CDM be approved, and should the factory wait for it or work from this snapshot?",
+  "options": [
+   "Work from the pinned snapshot and re-run step 23 when the CDM is approved",
+   "Wait for approval before step 40"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be (DATA-01)"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-010",
+  "target": "cross",
+  "rule": "DDD-14",
+  "severity": "major",
+  "finding": "The ownership of 'vocabulary' is not yet single. Schema Manager still exposes legacy /vocabularies endpoints, and two stories in this set speak the catalogue's and Schema Manager's language (ontology, schema, SHACL constraints, uploads to the catalogue). The CDM says Vocabulary Manager is the authoritative registry.",
+  "evidence": "Context CDM schema-manager-be: 'Historical `/vocabularies` endpoints in Schema Manager OpenAPI are legacy and provided for backward compatibility. The authoritative vocabulary registry is the Vocabulary Manager.'; SIMPL-395 'the UI should wrap the vocabulary calls of the catalogue', 'upload new schema/vocabulary to the catalogue'; SIMPL-393 AC bullets 'fetch all onthologies'; SIMPL-28680 is a Schema Manager story ('in Schema Manager', Metadata Quality Profile).",
+  "question": "Does this component own every vocabulary in the data space, and when are the Schema Manager /vocabularies endpoints retired? Should SIMPL-393, SIMPL-395 and SIMPL-28680 be restated in this component's language or moved?",
+  "options": [
+   "Vocabulary Manager owns all vocabularies; Schema Manager's endpoints get an end date; the three stories are moved or rewritten",
+   "Both components keep vocabulary endpoints for now; write down which one is the source of truth and the mapping between them"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-010",
+   "F-041",
+   "F-042"
+  ]
+ },
+ {
+  "id": "D-011",
+  "target": "vocabulary-manager-be.md#VocabularySearch",
+  "rule": "DATA-04",
+  "severity": "minor",
+  "finding": "Two CDM 'owned entities' are read-only requests, not business objects: VocabularySearch and ExternalVocabularySearch. VocabularyValidationWarning is also an owned entity although it has no identity, and the CDM says both that warnings are stored as entries and that validation results are not persisted.",
+  "evidence": "CDM '<<owned_entity>> VocabularySearch', 'Read-only batch search request'; '<<owned_entity>> ExternalVocabularySearch', 'Read-only batch search request'; CDM 'Validation warnings are stored as VocabularyValidationWarning entries and are only returned inline in the creation response'; CDM 'Validation results are computed during version creation but not persisted as metadata'.",
+  "question": "Should the two searches leave the class diagram (or be marked as queries), and is a validation warning a stored entity or a transient value object?",
+  "options": [
+   "Remove the search classes from the owned entities and describe the searches in the endpoint table only; mark warnings as transient value objects",
+   "Keep them, marked with a <<query>> and <<value_object>> stereotype"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be.md#VocabularySearch (DDD-01)",
+   "vocabulary-manager-be.md#ExternalVocabularySearch (DDD-01)"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-012",
+  "target": "cross",
+  "rule": "DDD-08",
+  "severity": "minor",
+  "finding": "Several fields have two or three names. One pair sits inside the API itself: the list filter and sort use lastUpdated, the returned field is lastUpdateDate.",
+  "evidence": "OpenAPI LastUpdatedQuery 'lastUpdated', VocabularyListSortQuery 'lastUpdated', VocabularyCategory.lastUpdateDate; SIMPL-18164/AC1 '`lastUpdated`'; SIMPL-18162/AC1 'lastUpdateDate'; SIMPL-18161/AC1 'last updated'; CDM changelog, OpenAPI changelog, SIMPL-18167/AC1 'Change log', SIMPL-18172/AC2 and SIMPL-18176/AC3 'change summary'; CDM creationDate, SIMPL-18161/AC1 and SIMPL-18167/AC1 'date created'; CDM VocabularyValidationWarning.warningCode, OpenAPI VocabularyValidationWarning.code (Schema Manager's SchemaValidationWarning also uses code).",
+  "question": "Can each pair be settled on one name: lastUpdateDate, changelog, creationDate, and code or warningCode?",
+  "options": [
+   "lastUpdateDate everywhere including the query and sort parameter; changelog; creationDate; code (as the API and Schema Manager)",
+   "Keep the API names and record the story words as UI labels with a written mapping (DDD-05)"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be#VocabularyValidationWarning.code (DDD-08)"
+  ],
+  "see": [
+   "F-045"
+  ]
+ },
+ {
+  "id": "D-013",
+  "target": "cross",
+  "rule": "DDD-08",
+  "severity": "minor",
+  "finding": "The creator is in the API and the stories but not in the CDM. The API example is a person's e-mail address, while the CDM relation names the Governance Authority, an organisation role, as the one who creates vocabularies.",
+  "evidence": "OpenAPI VocabularyCategory.createdBy and ExternalVocabulary.createdBy, example 'johndoe@example.com'; no creator attribute in CDM InternalVocabulary, InternalVocabularyVersion or ExternalVocabulary; CDM 'GovernanceAuthority \"1\" --> \"0..*\" InternalVocabulary : creates and manages', GovernanceAuthority.authorityIdentifier; SIMPL-18161/AC1 'creator'; SIMPL-18176/AC3 'creator' for a version.",
+  "question": "Is the creator the user who uploaded the file or the Governance Authority, and on which classes (vocabulary, version, external vocabulary) is it kept?",
+  "options": [
+   "Creator = user identity of the uploader, attribute createdBy on vocabulary version and external vocabulary; the vocabulary shows the creator of version 1",
+   "Creator = Governance Authority identifier; drop the person e-mail from the example"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be#ExternalVocabulary.createdBy (DDD-08)"
+  ],
+  "see": [
+   "F-019",
+   "F-029"
+  ]
+ },
+ {
+  "id": "D-014",
+  "target": "cross",
+  "rule": "DDD-02",
+  "severity": "minor",
+  "finding": "'Description' names two attributes: one of the vocabulary and one of each version. The create request has one description, and the examples show a vocabulary description that equals the newest version's text, so it is unclear whether a new version's description replaces the vocabulary description.",
+  "evidence": "CDM InternalVocabulary.description and InternalVocabularyVersion.description; OpenAPI CreateVocabularyPayload.description, CreateNewVocabularyVersionPayload.description; GET /vocabularies/{vocabularyName}/versions example: version 1 'Initial vocabulary for healthcare resource types.', version 2 'Vocabulary defining healthcare resource types.'; GET /vocabularies/{vocabularyName} example 'Vocabulary defining healthcare resource types.'; SIMPL-18172/AC2 'I update the metadata and/or vocabulary content'.",
+  "question": "Does the vocabulary have its own description, or does it show the description of its latest version?",
+  "options": [
+   "One description per version; the vocabulary shows the latest version's description (remove InternalVocabulary.description)",
+   "Separate descriptions; the version request sets only the version description"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be#CreateVocabularyPayload (DDD-07, harmless as a wrapper)"
+  ],
+  "see": [
+   "F-008",
+   "F-019"
+  ]
+ },
+ {
+  "id": "D-015",
+  "target": "cross",
+  "rule": "DDD-08",
+  "severity": "minor",
+  "finding": "The vocabulary content has several names (rdfContent, vocabularyFile, content, file, full details), and the CDM class ExternalVocabulary has no content attribute although the API stores and serves its content.",
+  "evidence": "CDM InternalVocabularyVersion.rdfContent; OpenAPI CreateVocabularyPayload.vocabularyFile, paths /content/{vocabularyName}, contentHref; CreateExternalVocabularyPayload.vocabularyFile, GET /external-vocabularies/{name}/content; SIMPL-18169/AC1 'File upload'; SIMPL-18172/AC2 'uploading an updated file'; SIMPL-18452/AC2 'a file containing the full details'; SIMPL-18165/AC1 'review its full details'.",
+  "question": "Can 'vocabulary content' be the term (the Turtle definition), with vocabularyFile as the upload field only, and should ExternalVocabulary get a content attribute?",
+  "options": [
+   "Term 'vocabulary content'; CDM attribute content on both vocabulary version and external vocabulary; vocabularyFile stays as the form field name, written down",
+   "Keep rdfContent in the CDM and map it in the glossary"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be#CreateExternalVocabularyPayload (DDD-07, harmless as a wrapper)"
+  ],
+  "see": [
+   "F-022",
+   "F-024"
+  ]
+ },
+ {
+  "id": "D-016",
+  "target": "cross",
+  "rule": "DDD-05",
+  "severity": "minor",
+  "finding": "Status values agree between the CDM, the API and most criteria (ACTIVE, DEPRECATED), but some UI stories show 'Active' and 'Deprecated' and the process says 'published'. No mapping from UI label or process word to the value is written down. One API enum, VocabularyStatus, serves both the vocabulary status and the version status.",
+  "evidence": "SIMPL-18161/AC1 'vocabulary status (`Active`, `Deprecated`)'; SIMPL-18167/AC1 'Status (Active, Deprecated)'; SIMPL-18163/AC1 '\"Vocabulary Status = Deprecated\"'; SIMPL-18174/AC1 '`ACTIVE` or `DEPRECATED`'; SIMPL-18176/AC2 '*DEPRECATED*'; BP02B.03 'the vocabulary is published'; SIMPL-18186/AC1 'Automatic publication' then 'sets its status to ACTIVE'; OpenAPI VocabularyStatus used by VocabularyCategory.status and VocabularyMetadata.status.",
+  "question": "Is 'Active'/'Deprecated' the UI label for ACTIVE/DEPRECATED, and is 'published' the process word for a version entering ACTIVE?",
+  "options": [
+   "Write the mapping in the glossary: UI label Active = ACTIVE, Deprecated = DEPRECATED; 'publish' is the event that sets ACTIVE",
+   "Use the upper-case values in the UI as well and drop the mapping"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be#VocabularyStatus.(enum) (DDD-04, harmless)"
+  ],
+  "see": [
+   "F-012"
+  ]
+ },
+ {
+  "id": "D-017",
+  "target": "cross",
+  "rule": "DDD-01",
+  "severity": "minor",
+  "finding": "The qualifier for a vocabulary managed here varies: internal, native, local, self managed. Two older stories call it an ontology.",
+  "evidence": "OpenAPI info 'manage internal vocabularies'; SIMPL-18184 note 'INTERNAL vocabularies (managed by vocabulary management)'; BP Overview 'the lifecycle of native vocabularies'; OpenAPI searchVocabularies 'Search local vocabulary metadata'; SIMPL-18183 note 'self managed vocabularies'; SIMPL-393 'onthology'; SIMPL-395 'vocabularies/ontologies'.",
+  "question": "When a contrast with external vocabularies is needed, which one qualifier should be used?",
+  "options": [
+   "'internal vocabulary' (CDM, API, SIMPL-18184), retiring native, local, self managed and ontology",
+   "'vocabulary' alone, with 'external vocabulary' always qualified, so no qualifier is needed for the internal one"
+  ],
+  "from_23a": [
+   "vocabulary-manager-be.md#InternalVocabulary (DDD-01)"
+  ],
+  "see": [
+   "F-041",
+   "F-042"
+  ]
+ },
+ {
+  "id": "D-018",
+  "target": "vocabulary-manager-be.md#GovernanceAuthority",
+  "rule": "DDD-13",
+  "severity": "minor",
+  "finding": "GovernanceAuthority is marked as an external actor with an attribute, and the Schema Manager CDM defines it the same way, but neither names the context that owns it. The roles that control access (GA_VOCABULARY_VIEWER, GA_VOCABULARY_ADMIN) are not referenced in the CDM.",
+  "evidence": "CDM '<<external_actor>> GovernanceAuthority', attribute authorityIdentifier; context CDM schema-manager-be GovernanceAuthority 'External actor; no owning CDM', attribute authorityIdentifier; SIMPL-18196 notes '`GA_VOCABULARY_VIEWER`', '`GA_VOCABULARY_ADMIN`'.",
+  "question": "Which context owns the Governance Authority and its roles, so both CDMs can reference it by owner and identity?",
+  "options": [
+   "Reference the owning identity or participant CDM and its identifier; list the two roles as referenced concepts",
+   "Keep it as an actor without attributes and drop authorityIdentifier"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-002",
+   "F-043"
+  ]
+ },
+ {
+  "id": "D-019",
+  "target": "cross",
+  "rule": "DDD-15",
+  "severity": "minor",
+  "finding": "There is no context map in the input. The two CDMs reference each other in their traceability tables and agree on the direction (Schema Manager consumes Vocabulary Manager), but the register's concept ownership index is not part of the snapshot, and the Metadata Quality Profile vocabulary dependency named in SIMPL-28680 appears in neither CDM.",
+  "evidence": "CDM 'CDMs referencing this CDM: Schema Manager CDM | Vocabulary Manager as the authoritative vocabulary registry'; context CDM 'VocabularyManager | Provides vocabulary metadata and namespace validation dependencies'; cdm-index.md 'Related indexes: CDM Concept Ownership and Reference Index' (not in the snapshot); SIMPL-28680 note 'the Metadata Quality Profile vocabulary needs to be present there (out of scope)'.",
+  "question": "Can the context map (or the concept ownership index) be added to the CDM snapshot, including the consumers of vocabularies beyond Schema Manager?",
+  "options": [
+   "Collect the concept ownership index in step 10 and check it in step 23",
+   "Accept the pairwise traceability tables as the context map for this component"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-010"
+  ]
+ },
+ {
+  "id": "D-020",
+  "target": "cross",
+  "rule": "DDD-01",
+  "severity": "minor",
+  "finding": "Adding an external vocabulary is called registration in the process and the CDM, but creation, caching and copying in the API. No story covers registering, reading or deleting an external vocabulary, so the term has no criteria to settle it.",
+  "evidence": "BP Overview 'enabling registration and use of external vocabularies'; CDM 'GovernanceAuthority ... ExternalVocabulary : registers', 'ExternalVocabulary registration'; OpenAPI POST /external-vocabularies 'Create a cached external vocabulary for validation', tag 'Manage copied external vocabularies'; DELETE /external-vocabularies/{name} 'Hard deletes'; inventory-review.md: external vocabulary operations are covered only by the blanket criteria of SIMPL-18196.",
+  "question": "Is 'register an external vocabulary' the term for POST /external-vocabularies, and which story will hold the criteria for it?",
+  "options": [
+   "'register' (process and CDM); 'cached copy' stays as the definition, not as a second verb",
+   "'create' to match the API, and the CDM and process wording follow"
+  ],
+  "from_23a": [],
+  "see": []
+ }
+]
