@@ -1,0 +1,816 @@
+[
+  {
+    "id": "D1",
+    "topic": "Stories outside this build",
+    "closes": [
+      "F-010",
+      "F-041",
+      "F-042",
+      "F-053",
+      "D-010",
+      "D-019"
+    ],
+    "decision": "Build only the SIMPL-181xx stories, SIMPL-18452 and SIMPL-18559. SIMPL-28680 (Metadata Quality Profile) belongs to Schema Manager and is not built or tested here. SIMPL-393 is met by the generic upload: no seed data, the component starts empty; a test may upload a CPSV-like Turtle file and find it with GET /vocabularies. SIMPL-395 is replaced by the SIMPL-181xx stories: no deletion of internal vocabularies, no wrapping of catalogue calls. Vocabulary Manager is the owner of internal and external vocabularies in this build; the legacy Schema Manager /vocabularies endpoints are out of scope. The pairwise traceability tables of the two CDMs serve as the context map.",
+    "options": [
+      "Out of scope",
+      "Seed data only",
+      "Build here"
+    ],
+    "basis": "SIMPL-28680 note puts the Vocabulary Manager part out of scope and its endpoints are in the Schema Manager API; SIMPL-393 and SIMPL-395 have no Given/When/Then criteria and the OpenAPI has no delete for internal vocabularies (BP02B.05 'Deprecation does not mean deletion'); context CDM names Vocabulary Manager the authoritative registry (DDD-14, DDD-15).",
+    "status": "provisional",
+    "owner_question": "Confirm SIMPL-393 and SIMPL-395 can be closed as replaced, and that the CPSV vocabulary needs no pre-load.",
+    "affects": [
+      "api",
+      "ui",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D2",
+    "topic": "CDM snapshot",
+    "closes": [
+      "D-009"
+    ],
+    "decision": "Work from the pinned CDM snapshot (vocabulary-manager-be.md, commit 70f951f). Where a decision here differs from the CDM text, the decision wins for this build and the difference is listed as an owner question.",
+    "options": [
+      "Work from snapshot",
+      "Wait for approval"
+    ],
+    "basis": "DATA-01 finding: CDM in review, not approved; the experiment cannot wait.",
+    "status": "provisional",
+    "owner_question": "Approve the CDM with the changes in D3, D10, D25 to D28, or say which ones to drop.",
+    "affects": [
+      "data"
+    ]
+  },
+  {
+    "id": "D3",
+    "topic": "Vocabulary status and version status",
+    "closes": [
+      "F-001"
+    ],
+    "decision": "Two separate stored statuses. The vocabulary status is a flag on the vocabulary, set ACTIVE at creation and changed only by PATCH /vocabularies/{vocabularyName}. Changing it never changes any version status, and creating a version never changes it. GET /vocabularies, the status filter and the list UI show the vocabulary status. A new version may be created for a DEPRECATED vocabulary; the vocabulary stays DEPRECATED. For the deprecated-reference check (D11) and the UI warnings (D36) a version counts as deprecated when its own status is DEPRECATED or its vocabulary status is DEPRECATED ('effectively deprecated'). This gives BP02B.05 'Full Vocabulary Deprecation' its effect without writing to every version.",
+    "options": [
+      "Separate flag, versions unchanged",
+      "Cascade to all versions",
+      "Derived from latest version"
+    ],
+    "basis": "CDM: 'status is the vocabulary-level lifecycle status' and 'updating the vocabulary-level status or the version-level status does not create a new version'; SIMPL-18170/AC2 and SIMPL-18175/AC1 change the vocabulary status alone; BP 2B.6 'a deprecated vocabulary can still be used and referenced, but this will be discouraged'. Simplest to build and test.",
+    "status": "provisional",
+    "owner_question": "Should deprecating a vocabulary also write DEPRECATED to each of its versions, and should a new version be refused for a DEPRECATED vocabulary?",
+    "affects": [
+      "api",
+      "ui",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D4",
+    "topic": "Version transitions and same-status requests",
+    "closes": [
+      "F-015",
+      "F-038",
+      "D-007"
+    ],
+    "decision": "Build PATCH /vocabularies/{vocabularyName}/versions/{version} as in the OpenAPI (API only, no UI control). It sets only that version's status. Creating a version sets it ACTIVE and sets every older version that is ACTIVE to DEPRECATED, in the same transaction, with their lastUpdateDate set to the creation time. After a manual reactivation more than one version may be ACTIVE; the next new version deprecates all of them. A PATCH (vocabulary or version) that asks for the current status returns 409 with the ConflictResponse body, detail 'Vocabulary is already in status ACTIVE' or 'Vocabulary version is already in status DEPRECATED'. A status value other than ACTIVE or DEPRECATED returns 400. The UI status-change action offers only the other status. The state tables are in glossary.md.",
+    "options": [
+      "Manual version change out of scope, one ACTIVE at most",
+      "Manual version change in scope, new version deprecates all older versions"
+    ],
+    "basis": "OpenAPI has the operation and the 409 example; CDM lists it; SIMPL-18172/AC2, 18173/AC1 and 18191/AC1 say 'all previous versions'; DDD-12.",
+    "status": "provisional",
+    "owner_question": "Confirm manual version status change is wanted, and whether two ACTIVE versions are allowed.",
+    "affects": [
+      "api",
+      "ui",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D5",
+    "topic": "Meaning of latest version",
+    "closes": [
+      "D-006"
+    ],
+    "decision": "'Latest version' is the version with the highest version number, whatever its status. 'Latest ACTIVE version' is the highest-numbered version with version status ACTIVE and is always written out in full. GET /vocabularies, GET /vocabularies/{vocabularyName}, GET /content/{vocabularyName} and the search item with latest=true use the latest version. latestVersionHref is always filled with the href of the latest version (also on the latest version itself). 'Current version' and 'newest version' are retired; the UI column is labelled 'Latest version'.",
+    "options": [
+      "Highest number",
+      "Most recent ACTIVE"
+    ],
+    "basis": "CDM 'latestVersion identifies the most recently created version'; OpenAPI summaries 'latest version metadata'; SIMPL-18184 and 18559 write 'latest ACTIVE version' explicitly.",
+    "status": "follows the specs",
+    "owner_question": "Retire current version and newest version in SIMPL-18161 and SIMPL-18165.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D6",
+    "topic": "Publication and manual review",
+    "closes": [
+      "F-012",
+      "D-016"
+    ],
+    "decision": "No review or approval state. A new vocabulary or version that passes validation is stored and ACTIVE in the same request ('publish' = this automatic event). The manual review of BP02B.02 happens outside the system, before upload. UI labels: 'Active' shows ACTIVE, 'Deprecated' shows DEPRECATED; the API and the store use the upper-case values.",
+    "options": [
+      "Review outside the system",
+      "Review state"
+    ],
+    "basis": "SIMPL-18186 'I do not require a manual publication action'; SIMPL-18187 'no separate publish endpoint'; OpenAPI 201 'Version 1 is ACTIVE'; DDD-05.",
+    "status": "follows the specs",
+    "owner_question": "Confirm the manual semantic review of BP02B.02 is an off-line step.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D7",
+    "topic": "Version numbering",
+    "closes": [
+      "F-014"
+    ],
+    "decision": "Version numbers are integers. Version 1 at creation; each new version gets the highest existing number plus 1. A request to POST .../versions that carries a 'version' form field returns 400 (InputValidationProblem, in: body, name: version) and creates nothing (SIMPL-18190/AC2).",
+    "options": [
+      "Integer plus 1",
+      "Other scheme"
+    ],
+    "basis": "OpenAPI version 'type: integer, minimum: 1' and description 'Requests must not provide a version form field'; SIMPL-18170/AC1; CDM 'numbered sequentially (1, 2, 3, ...)'.",
+    "status": "follows the specs",
+    "owner_question": "Confirm the Schema Manager versioning library gives the same integers.",
+    "affects": [
+      "api",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D8",
+    "topic": "Nothing stored on failure",
+    "closes": [
+      "F-034"
+    ],
+    "decision": "Any 4xx or 5xx on POST /vocabularies or POST .../versions leaves the store unchanged: no vocabulary, no version, no status change of older versions. There is no draft or rejected state.",
+    "options": [
+      "Nothing stored",
+      "Non-active record"
+    ],
+    "basis": "SIMPL-18183/AC2 'not created'; SIMPL-18181/AC2 'no previous versions are deprecated'; SIMPL-18184/AC2 'no existing vocabulary versions are changed'; CDM has only ACTIVE and DEPRECATED.",
+    "status": "follows the specs",
+    "owner_question": "None.",
+    "affects": [
+      "api",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D9",
+    "topic": "Validation steps and rules",
+    "closes": [
+      "F-005",
+      "F-048",
+      "F-050"
+    ],
+    "decision": "Two steps on every POST /vocabularies and POST .../versions: syntax, then semantic. 'Structure validation' (SIMPL-18180) is the UI word for the semantic step; there is no third step. Syntax: the file must parse as Turtle (RDF 1.1). On failure return 400 with one issue for the first parse error, location 'line N, column M', detail starting 'Encountered invalid Turtle syntax'; semantic validation does not run. Semantic (all rules run, all errors are returned in one response): S1 a literal is the object of a property declared owl:ObjectProperty in the file (detail 'Literal value for object property'); S2 an IRI or blank node is the object of a property declared owl:DatatypeProperty in the file (detail 'Resource value for datatype property'); S3 one IRI is declared both owl:ObjectProperty and owl:DatatypeProperty (detail 'Property declared as both object and datatype property'); S4 one subject has two skos:prefLabel values with the same language tag (detail 'Duplicate preferred label for the same language'); S5 one resource is typed with two classes that the file declares owl:disjointWith (detail 'Resource is an instance of disjoint classes'); S6 the file holds no triples (detail 'Vocabulary contains no statements', location 'document'); S7 a reference to an internal vocabulary or version that does not exist (D12). Location for S1 to S5 is the offending statement or resource as in the OpenAPI example. Every error blocks. Read SIMPL-18182/AC1 as: on submit, semantic validation runs after syntax validation passes.",
+    "options": [
+      "Structure is part of semantic (two steps)",
+      "Structure is a third step"
+    ],
+    "basis": "SIMPL-18181 covers syntax only and hands over to semantic; OpenAPI examples 'Encountered invalid Turtle syntax.', 'Literal value for object property', location 'document'; CDM 'OWL semantic consistency checking'; SIMPL-18182 'unique, consistent, logically coherent'; SIMPL-18183 note 'don't fail on first issue'. The rule list is chosen to be simple to build and test.",
+    "status": "provisional",
+    "owner_question": "Give the real list of semantic and structure rules, with one example each; confirm that reporting only the first syntax error is acceptable.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D10",
+    "topic": "Validation errors versus validation warnings",
+    "closes": [
+      "F-004",
+      "D-003",
+      "D-011"
+    ],
+    "decision": "Two concepts. A validation error blocks: 400 VocabularyValidationProblem, one VocabularyValidationIssue per error (type urn:problem-type:belgif:input-validation:invalidInput, in: body, name: vocabularyFile, detail, location). A validation warning never blocks: it is returned in validationWarnings of the 201 response with code, description and location, and is not stored or returned by any other endpoint. Error kinds: syntax (D9 syntax) and semantic (S1 to S7). Warning codes, closed set: externalReferenceSkipped, deprecatedVocabularyReference, semanticReasoningSkipped (reserved, not emitted in this build). syntaxError and semanticError are not warning codes. A creation that has warnings and no errors returns 201. validationWarnings is always present, as an empty array when there are none.",
+    "options": [
+      "Two concepts",
+      "One concept with severity"
+    ],
+    "basis": "OpenAPI keeps VocabularyValidationIssue (400) and VocabularyValidationWarning (201, 'Non-blocking'); SIMPL-18183 note 'we issue warnings for external vocabularies that cannot be resolved'; CDM 'only returned inline in the creation response'. Read SIMPL-18183/AC2 'errors or warnings' as errors only.",
+    "status": "provisional",
+    "owner_question": "Split the CDM class VocabularyValidationWarning into an error and a warning concept with these code sets.",
+    "affects": [
+      "api",
+      "ui",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D11",
+    "topic": "Reference to a deprecated internal version",
+    "closes": [
+      "F-003"
+    ],
+    "decision": "Warn, do not block. Each reference (D12) to an internal version that is effectively deprecated (D3) gives one warning: code deprecatedVocabularyReference, description \"Referenced internal vocabulary '<Name>' version <n> is deprecated.\" followed by \" Use version <m>, the latest ACTIVE version.\" when a latest ACTIVE version exists, location \"prefix '<prefix>' -> '<namespace>'\". The version is created (201). Applies to POST /vocabularies and POST .../versions.",
+    "options": [
+      "Block (400)",
+      "Warn (201)"
+    ],
+    "basis": "SIMPL-18184 is not consistent with itself (AC2 blocks, AC4 warns), so the next sources decide: OpenAPI 201 example with deprecatedVocabularyReference, and BP 2B.6 'A deprecated vocabulary can still be used and referenced'.",
+    "status": "provisional",
+    "owner_question": "Confirm that a deprecated reference is a warning; SIMPL-18184/AC2 then needs rewording.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D12",
+    "topic": "What a vocabulary reference is",
+    "closes": [
+      "F-032",
+      "D-005"
+    ],
+    "decision": "A vocabulary reference is a namespace declared with @prefix or PREFIX in the uploaded content. It is internal when it starts with '<contentBase>/content/<Name>' (any version of <Name>, latest) or '<contentBase>/content/<Name>/versions/<n>', followed by nothing, '#' or '/'; contentBase is set in E2. An internal reference to a name or version that does not exist is a validation error S7 (400, detail \"Referenced internal vocabulary '<Name>' version <n> does not exist.\"). A reference without version resolves to the latest version. References to the vocabulary being created or versioned are ignored. Any other namespace is external. It gives warning externalReferenceSkipped unless it (after removing a trailing '#' or '/') equals the namespace URI or an alias URI of a registered external vocabulary, or is one of rdf, rdfs, owl, xsd, skos (W3C namespaces), or is the vocabulary's own namespace (a namespace that is the prefix of at least one subject IRI in the file). The check runs on both POST /vocabularies and POST .../versions.",
+    "options": [
+      "New concept VocabularyReference",
+      "namespaceUri on the version"
+    ],
+    "basis": "OpenAPI warning locations use the content URL as namespace and 'prefix ... -> ...'; BP 2B.4.3 covers new vocabularies and new versions; SIMPL-18184/AC3 (missing version fails); SIMPL-18184 note 'only for INTERNAL vocabularies'.",
+    "status": "provisional",
+    "owner_question": "Confirm references are recognised by namespace prefix declarations and by the content URL, and name the namespaces that never need a cached external copy.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D13",
+    "topic": "Validation on file upload in the UI",
+    "closes": [
+      "F-006"
+    ],
+    "decision": "When a file is chosen in the create or new version form, the UI parses it in the browser with a Turtle parser library and shows syntax errors with line and column, or the message 'Syntax check passed.' It also refuses files over 5 MB (D15). The submit button stays disabled while the upload check shows errors. Semantic validation runs only on submit (server). No validate-only endpoint is added; the server check on submit is authoritative.",
+    "options": [
+      "Browser parse on upload",
+      "Validate-only endpoint",
+      "Only on submit"
+    ],
+    "basis": "SIMPL-18180/AC1 requires a check on upload; SIMPL-18183 'without a separate validation endpoint'; OpenAPI has no such endpoint.",
+    "status": "provisional",
+    "owner_question": "Confirm that a syntax-only check in the browser meets SIMPL-18180/AC1.",
+    "affects": [
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D14",
+    "topic": "Validation report and success feedback",
+    "closes": [
+      "F-031",
+      "F-033",
+      "F-040",
+      "D-004"
+    ],
+    "decision": "Success indicator: the 201 response itself; no validation status field. The validation report is the 400 VocabularyValidationProblem (transient, not stored). UI on 400: a report panel above the form lists every issue with its detail and location; the form stays open. UI on 201: a success notification with the assigned version number ('Version <n> of <Name> was created.') and, when validationWarnings is not empty, a warnings panel listing each warning's description and location. This panel is where the deprecated-reference warning of SIMPL-18184/AC4 appears.",
+    "options": [
+      "201 is the indicator",
+      "Add a status field"
+    ],
+    "basis": "OpenAPI 201 and 400 schemas; SIMPL-18194/AC2 'without separate error details'; SIMPL-18189/AC3; CDM 'there is no validationStatus field'.",
+    "status": "provisional",
+    "owner_question": "Confirm the CDM may name the validation report as a transient concept.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D15",
+    "topic": "File format, size and media type",
+    "closes": [
+      "F-013",
+      "F-036",
+      "F-037"
+    ],
+    "decision": "Turtle only. The upload limit is 5 MB (5 242 880 bytes); above it the API returns 413 with the UploadTooLargeResponse body and the UI shows its detail text. A request that is not multipart/form-data on the POST operations (or not application/json on PATCH and the search operations) returns 415. A file part that is not valid Turtle returns 400 (syntax error). A duplicate vocabulary name returns 409 (detail \"Vocabulary with name '<Name>' already exists.\"). SIMPL-18173/AC6 'unsupported format' is the 415 case.",
+    "options": [
+      "Turtle only, 5 MB",
+      "Several serialisations"
+    ],
+    "basis": "OpenAPI vocabularyFile 'in Turtle format', 413 example '5 MB', 409 and 415 responses; SIMPL-395 'files are ttl'; API-38.",
+    "status": "follows the specs",
+    "owner_question": "Confirm RDF/XML and OWL/XML (BP02B.01) are not needed.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D16",
+    "topic": "Roles and what they allow",
+    "closes": [
+      "F-002",
+      "D-018"
+    ],
+    "decision": "Two Keycloak realm roles. GA_VOCABULARY_VIEWER: every GET operation and the read-only POST operations /vocabularies/searches, /external-vocabulary/searches and /external-vocabularies/content; in the UI the list, details, history and download. GA_VOCABULARY_ADMIN: everything the viewer can do plus POST /vocabularies, POST .../versions, both PATCH operations, POST and DELETE /external-vocabularies; in the UI create, new version and status change. An authenticated user with neither role gets 403 on every secured operation; a viewer gets 403 on write operations. 'The vocabulary management role' in the criteria means GA_VOCABULARY_ADMIN for writes and either role for reads; 'any role' (SIMPL-18559) means either role. The OAuth2 scopes read and write in the OpenAPI are not checked. The Governance Authority is an external actor; its users are the users holding these roles.",
+    "options": [
+      "Viewer reads, admin writes",
+      "Admin only",
+      "Any GA user reads"
+    ],
+    "basis": "SIMPL-18196 notes name the two roles and their meaning ('read-only operations', 'read and write operations'); SEC-05 (Tier 1 RBAC), SEC-23 (rights to roles).",
+    "status": "follows the specs",
+    "owner_question": "Confirm the role names and that the read-only POST searches are open to the viewer.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D17",
+    "topic": "Where 401 and 403 come from",
+    "closes": [
+      "F-011",
+      "F-052"
+    ],
+    "decision": "The service validates the bearer token (JWT from Keycloak, E1) and the roles itself, so the rules can be tested without a gateway; in production the Tier 1 gateway applies the same rules first. No or invalid token: 401, problem+json, type urn:problem-type:simpl:unauthorized, title 'Unauthorized'. Valid token, missing role: 403, problem+json, type urn:problem-type:simpl:forbidden, title 'Forbidden'. Authentication and role checks run before body validation. GET /health needs no token and is outside the access rules.",
+    "options": [
+      "Gateway only",
+      "Service returns 401/403 as problem+json"
+    ],
+    "basis": "SIMPL-18196/AC2 and AC3, SIMPL-18162/AC3; OpenAPI security 'provided by the gateway', /health 'security: []'; SEC-12 (gateway enforces Tier 1); API-45, API-46.",
+    "status": "provisional",
+    "owner_question": "Should the OpenAPI list 401 and 403 on each operation, with these problem types?",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D18",
+    "topic": "Restricted actions in the UI",
+    "closes": [
+      "F-039"
+    ],
+    "decision": "For a user without GA_VOCABULARY_ADMIN the actions 'New Vocabulary +', 'Update' (new version) and status change are hidden. Opening the URL of the create or update form directly shows the message 'You are not authorized to perform this action.' Any 403 from the API shows the same message. A user without a token is sent to the Keycloak login page.",
+    "options": [
+      "Hidden, error on direct navigation",
+      "Disabled, error on click"
+    ],
+    "basis": "SIMPL-18195/AC2 allows both; hidden is simpler to test.",
+    "status": "provisional",
+    "owner_question": "Confirm hidden rather than disabled.",
+    "affects": [
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D19",
+    "topic": "Name filter",
+    "closes": [
+      "F-009"
+    ],
+    "decision": "The name query parameter of GET /vocabularies is a case-insensitive 'contains' match on the vocabulary name. Its schema is relaxed to pattern ^[A-Za-z0-9]+$, minLength 1, maxLength 64; other values return 400. The UI name filter sends the typed text as is.",
+    "options": [
+      "Contains, case-insensitive",
+      "Exact PascalCase",
+      "Client-side filter"
+    ],
+    "basis": "SIMPL-18163/AC1 example \"Name contains 'shacl'\" sets the behaviour (acceptance criteria win on behaviour); client-side filtering would break with server paging.",
+    "status": "provisional",
+    "owner_question": "Confirm the API change from exact match to contains.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D20",
+    "topic": "Date filters",
+    "closes": [
+      "F-016"
+    ],
+    "decision": "creationDate and lastUpdated filters: a date (YYYY-MM-DD) matches every value on that UTC day; a date-time matches values equal to it, to the second. A value matching the pattern but not a valid date returns 400.",
+    "options": [
+      "Whole day / exact",
+      "Lower bound"
+    ],
+    "basis": "OpenAPI 'ISO 8601 creation date or date-time'; simplest reading.",
+    "status": "provisional",
+    "owner_question": "Is a range (from, to) wanted instead?",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D21",
+    "topic": "Unknown query parameters",
+    "closes": [
+      "F-017"
+    ],
+    "decision": "On every GET operation an unknown query parameter returns 400 InputValidationProblem with one issue (in: query, name: the parameter). Invalid values of known parameters also return 400.",
+    "options": [
+      "Unknown returns 400",
+      "Unknown ignored"
+    ],
+    "basis": "SIMPL-18164/AC4 'unsupported filter or sort field ... rejects the request'.",
+    "status": "follows the specs",
+    "owner_question": "None.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D22",
+    "topic": "Pagination limits",
+    "closes": [
+      "F-018"
+    ],
+    "decision": "page minimum 1, default 1; pageSize minimum 1, maximum 100, default 20. Values outside these bounds or not integers return 400. A page beyond the last returns 200 with an empty items array and the correct total and totalPages. Paging links: self and first always; prev, next and last when they exist (last is omitted when total is 0).",
+    "options": [
+      "Max 100, empty page",
+      "No max, 400"
+    ],
+    "basis": "OpenAPI PageQuery and PageSizeQuery minimums and the 'empty' example; SIMPL-18162/AC2.",
+    "status": "provisional",
+    "owner_question": "Confirm the maximum page size.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D23",
+    "topic": "Sorting and default order",
+    "closes": [
+      "F-021",
+      "F-025"
+    ],
+    "decision": "GET /vocabularies sorts by the sort values in the OpenAPI; default is name ascending. lastUpdated sorts on lastUpdateDate. Ties are broken by name ascending. GET .../versions default order is version number descending (newest first); its sort values sort on that field with ties broken by version descending. UI list: sortable columns Name, Status, Date created, Last updated; first click ascending, second click descending; default Name ascending. Other columns are not sortable.",
+    "options": [
+      "Default name ascending",
+      "Other default"
+    ],
+    "basis": "OpenAPI VocabularyListSortQuery and SortQuery; SIMPL-18163/AC2.",
+    "status": "provisional",
+    "owner_question": "Confirm the default orders.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D24",
+    "topic": "Status codes for generic criteria",
+    "closes": [
+      "F-046",
+      "F-049"
+    ],
+    "decision": "'Validation error' and 'rejected' in the criteria mean 400; 'could not be found' means 404 with the VocabularyNotFoundResponse body; 'rejected due to insufficient permissions' means 403; 'not authenticated' means 401 (D17). UI tests for 'no longer available' (SIMPL-18174/AC2) stub the API to return 404 for the PATCH; UI error tests stub 500.",
+    "options": [
+      "OpenAPI codes"
+    ],
+    "basis": "OpenAPI responses per operation; API-12, API-44.",
+    "status": "follows the specs",
+    "owner_question": "None.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D25",
+    "topic": "The vocabulary object (VocabularyCategory)",
+    "closes": [
+      "D-001",
+      "F-019"
+    ],
+    "decision": "The object returned by GET /vocabularies, GET and PATCH /vocabularies/{vocabularyName} is the vocabulary (CDM InternalVocabulary), with some values taken from its latest version. The wire format stays as in the OpenAPI; code and tests call it 'vocabulary'. Field meaning: name; version = latest version number; description = latest version description (D28); status = vocabulary status (D3); createdBy and creationDate = creator and creation time of the vocabulary (version 1); lastUpdateDate = time of the last change to the vocabulary or any of its versions (new version, either status change); href = /vocabularies/<Name>; contentHref = <contentBase>/content/<Name>.",
+    "options": [
+      "Vocabulary, rename schema",
+      "Keep InternalVocabulary",
+      "Read view of latest version"
+    ],
+    "basis": "CDM InternalVocabulary ('latestVersion', 'status is the vocabulary-level lifecycle status'); OpenAPI examples; SIMPL-18161/AC1 'date created ... creator' of a vocabulary row; DDD-06.",
+    "status": "provisional",
+    "owner_question": "Rename the schema VocabularyCategory to Vocabulary and its field version to latestVersion in a later API version.",
+    "affects": [
+      "api",
+      "ui",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D26",
+    "topic": "The vocabulary version object",
+    "closes": [
+      "D-002"
+    ],
+    "decision": "VocabularyMetadata is the vocabulary version (CDM InternalVocabularyVersion). VocabularyVersionMetadataResponse is the same vocabulary version plus validationWarnings (a creation wrapper). VocabularySearchItem is a search result pointing at a vocabulary or a version. Wire names stay; code and tests say 'vocabulary version'. href = /vocabularies/<Name>/versions/<n>; contentHref = <contentBase>/content/<Name>/versions/<n>; Location header = href.",
+    "options": [
+      "VocabularyVersion everywhere",
+      "Keep InternalVocabularyVersion"
+    ],
+    "basis": "CDM InternalVocabularyVersion; OpenAPI schemas and examples; DDD-06, DDD-07.",
+    "status": "provisional",
+    "owner_question": "Rename VocabularyMetadata to VocabularyVersion in a later API version.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D27",
+    "topic": "Creator",
+    "closes": [
+      "F-029",
+      "D-013"
+    ],
+    "decision": "The creator is the user who sent the create request: the email claim of the token, or preferred_username when there is no email. It is stored on each vocabulary version and on each external vocabulary. Add createdBy (string) to VocabularyMetadata and VocabularyVersionMetadataResponse. The vocabulary shows the creator of version 1.",
+    "options": [
+      "createdBy on versions",
+      "Governance Authority identifier"
+    ],
+    "basis": "OpenAPI createdBy example 'johndoe@example.com'; SIMPL-18176/AC3 shows a creator per version; SIMPL-18161/AC1.",
+    "status": "provisional",
+    "owner_question": "Add createdBy to the CDM and to the version schemas.",
+    "affects": [
+      "api",
+      "ui",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D28",
+    "topic": "Description",
+    "closes": [
+      "D-014"
+    ],
+    "decision": "Description belongs to the version. The create request's description is version 1's description; a new version carries its own. The vocabulary description shown in lists is the latest version's description; there is no separate stored vocabulary description.",
+    "options": [
+      "One per version",
+      "Separate"
+    ],
+    "basis": "OpenAPI examples: the vocabulary description equals the latest version's description; CreateNewVocabularyVersionPayload requires a description.",
+    "status": "provisional",
+    "owner_question": "Remove InternalVocabulary.description from the CDM.",
+    "affects": [
+      "api",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D29",
+    "topic": "Content and download",
+    "closes": [
+      "F-022",
+      "F-024",
+      "D-015"
+    ],
+    "decision": "Term: vocabulary content (the Turtle definition of a version). vocabularyFile is only the upload form field. Downloads return the stored Turtle bytes as uploaded, media type text/turtle, Content-Disposition attachment filename '<Name>.ttl' (latest) or '<Name>-v<n>.ttl'. No metadata goes into the file. 'Full details' in SIMPL-18165 and SIMPL-18166 means the version metadata (JSON, with contentHref) plus the content download; full metadata is shown on the details page.",
+    "options": [
+      "Turtle only",
+      "Metadata in file"
+    ],
+    "basis": "OpenAPI /content operations and Content-Disposition examples; CDM rdfContent.",
+    "status": "follows the specs",
+    "owner_question": "None.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D30",
+    "topic": "External vocabulary identity and registration",
+    "closes": [
+      "D-008",
+      "D-020"
+    ],
+    "decision": "The name is the identity of both internal and external vocabularies (paths use it). For an external vocabulary the namespace URI and each alias URI are unique lookup keys, compared after removing a trailing '#' or '/'. POST /external-vocabularies with an existing name, namespace URI or alias returns 409. Registration checks Turtle syntax only (400 on error), no semantic validation, no warnings. The verb is 'register'; 'cached copy' describes what is stored. GET and DELETE /external-vocabularies/{name} return 404 when the name is unknown.",
+    "options": [
+      "Name is identity",
+      "Namespace URI is identity"
+    ],
+    "basis": "OpenAPI paths by name and lookups by namespace; CDM 'registers', 'after checking its Turtle syntax'; DDD-09.",
+    "status": "provisional",
+    "owner_question": "Confirm the name is the identity and the namespace URI a unique key.",
+    "affects": [
+      "api",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D31",
+    "topic": "One term per concept",
+    "closes": [
+      "F-043",
+      "F-044",
+      "F-045",
+      "F-051",
+      "D-012",
+      "D-017"
+    ],
+    "decision": "Use the terms of glossary.md in code, tests and UI texts. Actor: Governance Authority user. Screens: Vocabulary list (route /vocabularies) and Vocabulary details (route /vocabularies/<Name>), the details page holds the version history. Field pairs: last update date (wire field lastUpdateDate, query and sort value lastUpdated), changelog (UI label 'Change log', 'change summary' retired), creation date (UI label 'Date created'), creator (wire createdBy), warning code (wire code). 'Internal vocabulary' only where a contrast with external vocabulary is needed; ontology, native, local and self managed are retired. The identifier of SIMPL-18187 is the Location header and href of the 201 response.",
+    "options": [
+      "One term with mapping"
+    ],
+    "basis": "DDD-01, DDD-05, DDD-08.",
+    "status": "follows the specs",
+    "owner_question": "Fix the story wording at the next refinement.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D32",
+    "topic": "Changelog on creation",
+    "closes": [
+      "F-007"
+    ],
+    "decision": "The creation form has no change log field; the UI sends changelog 'Initial version.' The API keeps changelog required.",
+    "options": [
+      "Fixed text",
+      "Optional in API",
+      "Show field"
+    ],
+    "basis": "SIMPL-18169/AC1 'no field for version or change log'; OpenAPI CreateVocabularyPayload requires changelog, example 'Initial version.'",
+    "status": "follows the specs",
+    "owner_question": "None.",
+    "affects": [
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D33",
+    "topic": "New version form",
+    "closes": [
+      "F-008"
+    ],
+    "decision": "The 'Update' action opens a form pre-filled with the latest version's description and with the latest version's content attached as the file (shown as '<Name>.ttl (current content)'). The change log field is empty and required. The user may change the description, replace the file, or both. On submit the UI always sends a file: the new one, or the current content fetched from GET /content/<Name>. So a description-only change creates a new version.",
+    "options": [
+      "File mandatory",
+      "Resend current content"
+    ],
+    "basis": "SIMPL-18172/AC1 'pre-filled with ... content' and AC2 'and/or'; the OpenAPI still requires vocabularyFile, which the resend satisfies.",
+    "status": "provisional",
+    "owner_question": "Confirm a new version may change only the description.",
+    "affects": [
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D34",
+    "topic": "List paging and empty state",
+    "closes": [
+      "F-020"
+    ],
+    "decision": "The list UI pages on the server with 20 rows per page and page controls. With no vocabularies it shows 'No vocabularies found.' On a load error it shows 'The vocabulary list could not be loaded.' and the problem detail.",
+    "options": [
+      "Pages of 20",
+      "Load all"
+    ],
+    "basis": "OpenAPI default pageSize 20 and empty example; SIMPL-18161/AC2.",
+    "status": "provisional",
+    "owner_question": "None.",
+    "affects": [
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D35",
+    "topic": "Details and history page",
+    "closes": [
+      "F-023",
+      "F-026",
+      "F-027",
+      "F-028"
+    ],
+    "decision": "One screen, Vocabulary details, opened by 'View vocabulary details' or 'history'. Header: name, vocabulary status, description of the latest version. Below: the version list, newest first, columns Version, Status, Date created, Description, Change log, Actions (Download). The UI loads versions with pageSize 100 and fetches further pages when total is higher. Selecting a version opens a panel with version, status, date created, creator, description, change log and Download. No search or filter on versions; browsing this list meets SIMPL-18176/AC2. Errors: 404 shows 'Vocabulary not found.' with a link back to the list; other errors show 'The version history could not be loaded.' and the problem detail.",
+    "options": [
+      "One screen, newest first"
+    ],
+    "basis": "SIMPL-18167/AC1 columns; SIMPL-18452; SIMPL-18176; OpenAPI versions list.",
+    "status": "provisional",
+    "owner_question": "Confirm the details page and the history page are one screen.",
+    "affects": [
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D36",
+    "topic": "Deprecation warnings in the UI",
+    "closes": [
+      "F-030",
+      "F-047"
+    ],
+    "decision": "Vocabulary list: a row whose vocabulary status is DEPRECATED shows a warning icon next to the status with the text 'This vocabulary is deprecated. Its use is discouraged.' The details page of such a vocabulary shows the same text as a banner. Version list and version panel: an effectively deprecated version (D3) shows a warning 'This version is deprecated.' followed by 'Latest ACTIVE version: <n>' as a link to that version when one exists (SIMPL-18559/AC1); without an ACTIVE version only the first sentence (AC2).",
+    "options": [
+      "Icon and banner with fixed text"
+    ],
+    "basis": "SIMPL-18178, SIMPL-18559; VocabularyMetadata.latestVersionHref.",
+    "status": "provisional",
+    "owner_question": "Supply the wording and form from the Figma mock-up if it differs.",
+    "affects": [
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D37",
+    "topic": "Form field rules and messages",
+    "closes": [
+      "F-035"
+    ],
+    "decision": "Name: required, 3 to 64 characters, ^[A-Z][a-zA-Z0-9]*$, unique case-insensitively (409 otherwise). Description: required, 1 to 1000 characters after trimming. Changelog: required on new versions, 1 to 1000 characters after trimming. The API applies the same limits (400). The UI shows field errors under the field before submit; server errors (400 report, 409, 413) appear in a message above the form.",
+    "options": [
+      "As OpenAPI plus lengths"
+    ],
+    "basis": "OpenAPI name schema; SIMPL-18169/AC2.",
+    "status": "provisional",
+    "owner_question": "Confirm case-insensitive uniqueness and the 1000-character limits.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "E1",
+    "topic": "Identity provider and test users",
+    "closes": [],
+    "decision": "Keycloak, realm 'simpl', public client 'vocabulary-manager-ui' and bearer-only audience 'vocabulary-manager-be'; roles are realm roles read from realm_access.roles. Users (password 'Password1!'): ga-admin (email ga-admin@example.com, GA_VOCABULARY_ADMIN), ga-viewer (ga-viewer@example.com, GA_VOCABULARY_VIEWER), ga-norole (ga-norole@example.com, no role).",
+    "options": [],
+    "basis": "SEC-07 (Keycloak, OpenID Connect), SIMPL-18196 roles.",
+    "status": "provisional",
+    "owner_question": "None.",
+    "affects": [
+      "tests",
+      "ui",
+      "api"
+    ]
+  },
+  {
+    "id": "E2",
+    "topic": "Ports and base URLs",
+    "closes": [],
+    "decision": "Backend on http://localhost:8080 with the API under /v1 (for example http://localhost:8080/v1/vocabularies). href values and Location headers are relative to the API base, as in the OpenAPI examples. contentBase is configuration VOCABULARY_CONTENT_BASE_URL, default https://authority.example/vocabulary-manager, used for contentHref and for recognising internal references (D12). UI on http://localhost:4200, Keycloak on http://localhost:8180, Fuseki on http://localhost:3030.",
+    "options": [],
+    "basis": "OpenAPI servers and examples; API-24.",
+    "status": "provisional",
+    "owner_question": "None.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "E3",
+    "topic": "Store and stubs",
+    "closes": [],
+    "decision": "Apache Jena Fuseki, dataset 'vocabulary', as the store (SIMPL-18170 note 'same persistence layer as Schema Management - Fuseki DB'). Tests reset the dataset before each test. No external services are called: external vocabularies are never fetched from the internet, only registered copies are used. UI tests may stub the API for error cases (D24).",
+    "options": [],
+    "basis": "SIMPL-18170 technical note; SIMPL-18183 note 'it wouldn't be safe to fetch external vocabularies'.",
+    "status": "provisional",
+    "owner_question": "None.",
+    "affects": [
+      "tests",
+      "data"
+    ]
+  }
+]

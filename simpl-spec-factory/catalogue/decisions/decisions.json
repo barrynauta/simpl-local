@@ -1,0 +1,737 @@
+[
+  {
+    "id": "D1",
+    "topic": "Schema management stories belong to the Schema Manager",
+    "closes": [
+      "F-055",
+      "F-054",
+      "F-011",
+      "F-014",
+      "F-017",
+      "F-058",
+      "F-059"
+    ],
+    "decision": "SIMPL-30850, SIMPL-31815, SIMPL-31816 and SIMPL-31817 are not built or tested in the catalogue build. Schema creation, schema versioning (POST /schemas/{schemaName}/versions), the schemaType attribute and the schema forms belong to the Schema Manager component. The catalogue build consumes schemas read-only through a Schema Manager stub (see D29). catalogue-be POST /schemas is not the operation these stories mean. No catalogue test asserts the schema roles GA_SCHEMA_ADMIN or governance-admin.",
+    "options": [
+      "in scope: catalogue-be schema operations, contract to be extended",
+      "out of scope: Schema Manager component"
+    ],
+    "basis": "The stories say they modify the 'Schema management API' (SIMPL-30422) and are covered by SIMPL-33537. The context CDM schema-manager-be.md owns Schema, SchemaVersion and schemaType. The catalogue-be CDM excludes legacy schema management. sources.yaml lists schema-manager-be.md only as context.",
+    "status": "provisional",
+    "owner_question": "Confirm that the four federated search schema stories move to the Schema Manager backlog and are tested there.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D2",
+    "topic": "Provisional rules for the federated search schema (stub data and owner feedback)",
+    "closes": [
+      "F-012",
+      "F-013",
+      "F-016",
+      "F-056",
+      "F-057"
+    ],
+    "decision": "For the Schema Manager stub and as feedback to the owner: (1) schemaType is optional on the version form and defaults to RESOURCE. (2) At most one SEARCH schema may be published at a time; drafts and revoked SEARCH schemas do not count. (3) A new version of the published SEARCH schema itself never gets 409; 409 applies only when a published SEARCH schema with another name exists. (4) The resourceType check (400) runs before the uniqueness check (409); the resourceType clause in SIMPL-31817/AC3 is a copy error and is ignored. (5) Creating a SEARCH schema means uploading a SHACL (.ttl) file plus name, title and schemaType, as for the version form; there is no form-based schema editor. (6) A revoked schema name may not be reused. The stub seeds exactly one published SEARCH schema named FederatedSearch.",
+    "options": [
+      "required vs optional schemaType",
+      "409 for any published SEARCH schema vs another name only",
+      "one SEARCH schema in any state vs one published",
+      "file upload vs form editor"
+    ],
+    "basis": "SIMPL-30850/AC1 states the RESOURCE default explicitly; SIMPL-31815/AC3 and the hints say 'another published' and 'one published SEARCH schema globally, regardless of name'; SIMPL-30850/AC1 to AC3 upload a .ttl file. Simplest reading that lets the main path succeed.",
+    "status": "provisional",
+    "owner_question": "Confirm the six rules, in particular whether a revoked SEARCH schema name may be reused.",
+    "affects": [
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D3",
+    "topic": "SIMPL-30848 endpoint configuration is out of the catalogue build",
+    "closes": [
+      "F-009",
+      "F-010"
+    ],
+    "decision": "Nothing of SIMPL-30848 is built in the catalogue. Trustor endpoints come from the catalogue list (D12): each catalogue carries its Trustor authorityURL, and the Trustor search and detail base URL is authorityURL. No test covers configuring an endpoint.",
+    "options": [
+      "build endpoint configuration here",
+      "out of scope"
+    ],
+    "basis": "The story note says it is covered by authentication-provider-be and exists only for linkage to the epic.",
+    "status": "follows the specs",
+    "owner_question": "Confirm that the authentication provider owns the endpoint configuration and its role.",
+    "affects": [
+      "tests"
+    ]
+  },
+  {
+    "id": "D4",
+    "topic": "catalogue-be operations in the build",
+    "closes": [
+      "D-009",
+      "D-012",
+      "D-013"
+    ],
+    "decision": "Build and test only: POST /self-descriptions/resource (publication with quality gate), GET /self-descriptions/{selfDescriptionId}, GET and POST /self-descriptions/{selfDescriptionId}/qualityAssessmentRecord, POST /self-descriptions/{selfDescriptionId}/revoke, GET /self-descriptions/{selfDescriptionId}/versions, GET /selfDescriptions/quickSearch and POST /selfDescriptions/advancedSearch. Not built: the legacy schema store (GET, POST /schemas, GET, PUT, DELETE /schemas/{schemaId}, GET /schemas/latest), /session, /query, /verification, POST /self-descriptions (service offering), GET /self-descriptions (list), DELETE /self-descriptions/{self_description_hash}, POST /webhooks/schema-events and POST /schemas/{schemaName}/recalcQualityScore. A quality score recalculation is treated as an acknowledged request only, not a business record. In the adapter, the /participants operations are not built.",
+    "options": [
+      "update CDMs and remove extra operations",
+      "keep and model them"
+    ],
+    "basis": "No live criterion and no CDM concept covers the excluded operations (inventory-review: operations with no criterion); the catalogue-be CDM itself excludes legacy schema and session endpoints. Revoke and versions stay because the lifecycle (D18) and the search tests need them as fixtures.",
+    "status": "provisional",
+    "owner_question": "Confirm that the excluded operations can leave the contract, and that recalculation is a request without its own identity.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D5",
+    "topic": "Search in all federated catalogues without selection",
+    "closes": [
+      "F-020"
+    ],
+    "decision": "Out of scope. The Consumer always selects catalogues explicitly; the UI has no 'all' option and does not preselect Trustor catalogues. catalogueIds stays required with at least one item.",
+    "options": [
+      "out of scope for now",
+      "UI selects all by default"
+    ],
+    "basis": "No story offers it and the federated search contract requires minItems 1. BP6.1.2 is a process variant without criteria.",
+    "status": "provisional",
+    "owner_question": "Confirm that 'search all federated catalogues' is a later release.",
+    "affects": [
+      "ui",
+      "api"
+    ]
+  },
+  {
+    "id": "D6",
+    "topic": "Resource description is the one business name",
+    "closes": [
+      "D-001",
+      "F-064"
+    ],
+    "decision": "The business term is resource description in all texts, tests, new operations and new schemas. New paths use resourceDescriptions. Existing wire names that say SelfDescription or selfDescriptions stay unchanged as documented legacy names (mapping in the glossary). The searching actor is the Consumer in every test name and UI text.",
+    "options": [
+      "resource description in new contracts, legacy wire names kept",
+      "rename all paths (breaking)",
+      "self-description on the wire everywhere"
+    ],
+    "basis": "Stories, BP05B, BP06 and all three CDMs say resource description (DDD-01); renaming existing paths would break the contracts the writers must follow.",
+    "status": "provisional",
+    "owner_question": "Confirm that SelfDescription paths and schemas are renamed in a later major API version.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D7",
+    "topic": "One identifier for a resource description",
+    "closes": [
+      "D-002",
+      "F-047"
+    ],
+    "decision": "A resource description is identified by its credential subject id (a DID such as did:web:...:DataOffering:...). The same value is claimsGraphUri[0] in a search result item, selfDescriptionId in catalogue-be and catalogue-client-be paths, and resourceDescriptionId in adapter paths. A detail call with that id returns the latest published version. Versions are addressed by version number only through GET /self-descriptions/{selfDescriptionId}/versions. sdHash and resourceKey are not used by the build. The catalogue identifier is one value named catalogueId (catalogueIds for a list); catalogue-client-be GET /selfDescriptions/{selfDescriptionId} requires catalogueId for own and federated details, and the own catalogue uses the configured own catalogue id (E3).",
+    "options": [
+      "resourceIdentifier for the resource and id per version",
+      "one identifier (credential subject id), versions by number",
+      "keep all names with a mapping"
+    ],
+    "basis": "Search items only carry claimsGraphUri, and the detail examples use the same DID form, so a test can pass it on unchanged. The v2 contract marks catalogueId required (OpenAPI wins on the wire).",
+    "status": "provisional",
+    "owner_question": "Confirm that claimsGraphUri, selfDescriptionId and resourceDescriptionId are the same value, and that catalogueId stays required for own-catalogue details.",
+    "affects": [
+      "api",
+      "ui",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D8",
+    "topic": "Overall quality score and classification field names",
+    "closes": [
+      "D-003"
+    ],
+    "decision": "Business terms: overall quality score and overall quality classification. Wire names: overallScore and overallClassification in every search result item of catalogue-be, the adapter and catalogue-client-be. overallCategory in SIMPL-29292/AC3 and SIMPL-29293/AC3 means overallClassification. The v1 names qualityScore and qualityClassification are not used. Inside the stored record the CDM names (qualityScore, qualityClassification) stay; the mapping is in the glossary.",
+    "options": [
+      "overallScore and overallClassification everywhere",
+      "qualityScore and qualityClassification everywhere",
+      "both with mapping"
+    ],
+    "basis": "All entry files use overallScore and overallClassification; qualityScore appears only in the v1 file, which is context.",
+    "status": "provisional",
+    "owner_question": "Confirm overallCategory is a typo for overallClassification, and whether the CDM attributes get renamed.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D9",
+    "topic": "Federated catalogue only means a Trustor catalogue",
+    "closes": [
+      "D-004",
+      "F-019"
+    ],
+    "decision": "Federated catalogue means a catalogue of a Trustor data space. The catalogue-be service is called the catalogue service in all texts and tests. The own data space catalogue is the own catalogue (local catalogue retired).",
+    "options": [
+      "federated catalogue for Trustor catalogues only",
+      "keep Federated Catalogue for the service",
+      "define both"
+    ],
+    "basis": "BP06 and all search stories use federated catalogue for another data space; the CDM use is a service name.",
+    "status": "provisional",
+    "owner_question": "Confirm the service rename in the CDMs and API descriptions.",
+    "affects": [
+      "tests",
+      "ui"
+    ]
+  },
+  {
+    "id": "D10",
+    "topic": "The three meanings of active",
+    "closes": [
+      "D-006"
+    ],
+    "decision": "Resource description: published (stored value active, see D18). Metadata Quality Profile: active Metadata Quality Profile, meaning the profile resolved for the latest published schema version (kept, it is the API path). Catalogue: federation enabled or federation disabled, on the wire CatalogueInfo.active true or false. Trusted, still enabled and authenticated in the stories all mean federation enabled.",
+    "options": [
+      "published / active profile / federation enabled",
+      "active for all three"
+    ],
+    "basis": "DDD-02: one term per concept; the profile path /qualityProfiles/active cannot change without a contract change.",
+    "status": "provisional",
+    "owner_question": "Confirm the federation status names.",
+    "affects": [
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D11",
+    "topic": "Quality Assessment Record representation and part names",
+    "closes": [
+      "D-007"
+    ],
+    "decision": "The stored Quality Assessment Record is the JSON-LD graph returned by the Quality Scoring Service and exposed unchanged by GET /self-descriptions/{selfDescriptionId}/qualityAssessmentRecord. The structured qualityAssessment in the publication response is a projection of it. The catalogue-be schema names (SelfDescriptionQualityOverallResult and the others) stay as the catalogue read model; their mapping to OverallQualityRating, DimensionRating and RuleOutcome is in the glossary. The threshold source is called the Metadata Quality Profile everywhere (metadata quality definition and Minimum Quality Profile retired).",
+    "options": [
+      "owner names in every API",
+      "catalogue names as projection"
+    ],
+    "basis": "No rename of existing contracts is needed to build; DDD-13 is met by marking the projection.",
+    "status": "provisional",
+    "owner_question": "Confirm the catalogue keeps its own read model names.",
+    "affects": [
+      "api",
+      "data"
+    ]
+  },
+  {
+    "id": "D12",
+    "topic": "Resource type and offering type are two concepts",
+    "closes": [
+      "D-008"
+    ],
+    "decision": "Offering type is the closed set data, application, infrastructure (lower case) on a resource description (offeringType in search items). Resource type is the Schema Manager open value on a schema; the catalogue passes it through unchanged and never validates it. Since schema management is out of scope (D1), no catalogue test depends on resource type spelling.",
+    "options": [
+      "one concept",
+      "two concepts"
+    ],
+    "basis": "The CDMs model them separately (GeneralServiceProperties.offeringType vs Schema.resourceType); the search items use lower case.",
+    "status": "provisional",
+    "owner_question": "Confirm the two concepts and the lower-case offering type values.",
+    "affects": [
+      "api",
+      "data"
+    ]
+  },
+  {
+    "id": "D13",
+    "topic": "Search scope and main properties",
+    "closes": [
+      "D-014",
+      "D-011",
+      "F-039"
+    ],
+    "decision": "The catalogue selection of a search is the search scope: a list of catalogueId values (catalogueIds). The main properties of a resource description in an overview are the general service properties summary: name, description, offeringType, inLanguage and serviceAccessPoint, plus overallScore and overallClassification for own-catalogue results. The result item is called resource description summary; its wire names are those of the search item n.",
+    "options": [
+      "search scope in the client CDM",
+      "API mechanics only"
+    ],
+    "basis": "The search item n in all entry files holds exactly these fields; BP6.7.1 lists main properties plus quality.",
+    "status": "provisional",
+    "owner_question": "Confirm the list of main properties and the CDM attribute names for them.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D14",
+    "topic": "Score scale",
+    "closes": [
+      "F-004"
+    ],
+    "decision": "Every score on the wire (overallScore, dimension scores, thresholds, score ranges, minimumScore) is a fraction from 0 to 1. minimumScore below 0 or above 1 gets 400 invalidInput. The UI shows scores and accepts the minimum score as a percentage from 0 to 100 (whole numbers or one decimal) and sends the value divided by 100. The examples with minimumScore 75 are read as 0.75.",
+    "options": [
+      "0 to 1",
+      "0 to 100"
+    ],
+    "basis": "All score values in the entry files are fractions (0.92, 0.91, 0.64, 1.0); the percent ranges in the AC note are a display form. DDD-05 asks for the written UI mapping.",
+    "status": "provisional",
+    "owner_question": "Confirm the 0 to 1 scale and the percent display in the UI.",
+    "affects": [
+      "api",
+      "ui",
+      "tests",
+      "data"
+    ]
+  },
+  {
+    "id": "D15",
+    "topic": "Source and order of classifications",
+    "closes": [
+      "F-005",
+      "F-006"
+    ],
+    "decision": "Advanced search with a selected schema: the UI lists the overall classifications of that schema's active Metadata Quality Profile. Quick search and the SEARCH-schema form: the UI lists the union of overall classification labels of the active profiles of all published RESOURCE schemas, deduplicated by label and ordered by lower bound. The backend evaluates the filter per result with the profile recorded in that result's Quality Assessment Record: a result passes if the lower bound of its classification range is at least the lower bound of the selected label in that profile. A result whose profile lacks the label is excluded. Ranges include their lower bound and exclude their upper bound, except the top range, which includes 1. Labels compare case-insensitively. A label that is in no active profile gets 400 invalidInput.",
+    "options": [
+      "one data-space-wide profile",
+      "per result, using its schema profile",
+      "union of all active profiles"
+    ],
+    "basis": "SIMPL-29292/AC3 note (order by lower bound); CDM: each QAR references its profile and labels are profile-defined. In the test environment all schemas share one label set (E4), so the readings agree on the test data.",
+    "status": "provisional",
+    "owner_question": "Confirm the per-result evaluation and the inclusive lower bound.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D16",
+    "topic": "Unscored results and invalid filter input",
+    "closes": [
+      "F-007"
+    ],
+    "decision": "With minimumScore or minimumClassification set, resource descriptions without a Quality Assessment Record (overallScore null) are excluded. Without any quality filter they are returned. The UI validates the score field (number, 0 to 100) inline and disables the search button while invalid. The API returns 400 invalidInput for an out-of-range score or unknown classification.",
+    "options": [
+      "unscored excluded, invalid input blocked in the UI",
+      "unscored kept, API 400 shown"
+    ],
+    "basis": "A null score cannot be 'greater than or equal' (AC2); the technical details still ask for inline validation; the contracts define the 400 examples. The struck ACs are not tested as such.",
+    "status": "provisional",
+    "owner_question": "Confirm that struck AC6 and AC7 describe the intended behaviour.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D17",
+    "topic": "Publication quality gate outcomes",
+    "closes": [
+      "F-001",
+      "F-002",
+      "F-003"
+    ],
+    "decision": "POST /self-descriptions/resource calls the Quality Scoring Service synchronously, using the active Metadata Quality Profile of the resource description's schema. Pass: 201, stored and published, QAR stored. Quality failure: 422, not stored, Error body code QUALITY_THRESHOLD_NOT_MET and message 'Quality Score X is below threshold Y.' for the overall score, or 'Dimension D score X is below threshold Y.' for the first failing dimension (scores as fractions with two decimals). Technical failure (scoring service unreachable or timing out after 10 seconds, invalid or unparsable QAR, no active profile, missing threshold): 500, not stored, Error body code QUALITY_ASSESSMENT_FAILED, and one ERROR log line with the resource description id and the reason. Tests check the status, the body and that a following GET returns 404; they do not check the log.",
+    "options": [
+      "422 vs 400 for a quality failure",
+      "not stored vs stored unpublished on technical failure"
+    ],
+    "basis": "SIMPL-27998/AC2 and the technical details ('fail outcomes return rejection without persistence', 'Persist only for pass'); the operation's contract lists 422 and 500 with the Error schema (OpenAPI wins on the wire); API-12, API-44.",
+    "status": "provisional",
+    "owner_question": "Confirm 422 and 500, the error codes, and that the threshold comes from the schema's active profile.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D18",
+    "topic": "Resource description lifecycle",
+    "closes": [
+      "D-005"
+    ],
+    "decision": "States: published (stored value active) and revoked. Publication is synchronous: 201 or an error, no pending state, so the 202 response is not used. Publishing a new version revokes the previous published version of the same resource description. Revoke moves published to revoked; revoking a revoked one is a no-op with 200. Search and detail return published versions only. Deletion is outside the lifecycle and not built (D4).",
+    "options": [
+      "published and revoked, superseded becomes revoked",
+      "add pending and superseded",
+      "keep active and revoked, rewrite criteria"
+    ],
+    "basis": "CDM and API enum have active and revoked; BP05B.11 and BP5B.5.10 revoke the previous version; SIMPL-27998 is synchronous.",
+    "status": "provisional",
+    "owner_question": "Confirm that a superseded version is revoked and that the 202 response can be removed.",
+    "affects": [
+      "api",
+      "data",
+      "tests"
+    ]
+  },
+  {
+    "id": "D19",
+    "topic": "Matching rules for quick and advanced search",
+    "closes": [
+      "F-026",
+      "F-027"
+    ],
+    "decision": "Quick search: the search string is split on whitespace into terms; a resource description matches if at least one term is a case-insensitive substring of at least one literal value of its credential subject. Advanced search: each criterion is matched against its own property; strings match by case-insensitive substring, numbers and dates by equality or by the operators op1 and op2 of the range filter, enumerations by case-insensitive equality; all criteria must match (AND).",
+    "options": [
+      "split on whitespace, OR",
+      "whole phrase"
+    ],
+    "basis": "SIMPL-31111/AC1 and SIMPL-31138/AC1 speak of terms in the plural and 'at least one'; SIMPL-31112/AC1 'each search term ... in the property'.",
+    "status": "provisional",
+    "owner_question": "Confirm whitespace splitting, substring matching and the per-type comparison.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D20",
+    "topic": "Search authorisation and discovery access policy",
+    "closes": [
+      "F-029",
+      "D-010",
+      "F-024",
+      "F-059"
+    ],
+    "decision": "Tier 1: no token gets 401, a token without the role CATALOGUE_SEARCHER gets 403. Tier 2: the User-Attributes header carries the Consumer's identity attribute codes, comma separated. Resource descriptions whose discovery access policy is not met are left out of a result list silently (never a 403 for the whole search). Identity attributes and their federation mapping are owned outside the catalogue (IAA and the gateway); the discovery access policy belongs to the resource description. A missing User-Attributes header on a Trustor operation gets 400; an attribute without mapping counts as absent.",
+    "options": [
+      "403 vs empty list for a Consumer without search role",
+      "mapping in gateway vs adapter"
+    ],
+    "basis": "catalogue-be quickSearch lists CATALOGUE_SEARCHER; SEC-05, SEC-06, SEC-20; the adapter contract says the gateway maps attributes and the adapter receives User-Attributes (required header).",
+    "status": "provisional",
+    "owner_question": "Confirm CATALOGUE_SEARCHER as the search role and silent filtering by policy.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D21",
+    "topic": "How a discovery access policy is represented",
+    "closes": [
+      "D-010"
+    ],
+    "decision": "Assumption for the build: a resource description lists the identity attribute codes allowed to discover it; a Consumer meets the policy if User-Attributes contains at least one of them; an empty or missing list means everyone with the search role may discover it. Test fixtures set this list explicitly.",
+    "options": [
+      "model the policy now",
+      "leave it to the gateway"
+    ],
+    "basis": "No input file defines the policy format; this is the simplest rule that the criteria can be tested against.",
+    "status": "accepted risk",
+    "owner_question": "Provide the real discovery access policy format and where it sits in the resource description.",
+    "affects": [
+      "data",
+      "tests"
+    ]
+  },
+  {
+    "id": "D22",
+    "topic": "Own catalogue in a search",
+    "closes": [
+      "F-028",
+      "F-035"
+    ],
+    "decision": "Each data space has exactly one own catalogue, so the local quick search needs no catalogue parameter. The own catalogue is searched only when the Consumer selected it. The UI preselects the own catalogue; the Consumer may deselect it if at least one Trustor catalogue stays selected.",
+    "options": [
+      "own catalogue always searched",
+      "only when selected"
+    ],
+    "basis": "SIMPL-30848 note: 'For each data space there is only one SIMPL open catalogue'; SIMPL-31767/AC1 'from one of the selected catalogues'.",
+    "status": "provisional",
+    "owner_question": "Confirm the own catalogue is optional in a federated search.",
+    "affects": [
+      "ui",
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D23",
+    "topic": "Catalogue list for the selector",
+    "closes": [
+      "F-018",
+      "F-019",
+      "F-021"
+    ],
+    "decision": "catalogue-client-be exposes GET /catalogues exactly as in the v1 file (CatalogueInfo id, name, authorityURL, active), added to the v2 contract. The selector shows the own catalogue first (configured id and name, E3), then every Trustor catalogue with active true; catalogues with active false are not shown. With no Trustor catalogues, only the own catalogue is offered and the text 'No federated catalogues are available.' is shown. If GET /catalogues fails, the Trustor part is not populated, the own catalogue stays selectable, and the message 'The list of catalogues could not be loaded.' is shown.",
+    "options": [
+      "one selector with own and Trustor catalogues",
+      "Trustor catalogues only"
+    ],
+    "basis": "The v1 file already defines this operation for the Trustor catalogue list (SIMPL-33471 refers to it); SIMPL-31102/AC2 for the failure; SIMPL-35874 lets the Consumer select the local catalogue.",
+    "status": "provisional",
+    "owner_question": "Confirm GET /catalogues is the SIMPL-33471 API and the texts.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D24",
+    "topic": "Federated search returns one grouped response",
+    "closes": [
+      "F-033",
+      "F-034",
+      "F-038",
+      "F-061"
+    ],
+    "decision": "When at least one Trustor catalogue is selected, the UI makes one call: catalogue-client-be forwards it to the adapter GET /governanceAuthority/selfDescriptions or POST /governanceAuthority/selfDescriptions/advancedSearch, with catalogueIds holding all selected catalogues, the own catalogue included if selected. The response changes from the flat list to {groups: [...]}, one group per selected catalogue in request order, each {catalogueId, catalogueName, authorityUrl, status, totalCount, items, page, pageSize, totalPages}. To page one group, the client repeats the search with only that catalogueId and the wanted page; other groups stay as they are on screen. When only the own catalogue is selected, the existing local search operations are used unchanged. In a mixed advanced search all catalogues, the own one included, are searched with the SEARCH schema fields. The UI shows one tab per group, own catalogue first, tab label the catalogue name.",
+    "options": [
+      "backend returns one grouped response",
+      "UI makes two calls and groups the results"
+    ],
+    "basis": "SIMPL-31140/AC1 and AC2 (single response, grouped, paging per group) win over the SIMPL-31142 technical design; SIMPL-35874/AC2 (SEARCH schema when a federated catalogue is selected) wins over the same design for mixed selections. The contract says it does not yet define aggregation, so extending it closes a gap rather than breaking a decision.",
+    "status": "provisional",
+    "owner_question": "Confirm the grouped response shape and per-group paging by repeating the search for one catalogue.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D25",
+    "topic": "Failing Trustor in a federated search",
+    "closes": [
+      "F-030",
+      "F-031",
+      "F-032",
+      "F-036",
+      "F-023"
+    ],
+    "decision": "A failing Trustor never fails the whole search. If the call to a Trustor fails (TLS handshake failure, connection error, 403, 5xx, or no answer within 10 seconds), its group has status unavailable and an empty items list; the response is still 200 and other groups are unaffected. A group that searched fine has status complete, also when empty. A catalogueId that is not in the catalogue list gets 400 invalidInput for the whole request. A listed catalogue with federation disabled gets status unavailable without a call. At the Trustor, a caller with a valid certificate but no enabled federation gets 403 from the gateway; a revoked certificate fails the handshake. Both are gateway behaviour (D27) and reach the Trusted side as a failed call.",
+    "options": [
+      "internal 502, Consumer gets 200 with empty group",
+      "Consumer gets 502",
+      "400 vs empty group for unknown catalogue"
+    ],
+    "basis": "SIMPL-31140/AC3 ('empty group ... others unaffected'); the 502 of SIMPL-31113 is the call between the GAs. The status marker adds what F-036 asks without breaking the empty group. The contract defines 400 for an invalid catalogue selection.",
+    "status": "provisional",
+    "owner_question": "Confirm the group status values, the 10 second timeout and 400 for an unknown catalogue.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D26",
+    "topic": "Quality in federated groups",
+    "closes": [
+      "F-037",
+      "F-040"
+    ],
+    "decision": "Items in Trustor groups carry overallScore and overallClassification as null, and the quality filter is applied only to the own catalogue group; Trustor groups ignore it. Own-catalogue overviews show the overall quality score (as percent) and classification. Sorting of overviews is not built (no criterion).",
+    "options": [
+      "fields removed, filter ignored",
+      "fields removed, filter applied at Trustor",
+      "fields kept"
+    ],
+    "basis": "SIMPL-31140/AC4 (omitted for Trustor groups); BP6.7.1 and BP6.7.2 (quality only for own catalogue). null keeps the existing item schema valid.",
+    "status": "provisional",
+    "owner_question": "Confirm the filter is ignored for Trustor catalogues and that sorting is a later story.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D27",
+    "topic": "What the gateway does and what the adapter does",
+    "closes": [
+      "F-050",
+      "F-023",
+      "F-024"
+    ],
+    "decision": "Mutual TLS, Trusted GA authentication, the federation check and identity attribute mapping are done by the gateway in front of the Trustor adapter, as the adapter contract says. They are not built in the catalogue build. The adapter receives User-Attributes (already mapped) and Correlation-Id and applies the discovery access policy itself (D20, D21). Tests of the Trustor operations call the adapter directly with these headers.",
+    "options": [
+      "gateway",
+      "adapter"
+    ],
+    "basis": "query-mapper-adapter-be GET /federated/resourceDescriptions/{resourceDescriptionId}: 'The adapter does not repeat gateway authorization'; SEC-10, SEC-13. The contract wins over the story's technical description on where the work runs.",
+    "status": "provisional",
+    "owner_question": "Confirm the gateway owns mapping and trust checks, and where the gateway tests live.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D28",
+    "topic": "Trustor-side search operations",
+    "closes": [
+      "F-022"
+    ],
+    "decision": "Add to the adapter tier 2 contract: GET /federated/resourceDescriptions (query catalogueIds, searchString, page, pageSize; headers User-Attributes and Correlation-Id) for quick search, and POST /federated/resourceDescriptions/advancedSearch (body advancedSearchRequestPayload without quality fields; same headers) for advanced search. Both return searchResponsePayload with overallScore and overallClassification null, 200 with an empty items list when nothing matches, 400 for missing headers or invalid input, 500 on failure. They search only the listed catalogues of the Trustor's own data space, using D19 and D21.",
+    "options": [
+      "wait for the SIMPL-31880 contract",
+      "define it here"
+    ],
+    "basis": "SIMPL-31138 and SIMPL-31139 require the operation; the adapter names a separate API not in the input set. Same shape and headers as the existing federated detail operation keeps one style. Paths follow D6.",
+    "status": "provisional",
+    "owner_question": "Provide or confirm the SIMPL-31880 contract; align these paths with it.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D29",
+    "topic": "Schema for a federated detail",
+    "closes": [
+      "F-044",
+      "F-060",
+      "F-062"
+    ],
+    "decision": "The federated detail returns no schema. The UI renders a federated resource description generically: every property of the credential subject as a label and value tree, with the same page layout as for own details. Own details keep the schema-driven rendering. For the search form, catalogue-client-be GET /schemas gets an optional query parameter schemaType (RESOURCE or SEARCH), passed to Schema Manager; with SEARCH it returns a list of zero or one schema. If none exists, the advanced search form shows 'No federated search schema is published.' and disables search while a Trustor catalogue is selected; if the call fails, it shows 'The search form could not be loaded.'",
+    "options": [
+      "schema returned with the detail",
+      "no schema, generic rendering"
+    ],
+    "basis": "The schema lines are struck in SIMPL-31150 and SIMPL-31153, the later decision of the owners, and the adapter contract says no separate schema is returned. SIMPL-35874/AC3 names schemaType=SEARCH.",
+    "status": "provisional",
+    "owner_question": "Confirm that SIMPL-31148, SIMPL-31770 and SIMPL-33885 drop the schema from the federated detail.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D30",
+    "topic": "Trusted-side detail operation",
+    "closes": [
+      "F-052"
+    ],
+    "decision": "Add to the adapter tier 1 contract GET /governanceAuthority/resourceDescriptions/{resourceDescriptionId}?catalogueId=... . catalogue-client-be GET /selfDescriptions/{selfDescriptionId} calls it when catalogueId is a Trustor catalogue. The adapter looks up the catalogue's authorityURL, creates a Correlation-Id (UUID) and calls the Trustor GET /federated/resourceDescriptions/{resourceDescriptionId} with User-Attributes and Correlation-Id. It returns the Trustor's federatedResourceDescriptionPayload unchanged on 200, and errors as in D31.",
+    "options": [
+      "wait for a contract",
+      "define it here"
+    ],
+    "basis": "SIMPL-31153 technical description requires the Trusted inbound and forwarding operations; the only defined federated detail operation is the Trustor side, which becomes the forwarding target.",
+    "status": "provisional",
+    "owner_question": "Confirm the path and that the Trustor operation is the forwarding target.",
+    "affects": [
+      "api",
+      "tests"
+    ]
+  },
+  {
+    "id": "D31",
+    "topic": "Detail error statuses",
+    "closes": [
+      "F-046",
+      "F-049",
+      "F-051",
+      "F-053",
+      "F-042"
+    ],
+    "decision": "Trustor GET /federated/resourceDescriptions/{id}: 404 when the resource description does not exist, is not published, or its discovery access policy is not met (existence is hidden); 400 when User-Attributes or Correlation-Id is missing; 500 when the catalogue service fails. Trusted side and catalogue-client-be map to a fixed set: Trustor 404 gives 404; any other Trustor error, a failed call, or no answer within 10 seconds gives 500 with problem type urn:problem-type:simpl:catalogue:federatedSourceUnavailable and no Trustor details. Missing or invalid catalogueId or id gives 400. The same 400, 404 and 500 apply to own-catalogue details. UI: 404 shows 'The resource description was not found.', 400 shows 'The request is not valid.', 500 shows 'The details could not be loaded.'; no details are shown in any error case.",
+    "options": [
+      "401 / 400 / 403 at the Trustor",
+      "404 for all denials",
+      "pass through vs fixed set"
+    ],
+    "basis": "The detail contracts define only 400, 404 and 500 (OpenAPI wins on the wire); SIMPL-31150 'must not expose the resource description'; SIMPL-31153 'translated consistently without exposing internal federation details'; SIMPL-33885/AC3 and AC4.",
+    "status": "provisional",
+    "owner_question": "Confirm 404 for a policy denial and 500 for a Trustor timeout instead of 403 and 504.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "D32",
+    "topic": "Quality block in own-catalogue details",
+    "closes": [
+      "F-041"
+    ],
+    "decision": "The UI gets the credential from catalogue-client-be GET /selfDescriptions/{selfDescriptionId} and the quality from GET /selfDescriptions/{selfDescriptionId}/qualityAssessmentRecord, taken unchanged from the v1 file into v2. It shows the overall score (percent) and classification and, per dimension, score and classification. When there is no record (204), it shows 'No quality assessment is available.' Federated details show no quality block.",
+    "options": [
+      "quality in the detail response",
+      "separate QAR call"
+    ],
+    "basis": "The v2 detail returns only the credential; the QAR operation exists in catalogue-be and in the v1 client file. SIMPL-31143/AC1, SIMPL-31769/AC1.",
+    "status": "provisional",
+    "owner_question": "Confirm the QAR operation moves into the v2 client contract.",
+    "affects": [
+      "api",
+      "ui",
+      "tests"
+    ]
+  },
+  {
+    "id": "E1",
+    "topic": "Identity provider users and roles",
+    "closes": [],
+    "decision": "One Keycloak realm. Users: consumer (role CATALOGUE_SEARCHER, identity attribute CONSUMER), provider (DATA_PROVIDER_PUBLISHER), noroles (no role). Tier 1 services check the JWT role; tier 2 services read User-Attributes directly. No gateway is built: tests send the headers the gateway would send.",
+    "options": [],
+    "basis": "SEC-05 to SEC-07; D20, D27.",
+    "status": "provisional",
+    "owner_question": "",
+    "affects": [
+      "tests"
+    ]
+  },
+  {
+    "id": "E2",
+    "topic": "Ports",
+    "closes": [],
+    "decision": "catalogue-be 8081, query-mapper-adapter-be 8082 (Trusted role) and 8182 (second instance as Trustor), catalogue-client-be 8083, search UI 4200, stubs from 8090 (E4). Plain HTTP inside the test network; TLS is not part of the tests.",
+    "options": [],
+    "basis": "Shared set-up for both writers.",
+    "status": "provisional",
+    "owner_question": "",
+    "affects": [
+      "tests"
+    ]
+  },
+  {
+    "id": "E3",
+    "topic": "Own catalogue identity",
+    "closes": [],
+    "decision": "The own catalogue has id ownCatalogue and name 'Own catalogue', set by configuration in catalogue-client-be and the adapter.",
+    "options": [],
+    "basis": "D7, D22, D23.",
+    "status": "provisional",
+    "owner_question": "",
+    "affects": [
+      "tests",
+      "ui"
+    ]
+  },
+  {
+    "id": "E4",
+    "topic": "Stubs for external services",
+    "closes": [],
+    "decision": "Quality Scoring Service stub on 8090 (POST /qualityscoring/validate returns a QAR chosen per test: pass, fail, invalid, error, delay). Schema Manager stub on 8091: schemas Health and Energy (RESOURCE) and FederatedSearch (SEARCH, published), one active profile shared by all with overall ranges Poor [0, 0.4), Sufficient [0.4, 0.7), Good [0.7, 1], overall threshold 0.5, each dimension threshold 0.4. Catalogue list stub on 8092 for GET /catalogues data: trustorClimate (active, Trustor at the adapter on 8182), trustorTransport (active, unreachable address), trustorOld (inactive). Trustor timeout 10 seconds, shortened to 2 seconds by configuration in tests.",
+    "options": [],
+    "basis": "D14, D15, D17, D23, D25.",
+    "status": "provisional",
+    "owner_question": "",
+    "affects": [
+      "tests",
+      "data"
+    ]
+  }
+]

@@ -44,6 +44,7 @@ A 20a hit is a pointer, not a verdict. "Securely" in a Then is a real gap; "vali
 | AC-C04 | **Consistency** | Does it use the same names for the same things as the other stories, the API and the business process (actors, statuses, objects; see the word pairs in `inventory-review.md`)? Does it contradict another criterion? |
 | AC-C05 | **Correctness against the API and the process** | Does it ask for something the OpenAPI does not offer or forbids (a method, a status code, a field), or that the business process orders differently? |
 | AC-C06 | **Scope** | Is it about this component? Does a replaced story still add a requirement its replacement lacks? |
+| AC-C07 | **Cross-cutting** (once per component) | Questions no single criterion raises, but every build must answer: the order of the checks when several errors combine (no token, no role, wrong media type, bad body, not found, conflict); what happens when each dependency is down or slow; content negotiation (406, 415); the formats of signatures, credentials and keys; how content from another party is made safe before it is shown or stored; limits (sizes, page sizes, timeouts). Raise a finding for each one the specs leave open. (Added 17 Nov 2026: these were most of what step 30c found missing.) |
 
 Severity:
 
@@ -68,7 +69,7 @@ Read nothing else: no spec digest, no tests, no builds, no findings of earlier r
 
 ### What to do
 
-1. Go through the stories one by one. For each live AC, apply AC-C02, AC-C03 and AC-C05. For each story as a whole, apply AC-C01 and AC-C06. Across stories, apply AC-C04.
+1. Go through the stories one by one. For each live AC, apply AC-C02, AC-C03 and AC-C05. For each story as a whole, apply AC-C01 and AC-C06. Across stories, apply AC-C04. For the component as a whole, apply AC-C07.
 2. For each 20a hit, say in one word whether it matters: `real` (a finding of its own or part of one of yours) or `harmless` (and why, in a few words). Harmless hits do not go into the findings.
 3. Write each finding once, at the right level: an AC id, a story key, or `cross` with the ids involved.
 
