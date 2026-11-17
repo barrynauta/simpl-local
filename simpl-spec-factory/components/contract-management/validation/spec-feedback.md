@@ -1,6 +1,6 @@
 # Spec feedback: Contract Management
 
-Step 29 of the spec factory, assembled on 17 Nov 2026 by `spec-factory/pipeline/build_feedback.py` (engine 34f6f24). For the owners of the stories, the API definitions, the CDMs and the business process. Every point cites the ids it is about and the question that needs an answer; the full evidence is in the linked files.
+Step 29 of the spec factory, assembled on 17 Nov 2026 by `spec-factory/pipeline/build_feedback.py` (engine db4dde8). For the owners of the stories, the API definitions, the CDMs and the business process. Every point cites the ids it is about and the question that needs an answer; the full evidence is in the linked files.
 
 **What this is.** An automated reading of the published specifications, as a builder would read them, before anything is built. A finding says where two careful readers would build different things, or where a builder would have to guess. It is not a judgement on the people who wrote the specs: most points are normal for specifications written by several teams over time.
 
@@ -259,6 +259,7 @@ See [`cdm/README.md`](../../../cdm/README.md) for the state of the CDM register 
 | 12 | every story, criterion, operation and process requirement with a stable id, and the links between them | [`../inventory/`](../inventory/inventory.md) |
 | 20a, 20b | the acceptance criteria: structure and wording (script), then completeness, testability, ambiguity, consistency and correctness (agent) | [`ac-checks.md`](./ac-checks.md), [`ac-review.md`](./ac-review.md) |
 | 21a, 21b | the API definitions against the API, security and OWASP rules, and the coverage between operations and stories | [`api-checks.md`](./api-checks.md), [`api-review.md`](./api-review.md) |
+| 22a, 22b | the business process as a flow: coverage, order against the decided states, hand-overs between parties, failure paths | [`bp-checks.md`](./bp-checks.md), [`bp-review.md`](./bp-review.md) |
 | 23a, 23b | the domain language: API against CDM against the stories, by the `DDD-` and CDM rules; the draft glossary | [`domain-checks.md`](./domain-checks.md), [`domain-review.md`](./domain-review.md) |
 
 The agents worked only from the published specs and each other's output, not from code or earlier builds. Their findings were not checked one by one by a person; treat each as a well-argued question, not a verdict.

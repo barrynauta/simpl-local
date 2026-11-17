@@ -339,27 +339,9 @@ Sources: NFR15.
 | UX-03 | SHOULD | UI prototypes are validated with user testing before build. | ui, process | none |
 | UX-04 | SHOULD | UX guidelines are applied from the design phase and refined from user feedback. | process | none |
 
-## DDD: Domain-driven design (factory addition)
+## DDD, MACH, MSV, OWT, OWA, BLG: engine rules
 
-Not a Simpl guideline: added by the factory on 17 Nov 2026, source [`sources/factory/ddd.md`](./sources/factory/ddd.md). Focus: one ubiquitous language per component, and the entities the APIs expose.
-
-| Id | Level | Rule | Applies to | Check |
-|---|---|---|---|---|
-| DDD-01 | MUST | Inside one component, each concept has one term across stories, ACs, business process, CDM, API and events. | api-spec, data-model, docs, process | review |
-| DDD-02 | MUST | No term names two different concepts inside one component. | api-spec, data-model, docs, process | review |
-| DDD-03 | MUST | A glossary per component lists each term, a one-line definition and its CDM class. | docs, data-model | review |
-| DDD-04 | MUST | Status and value sets have the same values in the CDM, the API enums and the acceptance criteria. | api-spec, data-model, ui | tool |
-| DDD-05 | MUST | A UI label that differs from the stored value has a written mapping. | ui, docs | review |
-| DDD-06 | MUST | Every business object an API exposes maps to a CDM entity or value object with the same name. | api-spec, data-model | tool |
-| DDD-07 | MUST | API wrappers (requests, responses, pages, errors) do not introduce business concepts missing from the CDM. | api-spec, data-model | review |
-| DDD-08 | SHOULD | Each attribute of an exposed business object maps to a CDM attribute with the same name. | api-spec, data-model | tool |
-| DDD-09 | MUST | An entity's identity has one name in every API path, schema and event. | api-spec, data-model | tool |
-| DDD-10 | SHOULD | A value object has no id of its own in the API. | api-spec, data-model | review |
-| DDD-11 | SHOULD | Operations change an aggregate only through its root. | api-spec, code | review |
-| DDD-12 | MUST | Each entity's states and transitions are defined once, and state-changing operations match them. | api-spec, data-model, code | review |
-| DDD-13 | MUST | Concepts owned elsewhere are marked external in the CDM and not redefined. | data-model | tool |
-| DDD-14 | MUST | Translation to another context's model sits in one place, and the component's API uses its own language. | api-spec, code | review |
-| DDD-15 | SHOULD | A context map shows the dependencies and concept ownership between components. | docs, data-model | review |
+Since 17 Nov 2026 the factory's own rules (domain-driven design, MACH, microservices, OWASP Top 10:2025, OWASP API Security Top 10 2023, Belgif REST guide) live in the engine: `spec-factory/guidelines/rules.md`. The scripts read the engine rules and these project rules together.
 
 ## Not a rule
 
@@ -536,7 +518,7 @@ Good practice the sources do not state and that matters for a build. Not rules; 
 
 ## Totals
 
-**292 rules** (277 from the Simpl guidelines, 15 `DDD-` rules added by the factory).
+**277 rules** from the Simpl guidelines. The engine adds 146 generic rules (see above).
 
 **Per prefix**
 

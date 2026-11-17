@@ -18,13 +18,13 @@ Frozen copies, collected **2026-11-17**. Do not refresh them in place: a new cop
 | `sources/nfr/secure-coding-guidelines-owasp-top-ten.md` | code.europa.eu `simpl/simpl-open/foundations/non-functional-requirements`, commit `b71d016` (main), NFR14 |
 | `sources/nfr/enforce-coding-and-development-guidelines.md` | same, NFR08 |
 | `sources/nfr/uis-must-follow-ux-guidelines.md` | same, NFR15 |
-| `sources/factory/ddd.md` | **Factory addition, not a Simpl guideline**; a copy of `guidelines/ddd.md` in the engine (17 Nov 2026): domain-driven design, ubiquitous language and the entities in the APIs. Rules `DDD-01` to `DDD-15`, written by hand from this page |
+| (engine) | The factory's own rules moved to the engine on 17 Nov 2026: DDD, MACH, microservices, OWASP Top 10:2025, OWASP API Security Top 10 2023 and the Belgif REST guide, 146 rules in `spec-factory/guidelines/rules.json`. The scripts read them together with these Simpl rules (17 Nov 2026): domain-driven design, ubiquitous language and the entities in the APIs. Rules `DDD-01` to `DDD-15`, written by hand from this page |
 
 Images under `media/` are not copied; the rules come from the text.
 
 ## Result of step 11 (17 Nov 2026)
 
-277 rules from the Simpl guidelines, plus 15 `DDD-` rules added by hand: API 80, CODE 55, OPS 37, ARCH 35, DATA 29, SEC 23, OWASP 14, UX 4. MUST 84, SHOULD 192, MAY 1 (many sources have no modal verb, so the default SHOULD applies, with a note). Check type: tool 93, test 44, review 125, none 15. Conflicts, vague rules and the documents the sources refer to but that are not here are listed at the end of [`rules.md`](./rules.md). OWASP: NFR14 names no version; Top 10:2021 was used, to be confirmed.
+277 rules from the Simpl guidelines (the DDD rules are engine rules since 17 Nov 2026): API 80, CODE 55, OPS 37, ARCH 35, DATA 29, SEC 23, OWASP 14, UX 4. MUST 84, SHOULD 192, MAY 1 (many sources have no modal verb, so the default SHOULD applies, with a note). Check type: tool 93, test 44, review 125, none 15. Conflicts, vague rules and the documents the sources refer to but that are not here are listed at the end of [`rules.md`](./rules.md). OWASP: NFR14 names no version; Top 10:2021 was used, to be confirmed.
 
 ## Not here yet
 

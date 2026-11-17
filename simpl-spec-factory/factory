@@ -27,7 +27,7 @@ if [ "$cmd" = "all-checks" ]; then
     comps="$target"
   fi
   for c in $comps; do
-    for s in extract_inventory check_acs check_api check_domain; do
+    for s in extract_inventory check_acs check_api check_bp check_domain; do
       python3 "$engine/pipeline/$s.py" "$c" > /dev/null
     done
     python3 "$engine/pipeline/check_gate.py" "$c" || true
