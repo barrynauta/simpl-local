@@ -92,7 +92,7 @@ That answers a better question than "can we reach 93 of 93": do tests used as sp
 
 ## Step 3 result: hold-out run with the PSO tests on top (16 Nov 2026, Contract Management)
 
-Run with a stronger rule than above, asked by Barry: the PSO scenarios are bullet-proof and win over the OpenAPI and the stories (rule 2 reversed, rule 4 not needed: no visible scenario is `@bug`). Contract Management only, split 8 visible and 6 hidden, base digest run 1.1, three fresh agents and a build from scratch. Own suite 399 of 399, PSO visible 8 of 8, **PSO hidden 2 of 6, the same as before**. Details: [`contract-management/experiments/pso-as-spec/`](./contract-management/experiments/pso-as-spec/README.md).
+Run with a stronger rule than above, asked by Barry: the PSO scenarios are bullet-proof and win over the OpenAPI and the stories (rule 2 reversed, rule 4 not needed: no visible scenario is `@bug`). Contract Management only, split 8 visible and 6 hidden, base digest run 1.1, three fresh agents and a build from scratch. Own suite 399 of 399, PSO visible 8 of 8, **PSO hidden 2 of 6, the same as before**. Details: [`contract-management/experiments/pso-as-spec/`](components/contract-management/experiments/pso-as-spec/README.md).
 
 ## Points to validate later
 

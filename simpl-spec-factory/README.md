@@ -2,32 +2,34 @@
 
 An experiment: how far can we get generating a complete Simpl-Open component **from its specifications alone**? Not just the code, but the full test suite and the documentation too. In other words, a software factory driven by specs.
 
-Status: **run 1 done** (2026-10-27): the generated build passes 74 of 74 black-box API scenarios (upstream: 58 of 74). UI: 22 of 22 browser scenarios (upstream: 9 of 22). **Run 2** (2026-10-28): a Rust backend from the same specs, also 74 of 74 after one spec clarification (D18), and both UIs run on it. **Second candidate, Schema Manager** (2026-10-28, less well documented): 63 decisions instead of 30, build 291 of 291 API and 36 of 36 UI scenarios, and each UI works on the other backend in the swap tests; see [`schema-manager/`](./schema-manager/README.md). **Third candidate, Catalogue** (2026-10-28, the whole catalogue with three backends and federation): 83 decisions, build 458 of 459 API and 26 of 26 UI scenarios; see [`catalogue/`](./catalogue/README.md). **Fourth candidate, Contract Management** (2026-10-29, two parties, signer and wallet as stubs): 83 decisions and five appendices, build 339 of 345 API and 36 of 38 UI scenarios (383 of 383 after six clarifications), PSO 7 of 14 on build and upstream alike, and the event joint between the parties is where the two implementations share nothing; see [`contract-management/`](./contract-management/README.md). The PSO test suite, run unchanged, is an independent check on the Schema Manager and the Catalogue (step 6 in their findings). See [`spec-digest.md`](./spec-digest.md) and [`findings.md`](./findings.md). Candidate: Vocabulary Manager. Input set: [`specs/`](./specs/README.md).
+Status: **run 1 done** (2026-10-27): the generated build passes 74 of 74 black-box API scenarios (upstream: 58 of 74). UI: 22 of 22 browser scenarios (upstream: 9 of 22). **Run 2** (2026-10-28): a Rust backend from the same specs, also 74 of 74 after one spec clarification (D18), and both UIs run on it. **Second candidate, Schema Manager** (2026-10-28, less well documented): 63 decisions instead of 30, build 291 of 291 API and 36 of 36 UI scenarios, and each UI works on the other backend in the swap tests; see [`schema-manager/`](components/schema-manager/README.md). **Third candidate, Catalogue** (2026-10-28, the whole catalogue with three backends and federation): 83 decisions, build 458 of 459 API and 26 of 26 UI scenarios; see [`catalogue/`](components/catalogue/README.md). **Fourth candidate, Contract Management** (2026-10-29, two parties, signer and wallet as stubs): 83 decisions and five appendices, build 339 of 345 API and 36 of 38 UI scenarios (383 of 383 after six clarifications), PSO 7 of 14 on build and upstream alike, and the event joint between the parties is where the two implementations share nothing; see [`contract-management/`](components/contract-management/README.md). The PSO test suite, run unchanged, is an independent check on the Schema Manager and the Catalogue (step 6 in their findings). See [`spec-digest.md`](components/vocabulary-manager/spec-digest.md) and [`findings.md`](components/vocabulary-manager/findings.md). Candidate: Vocabulary Manager. Input set: [`specs/`](components/vocabulary-manager/specs/README.md).
+
+**Engine and instance (since 17 Nov 2026).** The generic pipeline (steps 10 to 30: scripts and agent briefs) lives in its own repository, [`spec-factory`](https://github.com/barrynauta/spec-factory), at `~/src/spec-factory`. This folder is the **Simpl-Open instance**: [`project.yaml`](./project.yaml) (Simpl settings and the pinned engine commit), the [`factory`](./factory) wrapper (`./factory check_acs catalogue`, `./factory all-checks all`), the Simpl guidelines and rules, the CDM snapshot, and one folder per component under [`components/`](./components/) (the Vocabulary Manager, the first candidate, moved from the root to `components/vocabulary-manager/`). The prompts of runs 1 to 3 are kept in [`runs/run1-pipeline/`](./runs/run1-pipeline/README.md). Results of the new pipeline: [spec feedback](./spec-feedback-overview.md), [decisions compared with run 1](./decisions-overview.md).
 
 **Personal test project.** This is a personal experiment, for testing purposes only. It is not commissioned by, endorsed by or speaking for the European Commission, the Simpl programme or any of its contractors. **Purpose:** see how feasible spec-driven generation is, and learn which parts of the specs could be made more precise. It is not meant to show what is wrong with Simpl. Every gap found is a pointer to where the specs can be improved.
 
 ## Summary
 
 - **What:** the Simpl-Open Vocabulary Manager (backend and UI) was generated from its specifications only: the OpenAPI, 32 user stories with acceptance criteria and the business process. No upstream source code was used. It starts with one `docker compose up`.
-- **How:** first a written list of 30 decisions where the specs are silent or disagree ([`spec-digest.md`](./spec-digest.md)). Then two separate AI agents: a test writer and a code writer, neither seeing the other's work.
+- **How:** first a written list of 30 decisions where the specs are silent or disagree ([`spec-digest.md`](components/vocabulary-manager/spec-digest.md)). Then two separate AI agents: a test writer and a code writer, neither seeing the other's work.
 - **Result:** the generated build passes 74 of 74 API scenarios and 22 of 22 UI scenarios. The same suite on the local upstream stack: 58 of 74 and 9 of 22. Upstream differs mostly on the points where the specs leave room, which is exactly what the decision list settles.
-- **Main lesson:** the specs are close to buildable. What they need is the decision list written down: structure and semantic validation rules, how a vocabulary references a version of another, vocabulary vs version status, 401 and 403 in the OpenAPI, and a few UI wordings. See [`findings.md`](./findings.md).
+- **Main lesson:** the specs are close to buildable. What they need is the decision list written down: structure and semantic validation rules, how a vocabulary references a version of another, vocabulary vs version status, 401 and 403 in the OpenAPI, and a few UI wordings. See [`findings.md`](components/vocabulary-manager/findings.md).
 - **Caveat:** both writers used the same decision list, so the result shows that "specs plus decisions" is buildable, not the raw specs alone. See [How realistic is this?](#how-realistic-is-this).
-- **Swap test:** either UI runs on either backend, and upstream's own Postman checks give the same result on both. Existing data needs a migration (one SPARQL update, tested on 306 vocabularies). See [`findings.md`](./findings.md), step 5, and the [diagram below](#test-setup-at-a-glance).
-- **Second language:** a Rust backend built from the same specs and decisions also passes 74 of 74, and both UIs and upstream's Postman checks run on it unchanged. Its first pass was 33 of 74, all from one gap in D18 that the Java build had hidden: a second independent build is a cheap spec review. See [`findings.md`](./findings.md), step 3b.
+- **Swap test:** either UI runs on either backend, and upstream's own Postman checks give the same result on both. Existing data needs a migration (one SPARQL update, tested on 306 vocabularies). See [`findings.md`](components/vocabulary-manager/findings.md), step 5, and the [diagram below](#test-setup-at-a-glance).
+- **Second language:** a Rust backend built from the same specs and decisions also passes 74 of 74, and both UIs and upstream's Postman checks run on it unchanged. Its first pass was 33 of 74, all from one gap in D18 that the Java build had hidden: a second independent build is a cheap spec review. See [`findings.md`](components/vocabulary-manager/findings.md), step 3b.
 - **Effort:** one working day, of which about 30 minutes for the code writer and about 45 minutes for the UI test steps. Hardware needs are close to upstream (see [Hardware](#hardware-compared-with-upstream)).
 
 ## Test setup at a glance
 
 Both implementations, the existing one (upstream) and the generated one, run side by side. The same black-box suites test each of them. The swap test then crosses them: the existing UI on the generated back-end (2), the generated UI on the existing back-end (3), and the existing data migrated into the new layout (4).
 
-![Test setup: existing and generated UI and back-end, crossed in the swap test](./experiments/swap/swap-overview.svg)
+![Test setup: existing and generated UI and back-end, crossed in the swap test](components/vocabulary-manager/experiments/swap/swap-overview.svg)
 
 ## The 30 decisions
 
-Where the specs are silent or disagree, the factory made one written decision, used by both the test writer and the code writer. Full rows, with what each source says, are in [`spec-digest.md`](./spec-digest.md#3-decisions). Decisions marked *open* are also questions for the spec owners.
+Where the specs are silent or disagree, the factory made one written decision, used by both the test writer and the code writer. Full rows, with what each source says, are in [`spec-digest.md`](components/vocabulary-manager/spec-digest.md#3-decisions). Decisions marked *open* are also questions for the spec owners.
 
-**[API and access](./spec-digest.md#api-and-access)**
+**[API and access](components/vocabulary-manager/spec-digest.md#api-and-access)**
 - D1: follow the OpenAPI paths and payloads; the older draft API in the tech description is superseded.
 - D2: every endpoint needs a token, except `/health`. *Open:* should downloads be public?
 - D3: the viewer role may read and search; the admin role may do everything.
@@ -35,7 +37,7 @@ Where the specs are silent or disagree, the factory made one written decision, u
 - D5: errors follow the OpenAPI Problem schema. *Open:* should the API guidelines be part of the input?
 - D6: a local identity provider with three test users and the roles in a `roles` claim (environment choice).
 
-**[Lifecycle and versioning](./spec-digest.md#lifecycle-and-versioning)**
+**[Lifecycle and versioning](components/vocabulary-manager/spec-digest.md#lifecycle-and-versioning)**
 - D7: version numbers are whole numbers, starting at 1.
 - D8: a request that sets a version number itself is rejected with 400.
 - D9: a new version becomes active and deprecates all older versions, in one step.
@@ -45,7 +47,7 @@ Where the specs are silent or disagree, the factory made one written decision, u
 - D13: a duplicate name gives 409, shown as a field error in the UI.
 - D14: no separate publish step: a valid stored version is "Active".
 
-**[Validation](./spec-digest.md#validation)**
+**[Validation](components/vocabulary-manager/spec-digest.md#validation)**
 - D15: Turtle only; anything else gives 415.
 - D16: syntax means the file parses; structure means it declares an ontology or concept scheme. *Open.*
 - D17: the semantic checks: unknown, deprecated or missing referenced terms, and one IRI as both class and property. *Open, the largest gap.*
@@ -53,7 +55,7 @@ Where the specs are silent or disagree, the factory made one written decision, u
 - D19: a missing reference is 400, not 404.
 - D20: warnings do not block; they come back with the 201 response.
 
-**[UI](./spec-digest.md#ui)**
+**[UI](components/vocabulary-manager/spec-digest.md#ui)**
 - D21: no Figma design was available, so the UI uses a plain component library.
 - D22: the list shows the columns the story names, no file format column.
 - D23: the name filter is a case-insensitive "contains". *Open:* the OpenAPI pattern and the UI example do not fit.
@@ -61,7 +63,7 @@ Where the specs are silent or disagree, the factory made one written decision, u
 - D25: deprecation warnings show everywhere a deprecated vocabulary appears.
 - D26: viewers do not see admin actions; the API still refuses them with 403.
 
-**[Other](./spec-digest.md#other)**
+**[Other](components/vocabulary-manager/spec-digest.md#other)**
 - D27: Apache Jena Fuseki as the store.
 - D28: the API response is the validation report; no separate notification.
 - D29: page size at most 100. *Open.*
@@ -185,7 +187,7 @@ Each step hands over to the next through plain files, so each part can be change
 
 Limits today:
 
-- The prompts are stored in [`pipeline/`](./pipeline/README.md). Steps 3 and 4 are the prompts as used; steps 1 and 2 ran in the main session and are reconstructed briefs. A rerun from them has not been tried yet.
+- The prompts are stored in [`pipeline/`](runs/run1-pipeline/README.md). Steps 3 and 4 are the prompts as used; steps 1 and 2 ran in the main session and are reconstructed briefs. A rerun from them has not been tried yet.
 - The UI steps follow the story wording. A UI with other labels fails by design, so a change of wording in a story means a change in the steps.
 - The UI steps assume a single page application on a JSON API and a standard login page.
 - One component only. Flows across components (for example Schema Manager on the same Fuseki) are not tried yet.

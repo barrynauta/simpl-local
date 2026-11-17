@@ -18,7 +18,7 @@ Frozen copies, collected **2026-11-17**. Do not refresh them in place: a new cop
 | `sources/nfr/secure-coding-guidelines-owasp-top-ten.md` | code.europa.eu `simpl/simpl-open/foundations/non-functional-requirements`, commit `b71d016` (main), NFR14 |
 | `sources/nfr/enforce-coding-and-development-guidelines.md` | same, NFR08 |
 | `sources/nfr/uis-must-follow-ux-guidelines.md` | same, NFR15 |
-| `sources/factory/ddd.md` | **Factory addition, not a Simpl guideline** (17 Nov 2026): domain-driven design, ubiquitous language and the entities in the APIs. Rules `DDD-01` to `DDD-15`, written by hand from this page |
+| `sources/factory/ddd.md` | **Factory addition, not a Simpl guideline**; a copy of `guidelines/ddd.md` in the engine (17 Nov 2026): domain-driven design, ubiquitous language and the entities in the APIs. Rules `DDD-01` to `DDD-15`, written by hand from this page |
 
 Images under `media/` are not copied; the rules come from the text.
 

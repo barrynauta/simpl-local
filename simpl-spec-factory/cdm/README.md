@@ -1,6 +1,6 @@
 # CDM snapshot
 
-The CDM register of Simpl-Open (`cdm-register/cdm-index.md` in the architecture repository, commit `5d28e04a`) and every CDM it links to, plus the CDMs found in the repositories that the register does not list. Frozen on **17 Nov 2026** by [`../pipeline/collect_cdms.py`](../pipeline/collect_cdms.py), with corrected locations in [`register.yaml`](./register.yaml). [`SOURCES.json`](./SOURCES.json) has, per CDM, the branch, the pinned commit and a sha256. [`scan.json`](./scan.json) is the repository scan ([`../pipeline/scan_cdms.py`](../pipeline/scan_cdms.py)). [`inventory.md`](./inventory.md) is the extraction (step 12). Do not refresh in place: a new snapshot goes to a new folder.
+The CDM register of Simpl-Open (`cdm-register/cdm-index.md` in the architecture repository, commit `5d28e04a`) and every CDM it links to, plus the CDMs found in the repositories that the register does not list. Frozen on **17 Nov 2026** by [`../pipeline/collect_cdms.py`](https://github.com/barrynauta/spec-factory/blob/main/pipeline/collect_cdms.py), with corrected locations in [`register.yaml`](./register.yaml). [`SOURCES.json`](./SOURCES.json) has, per CDM, the branch, the pinned commit and a sha256. [`scan.json`](./scan.json) is the repository scan ([`../pipeline/scan_cdms.py`](https://github.com/barrynauta/spec-factory/blob/main/pipeline/scan_cdms.py)). [`inventory.md`](./inventory.md) is the extraction (step 12). Do not refresh in place: a new snapshot goes to a new folder.
 
 What the snapshot shows (17 Nov 2026):
 

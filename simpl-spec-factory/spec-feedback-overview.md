@@ -1,6 +1,6 @@
 # Spec feedback: the four components compared (17 Nov 2026, with the API checks of step 21)
 
-Steps 12b, 20, 21 and 23 of the spec factory, run on the published specifications of four Simpl-Open components, and assembled per component by step 29. This page puts them side by side. Per component: [Contract Management](./contract-management/validation/spec-feedback.md), [Schema Manager](./schema-manager/validation/spec-feedback.md), [Catalogue](./catalogue/validation/spec-feedback.md), [Vocabulary Manager](./validation/spec-feedback.md).
+Steps 12b, 20, 21 and 23 of the spec factory, run on the published specifications of four Simpl-Open components, and assembled per component by step 29. This page puts them side by side. Per component: [Contract Management](components/contract-management/validation/spec-feedback.md), [Schema Manager](components/schema-manager/validation/spec-feedback.md), [Catalogue](components/catalogue/validation/spec-feedback.md), [Vocabulary Manager](components/vocabulary-manager/validation/spec-feedback.md).
 
 **What this is.** An automated reading of the specs as a builder would read them, before anything is built. A blocker is a point where two careful builders would build different things. The findings were made by agents and not checked one by one by a person: treat them as well-argued questions. They are pointers to where the specs can be made more precise, not a judgement on the people who wrote them.
 

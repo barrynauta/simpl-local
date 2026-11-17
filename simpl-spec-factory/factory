@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Run a spec-factory engine script for this project.
+#   ./factory <script> [args]         for example: ./factory check_acs catalogue
+#   ./factory all-checks <component>  12a, 20a, 21a, 23a, gate and report for one component
+#   ./factory all-checks all          the same for every component in project.yaml
+# The engine path and the pinned engine commit come from project.yaml.
+set -euo pipefail
+here="$(cd "$(dirname "$0")" && pwd)"
+read -r engine pinned < <(python3 - "$here/project.yaml" <<'PY'
+import os, sys, yaml
+c = yaml.safe_load(open(sys.argv[1]))["engine"]
+print(os.path.expanduser(c["path"]), c.get("commit", ""))
+PY
+)
+[ -d "$engine/pipeline" ] || { echo "engine not found at $engine (see project.yaml)" >&2; exit 2; }
+actual="$(git -C "$engine" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+if [ -n "$pinned" ] && [ "$actual" != "$pinned" ]; then
+  echo "note: engine is at $actual, project.yaml pins $pinned" >&2
+fi
+export SPEC_FACTORY_PROJECT="$here"
+cmd="${1:?usage: ./factory <script> [args]}"; shift
+if [ "$cmd" = "all-checks" ]; then
+  target="${1:?component or all}"
+  if [ "$target" = "all" ]; then
+    comps=$(python3 -c "import yaml;print(' '.join(yaml.safe_load(open('$here/project.yaml'))['components']))")
+  else
+    comps="$target"
+  fi
+  for c in $comps; do
+    for s in extract_inventory check_acs check_api check_domain; do
+      python3 "$engine/pipeline/$s.py" "$c" > /dev/null
+    done
+    python3 "$engine/pipeline/check_gate.py" "$c" || true
+    python3 "$engine/pipeline/build_feedback.py" "$c"
+  done
+  exit 0
+fi
+exec python3 "$engine/pipeline/${cmd%.py}.py" "$@"
