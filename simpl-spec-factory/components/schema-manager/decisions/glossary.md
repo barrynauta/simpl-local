@@ -73,10 +73,10 @@ Rule for writers: use the **Term** in prose, test names, UI text and code identi
 
 | Term | Definition | CDM class | API names | Retired synonyms |
 |---|---|---|---|---|
-| Schema event | JSON message POSTed to subscribers when a schema is published or revoked (D24). | `SchemaEvent` | `eventType` values `SchemaPublished`, `SchemaRevoked`; payload fields `eventId`, `eventType`, `occurredAt`, `name`, `schemaType`, `resourceType`, `version`, `status` | "event notification", "schema publishing events" |
+| Schema event | JSON message POSTed to subscribers when a schema is published or revoked (D24); sent from an outbox after the API answers, at least once, in order per subscription, with the same eventId on retries (D50). | `SchemaEvent` | `eventType` values `SchemaPublished`, `SchemaRevoked`; payload fields `eventId`, `eventType`, `occurredAt`, `name`, `schemaType`, `resourceType`, `version`, `status` | "event notification", "schema publishing events" |
 | Webhook subscription | Registration of a target URL for one or more event types; no states; unique by target URL plus set of events (D29). | `Webhook` | `Webhook`, `CreateWebhookRequest`, `webhookId`, `targetUrl`, `events` | "subscription" alone is fine in prose; "active webhook subscription" |
 | Webhook id | Server-generated UUID of a webhook subscription. | `Webhook.webhookId` | `webhookId` | "ID", "wh_123" style ids |
-| Target URL | Absolute http or https URL that receives schema events. | `Webhook.targetUrl` | `targetUrl` | "endpoint" |
+| Target URL | Absolute URL that receives schema events; https only and host on the allow list (D46). | `Webhook.targetUrl` | `targetUrl` | "endpoint" |
 | Subscriber | The system behind a target URL. | none | none | "governance authority service" |
 | Provider notification | Plain-text e-mail to the configured recipient for resource description schemas only, on publish and revoke (D25). Separate from schema events. | none (to be added to the CDM) | none (configuration `NOTIFICATION_RECIPIENT`) | "notify all Providers" as a per-Provider send |
 

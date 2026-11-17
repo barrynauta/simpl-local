@@ -1,6 +1,6 @@
 # Decisions (step 30a): schema-manager
 
-Decisions that close the gaps found in steps 20b and 23b, so the test writer and the code writer build the same thing. Full text, options, basis and owner question per decision: [`decisions.json`](./decisions.json). Final terms and state tables: [`glossary.md`](./glossary.md). Gate result: [`gate.md`](./gate.md).
+Decisions that close the gaps found in steps 20b and 23b (and later 21b and 22b), so the test writer and the code writer build the same thing. Full text, options, basis and owner question per decision: [`decisions.json`](./decisions.json). Final terms and state tables: [`glossary.md`](./glossary.md). Gate result: [`gate.md`](./gate.md).
 
 The spec owners were not available. Every decision marked `provisional` is a choice between readings that the owner should confirm; `follows the specs` means the sources already settle it once read in the order below; `accepted risk` means no source decides it and the writers use the stated assumption.
 
@@ -20,7 +20,7 @@ Why this order: the writers must agree on bytes on the wire first, and the OpenA
 ## Counts
 
 
-48 decisions: 7 follow the specs, 40 provisional, 1 accepted risk. Of these, 6 are environment choices (D38 to D43). D44 to D48 were added after step 21 (see the section at the end).
+55 decisions: 7 follow the specs, 47 provisional, 1 accepted risk. Of these, 6 are environment choices (D38 to D43). D44 to D48 were added after step 21 and D49 to D55 after step 22 (see the sections at the end).
 
 
 ## Sources and scope
@@ -132,24 +132,46 @@ Step 21b (API review, [`api-findings.json`](../validation/api-findings.json)) ra
 
 The minors of step 21b (P-006 to P-013) need no decision for the build: they are example, naming and wording points for the API owner, or are settled by D3, D5, D6, D15, D17, D29 and D44.
 
+## Added after step 22 (17 Nov 2026)
+
+Step 22b (business process review, [`bp-findings.json`](../validation/bp-findings.json), [`bp-review.md`](../validation/bp-review.md)) ran after step 30 and found 1 blocker and 8 majors without a default. These decisions close them. D50 overrides the delivery part of D24 (synchronous, one attempt, before the answer) and of D25 (one attempt, failure only logged); the triggers, payload, subjects and body of D24 and D25 stay. D50 also refines D43 (the receiver can fail a set number of times, tests poll). D51 refines D23 and D42 (deprecated vocabularies, registry failure). D54 and D55 refine D7, D8 and D12 (concurrency, order of checks). D49 states for BP02C what D1 and D44 state for stories and the OpenAPI.
+
+| Id | Topic | Decision | Status | Closes |
+|---|---|---|---|---|
+| D49 | Decisions over BP02C | Decisions win over BP02C text; lifecycle is D13 only; "one schema" means one PUBLISHED per scope; events stay although BP02C has no step. | provisional | B-001, B-005 |
+| D50 | Event and e-mail delivery | Outbox written with the change; sent after the answer; 5 s timeout, retries after 2, 10, 60 s; in order per subscription; same eventId, at least once; give-up logged as 'schema.delivery.failed'; max 10 subscriptions per caller, then 409. | provisional | B-002, B-003 |
+| D51 | Vocabulary Manager down | 3 s timeout, one retry, then 503 with Retry-After, nothing stored; deprecated vocabulary terms give warning deprecatedVocabulary. | provisional | B-004 |
+| D52 | Read path for BP05B | Providers do not call the service; the catalogue reads with GA_SCHEMA_VIEWER as a technical client; no new role. | provisional | B-006 |
+| D53 | Replacing a published schema | No atomic replace; content changes by new version; name changes by revoke and re-publish with a gap; revoking the last published schema allowed. | provisional | B-007 |
+| D54 | Concurrent writes in one scope | Rule check and store serialised per scope; the loser gets the D13 outcome as if it came later. | provisional | B-008 |
+| D55 | Order of checks on schema writes | 401, 403, then 415 and 406, then fields 400, then 404 and 409, then validation 400 or 503, then the serialised store step. | provisional | B-009 |
+
+The minors of step 22b (B-010 to B-014) need no decision for the build: they are wording, numbering and linking points for the process owner, or are settled by D11, D22, D23, D24, D25 and D33. For B-014 the build adds no limit on schema changes: the Governance Authority admin role is the check (D27).
+
 ## Questions for the spec owners, by impact
 
-1. **D46 (webhook allow list).** OWASP-11 is a MUST rule. Confirm the configured allow list with a fail-closed default, who maintains it, and that plain http is refused outside tests. Add the https rule and the two 400 texts to the OpenAPI.
-2. **D44, D45, D47, D48 (revised OpenAPI).** Publish a revised OpenAPI with the differences listed in D44: GET /schemas/{schemaName}, 401 everywhere, an openIdConnect scheme without scopes and with roles per operation, no 403 on webhooks, one 404 type, the resourceType enum, the D30 fields, the D15 Location format, the event callbacks and the inlined versions response. That file then becomes the build contract.
-3. **D9, D12 (publication route).** Re-publication through PATCH with PUBLISHED is dropped in favour of a new version, following the OpenAPI. Confirm, or extend the PATCH enum and codes. Affects SIMPL-20529, SIMPL-20530, SIMPL-31098.
-4. **D7, D8 (one published schema per scope).** A second RESOURCE schema for a resource type is created as REVOKED; a second published SEARCH schema is rejected with 409. Confirm the asymmetry and that Providers are not told about a schema created as REVOKED.
-5. **D19, D20 (default properties).** Reject instead of enrich, with properties matched by local name from the default-properties model. Publish the full IRIs per resource type, say what applies to SEARCH, and correct BP02C.04.
-6. **D4 (schema key).** (name, schemaType, resourceType), with revoked names still taken and 400 for an ambiguous name. Record the key in the CDM.
-7. **D24 (webhook events).** Payload, triggers (including new versions) and single-attempt delivery are invented here. Define them in the OpenAPI callbacks or an AsyncAPI file.
-8. **D25 (Provider e-mail).** One configured recipient, fixed subjects and fields. Confirm, and say what the instruction link points to.
-9. **D16 (GET /schemas/{schemaName}).** Added to this service and not public. Add it to the OpenAPI, or confirm a separate Resolver.
-10. **D11 (version status).** Derived, not stored; previous versions show REVOKED. Confirm and add the transition table to the CDM (D13).
-11. **D3 (version).** SemVer withdrawn; rename schemaVersion to version in the next API revision.
-12. **D6 (resource type).** Closed set Data, Application, Infrastructure. Confirm or name the open set.
-13. **D2 (scope).** Deprecate or remove /vocabularies; decide whether metadata quality profiles belong here and, if so, write stories.
-14. **D22, D23 (validation errors).** Confirm the detail prefixes and issue codes as contract, and how the Vocabulary Manager is queried in production.
-15. **D26, D28 (401 and webhook access).** Add 401 to every operation; confirm any authenticated participant may manage subscriptions.
-16. **D30, D31 (lists).** Provide common-components.yaml, confirm the added fields, say whether a creator column is needed and whether sorting must cover the whole result.
-17. **D29 (unknown event type).** 406 follows the contract; API-12 would prefer 400.
-18. **D1 (story pairs).** Cancel or update the originals of each [ENHANCE] story.
-19. UI texts and behaviour (D32 to D35): confirm placements, texts and file names.
+1. **D49 (BP02C versus the decisions).** Confirm the D13 lifecycle as the process and align BP02C.03, .04, .05, the Overview and 2C.8. Add a step for schema events to subscribers, or name the process that owns them.
+2. **D50 (event and e-mail delivery).** Delivery moves after the answer, through an outbox with retries, at least once; max 10 subscriptions per caller. Confirm, say who watches 'schema.delivery.failed', and describe it in the OpenAPI callbacks or an AsyncAPI file.
+3. **D52 (read path for BP05B).** Confirm that the catalogue reads schemas with GA_SCHEMA_VIEWER, or define a reader role.
+4. **D46 (webhook allow list).** OWASP-11 is a MUST rule. Confirm the configured allow list with a fail-closed default, who maintains it, and that plain http is refused outside tests. Add the https rule and the two 400 texts to the OpenAPI.
+5. **D44, D45, D47, D48 (revised OpenAPI).** Publish a revised OpenAPI with the differences listed in D44: GET /schemas/{schemaName}, 401 everywhere, an openIdConnect scheme without scopes and with roles per operation, no 403 on webhooks, one 404 type, the resourceType enum, the D30 fields, the D15 Location format, the event callbacks and the inlined versions response. That file then becomes the build contract.
+6. **D9, D12 (publication route).** Re-publication through PATCH with PUBLISHED is dropped in favour of a new version, following the OpenAPI. Confirm, or extend the PATCH enum and codes. Affects SIMPL-20529, SIMPL-20530, SIMPL-31098.
+7. **D7, D8 (one published schema per scope).** A second RESOURCE schema for a resource type is created as REVOKED; a second published SEARCH schema is rejected with 409. Confirm the asymmetry and that Providers are not told about a schema created as REVOKED.
+8. **D19, D20 (default properties).** Reject instead of enrich, with properties matched by local name from the default-properties model. Publish the full IRIs per resource type, say what applies to SEARCH, and correct BP02C.04.
+9. **D4 (schema key).** (name, schemaType, resourceType), with revoked names still taken and 400 for an ambiguous name. Record the key in the CDM.
+10. **D24 (webhook events).** Payload and triggers (including new versions) are invented here; delivery is now D50. Define them in the OpenAPI callbacks or an AsyncAPI file.
+11. **D25 (Provider e-mail).** One configured recipient, fixed subjects and fields. Confirm, and say what the instruction link points to.
+12. **D51 (Vocabulary Manager down).** Confirm 503 with Retry-After, the 3 s timeout, and that deprecated vocabulary terms only warn. Add 503 to both write operations.
+13. **D54, D55 (concurrency and check order).** Confirm writes are serialised per scope and that 409 comes before validation errors.
+14. **D53 (replacing a schema).** Confirm the gap when a schema is replaced by another name, and whether revoking the last published schema of a scope should be refused or warned.
+15. **D16 (GET /schemas/{schemaName}).** Added to this service and not public. Add it to the OpenAPI, or confirm a separate Resolver.
+16. **D11 (version status).** Derived, not stored; previous versions show REVOKED. Confirm and add the transition table to the CDM (D13).
+17. **D3 (version).** SemVer withdrawn; rename schemaVersion to version in the next API revision.
+18. **D6 (resource type).** Closed set Data, Application, Infrastructure. Confirm or name the open set.
+19. **D2 (scope).** Deprecate or remove /vocabularies; decide whether metadata quality profiles belong here and, if so, write stories.
+20. **D22, D23 (validation errors).** Confirm the detail prefixes and issue codes as contract, and how the Vocabulary Manager is queried in production.
+21. **D26, D28 (401 and webhook access).** Add 401 to every operation; confirm any authenticated participant may manage subscriptions.
+22. **D30, D31 (lists).** Provide common-components.yaml, confirm the added fields, say whether a creator column is needed and whether sorting must cover the whole result.
+23. **D29 (unknown event type).** 406 follows the contract; API-12 would prefer 400.
+24. **D1 (story pairs).** Cancel or update the originals of each [ENHANCE] story.
+25. UI texts and behaviour (D32 to D35): confirm placements, texts and file names.

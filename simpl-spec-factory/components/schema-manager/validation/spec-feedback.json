@@ -1,9 +1,9 @@
 {
  "component": "schema-manager",
  "counts": {
-  "blocker": 16,
-  "major": 52,
-  "minor": 36
+  "blocker": 17,
+  "major": 60,
+  "minor": 41
  },
  "findings": [
   {
@@ -1801,6 +1801,363 @@
    "code": "API-49",
    "step": "21b",
    "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "B-001",
+   "target": "BP02C.05",
+   "rule": "FLOW",
+   "severity": "blocker",
+   "finding": "Step BP02C.05 says that a schema or version is published whenever validation succeeds, and the Overview says each resource type has one schema. The decided lifecycle has three outcomes the process never reaches: a new RESOURCE schema stored as REVOKED when its resource type already has a published one, a SEARCH create or new version refused with 409 after validation passed, and a REVOKED schema published again by a new version. No decision says that the decisions win over the business process text (D1 covers stories, D44 the OpenAPI), so a builder who follows BP02C.05 publishes every valid schema and a builder who follows D13 does not.",
+   "evidence": "BP02C.05: 'Upon successful validation, the new schema or new version of an existing schema is published'. Overview: 'Each resource type (data, application, infrastructure) has one schema'. BP02C.03 and Assumptions: revocation only, 'new ones must use non-revoked schemas', no way back. Decided: D7 (create stored REVOKED, 201, no event, no e-mail), D8 (409 for a second published SEARCH schema), D12 (new version re-publishes a REVOKED schema, or stays REVOKED, or 409 for SEARCH), D13 and the glossary table 'Schema lifecycle'. SIMPL-20686/AC2 and SIMPL-32801/AC2 (stored as REVOKED) are linked to BP02C.01 but not to BP02C.05; no step describes their outcome. D19 asks to correct BP02C.04 for the same reason (enrich versus reject).",
+   "question": "Process owner: is the D13 lifecycle the process (one published schema per scope, create may store REVOKED, a new version may re-publish a revoked schema, SEARCH conflicts end in 409)? Then BP02C.05, the Overview and BP02C.03 need the same wording. For the build: may step 30 add one decision that the decisions win over BP02C text wherever they differ (.04 enrich, .05 publish, Overview 'one schema')?",
+   "options": [
+    "Decisions win over BP02C; process owner aligns BP02C.03, .04, .05 and the Overview to D7, D8, D12, D13 and D19",
+    "BP02C wins: every valid schema is published; D7 and D12 are reopened"
+   ],
+   "from_22a": [],
+   "see": [
+    "F-003",
+    "F-006",
+    "F-008",
+    "F-021",
+    "D-004",
+    "D-005",
+    "D7",
+    "D8",
+    "D9",
+    "D12",
+    "D13",
+    "D19"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-002",
+   "target": "BP02C.01, BP02C.02, BP02C.03 (event delivery)",
+   "rule": "MSV-03",
+   "severity": "major",
+   "finding": "The Governance Authority's create, new version and revoke requests wait for every webhook subscriber. D24 sends one POST per matching subscription after the change is stored and before the API answers, with a 5 second timeout each. Any authenticated participant may add subscriptions (D28), and nothing limits how many. If the POSTs go one after another, ten slow subscribers hold one publish request for up to 50 seconds, and a participant can do this on purpose. The rule asks that the publisher does not wait for its consumers, and that flows open to automation have a limit.",
+   "evidence": "D24: 'after the change is stored and before the API answers, the service sends one HTTP POST per matching subscription ... Timeout 5 seconds, one attempt'. D28: 'any authenticated participant may subscribe, list and delete'. D29: only an identical targetUrl plus event set is a duplicate, so many paths on one allowed host are many subscriptions. D46 limits hosts, not numbers. P-002 is about where the POST may go, P-009 about list size; neither limits the count or the wait. OWA-API6, MSV-03.",
+   "question": "Should delivery happen after the API has answered (asynchronous, for example an outbox or a queue), and should the number of subscriptions per participant or in total have a limit? If delivery stays synchronous, is it sequential or parallel, and what is the longest a Governance Authority request may wait?",
+   "options": [
+    "Deliver after the response, in the background; cap subscriptions per caller",
+    "Keep synchronous delivery, send in parallel, cap total wait and subscription count"
+   ],
+   "from_22a": [],
+   "see": [
+    "F-010",
+    "P-002",
+    "P-009",
+    "D24",
+    "D28",
+    "D29",
+    "D46"
+   ],
+   "code": "MSV-03",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-003",
+   "target": "BP02C.06 and event delivery",
+   "rule": "MSV-08",
+   "severity": "major",
+   "finding": "The hand-over from a stored schema change to the other parties is at most once and has no way to recover. The e-mail and each webhook POST get one attempt; a failure is only logged. If the service stops between storing the change and sending, the event and the e-mail are lost. A subscriber that misses SchemaRevoked keeps treating a revoked schema as usable, and Providers are not told. The specs do not say how a subscriber or the operator finds out and catches up.",
+   "evidence": "D24: 'one attempt, no retry; any failure or non-2xx answer is logged and never changes the API response'. D25: 'a mail failure is logged and does not change the API response'. BP02C.06: 'Providers are notified'; Outcomes: revocation 'becomes ... unavailable for Providers (Business Process 5B)'. SIMPL-19992 user story: subscribing 'so I can ensure my service is always using the correct schema'. The event carries eventId (D24), so duplicates could be detected, but nothing is ever sent twice.",
+   "question": "Is at-most-once delivery accepted for the process? If not: should events and e-mails go through a stored outbox with retries, and should subscribers be told to reconcile by reading GET /schemas (and with which role, see B-006)? Who is alerted when delivery fails?",
+   "options": [
+    "Accept at most once; document that subscribers reconcile by polling",
+    "Outbox with retries and backoff; failures visible to the operator"
+   ],
+   "from_22a": [],
+   "see": [
+    "F-009",
+    "F-010",
+    "D24",
+    "D25",
+    "B-006"
+   ],
+   "code": "MSV-08",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-004",
+   "target": "BP02C.04",
+   "rule": "MSV-06",
+   "severity": "major",
+   "finding": "Semantic validation in BP02C.04 depends on the Vocabulary Manager (prerequisite BP02B). Its behaviour when that dependency is slow or down is not defined: no timeout, no retry, and no answer for the Governance Authority. A builder can let every internal reference fail as localReferenceUnavailable, which returns 400 and blames the Governance Authority's schema, or answer 503 and keep the schema unvalidated. Whether a reference to a deprecated vocabulary passes is also open.",
+   "evidence": "BP02C.04: 'Semantic validation of schema properties based on vocabularies used'. Prerequisite: 'Internal vocabularies configured ... (Business Process 02B)'. D23: known internal vocabularies 'come from the vocabulary registry of environment choice D42'; its owner question asks 'how the Vocabulary Manager is queried in production'. D42: 'The production adapter to the Vocabulary Manager is behind the same port and not tested here'. Vocabulary status ACTIVE and DEPRECATED exists (glossary, Vocabulary status). No decision names a timeout or a 503.",
+   "question": "When the Vocabulary Manager cannot be reached in time, does create or new version fail closed with 503 (nothing stored, the Governance Authority may retry), and what is the timeout? Does a term from a DEPRECATED vocabulary give an error, a warning or nothing?",
+   "options": [
+    "503 with a retry hint after a fixed timeout; nothing stored; deprecated terms give a warning",
+    "Treat as validation error 400 localReferenceUnavailable"
+   ],
+   "from_22a": [],
+   "see": [
+    "F-035",
+    "D-007",
+    "D22",
+    "D23",
+    "D42"
+   ],
+   "code": "MSV-06",
+   "step": "22b",
+   "theme": "Other"
+  },
+  {
+   "id": "B-005",
+   "target": "BP02C (no step): webhook subscription and schema events",
+   "rule": "FLOW",
+   "severity": "major",
+   "finding": "The process has no step and no actor for the second hand-over the build makes: schema events to subscribing services. BP02C names only the Governance Authority as actor and only e-mail to Providers (BP02C.06, 2C.8). The decided build sends SchemaPublished and SchemaRevoked to any authenticated participant that subscribed, for RESOURCE and SEARCH schemas. The two webhook stories therefore have no place in the process, and the process does not say who the subscribers are (catalogue, federated search, other participants) or what they must do with an event.",
+   "evidence": "22a: SIMPL-19992 (BA-008) and SIMPL-24175 (BA-010) have no link to BP02C. SIMPL-19992 user story: 'governance authority service ... subscribe to event notifications for a schema's status changes'. SIMPL-24175: a 'Participant' with Tier 2 credentials; technical info: 'only communication is either from within the agent (e.g. Catalogue) or via T2 gateway'. Decided: D24 (triggers, payload, delivery), D28 (any authenticated participant), D46 (allow list). BP02C Actors: 'Governance Authority' only.",
+   "question": "Should BP02C add a step (or extend BP02C.05, BP02C.03 and BP02C.06) for publishing schema events to subscribers, name the subscribing parties as actors, and say what a subscriber is expected to do on SchemaPublished and SchemaRevoked? Or does this belong to another business process?",
+   "options": [
+    "Add a step 'Publish schema events to subscribers' with the subscriber as actor",
+    "Keep events out of BP02C and reference the process that owns them"
+   ],
+   "from_22a": [
+    "BA-008",
+    "BA-010"
+   ],
+   "see": [
+    "F-010",
+    "F-037",
+    "D-015",
+    "D24",
+    "D28",
+    "D46"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-006",
+   "target": "BP02C Outcomes (hand-over to BP05B)",
+   "rule": "FLOW",
+   "severity": "major",
+   "finding": "The main outcome of the process, a schema that 'becomes available ... for Providers (Business Process 5B)', has no decided read path. Every read operation needs GA_SCHEMA_VIEWER or GA_SCHEMA_ADMIN, the latest-content read is 'not public', and the service has no ingress. The specs do not say how a Provider, or the catalogue component that builds resource descriptions for Providers, finds the published schema of a resource type and with which credential. Inside this build that is consistent; across the process the hand-over is open.",
+   "evidence": "BP02C Outcomes: 'New schema, new version, or revocation becomes available or unavailable for Providers (Business Process 5B)'. D27: reads need GA_SCHEMA_VIEWER or GA_SCHEMA_ADMIN. D16: 'it is not public'. SIMPL-24175 technical info: 'service has no ingress so only communication is either from within the agent (e.g. Catalogue) or via T2 gateway'. D18 moves the catalogue checks to the catalogue component. No story has a Provider or the catalogue as the reader.",
+   "question": "Who reads the published schema for BP05B (the Provider through a UI, the catalogue component inside the agent, or both), through which operation, and with which role? Should D27 get a reader role for that party, or is the read path owned by another component?",
+   "options": [
+    "Add a technical reader role (for example for the catalogue) to D27 in a later build",
+    "Out of this component; the catalogue gets schemas through events plus a read with a GA role"
+   ],
+   "from_22a": [],
+   "see": [
+    "F-025",
+    "D2",
+    "D16",
+    "D18",
+    "D27",
+    "D28"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-007",
+   "target": "BP02C.01, BP02C.03, BP02C.05",
+   "rule": "FLOW",
+   "severity": "major",
+   "finding": "Replacing the published schema of a scope by another schema (another name) has no step, and the decided states force a gap. A new RESOURCE schema is stored as REVOKED while the old one is published (D7); a new SEARCH schema is refused (D8). So the Governance Authority must revoke the old schema first and then publish the new one by a new version (D12). In between, the scope has no published schema: Providers cannot create resource descriptions of that type, and for SEARCH federated search across Governance Authorities stops. Revoking the last published schema has the same effect, with no warning in the API.",
+   "evidence": "D7, D8, D12, glossary 'Schema lifecycle' rows. BP02C Assumptions: 'new ones must use non-revoked schemas'. SIMPL-32436/AC2: revoking the federated search schema means 'the federated search across multiple trustor GA is disabled'. SIMPL-33537/AC5: 'after revocation, a valid Federated Search schema can be published'. D33: the only safeguard is a UI confirmation popup. A new version of the same schema (BP02C.02) replaces content without a gap, but keeps the name.",
+   "question": "Is the gap accepted, and should the process say that a change of content goes through a new version (BP02C.02) and a change of name through revoke then re-publish? Or should there be an atomic 'replace' (publish the new schema and revoke the old one in one step)? Should the API warn or refuse when the last published schema of a scope is revoked?",
+   "options": [
+    "Accept the gap; BP02C states that content changes use a new version",
+    "Add an atomic replace step and transition"
+   ],
+   "from_22a": [],
+   "see": [
+    "F-025",
+    "D7",
+    "D8",
+    "D12",
+    "D18",
+    "D33"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-008",
+   "target": "BP02C.05 (one published schema per scope)",
+   "rule": "OWT-A10",
+   "severity": "major",
+   "finding": "The rule 'at most one published schema per scope' is checked when a schema is created or re-published, but nothing says what happens when two such requests run at the same time. Two Governance Authority users who each create the first Data schema, or a create and a re-publishing new version in the same scope, can both see 'no published schema' and both end PUBLISHED. The same holds for the 409 on a duplicate key. The state the process relies on ('one schema per resource type') can then break without an error.",
+   "evidence": "D7, D8, D12 state the rule per request; D4 the duplicate-key 409; D40 notes the rules are global per resource type and for SEARCH, but only for test isolation. No decision mentions concurrent writes, locking or a unique constraint. OWT-A10: 'no error leaves a half-done change behind' and fail closed.",
+   "question": "Must the one-published rule and the key uniqueness hold under concurrent requests (for example a unique constraint or a lock per scope), and what does the losing request get (409, or REVOKED as in D7)?",
+   "options": [
+    "Serialise writes per scope; the second request follows D7, D8 or D12 as if it came after",
+    "Accept the race; an operator repairs by revoking one"
+   ],
+   "from_22a": [],
+   "see": [
+    "D4",
+    "D7",
+    "D8",
+    "D12",
+    "D40"
+   ],
+   "code": "OWT-A10",
+   "step": "22b",
+   "theme": "Other"
+  },
+  {
+   "id": "B-009",
+   "target": "POST /schemas and POST /schemas/{schemaName}/versions (BP02C.04 before BP02C.05)",
+   "rule": "FLOW",
+   "severity": "major",
+   "finding": "The order of the checks on create and new version is not decided. BP02C runs validation (BP02C.04) before publication (BP02C.05), but the decisions do not say whether the 409 for an existing key (D4) or for a second published SEARCH schema (D8, D12) is checked before or after the three validation stages. A request that is both invalid and in conflict gets 400 from one builder and 409 from another, and the 'report' of BP02C.07 is sent in one case and not in the other.",
+   "evidence": "Glossary 'Schema lifecycle': row 'any, POST /schemas, same key exists: 409' and row 'any write, validation fails: 400', with no precedence. D22 orders the three validation stages only. D48 orders checks for reads (401, 403, then 400, then 404); D46 orders checks for webhooks. Nothing similar for schema writes.",
+   "question": "What is the order of checks on POST /schemas and POST /schemas/{schemaName}/versions: authentication and role, request fields (400), key and scope conflicts (409, 404), then validation stages (400)? Or validation first?",
+   "options": [
+    "Auth, fields, existence and conflict, then validation (cheap checks first)",
+    "Auth, fields, validation, then conflict (as BP02C orders .04 before .05)"
+   ],
+   "from_22a": [],
+   "see": [
+    "D4",
+    "D8",
+    "D12",
+    "D22",
+    "D48"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-010",
+   "target": "BP2C.1, BP2C.1.1 (no step)",
+   "rule": "BP-03",
+   "severity": "minor",
+   "finding": "Fifteen retrieval stories have no link to the process because requirement 2C.1 'retrieving schemas and their versions' has no step heading, and the 12b links target steps only. Their place is clear: requirement BP2C.1 and detailed requirement BP2C.1.1. BP02C.02 also depends on retrieval ('selects an existing schema from the data space catalogue') without saying so. This is a linking and numbering gap, not a missing function.",
+   "evidence": "22a BP-03 for SIMPL-13343, 13345, 13346, 13347, 13364, 13365, 15837, 20067, 32258, 32786, 32787, 32788, 32790, 32797, 32798. Inventory review: 'Retrieval is high-level requirement 2C.1, which has no process step heading'. bp-checks: BP2C.1 has 0 criteria. D16, D17, D18, D30, D31 define the reads.",
+   "question": "Should BP02C get a step for retrieving schemas and versions (used by BP02C.02 and by the retention of BP02C.03), or should the links of step 12b target BP2C.1.1 for these stories?",
+   "options": [
+    "Link the stories to BP2C.1.1 in the next 12b run",
+    "Add a step 'Retrieve schemas and versions' to BP02C"
+   ],
+   "from_22a": [
+    "BA-001",
+    "BA-002",
+    "BA-003",
+    "BA-004",
+    "BA-005",
+    "BA-006",
+    "BA-007",
+    "BA-009",
+    "BA-012",
+    "BA-013",
+    "BA-014",
+    "BA-015",
+    "BA-016",
+    "BA-017",
+    "BA-018"
+   ],
+   "see": [
+    "F-031",
+    "F-033",
+    "D16",
+    "D17",
+    "D18",
+    "D30"
+   ],
+   "code": "BP-03",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-011",
+   "target": "BP02C steps (sequence)",
+   "rule": "FLOW",
+   "severity": "minor",
+   "finding": "The step list reads as one linear sequence, while the flow has three branches. Revocation (BP02C.03) does not pass through validation and publication; BP02C.07 is the failure branch of BP02C.04 but is numbered after BP02C.06; and 'the previous version is revoked' in BP02C.05 is an implicit, derived status with no event (D11, D24), unlike the revocation of BP02C.03. The figures may show the branches, but the text does not.",
+   "evidence": "BP02C 'Process steps': Trigger, then .01 to .07 in order. Source defect 1: .05 was missing on the source page. D11: version status is derived; D24: 'No event for ... the implicit REVOKED status of a replaced version'. Glossary: 'Revoke' means PATCH only.",
+   "question": "Can the process text state the three paths (create: .01, .04, .05, .06 or .07; new version: .02, .04, .05, .06 or .07; revoke: .03, .06), and say 'replaced' rather than 'revoked' for the previous version in BP02C.05?",
+   "options": [],
+   "from_22a": [],
+   "see": [
+    "D-003",
+    "D-005",
+    "D11",
+    "D24"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-012",
+   "target": "BP02C.07",
+   "rule": "FLOW",
+   "severity": "minor",
+   "finding": "BP02C.07 describes a report that Simpl-Open 'sends' to the Governance Authority, as a separate step. In the decided flow the report is the synchronous 400 answer to the create or new-version request, with the issues of the first failing stage; nothing is sent later. Warnings on success (external references skipped) are returned in the 201 answer and have no place in the process.",
+   "evidence": "BP02C.07: 'Simpl-Open sends a report to the Governance Authority about validation issues'. 2C.5: 'receiving feedback'. D22: 400 problem+json with issues[], stop at first failing stage. D23: warnings in validationWarnings of the 201. Glossary: 'report' and 'feedback' are retired synonyms of validation issue.",
+   "question": "Can BP02C.07 say that the validation result is returned in the answer to the request (errors on failure, warnings on success)?",
+   "options": [],
+   "from_22a": [],
+   "see": [
+    "F-027",
+    "F-028",
+    "D-007",
+    "D22",
+    "D23"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-013",
+   "target": "BP02C.06, BP2C.8",
+   "rule": "FLOW",
+   "severity": "minor",
+   "finding": "BP02C.06 and requirement 2C.8 still say Providers are informed about every schema change. The decided flow informs them only for resource description schemas, by one e-mail to one configured address, and not for a schema stored as REVOKED or a version that leaves a schema REVOKED. Federated search schema changes reach only webhook subscribers.",
+   "evidence": "BP02C.06: 'Providers are notified about changes (e.g. via email)'. SIMPL-33694/AC5: no notification for SEARCH. D25: RESOURCE only, NOTIFICATION_RECIPIENT, 'never for a schema stored as REVOKED'. D7, D12.",
+   "question": "Can BP02C.06 and 2C.8 state the RESOURCE-only rule and the cases without notification?",
+   "options": [],
+   "from_22a": [],
+   "see": [
+    "F-009",
+    "F-026",
+    "D7",
+    "D12",
+    "D25"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-014",
+   "target": "BP02C.02, BP02C.06",
+   "rule": "OWA-API6",
+   "severity": "minor",
+   "finding": "Each new version of a resource description schema sends an e-mail to all Providers and asks them to align their resource descriptions. Nothing limits how often a schema can be versioned or revoked and re-published, so a script or a mistake by a Governance Authority administrator can create many obligations and messages for Providers in a short time. The actor is trusted, so the risk is low.",
+   "evidence": "D24, D25 (one e-mail per publish and revoke). D12 (revoke and re-publish by new version is possible any number of times). BP02C.06 and 2C.8 user story: 'Providers ... can take action to align resource descriptions'. No rate or approval rule in the decisions; D33 confirms revocation in the UI only.",
+   "question": "Is a limit or an approval needed for schema changes that notify Providers (for example a rate per schema, or a second administrator for revocation), or is the Governance Authority's own role enough?",
+   "options": [
+    "No limit; rely on GA_SCHEMA_ADMIN",
+    "Rate limit per schema or four-eyes approval for revoke"
+   ],
+   "from_22a": [],
+   "see": [
+    "D12",
+    "D24",
+    "D25",
+    "D33"
+   ],
+   "code": "OWA-API6",
+   "step": "22b",
+   "theme": "Business process flow"
   }
  ]
 }

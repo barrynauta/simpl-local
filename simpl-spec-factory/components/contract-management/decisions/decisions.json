@@ -1,774 +1,1039 @@
 [
-  {
-    "id": "D1",
-    "topic": "Target flow and superseded stories",
-    "closes": [
-      "F-003",
-      "F-027",
-      "F-028",
-      "F-029",
-      "F-038"
-    ],
-    "decision": "The target is the R17 flow of the October 2026 stories: SIMPL-35526 (prepare offer, Consumer side), SIMPL-35660 (accept or reject and Consumer signing), SIMPL-35584 (Provider validates and signs), SIMPL-35677 (Consumer validates), SIMPL-35440 (VC retrieval), SIMPL-35858, 35863, 35888 (EDC callbacks, client side only) and SIMPL-35692 (timeout). Older stories for the same step count only where these decisions say so. SIMPL-19824, 19829 and 22690 are replaced: from them carry over only the error cases listed in D3 and D4 (400 for an invalid body, 401, 415, 'no record is stored when the call fails') and idempotency per contractNegotiationId (D4). SIMPL-19933 and 21948 keep only their list of checks and rejection reasons (D9); their 'asynchronous, observe the state' rule holds for the Consumer side (D8) but not for the Provider side (D7). SIMPL-19934 is superseded by SIMPL-35584: its '200 Finalized' response is not built. SIMPL-21928, 21963, 19927 and 19938 are business-level descriptions of steps that D5, D6, D7 and D10 make concrete.",
-    "options": [
-      "New flow: SIMPL-35584 and 35677 with EDC callbacks, older stories only add checks and reasons",
-      "Old flow: SIMPL-19933, 19934 and 21948 stay normative"
-    ],
-    "basis": "Source hierarchy rule 2 (newest live story for a step wins). The October stories name the technical architecture R17, give endpoints and callbacks, and the 'Replaced' stories name their replacements.",
-    "status": "provisional",
-    "owner_question": "Confirm that SIMPL-19824, 19829, 22690 and 19934 can be closed, and that SIMPL-19933 and 21948 are kept only for their checks and reasons.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D2",
-    "topic": "Build scope: two backends, no frontend, no orchestrator",
-    "closes": [
-      "F-021",
-      "F-050",
-      "F-008",
-      "D-014",
-      "F-052"
-    ],
-    "decision": "Build contract-manager-be and contract-ui-be only. Not built: the contract manager frontend, the catalogue UI, the contract consumption adapter (context only), a Contract Orchestrator and any Kafka flow. UI stories are tested at the contract-ui-be API that a frontend would call. The EDC endpoints of SIMPL-35858, 35863, 35888 (and /signed) belong to the Connector: the Contract Manager is only their client, and tests replace the Connector with a stub (E4). The Contract Manager is the one translation layer to the Connector: EDC ids come in on its API and go out on its callbacks. For SIMPL-21924 only AC2's Contract Manager outcome counts, and it is met by D4 (a usage contract record in state Requested). SIMPL-21924/AC1, AC3, AC4 and the 'see the result' part of AC2 are catalogue UI work and are not built. User login and roles are checked at the gateway (SEC-07, SEC-12), not in these backends, so SIMPL-30959/AC3 and the 403 cases for users are not tested here.",
-    "options": [
-      "Build backends only and test UI stories at API level",
-      "Also build a frontend"
-    ],
-    "basis": "SIMPL-22690 and flow.puml are replaced by the R17 stories, which have the Contract Manager call EDC directly (DDD-14: one translation layer). No frontend source or design is in the input set. SEC-12 puts Tier 1 authorisation at the gateway.",
-    "status": "provisional",
-    "owner_question": "Confirm that the Contract Orchestrator and its Kafka events are gone from the target design, and that SIMPL-21924 belongs to the catalogue component.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D3",
-    "topic": "Existence check: asynchronous search plus /isPresent callback",
-    "closes": [
-      "F-001",
-      "F-018",
-      "F-030",
-      "F-031"
-    ],
-    "decision": "The Connector calls the existing POST /agreements/{contractNegotiationId}/search on the Contract Manager. The body must hold contractAgreementId, contractDefinitionId, assetId, providerId and consumerId (400 if one is missing or does not match its pattern). The Contract Manager answers at once with 200 ContractSearchConfirmation echoing contractAgreementId and contractDefinitionId. It then looks in its own store for a usage contract with the same consumerId and assetId in an active state, and calls the Connector POST /isPresent/{contractNegotiationId}/{true|false}. Active states are Active and the reserved states Suspended, Revocation requested and Reactivation requested (in this build only Active is reachable). The operation works on both sides (no side check). Errors: 400 invalid body, 401 missing or wrong API key, 406 unsupported Accept, 415 unsupported Content-Type, 500 unexpected. The 401 and 403 cases of SIMPL-32509 about the Consumer's identity and role are not built: the caller is the Connector, identified by its API key. POST /resourceDescriptions/{resourceDescriptionId}/validateExistenceContract (SIMPL-32509) is not built.",
-    "options": [
-      "Async: search returns an ACK, result to EDC via /isPresent",
-      "Sync: validateExistenceContract returns exists"
-    ],
-    "basis": "The OpenAPI already has the search operation with an acknowledgement schema; SIMPL-35858 (newest) adds the /isPresent callback; SIMPL-32509's endpoint is in no OpenAPI. API-37, API-38, API-44 for the error codes.",
-    "status": "provisional",
-    "owner_question": "On which side does the existence check run (BP 7.2.2 says Provider, SIMPL-35858 says Consumer)? Is SIMPL-32509 withdrawn?",
-    "affects": [
-      "api",
-      "tests",
-      "events"
-    ]
-  },
-  {
-    "id": "D4",
-    "topic": "Prepare the usage contract offer on the Consumer side (/create)",
-    "closes": [
-      "F-002",
-      "F-032",
-      "F-033"
-    ],
-    "decision": "POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create runs on the Consumer side (SIMPL-35526); on the Provider side it returns 400. Body ContractAgreementCreate with all five fields required (400 otherwise). The Contract Manager: stores a usage contract record (state Requested, wire CREATED) keyed by contractNegotiationId with both path ids; renders the human-readable usage contract offer as HTML from the record data (E8); computes its SHA-256 hash; calls contract-ui-be POST /contractOffers/{contractNegotiationId} with humanReadable, hash, status CREATED, assetId, providerId and consumerId; then hands a notification request 'offer available for review' for the local participant to the Notification Service stub (E4). Response 201 ConfirmationResponse {contractAgreementId, contractDefinitionId, status CREATED}. If the Contract UI backend call fails, return 500 and store nothing. If the notification fails, log it and still return 201. A second call with the same contractNegotiationId returns 409 and changes nothing (idempotency carried over from SIMPL-22690). The response of SIMPL-32511 (usageContract, usageContractHash, status 'Requested', proverId) is not built. No catalogue call is made in this build.",
-    "options": [
-      "Provider side, returns the offer body (SIMPL-19829, 32511)",
-      "Consumer side, prepares the offer for the UI and notifies the user (SIMPL-35526)"
-    ],
-    "basis": "SIMPL-35526 is the newest story on this operation and its technical notes say 'execute on the consumer side instead of the provider side'. The OpenAPI fixes the 201 ConfirmationResponse. 409 per API-12.",
-    "status": "provisional",
-    "owner_question": "Confirm the move of /create to the Consumer side, and how the Contract Manager gets resource name and Provider name (catalogue call by which id).",
-    "affects": [
-      "api",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D5",
-    "topic": "Consumer accept or reject, and Consumer signing",
-    "closes": [
-      "F-010",
-      "F-019",
-      "F-034",
-      "F-040",
-      "F-025"
-    ],
-    "decision": "Contract UI backend calls the Contract Manager PATCH /contractOffers/{contractNegotiationId}/{operation} (OpenAPI method and code: PATCH, 200 TransferConfirmationResponse {contractNegotiationId, status INITIATED}). Only on the Consumer side; on the Provider side 400. Only for a record in state Requested; otherwise 409; unknown id 404. accept means sign at once, in the same call: (1) Signer Service signs the canonical JSON of the contract data, (2) VC Issuer issues a VC whose credentialSubject holds the contract data, the offer hash and the signature value (E8), (3) Wallet stores the VC, (4) the record goes to Signed (wire FINALIZING) with consumerSignatureDate set, (5) Connector POST /signed/{contractNegotiationId}/true, (6) 200. If any of steps 1 to 3 fails: 500 problem detail, the record stays Requested, the Connector is not called, and the user may try again. reject: no signing, record goes to Closed (wire TERMINATED), Connector POST /signed/{contractNegotiationId}/false, 200. The VC Issuer creates the VC only after the signature exists, so no 'unsigned VC' is stored. The signing result is visible through GET /agreements/{contractAgreementId} (status FINALIZING, consumerSignatureDate).",
-    "options": [
-      "PATCH, 200 (OpenAPI)",
-      "POST, 201 (story)",
-      "Accept triggers signing at once",
-      "Accept and sign are separate steps"
-    ],
-    "basis": "Wire format follows the OpenAPI (hierarchy rule 4); behaviour follows SIMPL-35660 and its technical details (steps in that order). SIMPL-21928/AC2 and AC4 ('not marked as signed unless the flow completes') give the failure rule.",
-    "status": "provisional",
-    "owner_question": "Confirm PATCH and 200 for the accept and reject operation, and that a failed signing leaves the offer open for a retry.",
-    "affects": [
-      "api",
-      "tests",
-      "events"
-    ]
-  },
-  {
-    "id": "D6",
-    "topic": "Wallet and downstream failures: no user prompt",
-    "closes": [
-      "F-006",
-      "F-007",
-      "F-024"
-    ],
-    "decision": "Storing the VC is an automatic backend step. There is no prompt for 'another secure location'. A wallet failure fails the step that stores the VC (D5 on the Consumer side, D7 on the Provider side) with a 500 problem detail whose detail text is 'Secure storage location unavailable' (wallet stub answers 503 or does not answer), 'Secure storage location is full' (wallet stub answers 507) or 'Secure storage location is corrupted' (any other wallet error). The record is not moved forward. In SIMPL-19938 the heading versions (AC1.2 to AC4.2, system level) are live; the list-item versions are not. 'Securely stored' means: the VC was stored through the wallet stub and GET /verifications/{contractNegotiationId}/vc returns it (D10). Read access is the API key (E2); there are no user roles in these backends.",
-    "options": [
-      "UI prompt to choose another location",
-      "No prompt: the step fails with an error"
-    ],
-    "basis": "The R17 stories (SIMPL-35584, 35660) store the VC inside a backend call with no user in the loop. The error texts are kept from SIMPL-19927 and 19938.",
-    "status": "provisional",
-    "owner_question": "Drop 'specify another secure location' from SIMPL-19927 and 19938, and remove the duplicate AC versions from SIMPL-19938.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D7",
-    "topic": "Provider validates and signs (validateAndIssue)",
-    "closes": [
-      "F-012",
-      "F-020",
-      "F-039"
-    ],
-    "decision": "New operation POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/validateAndIssue on the Contract Manager, Provider side only (400 on the Consumer side). Body ContractAgreementCreate, all five fields required (400). Processed synchronously. The Contract Manager stores or reuses the Provider record (state Requested), fetches the Consumer VC through Connector GET /vcExchange/{contractNegotiationId}/request, validates it (D9), and on success signs and issues its own VC (same steps as D5, the offer hash copied from the Consumer VC), stores it in the wallet, sets Active (wire FINALIZED) with both signature dates, calls Connector POST /signed/{contractNegotiationId}/true and returns 201 ConfirmationResponse {contractAgreementId, contractDefinitionId, status FINALIZED}. Validation result REJECTED: record to Closed (wire TERMINATED), Connector POST /isValid/{contractNegotiationId}/false, notification request to the Consumer (D11), response 422 problem detail with type urn:problem-type:simpl:usageContractValidationFailed and member rejectionReason. Technical failure (Connector, VC Issuer, Signer or wallet error, D9 result FAILED): 500 problem detail, record stays Requested, no Connector callback, the Connector may call again. A record already Active or Closed: 409 (D9 duplicate rule). SIMPL-21963 is met when the Provider can fetch the Consumer VC: before the Consumer signed, the fetch gives 404 and the result is REJECTED with MISSING_CONTRACT_DATA.",
-    "options": [
-      "Synchronous error code, contract not signed",
-      "201 accepted, then EDC told via /isValid or /signed false"
-    ],
-    "basis": "SIMPL-35584 (newest) gives the path, 201 and the steps; its AC1 lists validation and signing as outcomes of the call, so the call is synchronous. 422 and 409 per API-12; 5xx for server-caused errors per API-44.",
-    "status": "provisional",
-    "owner_question": "Add validateAndIssue to the OpenAPI with these responses. Should a Provider-side rejection also call /isValid, or only /signed false?",
-    "affects": [
-      "api",
-      "tests",
-      "events"
-    ]
-  },
-  {
-    "id": "D8",
-    "topic": "Consumer validates the Provider VC (/verifications)",
-    "closes": [
-      "F-011",
-      "F-035"
-    ],
-    "decision": "Keep the OpenAPI: PUT /verifications/{contractNegotiationId}, 200 VerificationConfirmationResponse {contractNegotiationId, status INITIATED}. The request body is optional and ignored; the Contract Manager fetches the Provider VC itself through Connector GET /vcExchange/{contractNegotiationId}/request. Consumer side only (400 on the Provider side). Unknown contractNegotiationId: 404. The record must be in state Signed; a record in Requested, Active or Closed gives 409. Validation then runs asynchronously (D9). SUCCESS: record to Active (wire FINALIZED), providerSignatureDate set from the Provider VC issuanceDate, the Provider VC is kept with the record, Connector POST /isValid/{contractNegotiationId}/true. REJECTED or FAILED (including the VC fetch failing): record to Closed (wire TERMINATED), Connector POST /isValid/{contractNegotiationId}/false. On the Consumer side the Connector always learns the outcome through /isValid, so a technical failure is also reported as false.",
-    "options": [
-      "PUT, 200, VC in body (OpenAPI)",
-      "POST, 202, no body, VC fetched via EDC (story)"
-    ],
-    "basis": "Wire format from the OpenAPI (its response status INITIATED already says 'accepted, result later'); behaviour from SIMPL-35677 and the asynchronous model of SIMPL-21948/AC10.",
-    "status": "provisional",
-    "owner_question": "Confirm PUT and 200, and whether the VC body in VerifyCredentialRequest can be removed.",
-    "affects": [
-      "api",
-      "tests",
-      "events"
-    ]
-  },
-  {
-    "id": "D9",
-    "topic": "Validation checks, results and rejection reasons",
-    "closes": [
-      "F-014",
-      "F-015",
-      "F-016",
-      "F-017"
-    ],
-    "decision": "One rule for both sides. Checks in this order, the first failure decides: (1) VC cannot be fetched because the other side answers 404: REJECTED, MISSING_CONTRACT_DATA. (2) VC Issuer validation answers INVALID: REJECTED, INVALID_PROVIDER_SIGNATURE on the Consumer side, INVALID_CONSUMER_SIGNATURE on the Provider side. (3) VC Issuer validation answers INDETERMINATE: REJECTED, PROVIDER_CREDENTIAL_TRUST_ISSUE or CONSUMER_CREDENTIAL_TRUST_ISSUE. (4) a required credentialSubject field is missing (E8): REJECTED, SCHEMA_OR_CONTENT_VALIDATION_FAILURE. (5) a credentialSubject field differs from the stored record or the request data: REJECTED, PAYLOAD_INTEGRITY_MISMATCH. (6) now is before validFrom or after validUntil of the VC (absent means no limit): REJECTED, CONTRACT_VALIDITY_ISSUE. (7) any technical error (Connector unreachable or 5xx, VC Issuer error): FAILED, TECHNICAL_VALIDATION_ERROR, no automatic retry. Otherwise SUCCESS. Duplicate or replayed submission: the key is contractNegotiationId; a new validation on a record that is already Active or Closed is not run, gets 409 with reason DUPLICATE_OR_REPLAYED_SUBMISSION in the problem detail and changes nothing (result IGNORED, logged). The result, reason and time are stored with the record and logged with the contractNegotiationId. The validity period of an offer or a contract is the validFrom and validUntil of its VC.",
-    "options": [
-      "Technical error ends in FAILED",
-      "Technical error ends in PENDING_RETRY and is retried",
-      "Same codes on both sides with CONSUMER instead of PROVIDER"
-    ],
-    "basis": "The reason table of SIMPL-21948 is the only coded source; SIMPL-19933 has the same cases in text. The CDM VerifiableCredential has validFrom and validUntil. FAILED without retry is simplest to build and test.",
-    "status": "provisional",
-    "owner_question": "Confirm the Provider-side reason codes, FAILED without retry, and the VC validity dates as the contract validity period.",
-    "affects": [
-      "api",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D10",
-    "topic": "VC retrieval endpoint (SIMPL-35440)",
-    "closes": [
-      "F-036"
-    ],
-    "decision": "New operation GET /verifications/{contractNegotiationId}/vc on the Contract Manager, both sides. 200 with the participant's own VerifiableCredential (OpenAPI schema) read from the wallet stub. 404 problem detail when the contractNegotiationId is unknown or the own VC is not stored yet. 500 problem detail when the wallet stub fails. 401 without a valid API key.",
-    "options": [
-      "404 for unknown id and not signed yet",
-      "Separate codes per case"
-    ],
-    "basis": "SIMPL-35440 technical details (check the id, then the wallet). API-12 and API-44.",
-    "status": "provisional",
-    "owner_question": "Add GET /verifications/{contractNegotiationId}/vc to the OpenAPI with these responses.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D11",
-    "topic": "Notification requests",
-    "closes": [
-      "F-041",
-      "F-033",
-      "D-016"
-    ],
-    "decision": "Two notification requests, both handed to the Notification Service stub (E4) and never sent as email by the Contract Manager: 'usage contract offer available for review' to the local participant after D4, and 'signed usage contract offer could not be validated' to the Consumer after a Provider-side REJECTED result (D7, not after FAILED). A request carries recipientParticipantId (the local participant id from configuration, or consumerId), notificationType (USAGE_CONTRACT_OFFER_AVAILABLE or SIGNED_OFFER_VALIDATION_FAILED), contractNegotiationId and correlationId (the contractNegotiationId). The Notification Service resolves the email address. If consumerId is empty, nothing is sent and the failure is logged. If the stub answers an error, the failure is logged, there is no retry and the main call is not affected.",
-    "options": [
-      "Recipient email resolved by the Contract Manager",
-      "Recipient participant id, address resolved by the Notification Service"
-    ],
-    "basis": "SIMPL-21966 says contact details must not be hardcoded and delivery stays with the Notification Service; the Notification Service contract (SIMPL-29268) is not in the input, so the simplest hand-over is chosen.",
-    "status": "accepted risk",
-    "owner_question": "Publish the Notification Service integration contract (topic or endpoint, payload, retry) so the stub can be replaced.",
-    "affects": [
-      "api",
-      "tests",
-      "events"
-    ]
-  },
-  {
-    "id": "D12",
-    "topic": "One state machine for the usage contract",
-    "closes": [
-      "F-004",
-      "D-005",
-      "D-006",
-      "D-007",
-      "D-009",
-      "F-018"
-    ],
-    "decision": "The Contract Manager holds one usage contract record per contractNegotiationId and side, with one state machine; the offer is its first phase. States and wire values (ContractAgreementData.status): Requested = CREATED; Signed (the signed usage contract offer, Consumer side only) = FINALIZING; Active (the signed usage contract, both signatures, validated) = FINALIZED; Closed (ended without a usage contract: rejected, expired or failed validation) = TERMINATED. INITIATED appears only in acknowledgements, never as a stored state. Transitions: Requested to Signed (D5 accept), Requested to Closed (D5 reject, D13 timeout, D7 rejection), Requested to Active (Provider side, D7), Signed to Active (D8 success), Signed to Closed (D8 failure). The contract-ui-be offer has its own value set, as a view of the user decision: Requested = CREATED, Accepted = ACCEPTED (set only after the Contract Manager accept call succeeded), Rejected = REJECTED, Expired = EXPIRED (new value, D13). The contract-manager-be ContractOffer enum value APPROVED is not used by any operation in this build and is retired in favour of ACCEPTED. The UI labels are the state names in the glossary state tables. Suspended, Revocation requested, Revoked, Reactivation requested and Terminated are reserved states of the Active phase and are not built (D15).",
-    "options": [
-      "One state machine in the Contract Manager with the offer as first phase",
-      "Two state machines, offer in the UI backend and contract in the Contract Manager"
-    ],
-    "basis": "DDD-12 (states defined once), DDD-04 and DDD-05 (one value set, written label mapping). Wire values stay as in the OpenAPI (hierarchy rule 4); only EXPIRED is added. The business process pair 'signed usage contract offer' and 'signed usage contract' gives Signed and Active.",
-    "status": "provisional",
-    "owner_question": "Confirm the state names, the mapping to the existing enums, the new EXPIRED value, and that APPROVED can be renamed ACCEPTED in contract-manager-be.",
-    "affects": [
-      "api",
-      "ui",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D13",
-    "topic": "Timeout of unsigned offers in contract-ui-be",
-    "closes": [
-      "F-037",
-      "D-008"
-    ],
-    "decision": "A scheduler in contract-ui-be runs on a cron expression (default daily at 01:00) and selects offers in CREATED whose creation time is older than the timeout (default 7 days, E6). Only CREATED counts as pending; every other status counts as finalized and is left alone. For each selected offer it calls the Contract Manager PATCH /contractOffers/{contractNegotiationId}/reject; on success it sets the offer to EXPIRED (label 'Expired'). If the call fails, the offer stays CREATED, the failure is logged and the next run tries again. The Contract Manager handles the reject as in D5 (Closed, /signed false). 'Terminated' is not used for offers: SIMPL-35692/AC4 is met by status EXPIRED in GET /contractOffers.",
-    "options": [
-      "Pending = CREATED",
-      "Pending = CREATED or ACCEPTED",
-      "Terminated for both the timeout and the Provider's termination",
-      "Expired for the timeout"
-    ],
-    "basis": "SIMPL-35692 technical description; DDD-02 (one term, one meaning) for Expired. ACCEPTED offers are already signed in the same call (D5), so they are not pending.",
-    "status": "provisional",
-    "owner_question": "Confirm 'Expired' as the state name for an offer closed by timeout, and the new enum value EXPIRED.",
-    "affects": [
-      "api",
-      "ui",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D14",
-    "topic": "Offer overview and details through contract-ui-be",
-    "closes": [
-      "F-044",
-      "F-045",
-      "F-046",
-      "F-051"
-    ],
-    "decision": "GET /contractOffers returns 200 with a JSON array of ContractOffer (an empty array when there is none, never 404). GET /contractOffers/{contractNegotiationId} returns one ContractOffer or 404. ContractOffer gets these extra properties: contractNegotiationId and createdAt (read only), assetId, providerId and consumerId (sent by the Contract Manager in D4). The overview columns map to: Contract negotiation ID = contractNegotiationId, Resource description ID = assetId (D23), Resource name and Provider name = shown inside humanReadable only, Status = status with the D12 label. Filtering is a frontend concern and is not built. PATCH /contractOffers/{contractNegotiationId}/{operation} (accept or reject) is allowed only for CREATED (409 otherwise, 404 unknown); it calls the Contract Manager (D5) and on success sets ACCEPTED or REJECTED and returns 200 with the new status as a JSON string. If the Contract Manager call fails, the offer stays CREATED and the response is 502 problem detail. Usage contracts after acceptance (Signed, Active) are read from the Contract Manager GET /agreements/{contractAgreementId}, not from contract-ui-be.",
-    "options": [
-      "Extend contract-ui-be ContractOffer with ids and an array response",
-      "Serve the overview from the Contract Manager"
-    ],
-    "basis": "SIMPL-30959, 30960 and 32505 need the ids and a list; the OpenAPI GET /contractOffers returns a single object with no id (API-10, API-12). Smallest change that makes the criteria testable.",
-    "status": "provisional",
-    "owner_question": "Which API serves the overview of usage contracts after acceptance, and where do resource name and Provider name come from?",
-    "affects": [
-      "api",
-      "ui",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D15",
-    "topic": "Lifecycle after Active is not built",
-    "closes": [
-      "F-005",
-      "F-022",
-      "F-023",
-      "F-048",
-      "F-049",
-      "F-053",
-      "F-054"
-    ],
-    "decision": "SIMPL-31053, 31076, 31115, 31116, 31117 and 31118 (revoke, respond, suspend, request reactivation, reactivate, terminate) are not built and not tested in this run: no API operation exists for them and no channel to the other participant is described. The writers assume nothing about them. The reserved states and transitions are written in the glossary state table as a proposal for the owners: Active to Revocation requested (either party, reason mandatory, max 1000 characters, shown to the other party); Revocation requested to Revoked (accept) or back to Active (deny, justification mandatory); Active to Suspended (Provider, reason mandatory); Suspended to Reactivation requested (Consumer, justification mandatory); Suspended or Reactivation requested to Active (Provider reactivates); Reactivation requested back to Suspended (Provider declines, proposal); Active, Suspended, Revocation requested or Reactivation requested to Terminated (Provider, justification mandatory). Access enforcement for these states is outside this component.",
-    "options": [
-      "Build local state changes with invented endpoints",
-      "Leave the lifecycle stories out of this build"
-    ],
-    "basis": "No OpenAPI operation, no event contract, and the stories are new backlog items or waiting for the subcontractor. Inventing a cross-participant protocol would make the build diverge from any later specification.",
-    "status": "accepted risk",
-    "owner_question": "Which backend owns the lifecycle operations, through which channel does a change reach the other participant, and how is resource access removed and restored?",
-    "affects": [
-      "api",
-      "ui",
-      "events"
-    ]
-  },
-  {
-    "id": "D16",
-    "topic": "Contract consent status is not built",
-    "closes": [
-      "F-047"
-    ],
-    "decision": "SIMPL-31047 is not built: no API carries the consent status or the 'consent defined' flag. The writers assume no consent data in contract-ui-be or the Contract Manager.",
-    "options": [
-      "Read consent status from Consent Management",
-      "Leave out of this build"
-    ],
-    "basis": "No field in any API of the input; the Consent Management API is not in the input set.",
-    "status": "accepted risk",
-    "owner_question": "Which API provides the contract consent assertion status for a usage contract, and is it read on load?",
-    "affects": [
-      "ui",
-      "api"
-    ]
-  },
-  {
-    "id": "D17",
-    "topic": "Usage contract audit data endpoint",
-    "closes": [
-      "F-009"
-    ],
-    "decision": "New operation GET /audits/usageContractStatusCounts on the Contract Manager (both sides, API key). 200 with {generatedAt (date-time), statusCounts: [{status, count}]} listing every stored state of D12 (CREATED, FINALIZING, FINALIZED, TERMINATED), with 0 where there is none. 'A given moment' is the time of the request. The audit rule package is not built.",
-    "options": [
-      "On-request endpoint with counts per state",
-      "Scheduled push to logging and monitoring"
-    ],
-    "basis": "SIMPL-34633 note: 'the amount of usage contracts per status at a given moment' made available 'through an endpoint'. An on-request GET is the simplest to build and test.",
-    "status": "provisional",
-    "owner_question": "Confirm the endpoint and format, and describe the audit rule package.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D18",
-    "topic": "Contract Clause document upload is not built",
-    "closes": [
-      "F-013",
-      "F-042",
-      "F-043",
-      "F-056"
-    ],
-    "decision": "SIMPL-28846 is not built in this run: the upload API it depends on is not in the input and is owned by another team. For when it is built, the defaults are: SHA-256 hash in lower-case hex; every upload creates a new document and documentId (no reuse on equal hash); errors as RFC 9457 problem details (400 validation, 413 too large, 415 unsupported type, 500 storage or metadata failure).",
-    "options": [
-      "Build an upload endpoint now",
-      "Leave out until the upload API is published"
-    ],
-    "basis": "The story lists endpoint, format, size and errors as still to be defined by the upload API owner. 'Always new' is the simplest rule that never overwrites (SIMPL-28846/AC6).",
-    "status": "accepted risk",
-    "owner_question": "Publish the upload API (endpoint, MIME types, maximum size, error codes) and say which component exposes it.",
-    "affects": [
-      "api"
-    ]
-  },
-  {
-    "id": "D19",
-    "topic": "Usage contract is the term; agreement names stay on the wire",
-    "closes": [
-      "D-001",
-      "D-002"
-    ],
-    "decision": "The business term is 'usage contract' in tests, logs, docs and new names. Existing API names stay as published (paths /agreements, schemas ContractAgreementData and ContractAgreementCreate, parameter contractAgreementId): the glossary records them as wire names of the usage contract. contractAgreementId is the id the Connector supplies in the path (the EDC contract agreement id); the Contract Manager stores it and never mints its own. New names introduced by these decisions use usage contract wording (for example usageContractStatusCounts).",
-    "options": [
-      "'usage contract' everywhere, rename the CDM and API",
-      "Keep 'contract agreement' on the wire with a glossary mapping",
-      "Same id as the EDC agreement",
-      "Own id plus an EDC reference"
-    ],
-    "basis": "DDD-01 asks one term; the business process and 30 stories use 'usage contract'. Renaming published paths is outside a build decision (hierarchy rule 4). The /create path already carries contractAgreementId from the Connector.",
-    "status": "provisional",
-    "owner_question": "Rename the CDM class to UsageContract and plan the API rename; confirm that the Contract Manager uses the EDC agreement id, and update the Contract Consumption CDM note on identifier equivalence.",
-    "affects": [
-      "api",
-      "data",
-      "tests"
-    ]
-  },
-  {
-    "id": "D20",
-    "topic": "Identity of the usage contract",
-    "closes": [
-      "D-004"
-    ],
-    "decision": "contractNegotiationId identifies a usage contract record over its whole life, on each side, in both services (offer phase and contract phase). contractAgreementId is a unique attribute of the same record, set from the /create or validateAndIssue path, and used to address it in /agreements/{contractAgreementId}. Paths are not renamed. The path parameter of POST /agreements/{contractNegotiationId}/search is a contractNegotiationId, as named.",
-    "options": [
-      "One id for the whole life, agreement id as attribute",
-      "Two entities with two ids"
-    ],
-    "basis": "Most operations, the VC, the UI and the callbacks are keyed by contractNegotiationId; DDD-09 asks one identity.",
-    "status": "provisional",
-    "owner_question": "Confirm contractNegotiationId as the identity and plan path names that say so.",
-    "affects": [
-      "api",
-      "data",
-      "tests"
-    ]
-  },
-  {
-    "id": "D21",
-    "topic": "Three offer concepts and the owner of the offer",
-    "closes": [
-      "D-003",
-      "D-015",
-      "D-017"
-    ],
-    "decision": "Three terms: 'usage contract offer' (the business object, the first phase of the usage contract record in the Contract Manager, which owns its state); 'human-readable usage contract offer' (the HTML rendering and its hash, a value object; contract-ui-be stores it and the user decision as a view); 'EDC contract offer' (external, referenced by contractOfferId only). The Contract Manager is the aggregate root: every state change of the usage contract goes through it, and contract-ui-be changes its own offer status only after the Contract Manager call succeeded (D14). Attribute names of the human-readable offer: humanReadable and hash, as in both APIs.",
-    "options": [
-      "Three terms, Contract Manager owns the state",
-      "Contract UI backend owns the offer until acceptance"
-    ],
-    "basis": "DDD-02, DDD-08, DDD-11; both OpenAPI files already use humanReadable and hash.",
-    "status": "provisional",
-    "owner_question": "Align the Contract UI CDM (HumanReadableContractData, humanReadableData, contractData) and SIMPL-32511 to these names.",
-    "affects": [
-      "api",
-      "data",
-      "tests"
-    ]
-  },
-  {
-    "id": "D22",
-    "topic": "Validation, not verification, for the signed offer and contract check",
-    "closes": [
-      "D-010"
-    ],
-    "decision": "Use 'validation' for the check of the other party's signed offer or contract (BP 7.6 and 7.8) in tests, logs and new names. 'verify' stays only for the BP 7.2 checks (access policy, existence check). The published path /verifications and schema names stay as wire names.",
-    "options": [
-      "'validation' for BP 7.6 and 7.8, 'verify' for BP 7.2",
-      "Keep 'verification' as a synonym"
-    ],
-    "basis": "Business process wording (hierarchy rule for terms); DDD-01.",
-    "status": "provisional",
-    "owner_question": "Rename /verifications in a later API version.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D23",
-    "topic": "Resource reference",
-    "closes": [
-      "D-011"
-    ],
-    "decision": "The business term is 'resource description'. In this build the usage contract stores and shows the assetId it receives from the Connector, and the overview's 'Resource description ID' column shows that assetId. No catalogue lookup and no resourceDescriptionId or selfDescriptionId field is built.",
-    "options": [
-      "Reference the resource description by resourceDescriptionId",
-      "Keep assetId and document the derivation"
-    ],
-    "basis": "assetId is the only resource id in the published Contract Manager API and request bodies; the catalogue API is not in the input.",
-    "status": "provisional",
-    "owner_question": "How is the resource description id obtained from the assetId, and should the usage contract store it?",
-    "affects": [
-      "api",
-      "ui",
-      "data"
-    ]
-  },
-  {
-    "id": "D24",
-    "topic": "External concepts and CDM gaps",
-    "closes": [
-      "D-012",
-      "D-013",
-      "D-016",
-      "D-018",
-      "D-019"
-    ],
-    "decision": "The writers treat VerifiableCredential (owner VC Issuer), Participant with roles Provider and Consumer (owner Identity Provider), ResourceDescription (owner Federated Catalogue) and the EDC contract negotiation, definition, offer and agreement (owner Connector) as external: they store only the ids and the VC as received, and do not model their attributes. Internal objects introduced by these decisions get these names: ValidationResult (result, rejectionReason, validatedAt), NotificationRequest (D11), UsageContractStatusCount (D17). CDM completion, approval and the context map are owner work and do not block the build.",
-    "options": [
-      "Mark external classes and add the internal ones to the CDM",
-      "Leave the CDM as is"
-    ],
-    "basis": "DDD-06, DDD-13, DDD-15; the CDMs are 'in review'.",
-    "status": "provisional",
-    "owner_question": "Complete and approve the Contract Manager and Contract UI CDMs (usage contract, offer phase, validation result), point them to the current API repositories, and draw the context map.",
-    "affects": [
-      "data"
-    ]
-  },
-  {
-    "id": "D25",
-    "topic": "Glossary terms",
-    "closes": [
-      "D-020",
-      "D-021",
-      "D-022",
-      "D-025",
-      "D-027",
-      "D-028",
-      "D-023",
-      "D-024",
-      "D-026"
-    ],
-    "decision": "The final glossary in decisions/glossary.md is the vocabulary for tests, code names that are not fixed by the OpenAPI, and logs. One term per concept; the retired synonyms are listed per term.",
-    "options": [
-      "Proposed terms of the draft glossary",
-      "Other terms"
-    ],
-    "basis": "DDD-01, DDD-03; the draft glossary of step 23b, business process first.",
-    "status": "follows the specs",
-    "owner_question": "Adopt the glossary and retire the synonyms in the stories.",
-    "affects": [
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "E1",
-    "topic": "Services, ports and base paths",
-    "closes": [],
-    "decision": "contract-manager-be on port 8085, base path /contract/v1; contract-ui-be on port 8086, base path /contract-ui/v1 (both from the OpenAPI servers). Each service owns its own store; tests use only the APIs and the stubs, never the database.",
-    "options": [],
-    "basis": "OpenAPI servers.",
-    "status": "provisional",
-    "owner_question": "",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "E2",
-    "topic": "Authentication",
-    "closes": [],
-    "decision": "Every operation except GET /health needs header X-Api-Key equal to the configured key (CONTRACT_API_KEY for contract-manager-be, CONTRACT_UI_API_KEY for contract-ui-be; test value 'test-api-key'). Missing or wrong key: 401 problem detail. No Keycloak, users or roles in these backends (D2).",
-    "options": [],
-    "basis": "OpenAPI security scheme ApiKeyAuth; SEC-12.",
-    "status": "provisional",
-    "owner_question": "",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "E3",
-    "topic": "Side of the Contract Manager",
-    "closes": [],
-    "decision": "One contract-manager-be instance plays one side, set by PARTICIPANT_SIDE = CONSUMER or PROVIDER, and has PARTICIPANT_ID (its own participant id). Operations called on the wrong side return 400 (D4, D5, D7, D8). Tests start one instance per side, or one at a time.",
-    "options": [],
-    "basis": "SIMPL-35584/AC3 and 35677/AC4 return 400 on the wrong side.",
-    "status": "provisional",
-    "owner_question": "",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "E4",
-    "topic": "Stubs for external services",
-    "closes": [],
-    "decision": "All external services are HTTP stubs with configurable base URLs. Connector (EDC_URL): POST /isPresent/{contractNegotiationId}/{isPresent}, POST /isValid/{contractNegotiationId}/{isValid}, POST /signed/{contractNegotiationId}/{signed}, any 2xx means accepted, other answers are logged with no retry; GET /vcExchange/{contractNegotiationId}/request returns 200 with a VerifiableCredential or 404. Signer Service (SIGNER_URL): POST /signatures with {document (base64), mimeType 'application/json'} returns 200 {signatureValue}. VC Issuer (VC_ISSUER_URL): POST /credentials with {credentialSubject} returns 201 VerifiableCredential; POST /credentials/validations with a VerifiableCredential returns 200 {status VALID, INVALID or INDETERMINATE}. Wallet (WALLET_URL): POST /credentials with a VerifiableCredential returns 201, 503 (unavailable) or 507 (full); GET /credentials?contractNegotiationId=... returns 200 VerifiableCredential or 404. Notification Service (NOTIFICATION_URL): POST /notifications with the D11 request returns 202. contract-ui-be calls the Contract Manager at CONTRACT_MANAGER_URL; the Contract Manager calls contract-ui-be at CONTRACT_UI_URL.",
-    "options": [],
-    "basis": "The Signer, VC Issuer, Wallet and Notification Service APIs are not in the input; one fixed stub contract lets both writers use the same fakes.",
-    "status": "provisional",
-    "owner_question": "",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "E5",
-    "topic": "Error format",
-    "closes": [],
-    "decision": "Every 4xx and 5xx answer is an RFC 9457 problem detail (application/problem+json) with type urn:problem-type:simpl:<type>, type in lowerCamelCase: invalidRequest (400), unauthorized (401), notFound (404), notAcceptable (406), conflict (409), unsupportedMediaType (415), usageContractValidationFailed (422), internalError (500), badGateway (502). The 409 for a duplicate validation carries rejectionReason DUPLICATE_OR_REPLAYED_SUBMISSION.",
-    "options": [],
-    "basis": "API-44 to API-47; Problem schema in both OpenAPI files.",
-    "status": "provisional",
-    "owner_question": "",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "E6",
-    "topic": "Scheduler configuration",
-    "closes": [],
-    "decision": "contract-ui-be reads OFFER_TIMEOUT (ISO 8601 duration, default P7D) and OFFER_TIMEOUT_CRON (Spring cron, default '0 0 1 * * *'). Tests set short values, for example PT5S and every 2 seconds.",
-    "options": [],
-    "basis": "SIMPL-35692 technical description (configurable timeout and run time).",
-    "status": "provisional",
-    "owner_question": "",
-    "affects": [
-      "tests"
-    ]
-  },
-  {
-    "id": "E7",
-    "topic": "Logging and correlation",
-    "closes": [],
-    "decision": "Every log line of a flow step carries the contractNegotiationId as correlationId. Validation results, rejection reasons, notification hand-overs and callback failures are logged at INFO or WARN. No separate audit store is built.",
-    "options": [],
-    "basis": "SIMPL-21948, 19933, 21966 and 22690 ask traceability in logs.",
-    "status": "provisional",
-    "owner_question": "",
-    "affects": [
-      "tests"
-    ]
-  },
-  {
-    "id": "E8",
-    "topic": "Rendering, hash and VC content",
-    "closes": [],
-    "decision": "humanReadable is an HTML document listing contractNegotiationId, contractAgreementId, contractDefinitionId, assetId, providerId, consumerId and contractOfferId. hash is the SHA-256 of the UTF-8 bytes of humanReadable, in lower-case hex. A usage contract VC has credentialSubject {contractNegotiationId, contractAgreementId, contractDefinitionId, assetId, providerId, consumerId, contractOfferId, offerHash, signatureValue}; all fields except signatureValue are required for D9 check 4 and compared in check 5.",
-    "options": [],
-    "basis": "SIMPL-28846 fixes SHA-256 for documents; the contract data fields come from ContractAgreementCreate.",
-    "status": "provisional",
-    "owner_question": "",
-    "affects": [
-      "api",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D26",
-    "topic": "Published operations that are not built",
-    "closes": [
-      "P-001",
-      "P-002"
-    ],
-    "decision": "Six Contract Manager operations of the published OpenAPI are not built and the tests do not call them: POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/issue, PATCH /agreements/{contractAgreementId}/definitions/{contractDefinitionId}/status, GET /agreements/{contractAgreementId}/file, POST /agreements/search, PUT /contractOffers/{contractNegotiationId}/update and the Contract Manager POST /contractOffers/{contractNegotiationId}. Signing happens only inside D5 (Consumer) and D7 (Provider). A usage contract changes state only through the D12 transitions caused by D5, D7, D8 and D13; no operation sets a state directly. The offer reaches contract-ui-be only through D4. A list of usage contracts is not built: a usage contract after acceptance is read one at a time through GET /agreements/{contractAgreementId} (D14). The operations that stay are the ones the earlier decisions name: on the Contract Manager /create (D4), PATCH /contractOffers/{contractNegotiationId}/{operation} (D5), validateAndIssue (D7), PUT /verifications/{contractNegotiationId} (D8), GET /verifications/{contractNegotiationId}/vc (D10), POST /agreements/{contractNegotiationId}/search (D3), GET /agreements/{contractAgreementId}, GET /audits/usageContractStatusCounts (D17) and GET /health; on contract-ui-be POST, GET and PATCH /contractOffers (D4, D14) and GET /health.",
-    "options": [
-      "Retire both P-001 operations (simplest, matches D5 and D7)",
-      "Keep /issue as an internal alias of the D5 or D7 signing step, retire PATCH .../status",
-      "Keep both, guarded by D12, 409 otherwise",
-      "For P-002: retire three and write a story for POST /agreements/search; retire all four; keep all four as internal plumbing"
-    ],
-    "basis": "D1 (SIMPL-19934 superseded by SIMPL-35584; SIMPL-21928 and 21963 made concrete by D5 and D7), D5 and D7 (signing inside accept and validateAndIssue), D12 (only the listed transitions), D21 (the Contract Manager is the root, contract-ui-be does not get pushed a status), D2 (no orchestrator), D4 (the offer goes to contract-ui-be inside /create). POST /agreements/search has no story (COV-01), so it is left out as the simplest choice to build and test; D14 already reads usage contracts after acceptance one at a time. PATCH .../status would let any API key holder skip the state machine.",
-    "status": "provisional",
-    "owner_question": "API owner: remove these six operations from the next OpenAPI version (or mark them deprecated) and unlink SIMPL-19934, 21928 and 21963 from /issue and PATCH .../status. Product owner: does POST /agreements/search serve the overview of usage contracts after acceptance (D14)? If yes, write a story with a state filter.",
-    "affects": [
-      "api",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D27",
-    "topic": "Response codes and request schemas follow the decisions, not the OpenAPI",
-    "closes": [
-      "P-003",
-      "P-004"
-    ],
-    "decision": "Where the OpenAPI and D3, D4, D5, D7, D8, D14 or E5 differ on a response code or a required field, the decisions win (source hierarchy, rule 1). Nothing new is decided here. The differences, for the build and the tests: Contract Manager POST .../create also answers 406 and 409; POST /agreements/{contractNegotiationId}/search also answers 406 and 415; PATCH /contractOffers/{contractNegotiationId}/{operation} also answers 404 and 409; PUT /verifications/{contractNegotiationId} also answers 404, 406 and 409. contract-ui-be PATCH /contractOffers/{contractNegotiationId}/{operation} also answers 409 and 502; POST /contractOffers/{contractNegotiationId} also answers 400 (humanReadable or hash missing) and 415; GET /contractOffers never answers 404. 406 and 415 follow E5 on every operation that takes or returns a JSON body. Request bodies: the search body and ContractAgreementCreate need all five fields (contractNegotiationId, assetId, providerId, consumerId, contractOfferId for ContractAgreementCreate; contractAgreementId, contractDefinitionId, assetId, providerId, consumerId for the search body), 400 otherwise. The PUT /verifications body is optional and ignored: no body, an empty body or any JSON body gives the D8 answer, never a 400 for the body. contract-ui-be ContractOffer accepts assetId, providerId and consumerId on POST and returns contractNegotiationId and createdAt as read-only properties (D14). A tool that validates responses against the OpenAPI must allow these codes and properties until the OpenAPI is updated.",
-    "options": [
-      "Decisions override; the OpenAPI is updated afterwards from the same list",
-      "Update the OpenAPI first and build from it"
-    ],
-    "basis": "Source hierarchy rule 1 (decisions win) and rule 4 (OpenAPI for the wire format only where no decision settles it). API-12 (status codes), API-60 (required flags). The codes and fields come from D3, D4, D5, D7, D8, D14 and E5; this entry only collects them per operation.",
-    "status": "follows the specs",
-    "owner_question": "API owner: update both OpenAPI files to this list: add the codes per operation, remove 404 from GET /contractOffers, add 'required' lists to the search body and ContractAgreementCreate, make the PUT /verifications body optional, and add contractNegotiationId, createdAt, assetId, providerId and consumerId to the contract-ui-be ContractOffer.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D28",
-    "topic": "Problem details follow E5, not the OpenAPI examples",
-    "closes": [
-      "P-006"
-    ],
-    "decision": "E5 stands. Every problem detail carries a type from the E5 list; the example types in the OpenAPI (argumentTypeMismatch, badRequest, methodNotSupported, methodNotAllowed, singleCustomException, internalServerError, urn:error:single-custom-exception) are not used. A request with a path or query value of the wrong type is invalidRequest (400). Every problem detail has type, title, status and instance. instance is the request path including the base path, as a relative URI reference (for example /contract/v1/agreements/search), never an absolute URL. Tests assert status, type and that instance equals the request path. 405 answers are not part of the tested contract.",
-    "options": [
-      "Follow E5 and declare instance as uri-reference",
-      "Adopt the existing example types and change E5"
-    ],
-    "basis": "E5, API-45, API-46, API-47. RFC 9457 allows instance to be a URI reference, so the relative paths of the examples stay valid with format uri-reference. One error format for the component (30a consistency rule).",
-    "status": "provisional",
-    "owner_question": "API owner: change the problem examples in both OpenAPI files to the E5 types, add a type to every example, and declare Problem.instance as format uri-reference.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D29",
-    "topic": "contract-ui-be payloads and offerUrl",
-    "closes": [
-      "P-005"
-    ],
-    "decision": "The schemas and D14 fix the payloads of contract-ui-be; the examples do not. ContractOffer has exactly: humanReadable, hash, status, contractNegotiationId, createdAt, assetId, providerId, consumerId. The example names humanReadableData, hashData, contractData, createdDate and lastUpdatedDate are not used, and there is no last-updated property. PATCH /contractOffers/{contractNegotiationId}/{operation} returns 200 with the new status as a JSON string, for example \"ACCEPTED\" (D14). POST /contractOffers/{contractNegotiationId} returns 201 with ContractOfferResponse {offerUrl} only, no offerStatus. offerUrl is the configured frontend base URL CONTRACT_UI_FRONTEND_URL (test value http://localhost:3000, no trailing slash) followed by /contractOffers/{contractNegotiationId}. The Contract Manager does not store or use offerUrl.",
-    "options": [
-      "Drop lastUpdatedDate, offerUrl = configured frontend base URL + /contractOffers/{contractNegotiationId}",
-      "Add lastUpdatedAt as read-only, offerUrl = backend resource URL"
-    ],
-    "basis": "Source hierarchy rule 4 (schema over example), D14 and D21 (names), API-21. flow.puml: 'offerUrl: <frontend>/contractOffers/{contractNegotiationId}'. No story needs a last-updated time, so leaving it out is the simplest to build and test.",
-    "status": "provisional",
-    "owner_question": "API owner: align every contract-ui-be example with the schema, drop offerStatus from the POST example, and confirm that offerUrl points to the frontend. Is a last-updated time needed anywhere?",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D30",
-    "topic": "Date and time format",
-    "closes": [
-      "P-007"
-    ],
-    "decision": "Every date and time value on both APIs (consumerSignatureDate, providerSignatureDate, createdAt, generatedAt of D17, validatedAt of D24) is an RFC 3339 date-time in UTC with a Z suffix, for example 2026-11-17T10:20:30.123Z. Fractional seconds are optional. Tests parse the values and compare them as instants, never as strings. providerSignatureDate is the instant of the Provider VC issuanceDate (D8 on the Consumer side) or of the Provider's own VC (D7 on the Provider side). consumerSignatureDate is the instant of the Consumer VC issuanceDate. createdAt is set by contract-ui-be when it stores the offer and is the start of the D13 timeout. Stores keep instants; local times without a zone are never written.",
-    "options": [
-      "RFC 3339 date-time, UTC, Z suffix, format date-time in the schema",
-      "Local time without zone, as in the examples"
-    ],
-    "basis": "VerifiableCredential.issuanceDate is already format date-time with Z in the OpenAPI, and D8 copies it; one format avoids time zone drift in the D13 timeout. CODE-27 asks for a standard date format in logs. Simplest to test.",
-    "status": "provisional",
-    "owner_question": "API owner: declare format date-time on consumerSignatureDate, providerSignatureDate and the contract-ui-be createdAt, and change the examples to UTC with Z.",
-    "affects": [
-      "api",
-      "data",
-      "tests"
-    ]
-  }
+ {
+  "id": "D1",
+  "topic": "Target flow and superseded stories",
+  "closes": [
+   "F-003",
+   "F-027",
+   "F-028",
+   "F-029",
+   "F-038"
+  ],
+  "decision": "The target is the R17 flow of the October 2026 stories: SIMPL-35526 (prepare offer, Consumer side), SIMPL-35660 (accept or reject and Consumer signing), SIMPL-35584 (Provider validates and signs), SIMPL-35677 (Consumer validates), SIMPL-35440 (VC retrieval), SIMPL-35858, 35863, 35888 (EDC callbacks, client side only) and SIMPL-35692 (timeout). Older stories for the same step count only where these decisions say so. SIMPL-19824, 19829 and 22690 are replaced: from them carry over only the error cases listed in D3 and D4 (400 for an invalid body, 401, 415, 'no record is stored when the call fails') and idempotency per contractNegotiationId (D4). SIMPL-19933 and 21948 keep only their list of checks and rejection reasons (D9); their 'asynchronous, observe the state' rule holds for the Consumer side (D8) but not for the Provider side (D7). SIMPL-19934 is superseded by SIMPL-35584: its '200 Finalized' response is not built. SIMPL-21928, 21963, 19927 and 19938 are business-level descriptions of steps that D5, D6, D7 and D10 make concrete.",
+  "options": [
+   "New flow: SIMPL-35584 and 35677 with EDC callbacks, older stories only add checks and reasons",
+   "Old flow: SIMPL-19933, 19934 and 21948 stay normative"
+  ],
+  "basis": "Source hierarchy rule 2 (newest live story for a step wins). The October stories name the technical architecture R17, give endpoints and callbacks, and the 'Replaced' stories name their replacements.",
+  "status": "provisional",
+  "owner_question": "Confirm that SIMPL-19824, 19829, 22690 and 19934 can be closed, and that SIMPL-19933 and 21948 are kept only for their checks and reasons.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D2",
+  "topic": "Build scope: two backends, no frontend, no orchestrator",
+  "closes": [
+   "F-021",
+   "F-050",
+   "F-008",
+   "D-014",
+   "F-052"
+  ],
+  "decision": "Build contract-manager-be and contract-ui-be only. Not built: the contract manager frontend, the catalogue UI, the contract consumption adapter (context only), a Contract Orchestrator and any Kafka flow. UI stories are tested at the contract-ui-be API that a frontend would call. The EDC endpoints of SIMPL-35858, 35863, 35888 (and /signed) belong to the Connector: the Contract Manager is only their client, and tests replace the Connector with a stub (E4). The Contract Manager is the one translation layer to the Connector: EDC ids come in on its API and go out on its callbacks. For SIMPL-21924 only AC2's Contract Manager outcome counts, and it is met by D4 (a usage contract record in state Requested). SIMPL-21924/AC1, AC3, AC4 and the 'see the result' part of AC2 are catalogue UI work and are not built. User login and roles are checked at the gateway (SEC-07, SEC-12), not in these backends, so SIMPL-30959/AC3 and the 403 cases for users are not tested here.",
+  "options": [
+   "Build backends only and test UI stories at API level",
+   "Also build a frontend"
+  ],
+  "basis": "SIMPL-22690 and flow.puml are replaced by the R17 stories, which have the Contract Manager call EDC directly (DDD-14: one translation layer). No frontend source or design is in the input set. SEC-12 puts Tier 1 authorisation at the gateway.",
+  "status": "provisional",
+  "owner_question": "Confirm that the Contract Orchestrator and its Kafka events are gone from the target design, and that SIMPL-21924 belongs to the catalogue component.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D3",
+  "topic": "Existence check: asynchronous search plus /isPresent callback",
+  "closes": [
+   "F-001",
+   "F-018",
+   "F-030",
+   "F-031"
+  ],
+  "decision": "The Connector calls the existing POST /agreements/{contractNegotiationId}/search on the Contract Manager. The body must hold contractAgreementId, contractDefinitionId, assetId, providerId and consumerId (400 if one is missing or does not match its pattern). The Contract Manager answers at once with 200 ContractSearchConfirmation echoing contractAgreementId and contractDefinitionId. It then looks in its own store for a usage contract with the same consumerId and assetId in an active state, and calls the Connector POST /isPresent/{contractNegotiationId}/{true|false}. Active states are Active and the reserved states Suspended, Revocation requested and Reactivation requested (in this build only Active is reachable). The operation works on both sides (no side check). Errors: 400 invalid body, 401 missing or wrong API key, 406 unsupported Accept, 415 unsupported Content-Type, 500 unexpected. The 401 and 403 cases of SIMPL-32509 about the Consumer's identity and role are not built: the caller is the Connector, identified by its API key. POST /resourceDescriptions/{resourceDescriptionId}/validateExistenceContract (SIMPL-32509) is not built.",
+  "options": [
+   "Async: search returns an ACK, result to EDC via /isPresent",
+   "Sync: validateExistenceContract returns exists"
+  ],
+  "basis": "The OpenAPI already has the search operation with an acknowledgement schema; SIMPL-35858 (newest) adds the /isPresent callback; SIMPL-32509's endpoint is in no OpenAPI. API-37, API-38, API-44 for the error codes.",
+  "status": "provisional",
+  "owner_question": "On which side does the existence check run (BP 7.2.2 says Provider, SIMPL-35858 says Consumer)? Is SIMPL-32509 withdrawn?",
+  "affects": [
+   "api",
+   "tests",
+   "events"
+  ],
+  "refined_by": [
+   "D36",
+   "D37"
+  ],
+  "later_change": "EXISTING_USAGE_CONTRACT reason; expired contracts do not count (D36, D37)"
+ },
+ {
+  "id": "D4",
+  "topic": "Prepare the usage contract offer on the Consumer side (/create)",
+  "closes": [
+   "F-002",
+   "F-032",
+   "F-033"
+  ],
+  "decision": "POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create runs on the Consumer side (SIMPL-35526); on the Provider side it returns 400. Body ContractAgreementCreate with all five fields required (400 otherwise). The Contract Manager: stores a usage contract record (state Requested, wire CREATED) keyed by contractNegotiationId with both path ids; renders the human-readable usage contract offer as HTML from the record data (E8); computes its SHA-256 hash; calls contract-ui-be POST /contractOffers/{contractNegotiationId} with humanReadable, hash, status CREATED, assetId, providerId and consumerId; then hands a notification request 'offer available for review' for the local participant to the Notification Service stub (E4). Response 201 ConfirmationResponse {contractAgreementId, contractDefinitionId, status CREATED}. If the Contract UI backend call fails, return 500 and store nothing. If the notification fails, log it and still return 201. A second call with the same contractNegotiationId returns 409 and changes nothing (idempotency carried over from SIMPL-22690). The response of SIMPL-32511 (usageContract, usageContractHash, status 'Requested', proverId) is not built. No catalogue call is made in this build.",
+  "options": [
+   "Provider side, returns the offer body (SIMPL-19829, 32511)",
+   "Consumer side, prepares the offer for the UI and notifies the user (SIMPL-35526)"
+  ],
+  "basis": "SIMPL-35526 is the newest story on this operation and its technical notes say 'execute on the consumer side instead of the provider side'. The OpenAPI fixes the 201 ConfirmationResponse. 409 per API-12.",
+  "status": "provisional",
+  "owner_question": "Confirm the move of /create to the Consumer side, and how the Contract Manager gets resource name and Provider name (catalogue call by which id).",
+  "affects": [
+   "api",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D5",
+  "topic": "Consumer accept or reject, and Consumer signing",
+  "closes": [
+   "F-010",
+   "F-019",
+   "F-034",
+   "F-040",
+   "F-025"
+  ],
+  "decision": "Contract UI backend calls the Contract Manager PATCH /contractOffers/{contractNegotiationId}/{operation} (OpenAPI method and code: PATCH, 200 TransferConfirmationResponse {contractNegotiationId, status INITIATED}). Only on the Consumer side; on the Provider side 400. Only for a record in state Requested; otherwise 409; unknown id 404. accept means sign at once, in the same call: (1) Signer Service signs the canonical JSON of the contract data, (2) VC Issuer issues a VC whose credentialSubject holds the contract data, the offer hash and the signature value (E8), (3) Wallet stores the VC, (4) the record goes to Signed (wire FINALIZING) with consumerSignatureDate set, (5) Connector POST /signed/{contractNegotiationId}/true, (6) 200. If any of steps 1 to 3 fails: 500 problem detail, the record stays Requested, the Connector is not called, and the user may try again. reject: no signing, record goes to Closed (wire TERMINATED), Connector POST /signed/{contractNegotiationId}/false, 200. The VC Issuer creates the VC only after the signature exists, so no 'unsigned VC' is stored. The signing result is visible through GET /agreements/{contractAgreementId} (status FINALIZING, consumerSignatureDate).",
+  "options": [
+   "PATCH, 200 (OpenAPI)",
+   "POST, 201 (story)",
+   "Accept triggers signing at once",
+   "Accept and sign are separate steps"
+  ],
+  "basis": "Wire format follows the OpenAPI (hierarchy rule 4); behaviour follows SIMPL-35660 and its technical details (steps in that order). SIMPL-21928/AC2 and AC4 ('not marked as signed unless the flow completes') give the failure rule.",
+  "status": "provisional",
+  "owner_question": "Confirm PATCH and 200 for the accept and reject operation, and that a failed signing leaves the offer open for a retry.",
+  "affects": [
+   "api",
+   "tests",
+   "events"
+  ],
+  "refined_by": [
+   "D33",
+   "D34"
+  ],
+  "later_change": "retries reuse the VC (D33); repeated accept or reject gets 200 (D34)"
+ },
+ {
+  "id": "D6",
+  "topic": "Wallet and downstream failures: no user prompt",
+  "closes": [
+   "F-006",
+   "F-007",
+   "F-024"
+  ],
+  "decision": "Storing the VC is an automatic backend step. There is no prompt for 'another secure location'. A wallet failure fails the step that stores the VC (D5 on the Consumer side, D7 on the Provider side) with a 500 problem detail whose detail text is 'Secure storage location unavailable' (wallet stub answers 503 or does not answer), 'Secure storage location is full' (wallet stub answers 507) or 'Secure storage location is corrupted' (any other wallet error). The record is not moved forward. In SIMPL-19938 the heading versions (AC1.2 to AC4.2, system level) are live; the list-item versions are not. 'Securely stored' means: the VC was stored through the wallet stub and GET /verifications/{contractNegotiationId}/vc returns it (D10). Read access is the API key (E2); there are no user roles in these backends.",
+  "options": [
+   "UI prompt to choose another location",
+   "No prompt: the step fails with an error"
+  ],
+  "basis": "The R17 stories (SIMPL-35584, 35660) store the VC inside a backend call with no user in the loop. The error texts are kept from SIMPL-19927 and 19938.",
+  "status": "provisional",
+  "owner_question": "Drop 'specify another secure location' from SIMPL-19927 and 19938, and remove the duplicate AC versions from SIMPL-19938.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D7",
+  "topic": "Provider validates and signs (validateAndIssue)",
+  "closes": [
+   "F-012",
+   "F-020",
+   "F-039"
+  ],
+  "decision": "New operation POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/validateAndIssue on the Contract Manager, Provider side only (400 on the Consumer side). Body ContractAgreementCreate, all five fields required (400). Processed synchronously. The Contract Manager stores or reuses the Provider record (state Requested), fetches the Consumer VC through Connector GET /vcExchange/{contractNegotiationId}/request, validates it (D9), and on success signs and issues its own VC (same steps as D5, the offer hash copied from the Consumer VC), stores it in the wallet, sets Active (wire FINALIZED) with both signature dates, calls Connector POST /signed/{contractNegotiationId}/true and returns 201 ConfirmationResponse {contractAgreementId, contractDefinitionId, status FINALIZED}. Validation result REJECTED: record to Closed (wire TERMINATED), Connector POST /isValid/{contractNegotiationId}/false, notification request to the Consumer (D11), response 422 problem detail with type urn:problem-type:simpl:usageContractValidationFailed and member rejectionReason. Technical failure (Connector, VC Issuer, Signer or wallet error, D9 result FAILED): 500 problem detail, record stays Requested, no Connector callback, the Connector may call again. A record already Active or Closed: 409 (D9 duplicate rule). SIMPL-21963 is met when the Provider can fetch the Consumer VC: before the Consumer signed, the fetch gives 404 and the result is REJECTED with MISSING_CONTRACT_DATA.",
+  "options": [
+   "Synchronous error code, contract not signed",
+   "201 accepted, then EDC told via /isValid or /signed false"
+  ],
+  "basis": "SIMPL-35584 (newest) gives the path, 201 and the steps; its AC1 lists validation and signing as outcomes of the call, so the call is synchronous. 422 and 409 per API-12; 5xx for server-caused errors per API-44.",
+  "status": "provisional",
+  "owner_question": "Add validateAndIssue to the OpenAPI with these responses. Should a Provider-side rejection also call /isValid, or only /signed false?",
+  "affects": [
+   "api",
+   "tests",
+   "events"
+  ],
+  "overridden_by": "D31",
+  "later_change": "success outcome is Signed (FINALIZING), Active only when the Consumer confirms (D31); a retry reuses the issued VC (D33); new rejection reason (D36, D37)"
+ },
+ {
+  "id": "D8",
+  "topic": "Consumer validates the Provider VC (/verifications)",
+  "closes": [
+   "F-011",
+   "F-035"
+  ],
+  "decision": "Keep the OpenAPI: PUT /verifications/{contractNegotiationId}, 200 VerificationConfirmationResponse {contractNegotiationId, status INITIATED}. The request body is optional and ignored; the Contract Manager fetches the Provider VC itself through Connector GET /vcExchange/{contractNegotiationId}/request. Consumer side only (400 on the Provider side). Unknown contractNegotiationId: 404. The record must be in state Signed; a record in Requested, Active or Closed gives 409. Validation then runs asynchronously (D9). SUCCESS: record to Active (wire FINALIZED), providerSignatureDate set from the Provider VC issuanceDate, the Provider VC is kept with the record, Connector POST /isValid/{contractNegotiationId}/true. REJECTED or FAILED (including the VC fetch failing): record to Closed (wire TERMINATED), Connector POST /isValid/{contractNegotiationId}/false. On the Consumer side the Connector always learns the outcome through /isValid, so a technical failure is also reported as false.",
+  "options": [
+   "PUT, 200, VC in body (OpenAPI)",
+   "POST, 202, no body, VC fetched via EDC (story)"
+  ],
+  "basis": "Wire format from the OpenAPI (its response status INITIATED already says 'accepted, result later'); behaviour from SIMPL-35677 and the asynchronous model of SIMPL-21948/AC10.",
+  "status": "provisional",
+  "owner_question": "Confirm PUT and 200, and whether the VC body in VerifyCredentialRequest can be removed.",
+  "affects": [
+   "api",
+   "tests",
+   "events"
+  ],
+  "refined_by": [
+   "D31",
+   "D32"
+  ],
+  "later_change": "the Consumer's result is passed on to the Provider (D31, D32)"
+ },
+ {
+  "id": "D9",
+  "topic": "Validation checks, results and rejection reasons",
+  "closes": [
+   "F-014",
+   "F-015",
+   "F-016",
+   "F-017"
+  ],
+  "decision": "One rule for both sides. Checks in this order, the first failure decides: (1) VC cannot be fetched because the other side answers 404: REJECTED, MISSING_CONTRACT_DATA. (2) VC Issuer validation answers INVALID: REJECTED, INVALID_PROVIDER_SIGNATURE on the Consumer side, INVALID_CONSUMER_SIGNATURE on the Provider side. (3) VC Issuer validation answers INDETERMINATE: REJECTED, PROVIDER_CREDENTIAL_TRUST_ISSUE or CONSUMER_CREDENTIAL_TRUST_ISSUE. (4) a required credentialSubject field is missing (E8): REJECTED, SCHEMA_OR_CONTENT_VALIDATION_FAILURE. (5) a credentialSubject field differs from the stored record or the request data: REJECTED, PAYLOAD_INTEGRITY_MISMATCH. (6) now is before validFrom or after validUntil of the VC (absent means no limit): REJECTED, CONTRACT_VALIDITY_ISSUE. (7) any technical error (Connector unreachable or 5xx, VC Issuer error): FAILED, TECHNICAL_VALIDATION_ERROR, no automatic retry. Otherwise SUCCESS. Duplicate or replayed submission: the key is contractNegotiationId; a new validation on a record that is already Active or Closed is not run, gets 409 with reason DUPLICATE_OR_REPLAYED_SUBMISSION in the problem detail and changes nothing (result IGNORED, logged). The result, reason and time are stored with the record and logged with the contractNegotiationId. The validity period of an offer or a contract is the validFrom and validUntil of its VC.",
+  "options": [
+   "Technical error ends in FAILED",
+   "Technical error ends in PENDING_RETRY and is retried",
+   "Same codes on both sides with CONSUMER instead of PROVIDER"
+  ],
+  "basis": "The reason table of SIMPL-21948 is the only coded source; SIMPL-19933 has the same cases in text. The CDM VerifiableCredential has validFrom and validUntil. FAILED without retry is simplest to build and test.",
+  "status": "provisional",
+  "owner_question": "Confirm the Provider-side reason codes, FAILED without retry, and the VC validity dates as the contract validity period.",
+  "affects": [
+   "api",
+   "tests",
+   "data"
+  ],
+  "refined_by": [
+   "D36",
+   "D37"
+  ],
+  "later_change": "EXISTING_USAGE_CONTRACT reason; expired contracts do not count (D36, D37)"
+ },
+ {
+  "id": "D10",
+  "topic": "VC retrieval endpoint (SIMPL-35440)",
+  "closes": [
+   "F-036"
+  ],
+  "decision": "New operation GET /verifications/{contractNegotiationId}/vc on the Contract Manager, both sides. 200 with the participant's own VerifiableCredential (OpenAPI schema) read from the wallet stub. 404 problem detail when the contractNegotiationId is unknown or the own VC is not stored yet. 500 problem detail when the wallet stub fails. 401 without a valid API key.",
+  "options": [
+   "404 for unknown id and not signed yet",
+   "Separate codes per case"
+  ],
+  "basis": "SIMPL-35440 technical details (check the id, then the wallet). API-12 and API-44.",
+  "status": "provisional",
+  "owner_question": "Add GET /verifications/{contractNegotiationId}/vc to the OpenAPI with these responses.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D11",
+  "topic": "Notification requests",
+  "closes": [
+   "F-041",
+   "F-033",
+   "D-016"
+  ],
+  "decision": "Two notification requests, both handed to the Notification Service stub (E4) and never sent as email by the Contract Manager: 'usage contract offer available for review' to the local participant after D4, and 'signed usage contract offer could not be validated' to the Consumer after a Provider-side REJECTED result (D7, not after FAILED). A request carries recipientParticipantId (the local participant id from configuration, or consumerId), notificationType (USAGE_CONTRACT_OFFER_AVAILABLE or SIGNED_OFFER_VALIDATION_FAILED), contractNegotiationId and correlationId (the contractNegotiationId). The Notification Service resolves the email address. If consumerId is empty, nothing is sent and the failure is logged. If the stub answers an error, the failure is logged, there is no retry and the main call is not affected.",
+  "options": [
+   "Recipient email resolved by the Contract Manager",
+   "Recipient participant id, address resolved by the Notification Service"
+  ],
+  "basis": "SIMPL-21966 says contact details must not be hardcoded and delivery stays with the Notification Service; the Notification Service contract (SIMPL-29268) is not in the input, so the simplest hand-over is chosen.",
+  "status": "accepted risk",
+  "owner_question": "Publish the Notification Service integration contract (topic or endpoint, payload, retry) so the stub can be replaced.",
+  "affects": [
+   "api",
+   "tests",
+   "events"
+  ],
+  "refined_by": [
+   "D35"
+  ],
+  "later_change": "two new notification types (D35)"
+ },
+ {
+  "id": "D12",
+  "topic": "One state machine for the usage contract",
+  "closes": [
+   "F-004",
+   "D-005",
+   "D-006",
+   "D-007",
+   "D-009",
+   "F-018"
+  ],
+  "decision": "The Contract Manager holds one usage contract record per contractNegotiationId and side, with one state machine; the offer is its first phase. States and wire values (ContractAgreementData.status): Requested = CREATED; Signed (the signed usage contract offer, Consumer side only) = FINALIZING; Active (the signed usage contract, both signatures, validated) = FINALIZED; Closed (ended without a usage contract: rejected, expired or failed validation) = TERMINATED. INITIATED appears only in acknowledgements, never as a stored state. Transitions: Requested to Signed (D5 accept), Requested to Closed (D5 reject, D13 timeout, D7 rejection), Requested to Active (Provider side, D7), Signed to Active (D8 success), Signed to Closed (D8 failure). The contract-ui-be offer has its own value set, as a view of the user decision: Requested = CREATED, Accepted = ACCEPTED (set only after the Contract Manager accept call succeeded), Rejected = REJECTED, Expired = EXPIRED (new value, D13). The contract-manager-be ContractOffer enum value APPROVED is not used by any operation in this build and is retired in favour of ACCEPTED. The UI labels are the state names in the glossary state tables. Suspended, Revocation requested, Revoked, Reactivation requested and Terminated are reserved states of the Active phase and are not built (D15).",
+  "options": [
+   "One state machine in the Contract Manager with the offer as first phase",
+   "Two state machines, offer in the UI backend and contract in the Contract Manager"
+  ],
+  "basis": "DDD-12 (states defined once), DDD-04 and DDD-05 (one value set, written label mapping). Wire values stay as in the OpenAPI (hierarchy rule 4); only EXPIRED is added. The business process pair 'signed usage contract offer' and 'signed usage contract' gives Signed and Active.",
+  "status": "provisional",
+  "owner_question": "Confirm the state names, the mapping to the existing enums, the new EXPIRED value, and that APPROVED can be renamed ACCEPTED in contract-manager-be.",
+  "affects": [
+   "api",
+   "ui",
+   "tests",
+   "data"
+  ],
+  "refined_by": [
+   "D31",
+   "D32"
+  ],
+  "later_change": "Signed on both sides, timeout and passed-on rejection close it, compensating Active to Closed on the Consumer side (D31, D32)"
+ },
+ {
+  "id": "D13",
+  "topic": "Timeout of unsigned offers in contract-ui-be",
+  "closes": [
+   "F-037",
+   "D-008"
+  ],
+  "decision": "A scheduler in contract-ui-be runs on a cron expression (default daily at 01:00) and selects offers in CREATED whose creation time is older than the timeout (default 7 days, E6). Only CREATED counts as pending; every other status counts as finalized and is left alone. For each selected offer it calls the Contract Manager PATCH /contractOffers/{contractNegotiationId}/reject; on success it sets the offer to EXPIRED (label 'Expired'). If the call fails, the offer stays CREATED, the failure is logged and the next run tries again. The Contract Manager handles the reject as in D5 (Closed, /signed false). 'Terminated' is not used for offers: SIMPL-35692/AC4 is met by status EXPIRED in GET /contractOffers.",
+  "options": [
+   "Pending = CREATED",
+   "Pending = CREATED or ACCEPTED",
+   "Terminated for both the timeout and the Provider's termination",
+   "Expired for the timeout"
+  ],
+  "basis": "SIMPL-35692 technical description; DDD-02 (one term, one meaning) for Expired. ACCEPTED offers are already signed in the same call (D5), so they are not pending.",
+  "status": "provisional",
+  "owner_question": "Confirm 'Expired' as the state name for an offer closed by timeout, and the new enum value EXPIRED.",
+  "affects": [
+   "api",
+   "ui",
+   "tests",
+   "data"
+  ],
+  "refined_by": [
+   "D34"
+  ],
+  "later_change": "30 second timeout, offers lined up, nightly retry stops (D34)"
+ },
+ {
+  "id": "D14",
+  "topic": "Offer overview and details through contract-ui-be",
+  "closes": [
+   "F-044",
+   "F-045",
+   "F-046",
+   "F-051"
+  ],
+  "decision": "GET /contractOffers returns 200 with a JSON array of ContractOffer (an empty array when there is none, never 404). GET /contractOffers/{contractNegotiationId} returns one ContractOffer or 404. ContractOffer gets these extra properties: contractNegotiationId and createdAt (read only), assetId, providerId and consumerId (sent by the Contract Manager in D4). The overview columns map to: Contract negotiation ID = contractNegotiationId, Resource description ID = assetId (D23), Resource name and Provider name = shown inside humanReadable only, Status = status with the D12 label. Filtering is a frontend concern and is not built. PATCH /contractOffers/{contractNegotiationId}/{operation} (accept or reject) is allowed only for CREATED (409 otherwise, 404 unknown); it calls the Contract Manager (D5) and on success sets ACCEPTED or REJECTED and returns 200 with the new status as a JSON string. If the Contract Manager call fails, the offer stays CREATED and the response is 502 problem detail. Usage contracts after acceptance (Signed, Active) are read from the Contract Manager GET /agreements/{contractAgreementId}, not from contract-ui-be.",
+  "options": [
+   "Extend contract-ui-be ContractOffer with ids and an array response",
+   "Serve the overview from the Contract Manager"
+  ],
+  "basis": "SIMPL-30959, 30960 and 32505 need the ids and a list; the OpenAPI GET /contractOffers returns a single object with no id (API-10, API-12). Smallest change that makes the criteria testable.",
+  "status": "provisional",
+  "owner_question": "Which API serves the overview of usage contracts after acceptance, and where do resource name and Provider name come from?",
+  "affects": [
+   "api",
+   "ui",
+   "tests",
+   "data"
+  ],
+  "refined_by": [
+   "D34"
+  ],
+  "later_change": "409 carries currentStatus (D34)"
+ },
+ {
+  "id": "D15",
+  "topic": "Lifecycle after Active is not built",
+  "closes": [
+   "F-005",
+   "F-022",
+   "F-023",
+   "F-048",
+   "F-049",
+   "F-053",
+   "F-054",
+   "B-013"
+  ],
+  "decision": "SIMPL-31053, 31076, 31115, 31116, 31117 and 31118 (revoke, respond, suspend, request reactivation, reactivate, terminate) are not built and not tested in this run: no API operation exists for them and no channel to the other participant is described. The writers assume nothing about them. The reserved states and transitions are written in the glossary state table as a proposal for the owners: Active to Revocation requested (either party, reason mandatory, max 1000 characters, shown to the other party); Revocation requested to Revoked (accept) or back to Active (deny, justification mandatory); Active to Suspended (Provider, reason mandatory); Suspended to Reactivation requested (Consumer, justification mandatory); Suspended or Reactivation requested to Active (Provider reactivates); Reactivation requested back to Suspended (Provider declines, proposal); Active, Suspended, Revocation requested or Reactivation requested to Terminated (Provider, justification mandatory). Access enforcement for these states is outside this component.",
+  "options": [
+   "Build local state changes with invented endpoints",
+   "Leave the lifecycle stories out of this build"
+  ],
+  "basis": "No OpenAPI operation, no event contract, and the stories are new backlog items or waiting for the subcontractor. Inventing a cross-participant protocol would make the build diverge from any later specification.",
+  "status": "accepted risk",
+  "owner_question": "Which backend owns the lifecycle operations, through which channel does a change reach the other participant, and how is resource access removed and restored?",
+  "affects": [
+   "api",
+   "ui",
+   "events"
+  ]
+ },
+ {
+  "id": "D16",
+  "topic": "Contract consent status is not built",
+  "closes": [
+   "F-047"
+  ],
+  "decision": "SIMPL-31047 is not built: no API carries the consent status or the 'consent defined' flag. The writers assume no consent data in contract-ui-be or the Contract Manager.",
+  "options": [
+   "Read consent status from Consent Management",
+   "Leave out of this build"
+  ],
+  "basis": "No field in any API of the input; the Consent Management API is not in the input set.",
+  "status": "accepted risk",
+  "owner_question": "Which API provides the contract consent assertion status for a usage contract, and is it read on load?",
+  "affects": [
+   "ui",
+   "api"
+  ]
+ },
+ {
+  "id": "D17",
+  "topic": "Usage contract audit data endpoint",
+  "closes": [
+   "F-009"
+  ],
+  "decision": "New operation GET /audits/usageContractStatusCounts on the Contract Manager (both sides, API key). 200 with {generatedAt (date-time), statusCounts: [{status, count}]} listing every stored state of D12 (CREATED, FINALIZING, FINALIZED, TERMINATED), with 0 where there is none. 'A given moment' is the time of the request. The audit rule package is not built.",
+  "options": [
+   "On-request endpoint with counts per state",
+   "Scheduled push to logging and monitoring"
+  ],
+  "basis": "SIMPL-34633 note: 'the amount of usage contracts per status at a given moment' made available 'through an endpoint'. An on-request GET is the simplest to build and test.",
+  "status": "provisional",
+  "owner_question": "Confirm the endpoint and format, and describe the audit rule package.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D18",
+  "topic": "Contract Clause document upload is not built",
+  "closes": [
+   "F-013",
+   "F-042",
+   "F-043",
+   "F-056"
+  ],
+  "decision": "SIMPL-28846 is not built in this run: the upload API it depends on is not in the input and is owned by another team. For when it is built, the defaults are: SHA-256 hash in lower-case hex; every upload creates a new document and documentId (no reuse on equal hash); errors as RFC 9457 problem details (400 validation, 413 too large, 415 unsupported type, 500 storage or metadata failure).",
+  "options": [
+   "Build an upload endpoint now",
+   "Leave out until the upload API is published"
+  ],
+  "basis": "The story lists endpoint, format, size and errors as still to be defined by the upload API owner. 'Always new' is the simplest rule that never overwrites (SIMPL-28846/AC6).",
+  "status": "accepted risk",
+  "owner_question": "Publish the upload API (endpoint, MIME types, maximum size, error codes) and say which component exposes it.",
+  "affects": [
+   "api"
+  ]
+ },
+ {
+  "id": "D19",
+  "topic": "Usage contract is the term; agreement names stay on the wire",
+  "closes": [
+   "D-001",
+   "D-002"
+  ],
+  "decision": "The business term is 'usage contract' in tests, logs, docs and new names. Existing API names stay as published (paths /agreements, schemas ContractAgreementData and ContractAgreementCreate, parameter contractAgreementId): the glossary records them as wire names of the usage contract. contractAgreementId is the id the Connector supplies in the path (the EDC contract agreement id); the Contract Manager stores it and never mints its own. New names introduced by these decisions use usage contract wording (for example usageContractStatusCounts).",
+  "options": [
+   "'usage contract' everywhere, rename the CDM and API",
+   "Keep 'contract agreement' on the wire with a glossary mapping",
+   "Same id as the EDC agreement",
+   "Own id plus an EDC reference"
+  ],
+  "basis": "DDD-01 asks one term; the business process and 30 stories use 'usage contract'. Renaming published paths is outside a build decision (hierarchy rule 4). The /create path already carries contractAgreementId from the Connector.",
+  "status": "provisional",
+  "owner_question": "Rename the CDM class to UsageContract and plan the API rename; confirm that the Contract Manager uses the EDC agreement id, and update the Contract Consumption CDM note on identifier equivalence.",
+  "affects": [
+   "api",
+   "data",
+   "tests"
+  ]
+ },
+ {
+  "id": "D20",
+  "topic": "Identity of the usage contract",
+  "closes": [
+   "D-004"
+  ],
+  "decision": "contractNegotiationId identifies a usage contract record over its whole life, on each side, in both services (offer phase and contract phase). contractAgreementId is a unique attribute of the same record, set from the /create or validateAndIssue path, and used to address it in /agreements/{contractAgreementId}. Paths are not renamed. The path parameter of POST /agreements/{contractNegotiationId}/search is a contractNegotiationId, as named.",
+  "options": [
+   "One id for the whole life, agreement id as attribute",
+   "Two entities with two ids"
+  ],
+  "basis": "Most operations, the VC, the UI and the callbacks are keyed by contractNegotiationId; DDD-09 asks one identity.",
+  "status": "provisional",
+  "owner_question": "Confirm contractNegotiationId as the identity and plan path names that say so.",
+  "affects": [
+   "api",
+   "data",
+   "tests"
+  ]
+ },
+ {
+  "id": "D21",
+  "topic": "Three offer concepts and the owner of the offer",
+  "closes": [
+   "D-003",
+   "D-015",
+   "D-017"
+  ],
+  "decision": "Three terms: 'usage contract offer' (the business object, the first phase of the usage contract record in the Contract Manager, which owns its state); 'human-readable usage contract offer' (the HTML rendering and its hash, a value object; contract-ui-be stores it and the user decision as a view); 'EDC contract offer' (external, referenced by contractOfferId only). The Contract Manager is the aggregate root: every state change of the usage contract goes through it, and contract-ui-be changes its own offer status only after the Contract Manager call succeeded (D14). Attribute names of the human-readable offer: humanReadable and hash, as in both APIs.",
+  "options": [
+   "Three terms, Contract Manager owns the state",
+   "Contract UI backend owns the offer until acceptance"
+  ],
+  "basis": "DDD-02, DDD-08, DDD-11; both OpenAPI files already use humanReadable and hash.",
+  "status": "provisional",
+  "owner_question": "Align the Contract UI CDM (HumanReadableContractData, humanReadableData, contractData) and SIMPL-32511 to these names.",
+  "affects": [
+   "api",
+   "data",
+   "tests"
+  ]
+ },
+ {
+  "id": "D22",
+  "topic": "Validation, not verification, for the signed offer and contract check",
+  "closes": [
+   "D-010"
+  ],
+  "decision": "Use 'validation' for the check of the other party's signed offer or contract (BP 7.6 and 7.8) in tests, logs and new names. 'verify' stays only for the BP 7.2 checks (access policy, existence check). The published path /verifications and schema names stay as wire names.",
+  "options": [
+   "'validation' for BP 7.6 and 7.8, 'verify' for BP 7.2",
+   "Keep 'verification' as a synonym"
+  ],
+  "basis": "Business process wording (hierarchy rule for terms); DDD-01.",
+  "status": "provisional",
+  "owner_question": "Rename /verifications in a later API version.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D23",
+  "topic": "Resource reference",
+  "closes": [
+   "D-011"
+  ],
+  "decision": "The business term is 'resource description'. In this build the usage contract stores and shows the assetId it receives from the Connector, and the overview's 'Resource description ID' column shows that assetId. No catalogue lookup and no resourceDescriptionId or selfDescriptionId field is built.",
+  "options": [
+   "Reference the resource description by resourceDescriptionId",
+   "Keep assetId and document the derivation"
+  ],
+  "basis": "assetId is the only resource id in the published Contract Manager API and request bodies; the catalogue API is not in the input.",
+  "status": "provisional",
+  "owner_question": "How is the resource description id obtained from the assetId, and should the usage contract store it?",
+  "affects": [
+   "api",
+   "ui",
+   "data"
+  ]
+ },
+ {
+  "id": "D24",
+  "topic": "External concepts and CDM gaps",
+  "closes": [
+   "D-012",
+   "D-013",
+   "D-016",
+   "D-018",
+   "D-019"
+  ],
+  "decision": "The writers treat VerifiableCredential (owner VC Issuer), Participant with roles Provider and Consumer (owner Identity Provider), ResourceDescription (owner Federated Catalogue) and the EDC contract negotiation, definition, offer and agreement (owner Connector) as external: they store only the ids and the VC as received, and do not model their attributes. Internal objects introduced by these decisions get these names: ValidationResult (result, rejectionReason, validatedAt), NotificationRequest (D11), UsageContractStatusCount (D17). CDM completion, approval and the context map are owner work and do not block the build.",
+  "options": [
+   "Mark external classes and add the internal ones to the CDM",
+   "Leave the CDM as is"
+  ],
+  "basis": "DDD-06, DDD-13, DDD-15; the CDMs are 'in review'.",
+  "status": "provisional",
+  "owner_question": "Complete and approve the Contract Manager and Contract UI CDMs (usage contract, offer phase, validation result), point them to the current API repositories, and draw the context map.",
+  "affects": [
+   "data"
+  ]
+ },
+ {
+  "id": "D25",
+  "topic": "Glossary terms",
+  "closes": [
+   "D-020",
+   "D-021",
+   "D-022",
+   "D-025",
+   "D-027",
+   "D-028",
+   "D-023",
+   "D-024",
+   "D-026"
+  ],
+  "decision": "The final glossary in decisions/glossary.md is the vocabulary for tests, code names that are not fixed by the OpenAPI, and logs. One term per concept; the retired synonyms are listed per term.",
+  "options": [
+   "Proposed terms of the draft glossary",
+   "Other terms"
+  ],
+  "basis": "DDD-01, DDD-03; the draft glossary of step 23b, business process first.",
+  "status": "follows the specs",
+  "owner_question": "Adopt the glossary and retire the synonyms in the stories.",
+  "affects": [
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "E1",
+  "topic": "Services, ports and base paths",
+  "closes": [],
+  "decision": "contract-manager-be on port 8085, base path /contract/v1; contract-ui-be on port 8086, base path /contract-ui/v1 (both from the OpenAPI servers). Each service owns its own store; tests use only the APIs and the stubs, never the database.",
+  "options": [],
+  "basis": "OpenAPI servers.",
+  "status": "provisional",
+  "owner_question": "",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "E2",
+  "topic": "Authentication",
+  "closes": [],
+  "decision": "Every operation except GET /health needs header X-Api-Key equal to the configured key (CONTRACT_API_KEY for contract-manager-be, CONTRACT_UI_API_KEY for contract-ui-be; test value 'test-api-key'). Missing or wrong key: 401 problem detail. No Keycloak, users or roles in these backends (D2).",
+  "options": [],
+  "basis": "OpenAPI security scheme ApiKeyAuth; SEC-12.",
+  "status": "provisional",
+  "owner_question": "",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "E3",
+  "topic": "Side of the Contract Manager",
+  "closes": [],
+  "decision": "One contract-manager-be instance plays one side, set by PARTICIPANT_SIDE = CONSUMER or PROVIDER, and has PARTICIPANT_ID (its own participant id). Operations called on the wrong side return 400 (D4, D5, D7, D8). Tests start one instance per side, or one at a time.",
+  "options": [],
+  "basis": "SIMPL-35584/AC3 and 35677/AC4 return 400 on the wrong side.",
+  "status": "provisional",
+  "owner_question": "",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "E4",
+  "topic": "Stubs for external services",
+  "closes": [],
+  "decision": "All external services are HTTP stubs with configurable base URLs. Connector (EDC_URL): POST /isPresent/{contractNegotiationId}/{isPresent}, POST /isValid/{contractNegotiationId}/{isValid}, POST /signed/{contractNegotiationId}/{signed}, any 2xx means accepted, other answers are logged with no retry; GET /vcExchange/{contractNegotiationId}/request returns 200 with a VerifiableCredential or 404. Signer Service (SIGNER_URL): POST /signatures with {document (base64), mimeType 'application/json'} returns 200 {signatureValue}. VC Issuer (VC_ISSUER_URL): POST /credentials with {credentialSubject} returns 201 VerifiableCredential; POST /credentials/validations with a VerifiableCredential returns 200 {status VALID, INVALID or INDETERMINATE}. Wallet (WALLET_URL): POST /credentials with a VerifiableCredential returns 201, 503 (unavailable) or 507 (full); GET /credentials?contractNegotiationId=... returns 200 VerifiableCredential or 404. Notification Service (NOTIFICATION_URL): POST /notifications with the D11 request returns 202. contract-ui-be calls the Contract Manager at CONTRACT_MANAGER_URL; the Contract Manager calls contract-ui-be at CONTRACT_UI_URL.",
+  "options": [],
+  "basis": "The Signer, VC Issuer, Wallet and Notification Service APIs are not in the input; one fixed stub contract lets both writers use the same fakes.",
+  "status": "provisional",
+  "owner_question": "",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "E5",
+  "topic": "Error format",
+  "closes": [],
+  "decision": "Every 4xx and 5xx answer is an RFC 9457 problem detail (application/problem+json) with type urn:problem-type:simpl:<type>, type in lowerCamelCase: invalidRequest (400), unauthorized (401), notFound (404), notAcceptable (406), conflict (409), unsupportedMediaType (415), usageContractValidationFailed (422), internalError (500), badGateway (502). The 409 for a duplicate validation carries rejectionReason DUPLICATE_OR_REPLAYED_SUBMISSION.",
+  "options": [],
+  "basis": "API-44 to API-47; Problem schema in both OpenAPI files.",
+  "status": "provisional",
+  "owner_question": "",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "E6",
+  "topic": "Scheduler configuration",
+  "closes": [],
+  "decision": "contract-ui-be reads OFFER_TIMEOUT (ISO 8601 duration, default P7D) and OFFER_TIMEOUT_CRON (Spring cron, default '0 0 1 * * *'). Tests set short values, for example PT5S and every 2 seconds.",
+  "options": [],
+  "basis": "SIMPL-35692 technical description (configurable timeout and run time).",
+  "status": "provisional",
+  "owner_question": "",
+  "affects": [
+   "tests"
+  ]
+ },
+ {
+  "id": "E7",
+  "topic": "Logging and correlation",
+  "closes": [],
+  "decision": "Every log line of a flow step carries the contractNegotiationId as correlationId. Validation results, rejection reasons, notification hand-overs and callback failures are logged at INFO or WARN. No separate audit store is built.",
+  "options": [],
+  "basis": "SIMPL-21948, 19933, 21966 and 22690 ask traceability in logs.",
+  "status": "provisional",
+  "owner_question": "",
+  "affects": [
+   "tests"
+  ]
+ },
+ {
+  "id": "E8",
+  "topic": "Rendering, hash and VC content",
+  "closes": [],
+  "decision": "humanReadable is an HTML document listing contractNegotiationId, contractAgreementId, contractDefinitionId, assetId, providerId, consumerId and contractOfferId. hash is the SHA-256 of the UTF-8 bytes of humanReadable, in lower-case hex. A usage contract VC has credentialSubject {contractNegotiationId, contractAgreementId, contractDefinitionId, assetId, providerId, consumerId, contractOfferId, offerHash, signatureValue}; all fields except signatureValue are required for D9 check 4 and compared in check 5.",
+  "options": [],
+  "basis": "SIMPL-28846 fixes SHA-256 for documents; the contract data fields come from ContractAgreementCreate.",
+  "status": "provisional",
+  "owner_question": "",
+  "affects": [
+   "api",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D26",
+  "topic": "Published operations that are not built",
+  "closes": [
+   "P-001",
+   "P-002"
+  ],
+  "decision": "Six Contract Manager operations of the published OpenAPI are not built and the tests do not call them: POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/issue, PATCH /agreements/{contractAgreementId}/definitions/{contractDefinitionId}/status, GET /agreements/{contractAgreementId}/file, POST /agreements/search, PUT /contractOffers/{contractNegotiationId}/update and the Contract Manager POST /contractOffers/{contractNegotiationId}. Signing happens only inside D5 (Consumer) and D7 (Provider). A usage contract changes state only through the D12 transitions caused by D5, D7, D8 and D13; no operation sets a state directly. The offer reaches contract-ui-be only through D4. A list of usage contracts is not built: a usage contract after acceptance is read one at a time through GET /agreements/{contractAgreementId} (D14). The operations that stay are the ones the earlier decisions name: on the Contract Manager /create (D4), PATCH /contractOffers/{contractNegotiationId}/{operation} (D5), validateAndIssue (D7), PUT /verifications/{contractNegotiationId} (D8), GET /verifications/{contractNegotiationId}/vc (D10), POST /agreements/{contractNegotiationId}/search (D3), GET /agreements/{contractAgreementId}, GET /audits/usageContractStatusCounts (D17) and GET /health; on contract-ui-be POST, GET and PATCH /contractOffers (D4, D14) and GET /health.",
+  "options": [
+   "Retire both P-001 operations (simplest, matches D5 and D7)",
+   "Keep /issue as an internal alias of the D5 or D7 signing step, retire PATCH .../status",
+   "Keep both, guarded by D12, 409 otherwise",
+   "For P-002: retire three and write a story for POST /agreements/search; retire all four; keep all four as internal plumbing"
+  ],
+  "basis": "D1 (SIMPL-19934 superseded by SIMPL-35584; SIMPL-21928 and 21963 made concrete by D5 and D7), D5 and D7 (signing inside accept and validateAndIssue), D12 (only the listed transitions), D21 (the Contract Manager is the root, contract-ui-be does not get pushed a status), D2 (no orchestrator), D4 (the offer goes to contract-ui-be inside /create). POST /agreements/search has no story (COV-01), so it is left out as the simplest choice to build and test; D14 already reads usage contracts after acceptance one at a time. PATCH .../status would let any API key holder skip the state machine.",
+  "status": "provisional",
+  "owner_question": "API owner: remove these six operations from the next OpenAPI version (or mark them deprecated) and unlink SIMPL-19934, 21928 and 21963 from /issue and PATCH .../status. Product owner: does POST /agreements/search serve the overview of usage contracts after acceptance (D14)? If yes, write a story with a state filter.",
+  "affects": [
+   "api",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D27",
+  "topic": "Response codes and request schemas follow the decisions, not the OpenAPI",
+  "closes": [
+   "P-003",
+   "P-004"
+  ],
+  "decision": "Where the OpenAPI and D3, D4, D5, D7, D8, D14 or E5 differ on a response code or a required field, the decisions win (source hierarchy, rule 1). Nothing new is decided here. The differences, for the build and the tests: Contract Manager POST .../create also answers 406 and 409; POST /agreements/{contractNegotiationId}/search also answers 406 and 415; PATCH /contractOffers/{contractNegotiationId}/{operation} also answers 404 and 409; PUT /verifications/{contractNegotiationId} also answers 404, 406 and 409. contract-ui-be PATCH /contractOffers/{contractNegotiationId}/{operation} also answers 409 and 502; POST /contractOffers/{contractNegotiationId} also answers 400 (humanReadable or hash missing) and 415; GET /contractOffers never answers 404. 406 and 415 follow E5 on every operation that takes or returns a JSON body. Request bodies: the search body and ContractAgreementCreate need all five fields (contractNegotiationId, assetId, providerId, consumerId, contractOfferId for ContractAgreementCreate; contractAgreementId, contractDefinitionId, assetId, providerId, consumerId for the search body), 400 otherwise. The PUT /verifications body is optional and ignored: no body, an empty body or any JSON body gives the D8 answer, never a 400 for the body. contract-ui-be ContractOffer accepts assetId, providerId and consumerId on POST and returns contractNegotiationId and createdAt as read-only properties (D14). A tool that validates responses against the OpenAPI must allow these codes and properties until the OpenAPI is updated.",
+  "options": [
+   "Decisions override; the OpenAPI is updated afterwards from the same list",
+   "Update the OpenAPI first and build from it"
+  ],
+  "basis": "Source hierarchy rule 1 (decisions win) and rule 4 (OpenAPI for the wire format only where no decision settles it). API-12 (status codes), API-60 (required flags). The codes and fields come from D3, D4, D5, D7, D8, D14 and E5; this entry only collects them per operation.",
+  "status": "follows the specs",
+  "owner_question": "API owner: update both OpenAPI files to this list: add the codes per operation, remove 404 from GET /contractOffers, add 'required' lists to the search body and ContractAgreementCreate, make the PUT /verifications body optional, and add contractNegotiationId, createdAt, assetId, providerId and consumerId to the contract-ui-be ContractOffer.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D28",
+  "topic": "Problem details follow E5, not the OpenAPI examples",
+  "closes": [
+   "P-006"
+  ],
+  "decision": "E5 stands. Every problem detail carries a type from the E5 list; the example types in the OpenAPI (argumentTypeMismatch, badRequest, methodNotSupported, methodNotAllowed, singleCustomException, internalServerError, urn:error:single-custom-exception) are not used. A request with a path or query value of the wrong type is invalidRequest (400). Every problem detail has type, title, status and instance. instance is the request path including the base path, as a relative URI reference (for example /contract/v1/agreements/search), never an absolute URL. Tests assert status, type and that instance equals the request path. 405 answers are not part of the tested contract.",
+  "options": [
+   "Follow E5 and declare instance as uri-reference",
+   "Adopt the existing example types and change E5"
+  ],
+  "basis": "E5, API-45, API-46, API-47. RFC 9457 allows instance to be a URI reference, so the relative paths of the examples stay valid with format uri-reference. One error format for the component (30a consistency rule).",
+  "status": "provisional",
+  "owner_question": "API owner: change the problem examples in both OpenAPI files to the E5 types, add a type to every example, and declare Problem.instance as format uri-reference.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D29",
+  "topic": "contract-ui-be payloads and offerUrl",
+  "closes": [
+   "P-005"
+  ],
+  "decision": "The schemas and D14 fix the payloads of contract-ui-be; the examples do not. ContractOffer has exactly: humanReadable, hash, status, contractNegotiationId, createdAt, assetId, providerId, consumerId. The example names humanReadableData, hashData, contractData, createdDate and lastUpdatedDate are not used, and there is no last-updated property. PATCH /contractOffers/{contractNegotiationId}/{operation} returns 200 with the new status as a JSON string, for example \"ACCEPTED\" (D14). POST /contractOffers/{contractNegotiationId} returns 201 with ContractOfferResponse {offerUrl} only, no offerStatus. offerUrl is the configured frontend base URL CONTRACT_UI_FRONTEND_URL (test value http://localhost:3000, no trailing slash) followed by /contractOffers/{contractNegotiationId}. The Contract Manager does not store or use offerUrl.",
+  "options": [
+   "Drop lastUpdatedDate, offerUrl = configured frontend base URL + /contractOffers/{contractNegotiationId}",
+   "Add lastUpdatedAt as read-only, offerUrl = backend resource URL"
+  ],
+  "basis": "Source hierarchy rule 4 (schema over example), D14 and D21 (names), API-21. flow.puml: 'offerUrl: <frontend>/contractOffers/{contractNegotiationId}'. No story needs a last-updated time, so leaving it out is the simplest to build and test.",
+  "status": "provisional",
+  "owner_question": "API owner: align every contract-ui-be example with the schema, drop offerStatus from the POST example, and confirm that offerUrl points to the frontend. Is a last-updated time needed anywhere?",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D30",
+  "topic": "Date and time format",
+  "closes": [
+   "P-007"
+  ],
+  "decision": "Every date and time value on both APIs (consumerSignatureDate, providerSignatureDate, createdAt, generatedAt of D17, validatedAt of D24) is an RFC 3339 date-time in UTC with a Z suffix, for example 2026-11-17T10:20:30.123Z. Fractional seconds are optional. Tests parse the values and compare them as instants, never as strings. providerSignatureDate is the instant of the Provider VC issuanceDate (D8 on the Consumer side) or of the Provider's own VC (D7 on the Provider side). consumerSignatureDate is the instant of the Consumer VC issuanceDate. createdAt is set by contract-ui-be when it stores the offer and is the start of the D13 timeout. Stores keep instants; local times without a zone are never written.",
+  "options": [
+   "RFC 3339 date-time, UTC, Z suffix, format date-time in the schema",
+   "Local time without zone, as in the examples"
+  ],
+  "basis": "VerifiableCredential.issuanceDate is already format date-time with Z in the OpenAPI, and D8 copies it; one format avoids time zone drift in the D13 timeout. CODE-27 asks for a standard date format in logs. Simplest to test.",
+  "status": "provisional",
+  "owner_question": "API owner: declare format date-time on consumerSignatureDate, providerSignatureDate and the contract-ui-be createdAt, and change the examples to UTC with Z.",
+  "affects": [
+   "api",
+   "data",
+   "tests"
+  ]
+ },
+ {
+  "id": "D31",
+  "topic": "Provider usage contract waits for the Consumer's confirmation",
+  "closes": [
+   "B-001"
+  ],
+  "decision": "On the Provider side, a successful validateAndIssue (D7) no longer ends in Active. After signing, issuing and storing its own VC, the Provider record goes to Signed (wire FINALIZING) with both signature dates, the Contract Manager calls Connector POST /signed/{contractNegotiationId}/true and returns 201 ConfirmationResponse with status FINALIZING. The record becomes Active only when the Consumer's confirmation (D8) reaches it. For that the Contract Manager gets a new operation, called by the Connector to relay the result of the other party's validation: POST /agreements/{contractNegotiationId}/validationResult/{isValid}, isValid true or false, no request body, both sides. Provider side: true moves Signed to Active (wire FINALIZED); false moves Requested or Signed to Closed (wire TERMINATED). Consumer side: see D32. No Connector callback is made by this operation (the other side sent the result). Response 200 ValidationResultConfirmation {contractNegotiationId, status} with the wire value of the state after the call. A repeat that finds the record already in the state the result leads to answers 200 and changes nothing. Errors: 400 when isValid is not true or false (and the Consumer-side case of D32), 401, 404 unknown contractNegotiationId, 406, 409 problem detail with member currentStatus when the result does not apply to the current state (for example true on a Closed record), 500. The Provider's own VC stays in its wallet when the record closes: no revocation API is in the input; the record state decides, and only Active counts for billing and access. A validateAndIssue call on a Provider record in Signed gets 409 like Active and Closed.",
+  "options": [
+   "Provider waits in a pending state until a Consumer confirmation callback (dynamic view step 5)",
+   "Provider stays Active and a new Active to Closed transition is added",
+   "Consumer-side technical failure is retried, only REJECTED closes, with a compensating call"
+  ],
+  "basis": "MSV-08 (saga with a compensating step and a defined outcome per step) and OWT-A10 (fail closed: a contract the Consumer has not confirmed is not active). BP07 Outcomes ('usage contract not validated: no usage contract established') and dynamic view step 5 (the Provider persists its record after both VCs are secured). Reusing the existing Signed state and the existing /isValid result keeps the change small: the Consumer Contract Manager already reports its result to its Connector (D8), the Connector relays it.",
+  "status": "provisional",
+  "owner_question": "API owner: add POST /agreements/{contractNegotiationId}/validationResult/{isValid} to the Contract Manager OpenAPI, and change the validateAndIssue success status to FINALIZING. Connector owner: confirm that the Connector relays the other side's /isValid result to its own Contract Manager. Process owner: confirm that the Provider's usage contract becomes active only after the Consumer's confirmation.",
+  "affects": [
+   "api",
+   "tests",
+   "events",
+   "data"
+  ]
+ },
+ {
+  "id": "D32",
+  "topic": "Every Signed record ends: relayed rejection and a Signed timeout",
+  "closes": [
+   "B-002"
+  ],
+  "decision": "Two new exits from Signed, on both sides. (1) Relayed rejection: on the Consumer side, POST /agreements/{contractNegotiationId}/validationResult/false (D31) moves a record in Requested, Signed or Active to Closed. This is how the Consumer learns that the Provider rejected (D7 REJECTED, D36) or timed out. On the Consumer side the value true answers 400: the Provider's success reaches the Consumer through PUT /verifications (D8). Active to Closed on the Consumer side is the compensating step for a Provider that closed its own record; it is the only exit from Active in this build. (2) Signed timeout: a scheduler in contract-manager-be (SIGNED_TIMEOUT, ISO 8601 duration, default P1D; SIGNED_TIMEOUT_CRON, Spring cron, default '0 30 1 * * *') closes every record that has been in Signed longer than the timeout. The time in Signed counts from consumerSignatureDate on the Consumer side and from providerSignatureDate on the Provider side. On timeout the record goes to Closed and the Contract Manager calls Connector POST /isValid/{contractNegotiationId}/false, so the other side closes too through (1) or D31. A Provider-side technical failure (D7 FAILED) is not retried by the Contract Manager: the Consumer record is closed by the timeout if the Connector does not call again. Tests set short values, for example PT5S and every 2 seconds.",
+  "options": [
+   "A Connector callback moves Signed to Closed",
+   "A timeout on Signed, like D13",
+   "Keep Signed open and show 'waiting for Provider'"
+  ],
+  "basis": "MSV-08 and OWT-A10 (no state without an exit on a failure path, fail closed). D13 is the existing pattern for a timeout; D8 is the existing pattern for /isValid false. Both together make every lost callback end in Closed on both sides, which is simple to test with the Connector stub.",
+  "status": "provisional",
+  "owner_question": "Confirm the Signed timeout and its default, and that a Consumer usage contract may move from Active to Closed when the Provider closed its side.",
+  "affects": [
+   "api",
+   "tests",
+   "events",
+   "data"
+  ]
+ },
+ {
+  "id": "D33",
+  "topic": "A signing retry reuses the issued VC",
+  "closes": [
+   "B-003"
+  ],
+  "decision": "In D5 and D7 the Contract Manager stores the signatureValue and the issued VC with the record as soon as the VC Issuer returns, while the record stays Requested. A retry of the same step on a record that already holds an issued VC skips the Signer and the VC Issuer and continues with the wallet. So there is at most one Signer call and one VC Issuer call per contractNegotiationId and side. Storing the same VC in the wallet twice is harmless: the wallet stub keys by contractNegotiationId and overwrites. A VC that was issued but whose record then goes to Closed (reject, timeout, relayed rejection) is not revoked, because no revocation API is in the input; the Contract Manager logs it at INFO with the contractNegotiationId. Tests: wallet stub answers 503 on the first accept and 201 on the retry; the Signer and VC Issuer stubs each receive exactly one call.",
+  "options": [
+   "Reuse the issued VC on retry",
+   "Revoke the issued VC before returning 500",
+   "Accept issued VCs outside the wallet as harmless"
+  ],
+  "basis": "OWT-A10 (no error leaves a half-done change behind). Reuse is done inside the Contract Manager, so it needs no idempotency from the VC Issuer, whose API is not in the input (E4). Simplest to build and test.",
+  "status": "provisional",
+  "owner_question": "VC Issuer owner: is there a revocation operation for a usage contract VC that was issued but never took effect, and should the Contract Manager call it?",
+  "affects": [
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D34",
+  "topic": "contract-ui-be and the Contract Manager stay aligned",
+  "closes": [
+   "B-004"
+  ],
+  "decision": "(1) Repeat-safe accept and reject in the Contract Manager: PATCH /contractOffers/{contractNegotiationId}/accept on a record in Signed or Active answers 200 as in D5 and changes nothing (no signing, no callback); reject on a record in Closed answers 200 and changes nothing. Only a conflicting call answers 409 (accept on Closed, reject on Signed or Active), and the 409 problem detail carries member currentStatus with the wire value of the record state. The state check and the state change of one record are atomic, so a concurrent second call sees the new state. (2) contract-ui-be sets a timeout on every call to the Contract Manager: CONTRACT_MANAGER_TIMEOUT, ISO 8601 duration, default PT30S. On a timeout or a 5xx answer the offer stays CREATED and the user gets 502 (D14). A retry of the same decision then gets 200 from the Contract Manager and the offer is set as in D14. (3) On a 409 with currentStatus, contract-ui-be aligns its offer: FINALIZING or FINALIZED gives ACCEPTED; TERMINATED gives REJECTED for a user call and EXPIRED for the D13 scheduler. The user call then answers 409 conflict. (4) On a 404 from the Contract Manager, contract-ui-be sets the offer to EXPIRED; a user call answers 409. (5) The D13 scheduler therefore stops on 409 and 404; it keeps retrying only while the Contract Manager is unreachable or answers 5xx, and logs each failure at WARN.",
+  "options": [
+   "On 409 or timeout, contract-ui-be reads the Contract Manager state and aligns",
+   "Make accept and reject idempotent",
+   "Drop the offer status from contract-ui-be"
+  ],
+  "basis": "MSV-06 (timeout and outcome per dependency), MSV-08. D21: the Contract Manager owns the state, contract-ui-be is a view, so the view follows the owner's answer. Repeat-safe operations plus the state in the 409 avoid a new read operation.",
+  "status": "provisional",
+  "owner_question": "API owner: document the 200 for a repeated accept or reject and the currentStatus member of the 409 in the Contract Manager OpenAPI. Confirm the 30 second timeout.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D35",
+  "topic": "Each side notifies its own participant of the outcome",
+  "closes": [
+   "B-005"
+  ],
+  "decision": "Every time a usage contract record enters Active or Closed, the Contract Manager hands a notification request for its local participant (PARTICIPANT_ID) to the Notification Service stub, in the D11 format: notificationType USAGE_CONTRACT_ACTIVE or USAGE_CONTRACT_CLOSED, contractNegotiationId, correlationId, and for Closed a member reason: OFFER_REJECTED (D5 reject, also when the D13 timeout calls reject), the rejectionReason of its own validation (D9, D36), OTHER_PARTY_REJECTED (relayed result false, D31 and D32) or CONFIRMATION_TIMEOUT (D32). Failure handling as in D11: logged, no retry, the main call is not affected. The two D11 types stay. Between the parties only the Connector callbacks travel, and they stay booleans (E4): the reason of one side is not sent to the other. A request that ends before any Contract Manager record exists (access policy, existence check true) is notified by the Connector or the catalogue UI, which are not built here (D2).",
+  "options": [
+   "Extend D11 with notification types for each outcome, sent to both parties",
+   "Leave party notification to the Connector",
+   "Add a reason to the Connector callbacks"
+  ],
+  "basis": "BP07 Outcomes ('both parties are notified ... and the reason'), MSV-03. Each side notifying its own participant reaches both parties without changing the Connector callbacks, whose contract is owned by the Connector team.",
+  "status": "provisional",
+  "owner_question": "Confirm that each side notifies its own participant, and whether the reason must also reach the other party (that needs a reason in the Connector callbacks).",
+  "affects": [
+   "tests",
+   "events"
+  ]
+ },
+ {
+  "id": "D36",
+  "topic": "One open or active usage contract per Consumer and resource",
+  "closes": [
+   "B-006"
+  ],
+  "decision": "(1) The existence check (D3) counts a usage contract with the same consumerId and assetId in Requested, Signed, Active (not expired, D37) or a reserved state as existing; the record of the contractNegotiationId in the path is ignored. (2) validateAndIssue (D7) repeats the check on the Provider side after a SUCCESS validation and before signing: if another Provider record with the same consumerId and assetId is in Signed or Active (not expired), the result is REJECTED with the new reason EXISTING_USAGE_CONTRACT and is handled as any D7 rejection (Closed, /isValid false, D11 notification, 422 with rejectionReason). The check and the move to Signed are serialised per consumerId and assetId, so two parallel calls cannot both pass. Records that never finish do not block for ever: Requested ends by D13 or D32, Signed by D32.",
+  "options": [
+   "Count Requested and Signed as blocking in the D3 search",
+   "Re-check existence inside validateAndIssue",
+   "Accept parallel contracts"
+  ],
+  "basis": "BP07.03 and SIMPL-19824 and 32509 ('avoid initiating a second contract for the same Consumer and resource'), OWT-A06. Both measures together are needed: the search alone cannot stop two parallel negotiations.",
+  "status": "provisional",
+  "owner_question": "Confirm that an open request blocks a new one for the same resource, and add EXISTING_USAGE_CONTRACT to the rejection reasons of SIMPL-21948.",
+  "affects": [
+   "api",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D37",
+  "topic": "An expired usage contract is derived, not a state",
+  "closes": [
+   "B-007"
+  ],
+  "decision": "A usage contract is expired when it is Active and the validUntil of its own VC is in the past (no validUntil means it does not expire). No new state and no scheduler: the stored state stays Active, wire FINALIZED, and GET /agreements and the D17 counts show it as such. The existence checks (D3, D36) do not count an expired usage contract, so the Consumer can request a new one for the same resource (BP07 scenario 2). Tests let the VC Issuer stub return a VC with validUntil in the past.",
+  "options": [
+   "Treat an Active contract past validUntil as not active in the search",
+   "Add a state Expired and a scheduler",
+   "Out of scope"
+  ],
+  "basis": "D9 already makes the VC validity the contract validity. Deriving expiry needs no new state in D12 and no new wire value; simplest to build and test.",
+  "status": "provisional",
+  "owner_question": "Should an expired usage contract get its own state (and wire value), and must BP10 billing and resource access stop at validUntil?",
+  "affects": [
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D38",
+  "topic": "The offer carries ids, not terms, in this build",
+  "closes": [
+   "B-008"
+  ],
+  "decision": "humanReadable, the hash and the VC keep the content of E8: ids only. The terms (policies, clauses, billing schema) live in the EDC contract offer that contractOfferId references; the Contract Manager does not read or copy them. Tests check the E8 fields only.",
+  "options": [
+   "Take the EDC policy and the clause hashes into humanReadable and the VC",
+   "Keep ids only and refer to the EDC offer",
+   "Ask the Connector to pass the terms in /create"
+  ],
+  "basis": "No input says where the terms come from or in which format: the catalogue and Connector APIs are not in the input (D4, D23), and the clause upload is not built (D18).",
+  "status": "accepted risk",
+  "owner_question": "Which terms must the usage contract offer show and sign (policy, clause hashes, billing schema), and from which API does the Contract Manager get them?",
+  "affects": [
+   "data",
+   "tests"
+  ]
+ },
+ {
+  "id": "D39",
+  "topic": "The decided flow wins over the process text on parties and order",
+  "closes": [
+   "B-009",
+   "B-011"
+  ],
+  "decision": "The build follows D3, D4, D5, D7 and D8: the Connector delivers the EDC offer, the Consumer Contract Manager prepares the human-readable offer, the Consumer signs first, the Provider validates and signs second, automatically and without a Provider user, and the existence check runs on whichever side the Connector calls. Where the BP07 sub-processes 7.2.2, 7.3, 7.6 and 7.7 or the dynamic view (Provider signs first) say otherwise, the process text is to be updated; nothing changes in the build.",
+  "options": [
+   "Update the process to the R17 parties and order",
+   "Add a Provider UI step and reverse the order"
+  ],
+  "basis": "Source hierarchy: the decisions and the newest live stories (rules 1 and 2) win over the business process (rule 7), which counts for meaning and terms. The README order (Consumer first) already matches D5, D7 and D8.",
+  "status": "follows the specs",
+  "owner_question": "Process owner: update BP07 7.2.2, 7.3, 7.6 and 7.7 to the R17 parties, correct the signing order in the dynamic view, and add contract-ui-be and the Notification Service to its participants.",
+  "affects": [
+   "tests"
+  ]
+ },
+ {
+  "id": "D40",
+  "topic": "Automatic Provider signing has no limit in these backends",
+  "closes": [
+   "B-010"
+  ],
+  "decision": "The Provider signs automatically, as in D7. The only limit in this build is D36: one open or active usage contract per Consumer and resource. There is no rate limit and no Provider approval step in these backends; rate limits belong to the gateway or the Connector. The user who accepts an offer is not recorded, because these backends have no user identity (D2, E2).",
+  "options": [
+   "Rate limit at the gateway or Connector",
+   "Provider rule: automatic signing up to N, manual approval above",
+   "Accept automatic signing and record the risk"
+  ],
+  "basis": "OWA-API6 asks a limit stated in the specs; no source gives one. D36 is the limit the sources support. A user id would need a gateway header that no input defines.",
+  "status": "accepted risk",
+  "owner_question": "Is a rate limit per Consumer and resource needed, and where? May a Provider hold automatic signing for approval? Must the accepting user be recorded, and which gateway header carries the user id?",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D41",
+  "topic": "The Provider VC stays with the Consumer record, not in the wallet",
+  "closes": [
+   "B-012"
+  ],
+  "decision": "D8 stands: after SUCCESS the Consumer Contract Manager keeps the Provider VC with the record and does not store it in the Consumer wallet. The Consumer wallet holds only the Consumer's own VC (D5), which GET /verifications/{contractNegotiationId}/vc returns (D10). SIMPL-19927 is met by the Consumer's own VC at BP07.07 (D1, D6), and its 'fully-signed' wording is read as that VC.",
+  "options": [
+   "Add a wallet store step to D8 before Active",
+   "Keep D8 and narrow SIMPL-19927",
+   "Add a step BP07.13"
+  ],
+  "basis": "D1 and D6 already map SIMPL-19927 to the Consumer's storage step. A second VC per contractNegotiationId would clash with the wallet stub key and with D10. Simplest to build and test.",
+  "status": "provisional",
+  "owner_question": "Must the Consumer store the Provider's VC (the countersigned usage contract) in its wallet? If yes, the wallet needs a key per VC, and D10 must say which VC it returns.",
+  "affects": [
+   "tests",
+   "data"
+  ]
+ }
 ]

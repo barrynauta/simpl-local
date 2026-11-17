@@ -1,9 +1,9 @@
 {
  "component": "contract-management",
  "counts": {
-  "blocker": 21,
-  "major": 53,
-  "minor": 24
+  "blocker": 22,
+  "major": 65,
+  "minor": 26
  },
  "findings": [
   {
@@ -2029,6 +2029,501 @@
    "code": "API-03",
    "step": "21b",
    "theme": "API guidelines and coverage"
+  },
+  {
+   "id": "B-001",
+   "target": "BP07.12",
+   "ids": [
+    "BP07.08",
+    "BP07.09",
+    "BP07.10",
+    "BP07.12",
+    "BP7.8.1"
+   ],
+   "rule": "MSV-08",
+   "severity": "blocker",
+   "finding": "The two sides can end the process in opposite states. On the Provider side D7 sets the usage contract to Active, with both signature dates, before the Consumer has confirmed it (BP07.12). If the Consumer's check then fails (D8 REJECTED, or FAILED for a technical error such as the VC fetch), the Consumer record goes to Closed and the Connector gets /isValid false. The Provider record stays Active: D12 has no transition out of Active, and no operation or callback lets the Provider's Contract Manager learn the outcome. The process says the opposite: when the usage contract is not validated, no usage contract is established and both parties are notified. A Provider-side Active record is what BP10 billing and resource access start from, so a contract the Consumer refused would still be billed. There is no compensating step.",
+   "evidence": "BP07 README, Outcomes: 'No usage contract established: if any step fails or is rejected, the process is terminated ... Usage contract not validated'. BP07 dynamic view step 5: 'After both VCs are secured in the respective digital wallets, a copy of the contract record is stored by the Provider for billing and audit purposes'. D7: on success 'sets Active (wire FINALIZED) with both signature dates, calls Connector POST /signed/{contractNegotiationId}/true'. D8: 'REJECTED or FAILED (including the VC fetch failing): record to Closed ... /isValid/{contractNegotiationId}/false'. D12 transitions list no exit from Active; Terminated is reserved (D15). BP10 prerequisite: 'Usage contract active (BP07)'.",
+   "question": "When the Consumer's confirmation (BP07.12) fails after the Provider has signed, what happens to the Provider's usage contract, and how does the Provider's Contract Manager learn it?",
+   "options": [
+    "Provider record waits in a pending state after signing and becomes Active only on a Consumer confirmation callback (matches dynamic view step 5)",
+    "Provider stays Active and a new transition Active to Closed is added, triggered by the Connector after /isValid false",
+    "Consumer-side technical failure (FAILED) does not close the record but is retried, and only REJECTED closes it, with a compensating call to the Provider"
+   ],
+   "from_22a": [],
+   "see": [
+    "D7",
+    "D8",
+    "D9",
+    "D12",
+    "D15",
+    "F-014",
+    "F-003"
+   ],
+   "code": "MSV-08",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-002",
+   "target": "BP07.06",
+   "ids": [
+    "BP07.06",
+    "BP07.07",
+    "BP07.08",
+    "BP7.5.2",
+    "BP7.6.1"
+   ],
+   "rule": "MSV-08",
+   "severity": "major",
+   "finding": "The Consumer's Signed state has only one way out: the Consumer's own validation (D8). Three main-path failures leave the record in Signed for ever: the Provider rejects the signed offer (D7 REJECTED, the Provider side calls /isValid false and notifies, but no Consumer operation moves Signed to Closed); the Provider has a technical failure (D7 FAILED, 'the Connector may call again', with no limit or deadline); and the /signed true callback of D5 is lost (E4: 'other answers are logged with no retry'). In each case the Consumer has a signed VC in its wallet, contract-ui-be shows Accepted, and the D13 timeout does not apply because it only looks at CREATED. The signed offer is never withdrawn.",
+   "evidence": "D12: 'Signed to Active (D8 success), Signed to Closed (D8 failure)' are the only exits from Signed. D7: REJECTED 'record to Closed ... /isValid/{contractNegotiationId}/false, notification request to the Consumer'; FAILED 'record stays Requested, no Connector callback, the Connector may call again'. E4: Connector callbacks 'any 2xx means accepted, other answers are logged with no retry'. D13: 'Only CREATED counts as pending'. SIMPL-21966 (Provider notifies Consumer) reaches the Consumer user, not the Consumer's Contract Manager.",
+   "question": "How does a Consumer record in Signed end when the Provider rejects, fails or never answers, and what happens to the Consumer's signed VC?",
+   "options": [
+    "A Connector callback to the Consumer Contract Manager (for example the existing /isValid false path) moves Signed to Closed",
+    "A timeout on Signed, like D13, closes the record",
+    "Keep Signed open and show it as 'waiting for Provider' (accept the risk)"
+   ],
+   "from_22a": [],
+   "see": [
+    "D5",
+    "D7",
+    "D12",
+    "D13",
+    "E4",
+    "F-014",
+    "F-017"
+   ],
+   "code": "MSV-08",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-003",
+   "target": "BP07.06",
+   "ids": [
+    "BP07.06",
+    "BP07.07",
+    "BP07.09",
+    "BP07.10",
+    "BP7.5.1",
+    "BP7.7.1",
+    "BP7.7.2"
+   ],
+   "rule": "OWT-A10",
+   "severity": "major",
+   "finding": "Signing is three external calls in a row (Signer, VC Issuer, Wallet), and a failure after the second leaves a half-done change. D5 and D7 say that if any of the steps fails the record stays Requested and the caller may try again. If the wallet fails after the VC Issuer has issued the VC, a signed and issued usage contract VC exists outside the wallet; the retry signs and issues a second one. Nothing revokes or discards the first. The same holds when the Provider record is updated but the response is lost. No decision says whether a VC Issuer call is idempotent per contractNegotiationId or how an issued VC is withdrawn.",
+   "evidence": "D5: '(1) Signer Service signs ... (2) VC Issuer issues a VC ... (3) Wallet stores the VC ... If any of steps 1 to 3 fails: 500 problem detail, the record stays Requested, the Connector is not called, and the user may try again'. D7: 'same steps as D5 ... Technical failure (Connector, VC Issuer, Signer or wallet error ...): 500 problem detail, record stays Requested'. D6 wallet errors 503 and 507. E4 VC Issuer stub POST /credentials returns 201 with no idempotency key.",
+   "question": "When a step after VC issuance fails, is the issued VC revoked, reused on retry, or left as is?",
+   "options": [
+    "Reuse: the VC Issuer call is idempotent per contractNegotiationId, so a retry returns the same VC",
+    "Compensate: revoke the issued VC before returning 500",
+    "Accept: issued VCs outside the wallet are harmless and logged"
+   ],
+   "from_22a": [],
+   "see": [
+    "D5",
+    "D6",
+    "D7",
+    "E4",
+    "F-025"
+   ],
+   "code": "OWT-A10",
+   "step": "22b",
+   "theme": "Other"
+  },
+  {
+   "id": "B-004",
+   "target": "BP07.05",
+   "ids": [
+    "BP07.05",
+    "BP07.06",
+    "BP7.4.1",
+    "BP7.4.2"
+   ],
+   "rule": "MSV-08",
+   "severity": "major",
+   "finding": "contract-ui-be and the Contract Manager can drift apart with no way back. The accept call is synchronous and runs Signer, VC Issuer, Wallet and the Connector callback inside it, but no timeout is set on the contract-ui-be call. If contract-ui-be gives up or loses the answer while the Contract Manager completes, the Contract Manager is Signed and contract-ui-be keeps CREATED and answers 502. A retry by the user gets 409 from the Contract Manager, which contract-ui-be also treats as a failure. The D13 scheduler then calls reject every night, gets 409 each time ('the next run tries again'), and the user keeps seeing Requested for an offer they already signed. A race between a user accept and the scheduler's reject ends the same way.",
+   "evidence": "D14: 'If the Contract Manager call fails, the offer stays CREATED and the response is 502 problem detail'. D5: 'Only for a record in state Requested; otherwise 409'. D13: 'If the call fails, the offer stays CREATED, the failure is logged and the next run tries again'. D21: contract-ui-be 'changes its own offer status only after the Contract Manager call succeeded'. No decision or E entry sets a timeout for contract-ui-be to Contract Manager calls (MSV-06).",
+   "question": "How does contract-ui-be align its offer status with the Contract Manager after a failed, timed-out or conflicting call?",
+   "options": [
+    "On 409 or timeout, contract-ui-be reads the Contract Manager state and aligns its own status",
+    "Make accept and reject idempotent: a repeat returns the current result instead of 409",
+    "Drop the offer status from contract-ui-be and always read it from the Contract Manager"
+   ],
+   "from_22a": [],
+   "see": [
+    "D5",
+    "D13",
+    "D14",
+    "D21",
+    "MSV-06",
+    "F-037"
+   ],
+   "code": "MSV-08",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-005",
+   "target": "BP07",
+   "ids": [
+    "BP07.02",
+    "BP07.03",
+    "BP07.05",
+    "BP07.08",
+    "BP07.11",
+    "BP07.12",
+    "BP7.4.2"
+   ],
+   "rule": "MSV-03",
+   "severity": "major",
+   "finding": "The process promises that both parties are notified of the outcome, with the reason when it fails. The decided flow tells the other party only through Connector callbacks that carry a boolean (/isPresent, /isValid, /signed) and no reason, and sends user notifications in two cases only (offer available, Provider-side rejection). No one is notified when: the access policy or existence check fails (BP07.02, BP07.03; no Contract Manager record exists yet and the catalogue UI is not built); the Consumer rejects or the offer expires (the Provider gets /signed false, no reason); the Consumer's confirmation fails (BP07.12); or the usage contract becomes Active on either side (BP07.11 and the success outcome). Whether the Provider's Connector passes anything on to the Provider's Contract Manager is not described.",
+   "evidence": "BP07 Outcomes: 'Both parties are notified of the successful completion' and 'Both parties are notified of the termination and the reason'. BP07.11: 'The Provider notifies the Consumer that they have signed and stored the usage contract'. D11: two notification types only (USAGE_CONTRACT_OFFER_AVAILABLE, SIGNED_OFFER_VALIDATION_FAILED). E4: callback paths carry only {contractNegotiationId} and a boolean. D2: catalogue UI, SIMPL-21924/AC3 and AC4 not built. BP7.4.2: 'notify the Provider about a rejection' is met only by /signed false (SIMPL-35660/AC3).",
+   "question": "Which outcomes must reach which party, by which channel, and does the reason travel with them?",
+   "options": [
+    "Extend D11 with notification types for rejection, expiry, failed confirmation and success, sent to both parties",
+    "Leave party notification to the Connector and narrow the BP07 Outcomes text to the callbacks",
+    "Add a reason to the Connector callbacks and let each side notify its own user"
+   ],
+   "from_22a": [],
+   "see": [
+    "D2",
+    "D3",
+    "D5",
+    "D8",
+    "D11",
+    "D13",
+    "F-033",
+    "F-041"
+   ],
+   "code": "MSV-03",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-006",
+   "target": "BP07.03",
+   "ids": [
+    "BP07.03",
+    "BP7.2.2",
+    "BP07.09"
+   ],
+   "rule": "OWT-A06",
+   "severity": "major",
+   "finding": "The existence check does not stop duplicate usage contracts. It counts only Active (and reserved) states, so two negotiations for the same Consumer and resource that run at the same time both pass: neither is Active yet. D7 does not repeat the check when the Provider signs. Both reach Active, which is exactly what BP07.03 is meant to prevent. A Consumer can also start many parallel requests on purpose. No criterion or decision covers this abuse case.",
+   "evidence": "BP07.03: 'verifies whether the Consumer already has an established usage contract'. SIMPL-19824 and 32509 user story: 'avoid initiating a second contract for the same Consumer and resource'. D3: 'looks ... for a usage contract with the same consumerId and assetId in an active state'; 'Active states are Active and the reserved states'. D7 steps: fetch, validate (D9), sign, store; no existence check. D9 duplicate rule keys on contractNegotiationId only, so a second negotiation is not a duplicate.",
+   "question": "Should a usage contract in Requested or Signed for the same Consumer and resource also block a new request, and should the Provider re-check existence before signing?",
+   "options": [
+    "Count Requested and Signed as blocking in the D3 search",
+    "Re-check existence inside validateAndIssue and reject with a new reason",
+    "Accept parallel contracts for the same resource and say so in BP07.03"
+   ],
+   "from_22a": [],
+   "see": [
+    "D3",
+    "D7",
+    "D9",
+    "F-018",
+    "F-001"
+   ],
+   "code": "OWT-A06",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-007",
+   "target": "BP07",
+   "ids": [
+    "BP07.03",
+    "BP7.2.2"
+   ],
+   "rule": "FLOW",
+   "severity": "major",
+   "finding": "The second scenario of the process, a new usage contract after the old one expires, has no path. D9 makes the validFrom and validUntil of the VC the contract's validity period, but only checks it during validation. No step moves an Active usage contract to an expired state when validUntil passes, and D12 has no such state. The existence check (D3) keeps finding the old Active contract, so the Consumer cannot request the renewal the process describes. Expiry of a usage contract is a state no step reaches.",
+   "evidence": "BP07 Overview: 'Usage contract expiration: usage contracts are immutable, so a new contract must be created when an existing one expires'. D9: 'The validity period of an offer or a contract is the validFrom and validUntil of its VC'; check 6 runs only in validation. D12 states: Requested, Signed, Active, Closed (plus reserved D15 states); no expired state for a usage contract. D13 'Expired' applies to the offer view in contract-ui-be only. D3: Active blocks a new offer.",
+   "question": "How does an Active usage contract end when its validity period runs out, and does the existence check ignore expired contracts?",
+   "options": [
+    "Treat an Active contract past validUntil as not active in the D3 search (no new state)",
+    "Add a state Expired for usage contracts and a scheduler that sets it",
+    "Out of scope for this build; renewal is handled later"
+   ],
+   "from_22a": [],
+   "see": [
+    "D3",
+    "D9",
+    "D12",
+    "D13",
+    "F-016",
+    "F-018"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-008",
+   "target": "BP07.05",
+   "ids": [
+    "BP07.04",
+    "BP07.05",
+    "BP7.3.1",
+    "BP7.4.1",
+    "BP7.5.1"
+   ],
+   "rule": "FLOW",
+   "severity": "major",
+   "finding": "The Consumer reviews and signs an offer that holds no terms. The process says the usage contract defines rights, limits and obligations (pricing, usage limits, data retention, SLAs) and that the Consumer reviews the terms and conditions before signing. In the decided flow the human-readable offer and the VC contain only ids (negotiation, agreement, definition, asset, Provider, Consumer, EDC offer). The hash the Consumer signs covers those ids, not the terms. BP10 needs the usage contract to carry the billing schema, and the Contract Clause documents of SIMPL-28846 produce a hash for later use, but neither reaches the offer. What 'review the terms and conditions' means at BP07.05 is therefore open.",
+   "evidence": "BP07 Overview: 'a legally binding usage contract defining rights, limits, and obligations of both parties, including pricing, usage limits, data retention policies, and service level agreements'. BP07.05: 'reviews the usage contract and decides whether to agree to the terms and conditions'. E8: humanReadable lists 'contractNegotiationId, contractAgreementId, contractDefinitionId, assetId, providerId, consumerId and contractOfferId'; VC credentialSubject has the same fields plus offerHash and signatureValue. BP10 Overview: 'Both the Provider and the Consumer formalise their commitment to the billing process through the usage contract'. SIMPL-28846 user story: metadata 'returned for later use in the Resource Description flow'. D4: 'No catalogue call is made in this build'.",
+   "question": "Which terms does the usage contract offer carry (policies, contract clauses with their hash, billing schema), and from which source does the Contract Manager get them?",
+   "options": [
+    "Take the policy of the EDC contract offer and the clause hashes from the resource description, and include them in humanReadable and the VC",
+    "Keep ids only in this build and record that the terms live in the EDC offer referenced by contractOfferId",
+    "Ask the Connector to pass the terms in the /create body"
+   ],
+   "from_22a": [],
+   "see": [
+    "E8",
+    "D4",
+    "D18",
+    "D23",
+    "F-046",
+    "D-011"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-009",
+   "target": "BP07",
+   "ids": [
+    "BP7.2.2",
+    "BP7.3.1",
+    "BP7.3.2",
+    "BP7.6.1",
+    "BP7.7.1"
+   ],
+   "rule": "FLOW",
+   "severity": "major",
+   "finding": "Several process steps name a party or a channel that the decided flow does not use. BP 7.2.2 has the Provider check for an existing contract; SIMPL-35858 has the Consumer side report it, and D3 runs it on either side. BP 7.3.1 and 7.3.2 have the Provider create and provide the offer; in D4 the Provider's Connector makes the EDC offer and the Consumer's Contract Manager prepares the human-readable offer, so the Provider's Contract Manager does nothing until validateAndIssue. BP 7.6.1 and 7.7.1 say the Provider validates and signs 'via UI and API'; D7 makes both a single automatic backend call with no Provider user. The decisions settle the build, but the process text and the build now describe different parties, so the next reader of the process will build something else.",
+   "evidence": "bp72: '7.2.2 A Provider verifies existence of a usage contract'. bp73: 'Simpl-Open shall support the Provider to automatically create ... provide the usage contract offer to the Consumer'. bp76: 'support the Provider via UI and API to validate'. bp77: '7.7.1 ... via UI and API to sign'. D3 owner question: 'On which side does the existence check run (BP 7.2.2 says Provider, SIMPL-35858 says Consumer)?'. D4: /create 'runs on the Consumer side (SIMPL-35526); on the Provider side it returns 400'. D7: 'Processed synchronously', called by the Connector. 22a BA-001 (BP7.3.2 uncovered) is the Connector's delivery of the EDC offer; its receiving end is SIMPL-35526/AC1.",
+   "question": "Will the business process be updated to the R17 parties (Connector delivers the offer, Consumer Contract Manager prepares it, Provider validates and signs automatically), or do the decisions D3, D4 and D7 change?",
+   "options": [
+    "Update BP07 sub-processes 7.2.2, 7.3, 7.6 and 7.7 to the R17 parties",
+    "Keep the process and add a Provider UI step for validation and signing",
+    "Keep both and record the mapping in the process as 'automated by the Contract Manager'"
+   ],
+   "from_22a": [],
+   "see": [
+    "D3",
+    "D4",
+    "D7",
+    "F-001",
+    "F-002"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-010",
+   "target": "BP07.09",
+   "ids": [
+    "BP07.08",
+    "BP07.09",
+    "BP7.6.1",
+    "BP7.7.1"
+   ],
+   "rule": "OWA-API6",
+   "severity": "major",
+   "finding": "Each Consumer signature makes the Provider sign a legally binding usage contract automatically, with no limit and no Provider decision. The only gates are the access policy (Connector, not built here) and the existence check, which does not stop parallel requests (B-006). Nothing limits how many offers a Consumer may request or sign per resource or per period, and the Provider side has no step to hold or refuse a contract on business grounds. Each Active contract creates obligations for the Provider (SLAs, billing, access). On the Consumer side the accept call is protected only by the static API key of contract-ui-be, so any frontend user can sign on behalf of the Consumer organisation; the flow does not record which user decided.",
+   "evidence": "D7: the Contract Manager 'validates it (D9), and on success signs and issues its own VC'; no approval or limit. bp77: 'support the Provider via UI and API to sign'. D2: 'User login and roles are checked at the gateway ... not in these backends'. E2: one static key per service. No criterion of SIMPL-35584, 35660 or 35526 covers misuse (OWT-A06). P-008 notes the static key on contract-ui-be.",
+   "question": "Is there a limit on usage contract requests per Consumer and resource, and may a Provider hold or refuse automatic signing? Must the signing user be recorded?",
+   "options": [
+    "Rate limit at the gateway or Connector per Consumer and resource, stated in the specs",
+    "Configurable Provider rule: automatic signing up to N contracts, manual approval above",
+    "Accept automatic signing as designed and record the risk"
+   ],
+   "from_22a": [],
+   "see": [
+    "D2",
+    "D7",
+    "E2",
+    "B-006",
+    "P-008"
+   ],
+   "code": "OWA-API6",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-011",
+   "target": "bp07-dynamic-view",
+   "ids": [
+    "BP07.06",
+    "BP07.09",
+    "BP07.10"
+   ],
+   "rule": "FLOW",
+   "severity": "major",
+   "finding": "The dynamic view gives a different order from the process README and the decided flow. It has the Provider's VC Issuer issue, sign and store the usage contract VC first, and then 'the same process is repeated on the Consumer's side'. The README (BP07.06 then BP07.09) and D5 and D7 have the Consumer sign first and the Provider second. The dynamic view also puts the existence check in the precondition ('No existing usage contract covers this resource') while the README makes it step BP07.03, and its participants omit contract-ui-be and the Notification Service. The dynamic view is the runtime description other teams (the Connector) build from, so the signing order must be the same in both.",
+   "evidence": "bp07-dynamic-view step 4: 'The Provider's VC Issuer issues a Verifiable Credential (VC) ... stores it in the Provider's Wallet. The same process is then repeated on the Consumer's side'. README BP07.06 'If the Consumer agrees ... they sign', BP07.09 'If the validation is successful, the Provider signs'. D5 (Consumer signs on accept), D7 (Provider validates the Consumer VC, then signs). Dynamic view Preconditions and Participants list.",
+   "question": "Which signing order is correct, and will the dynamic view be corrected to match it?",
+   "options": [
+    "Consumer first, Provider second (README and decisions): correct the dynamic view",
+    "Provider first: the decisions D5, D7 and D8 must be reversed"
+   ],
+   "from_22a": [],
+   "see": [
+    "D5",
+    "D7",
+    "D8",
+    "D2"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-012",
+   "target": "SIMPL-19927",
+   "ids": [
+    "SIMPL-19927",
+    "BP07.07",
+    "BP07.12",
+    "BP7.8.1"
+   ],
+   "rule": "BP-03",
+   "severity": "major",
+   "finding": "SIMPL-19927 has no place in the process as decided. Its criteria store the fully signed usage contract in the Consumer wallet after the Consumer has validated the Provider's signature, which is after BP07.12. The process has no storage step there: BP07.07 stores on the Consumer side before the Provider signs. D6 maps the story's wallet errors to D5 (storing the Consumer's own VC at BP07.07), and D8 keeps the Provider VC 'with the record', not in the wallet. So the story's outcome, the countersigned contract in the Consumer's wallet, is not built, and a wallet failure after a successful confirmation has no outcome.",
+   "evidence": "SIMPL-19927/AC1: 'I receive the fully-signed usage contract received from the Provider / I validate the integrity and the authenticity of Provider's signature / ... I store securely the fully-signed usage contract in my digital wallet'. BP07.07 sits between BP07.06 (Consumer signs) and BP07.08 (Provider validates). D6: 'A wallet failure fails the step that stores the VC (D5 on the Consumer side ...)'. D8: 'the Provider VC is kept with the record'. 22a BA-004.",
+   "question": "Does the Consumer store the Provider's VC (the countersigned usage contract) in its wallet after BP07.12, and if so what happens when that store fails after a successful validation?",
+   "options": [
+    "Add a store step to D8 after SUCCESS, with the D6 errors, before setting Active",
+    "Keep D8 as is and narrow SIMPL-19927 to the Consumer's own VC at BP07.07",
+    "Add a BP07.13 'Store confirmed usage contract' step to the process"
+   ],
+   "from_22a": [
+    "BA-004"
+   ],
+   "see": [
+    "D1",
+    "D6",
+    "D8",
+    "D-009",
+    "F-006"
+   ],
+   "code": "BP-03",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-013",
+   "target": "BP10.05",
+   "ids": [
+    "SIMPL-31047",
+    "SIMPL-31053",
+    "SIMPL-31076",
+    "SIMPL-31115",
+    "SIMPL-31116",
+    "SIMPL-31117",
+    "SIMPL-31118",
+    "BP10.05"
+   ],
+   "rule": "BP-03",
+   "severity": "major",
+   "finding": "Seven stories for the life of a usage contract after Active (consent status, revoke, respond to revocation, suspend, request reactivation, reactivate, terminate) belong to no published process. BP07 ends at an Active usage contract. BP10.05 hands contract enforcement, 'for example suspension', to BP11, and the BP10 page itself records that BP11 does not exist. So the parties, the order and the hand-overs of these steps have no process source; the stories are the only description. D15 and D16 leave them out of this build, which is consistent, but the process owner still has to place them.",
+   "evidence": "BP10.05: 'Contract enforcement (BP11) ... takes the follow-up actions agreed in the contract, for example suspension'. BP10 Source defects 1: 'BP11 is referenced but does not exist'. BP07 Outcomes end at 'the usage contract is considered active'. 22a BA-007 to BA-013. D15 and D16 (accepted risk).",
+   "question": "Which business process owns suspension, reactivation, revocation, termination and consent changes of a usage contract, and when will it be published?",
+   "options": [
+    "Publish BP11 with these steps",
+    "Add a lifecycle section to BP07",
+    "Keep them as stories only until a later release"
+   ],
+   "from_22a": [
+    "BA-007",
+    "BA-008",
+    "BA-009",
+    "BA-010",
+    "BA-011",
+    "BA-012",
+    "BA-013"
+   ],
+   "see": [
+    "D15",
+    "D16",
+    "F-005",
+    "F-022",
+    "F-048"
+   ],
+   "code": "BP-03",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-014",
+   "target": "SIMPL-35692",
+   "ids": [
+    "SIMPL-35692",
+    "BP07.05",
+    "BP7.4.2"
+   ],
+   "rule": "BP-03",
+   "severity": "minor",
+   "finding": "The offer timeout is a real step of the decided flow, but the process does not mention it. SIMPL-35692 refers to BP07.06 (sign), while the timeout closes offers that are still waiting for the Consumer's review (BP07.05) and acts as an automatic rejection (7.4.2). The BP07 Outcomes list no 'offer expired' case.",
+   "evidence": "SIMPL-35692 refs: bp_steps BP07, BP07.06. D13: offers in CREATED older than the timeout are rejected through D5 and shown as Expired. BP07 Outcomes list access policy restriction, existing usage contract, terms not accepted, usage contract not validated. 22a BA-015.",
+   "question": "Add the offer timeout to BP07.05 (or 7.4.2) and an 'offer expired' case to the Outcomes?",
+   "options": [
+    "Add it to BP07.05 and the Outcomes",
+    "Treat it as a technical rule outside the process"
+   ],
+   "from_22a": [
+    "BA-015"
+   ],
+   "see": [
+    "D13",
+    "D-008",
+    "F-037"
+   ],
+   "code": "BP-03",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-015",
+   "target": "BP07",
+   "ids": [
+    "BP07.06",
+    "BP07.07",
+    "BP07.09",
+    "BP07.10",
+    "BP07.12",
+    "SIMPL-35440",
+    "SIMPL-35526",
+    "SIMPL-35584",
+    "SIMPL-21924"
+   ],
+   "rule": "FLOW",
+   "severity": "minor",
+   "finding": "Numbering and naming in the process make the mapping to stories harder. The process has two id schemes (steps BP07.01 to BP07.12, requirements 7.1.1 to 7.8.1) and no table between them. Two steps are both called 'Sign usage contract' and two 'Store usage contract'. BP07.07 says the Consumer stores 'the finalised usage contract' when only the signed offer exists. Story references point to other steps than the links: SIMPL-35526 to BP07.05 (it prepares the offer, 7.3.2 and 7.4.1), SIMPL-35440 to BP07.09 and BP07.12 (VC retrieval, linked to 7.5.2 and 7.7.3), SIMPL-35584 to BP07.09 and BP07.10 although it also validates (BP07.08). SIMPL-21924/AC2 expects a record 'In progress' at request time (BP07.01), while D4 creates the record when the offer arrives.",
+   "evidence": "BP07 README Process steps and High-level requirements. Inventory refs bp_steps of SIMPL-35526, 35440, 35584. links.json. D2 on SIMPL-21924/AC2, D4, D12 (no 'In progress' state).",
+   "question": "Add a step-to-requirement table to BP07, distinct step titles, and 'signed usage contract offer' in BP07.07?",
+   "options": [
+    "Fix the process text and the story references",
+    "Leave as is; the links carry the mapping"
+   ],
+   "from_22a": [],
+   "see": [
+    "D2",
+    "D4",
+    "D12",
+    "D-009",
+    "D-020"
+   ],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
   }
  ]
 }

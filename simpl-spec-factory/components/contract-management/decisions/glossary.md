@@ -21,7 +21,7 @@ The vocabulary for the build and the tests. It settles the `proposed` and `open`
 | access policy | The policy of the resource description that decides whether a Consumer may request a usage contract (BP 7.2.1). Checked by the Connector, not built here. | external | none | contract access policies | D2 |
 | existence check | The check that the Consumer has no active usage contract for the same resource (BP 7.2.2): POST search plus the /isPresent callback. | none | `POST /agreements/{contractNegotiationId}/search`, `ContractSearchConfirmation`; Connector `/isPresent/...` | validateExistenceContract, isPresent (as business term), verify existence | D3 |
 | active usage contract | A usage contract in state Active, or in a reserved state Suspended, Revocation requested or Reactivation requested. Blocks a new offer for the same consumerId and assetId. | none | none | active contract | D3 |
-| signed usage contract offer | The usage contract offer after the Consumer signed it and before the Provider signed (state Signed). | phase of `ContractAgreement` | status `FINALIZING` | signed usage contract (for this meaning), Consumer-signed usage contract offer, signing evidence | D12 |
+| signed usage contract offer | The usage contract after one party signed and before both signatures are validated (state Signed, on both sides since D31). | phase of `ContractAgreement` | status `FINALIZING` | signed usage contract (for this meaning), Consumer-signed usage contract offer, signing evidence | D12 |
 | signed usage contract | The usage contract signed by both parties and validated (state Active). | `ContractAgreement` | status `FINALIZED` | fully-signed usage contract, final contract signed by both parties | D12 |
 | Verifiable Credential (VC) | The credential each party's VC Issuer issues for the usage contract, holding the contract data and the party's signature value (E8), stored in that party's Wallet. External. | `VerifiableCredential` (external, owner VC Issuer) | `VerifiableCredential`, `GET /verifications/{contractNegotiationId}/vc` | Signature VC, unsigned Signature VC, Credential (wallet), signing result, signing evidence | D5, D24 |
 | signature | A party's digital signature on the canonical contract data, made by the Signer Service and carried in its VC as `signatureValue`. | `Signature` (external, owner Signer Service) | `consumerSignatureDate`, `providerSignatureDate` | digital signature | D5, E8 |
@@ -69,8 +69,8 @@ The vocabulary for the build and the tests. It settles the `proposed` and `open`
 | State | Meaning | Wire value `ContractAgreementData.status` | UI label | Reached by |
 |---|---|---|---|---|
 | Requested | Offer prepared (Consumer) or Provider record created, not yet signed | CREATED | Requested | D4 (Consumer), D7 start (Provider) |
-| Signed | Signed usage contract offer: the Consumer signed (Consumer side only) | FINALIZING | Signed | D5 accept |
-| Active | Signed usage contract: both signed, validated | FINALIZED | Active | D7 success (Provider), D8 success (Consumer) |
+| Signed | Signed by one side, waiting for the other side's result: the Consumer after accepting (D5), the Provider after validateAndIssue (D31) | FINALIZING | Signed | D5 accept, D31 |
+| Active | Signed usage contract: both signed, validated | FINALIZED | Active | Provider: the Consumer's confirmation passed on (D31); Consumer: D8 success |
 | Closed | Ended without a usage contract: rejected, expired or failed validation | TERMINATED | Closed | D5 reject, D13 timeout, D7 rejection, D8 failure |
 | Suspended | reserved, not built | none yet | Suspended | D15 |
 | Revocation requested | reserved, not built | none yet | Revocation requested | D15 |
@@ -80,7 +80,7 @@ The vocabulary for the build and the tests. It settles the `proposed` and `open`
 
 INITIATED appears only in acknowledgements (`ConfirmationResponse`, `VerificationConfirmationResponse`, `TransferConfirmationResponse`), never as a stored state.
 
-Transitions built: Requested to Signed; Requested to Closed; Requested to Active (Provider side); Signed to Active; Signed to Closed. Reserved transitions (proposal, D15): Active to Revocation requested; Revocation requested to Revoked or to Active; Active to Suspended; Suspended to Reactivation requested; Suspended or Reactivation requested to Active; Reactivation requested to Suspended; Active, Suspended, Revocation requested or Reactivation requested to Terminated.
+Transitions built (D12, refined by D31 and D32): Requested to Signed (both sides); Requested to Closed; Signed to Active (the other side confirmed); Signed to Closed (passed-on rejection or Signed timeout, default one day); Active to Closed on the Consumer side only as the compensating step of D32. Requested to Active no longer exists. Reserved transitions (proposal, D15): Active to Revocation requested; Revocation requested to Revoked or to Active; Active to Suspended; Suspended to Reactivation requested; Suspended or Reactivation requested to Active; Reactivation requested to Suspended; Active, Suspended, Revocation requested or Reactivation requested to Terminated.
 
 ### Usage contract offer view (contract-ui-be, D12, D13, D14)
 
@@ -95,7 +95,7 @@ Transitions built: Requested to Signed; Requested to Closed; Requested to Active
 
 | Value | Meaning | Usage contract state after | Connector callback |
 |---|---|---|---|
-| SUCCESS | All checks passed | Active (after Provider signing on the Provider side) | Provider: /signed true; Consumer: /isValid true |
+| SUCCESS | All checks passed | Signed on the Provider side until the Consumer confirms (D31), then Active | Provider: /signed true; Consumer: /isValid true |
 | REJECTED | A business check failed | Closed | /isValid false (both sides) |
 | FAILED | Technical error | Provider: stays Requested (caller may retry); Consumer: Closed | Provider: none (500 to the caller); Consumer: /isValid false |
 | IGNORED | Duplicate or replayed submission on an Active or Closed record | unchanged | none (409 to the caller) |

@@ -1,974 +1,1150 @@
 [
-  {
-    "id": "D1",
-    "topic": "Older stories versus [ENHANCE] and SIMPL-33537 stories",
-    "closes": [
-      "F-030",
-      "F-057"
-    ],
-    "decision": "Where an [ENHANCE] story, or a story marked 'covered with the implementation of SIMPL-33537', restates an older story, the newer story replaces the older one on every point where they differ; criteria of the older story that the newer one does not touch still apply. Pairs: SIMPL-13343 by SIMPL-32258, SIMPL-13345 by SIMPL-32786, SIMPL-13346 by SIMPL-32787, SIMPL-13347 by SIMPL-32788, SIMPL-13353 by SIMPL-32802, SIMPL-13355 by SIMPL-32800, SIMPL-13357 by SIMPL-32807, SIMPL-13358 and SIMPL-20770 by SIMPL-32808, SIMPL-13364 by SIMPL-32798, SIMPL-13365 by SIMPL-32797, SIMPL-15837 by SIMPL-32790, SIMPL-20686 by SIMPL-32801, SIMPL-14709, SIMPL-14712 and SIMPL-14791 by SIMPL-33694. Misspelled codes and paths are read as meant: '409 CONFIG' and '409 Config' are 409 Conflict, '500 Error' is 500 Internal Server Error, '/schemas/{schemaName{}}' is /schemas/{schemaName}. Every other decision here wins over any story text.",
-    "options": [
-      "Newer replaces older",
-      "Newer extends older; conflicts resolved case by case"
-    ],
-    "basis": "Source hierarchy in decisions.md: the newer stories were written against the same API definition task (SIMPL-30422) as the frozen OpenAPI, so they are the latest statement of intent.",
-    "status": "provisional",
-    "owner_question": "Confirm that each [ENHANCE] story replaces its original, and cancel or update the originals.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D2",
-    "topic": "Scope of the build",
-    "closes": [
-      "F-044",
-      "D-008",
-      "D-009",
-      "D-010",
-      "D-019",
-      "F-065"
-    ],
-    "decision": "Build and test only: the schema operations (GET /schemas, POST /schemas, PATCH /schemas/{schemaName}, GET /schemas/{schemaName} added by D16, GET and POST /schemas/{schemaName}/versions, GET /schemas/{schemaName}/{version}), the three webhook operations, webhook event delivery, the Provider e-mail and the schema management UI. Out of scope: the six /vocabularies operations (legacy, owned by the Vocabulary Manager), the three metadata quality profile operations (no story, no process step), SIMPL-28815 (billing clause in the resource description wizard, another component), the unused UpdateSchemaPayload and UpdateSchemaResponsePayload (no metadata update operation exists; 'update' in SIMPL-33694/AC5 means a new version), and the catalogue and federated search checks of the retention stories (D18). Out-of-scope operations are not implemented; a call to them gets 404.",
-    "options": [
-      "Build the whole OpenAPI",
-      "Build what stories and the process cover"
-    ],
-    "basis": "No story or BP02C step covers vocabularies or quality profiles; the CDM calls /vocabularies legacy and points to the Vocabulary Manager (DDD-13). The CDM endpoint table for quality profiles describes another API revision (D-010). SIMPL-28815 names no schema manager operation. Simplest to build and test.",
-    "status": "provisional",
-    "owner_question": "Mark the /vocabularies operations deprecated or remove them; say whether metadata quality profiles belong to this component and, if so, write stories and align the CDM with the frozen API.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D3",
-    "topic": "Version identifier",
-    "closes": [
-      "F-001",
-      "D-002"
-    ],
-    "decision": "A version is a server-generated whole number written as a string: the first version of a schema is \"1\", each new version is the highest existing version of that schema plus 1. Clients never send a version; any extra form field named version is ignored. The SemVer criteria are withdrawn: SIMPL-13357/AC3 (409 for an existing version) and AC5 (400 for a bad version format) are not built, and SemVer examples such as \"1.2.0\" in stories are read as a plain number such as \"3\". The UI has no version field. Wire names stay as in the OpenAPI: schemaVersion in the POST /schemas response, version in list items, in the new-version response and in the path, latestVersion in the PATCH response (a pointer to the highest version). In prose, tests and code identifiers the one term is 'version'.",
-    "options": [
-      "Server-generated integer per the OpenAPI and SIMPL-20528/20534/20770",
-      "SemVer per SIMPL-13353/13357/13358"
-    ],
-    "basis": "OpenAPI (version descriptions, no version field in CreateNewSchemaVersionPayload); SIMPL-20528 and SIMPL-20534 technical details; SIMPL-20770; SIMPL-33537 scope 'server-generated version numbers'. Renaming wire fields would break the frozen contract, so only the term is unified (DDD-09 for the glossary).",
-    "status": "follows the specs",
-    "owner_question": "Confirm SemVer is withdrawn everywhere; rename schemaVersion to version in the next API revision.",
-    "affects": [
-      "api",
-      "ui",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D4",
-    "topic": "Schema identity key and addressing",
-    "closes": [
-      "F-007",
-      "F-048",
-      "F-063"
-    ],
-    "decision": "A schema is identified by the key (name, schemaType, resourceType). For RESOURCE, resourceType is required and up to three RESOURCE schemas (one per resource type) may share a name. For SEARCH, resourceType is absent. POST /schemas returns 409 when a schema with the same key exists, whatever its status, so a revoked schema's name cannot be reused for the same key. POST /schemas with schemaType RESOURCE (or omitted) and no resourceType returns 400. Any request with schemaType SEARCH and a resourceType returns 400. Operations that address a schema by name (PATCH /schemas/{schemaName}, GET /schemas/{schemaName}, GET and POST /schemas/{schemaName}/versions, GET /schemas/{schemaName}/{version}) take schemaType (default RESOURCE) and resourceType: from query parameters on GET and PATCH, from form fields on POST versions. If resourceType is omitted for RESOURCE and exactly one RESOURCE schema has that name, it is addressed; if several match, the response is 400 with detail 'resourceType is required: several RESOURCE schemas share this name'; if none matches, 404.",
-    "options": [
-      "name only",
-      "name + schemaType",
-      "name + schemaType + resourceType"
-    ],
-    "basis": "SIMPL-32802/AC4 (409 only for same name and same resourceType), SIMPL-32798 hint (three RESOURCE instances per name), SIMPL-32802 technical info (resourceType mandatory for RESOURCE, empty for SEARCH), OpenAPI resourceType and schemaType parameters on PATCH and GET. Newer stories replace SIMPL-13353/AC2 (D1).",
-    "status": "provisional",
-    "owner_question": "Confirm the three-part key, that a revoked schema's name stays taken, and the 400 for an ambiguous name.",
-    "affects": [
-      "api",
-      "ui",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D5",
-    "topic": "One name for the schema identity",
-    "closes": [
-      "D-001",
-      "F-047"
-    ],
-    "decision": "The term is 'schema name'. On the wire the OpenAPI names stay: form field and body property name (CreateSchemaPayload, list items, SchemaCategory, new-version response), path parameter schemaName, and schemaName in the POST /schemas response. The UI create form sends name, title, description, schemaFile, schemaType and, for RESOURCE, resourceType (never a field called schemaName). The CDM attribute Schema.schemaName and SchemaMetadata.name are the same value.",
-    "options": [
-      "schemaName everywhere",
-      "name in bodies and schemaName as path parameter, recorded as one identity",
-      "keep both and add the key to the CDM"
-    ],
-    "basis": "OpenAPI is the wire contract (source hierarchy); SIMPL-32802/AC1 example body uses name; SIMPL-32802 technical info makes resourceType mandatory for RESOURCE, so the UI must send it (SIMPL-32800/AC1 omits it by mistake).",
-    "status": "provisional",
-    "owner_question": "Rename CreateSchemaResponsePayload.schemaName to name in the next API revision, and record the key in the CDM.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D6",
-    "topic": "Resource type values",
-    "closes": [
-      "F-013",
-      "D-012"
-    ],
-    "decision": "resourceType is a closed set of three stored values: Data, Application, Infrastructure (PascalCase, case-sensitive, they match the OpenAPI pattern). Any other value, including data, data-schema, APP or LegalPerson, gets 400 on every operation that takes resourceType. The UI shows the labels data, application, infrastructure and sends Data, Application, Infrastructure. The values map one to one to offeringType data, application, infrastructure of the resource description.",
-    "options": [
-      "Closed set in PascalCase: Data, Application, Infrastructure",
-      "Free PascalCase string per the OpenAPI pattern"
-    ],
-    "basis": "BP02C Overview ('Each resource type (data, application, infrastructure)'), SIMPL-13355/AC1 and SIMPL-32800/AC1 UI options, OpenAPI pattern ^[A-Z][a-zA-Z0-9]*$, default-properties model offeringType. A closed set makes the one-published-per-resource-type rule testable (DDD-04, DDD-05).",
-    "status": "provisional",
-    "owner_question": "Confirm the closed set and the PascalCase spelling, or name the open set and who maintains it.",
-    "affects": [
-      "api",
-      "ui",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D7",
-    "topic": "Status of a new RESOURCE schema",
-    "closes": [
-      "F-003",
-      "F-067"
-    ],
-    "decision": "POST /schemas with schemaType RESOURCE always returns 201 when validation passes. The new schema gets status PUBLISHED when no other RESOURCE schema of the same resourceType is PUBLISHED; otherwise it is stored with status REVOKED and the published one stays PUBLISHED. A schema stored as REVOKED raises no SchemaPublished event and sends no Provider e-mail. The status is not in the POST response (the OpenAPI response has no status); tests read it with GET /schemas.",
-    "options": [
-      "Stored as REVOKED, no notification (SIMPL-20686/32801)",
-      "Rejected with 409",
-      "Published, and the previously published one revoked"
-    ],
-    "basis": "SIMPL-32801/AC1 to AC3 (newest story on this rule, D1) and SIMPL-20529 technical details 'only 1 schema per resource type can be published'. BP02C.05 is a general statement and ranks below the criteria.",
-    "status": "provisional",
-    "owner_question": "Confirm that a second schema for a resource type is created as REVOKED rather than rejected, and that Providers are not told.",
-    "affects": [
-      "api",
-      "tests",
-      "events",
-      "data"
-    ]
-  },
-  {
-    "id": "D8",
-    "topic": "Only one published federated search schema",
-    "closes": [
-      "F-008",
-      "F-062"
-    ],
-    "decision": "At most one SEARCH schema is PUBLISHED at any time, whatever its name. POST /schemas with schemaType SEARCH: 409 when a PUBLISHED SEARCH schema exists (detail 'A published federated search schema already exists.'); otherwise 201 and the new schema is PUBLISHED. REVOKED SEARCH schemas do not count. A new SEARCH schema may not reuse the name of an existing SEARCH schema, revoked or not (409, D4). After revocation, a SEARCH schema is published again by creating a new SEARCH schema with another name, or by a new version of the revoked one (D12). description and title are required for SEARCH as for RESOURCE.",
-    "options": [
-      "Only a PUBLISHED SEARCH schema blocks creation",
-      "Any SEARCH schema blocks creation"
-    ],
-    "basis": "SIMPL-33537 scope ('A revoked Federated Search schema does not count as published') and AC2, SIMPL-32801/AC5, SIMPL-32802/AC6, SIMPL-32800/AC5. SIMPL-32801/AC6 and SIMPL-31098/AC3 are read as 'a published SEARCH schema' (newer stories, D1). OpenAPI CreateSchemaPayload required fields.",
-    "status": "follows the specs",
-    "owner_question": "Confirm that 409 applies only to a PUBLISHED SEARCH schema and that a revoked SEARCH schema's name stays taken.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D9",
-    "topic": "No publication through PATCH",
-    "closes": [
-      "F-002",
-      "F-043",
-      "F-038",
-      "F-053"
-    ],
-    "decision": "PATCH /schemas/{schemaName} accepts only {\"status\": \"REVOKED\"}. Any other value, PUBLISHED included, gets 400. A REVOKED schema is published again only by creating a new version of it (D12) or by creating a new schema. SIMPL-20529/AC1 and AC8, the publish scenarios of SIMPL-20530 and SIMPL-31098/AC2 are withdrawn; the UI has no Publish button. The 'publish a schema' action of SIMPL-17066/AC4 and AC10 is creating a schema or a new version, which needs GA_SCHEMA_ADMIN.",
-    "options": [
-      "Extend the PATCH enum with PUBLISHED, 200",
-      "No re-publication by PATCH; criteria withdrawn"
-    ],
-    "basis": "OpenAPI SchemaStatusUpdateRequest ('Only REVOKED is supported for this endpoint') and PATCH summary 'Revoke'; the OpenAPI wins on which operations and values exist (source hierarchy). SIMPL-33537/AC1 and AC5 publish by creating a schema or a version.",
-    "status": "provisional",
-    "owner_question": "Confirm that re-publication by PATCH is dropped, or extend the OpenAPI enum and response codes.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D10",
-    "topic": "Revoking a schema that is already revoked",
-    "closes": [
-      "F-022"
-    ],
-    "decision": "PATCH with REVOKED on a schema that is already REVOKED returns 200 with the unchanged SchemaCategory. It raises no event and sends no e-mail. No 409 on PATCH.",
-    "options": [
-      "409 Conflict, added to the OpenAPI",
-      "200 OK, no change (idempotent)"
-    ],
-    "basis": "OpenAPI PATCH responses list no 409; idempotent PATCH is simplest to build and test (API-12). SIMPL-20529/AC7 is withdrawn with the publish scenarios (D9).",
-    "status": "provisional",
-    "owner_question": "Confirm idempotent 200, or add 409 to the OpenAPI.",
-    "affects": [
-      "api",
-      "tests",
-      "events"
-    ]
-  },
-  {
-    "id": "D11",
-    "topic": "Status of a version",
-    "closes": [
-      "F-004",
-      "D-003"
-    ],
-    "decision": "Status belongs to the schema. A version has no stored status; its status is derived: the latest version has the status of its schema, every older version is REVOKED. So after a new version is created on a PUBLISHED schema, the new version is PUBLISHED and the previous one REVOKED; after a schema is revoked, all its versions are REVOKED. There is no SUPERSEDED value and the word 'unavailable' is not used. The versions list returns this derived status per item (D30).",
-    "options": [
-      "Status per version, stored",
-      "Status per schema only, versions inherit",
-      "Separate SUPERSEDED value"
-    ],
-    "basis": "SIMPL-32807/AC1 to AC3 and BP02C.05 ('the previous version is revoked') are met by the derived value; SIMPL-20530 technical details ('a new version does not have its own status') is met because nothing is stored per version; CDM value set SchemaVersion.lifecycleStatus PUBLISHED, REVOKED (DDD-04, DDD-12). Simplest to keep consistent.",
-    "status": "provisional",
-    "owner_question": "Confirm that a replaced version shows REVOKED and that version status is derived, not stored.",
-    "affects": [
-      "api",
-      "ui",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D12",
-    "topic": "New version of a revoked schema",
-    "closes": [
-      "F-021"
-    ],
-    "decision": "POST /schemas/{schemaName}/versions is allowed for a REVOKED schema. If no other schema in its scope (same resourceType for RESOURCE, any SEARCH schema for SEARCH) is PUBLISHED, the schema becomes PUBLISHED with the new version: 201, response status PUBLISHED, SchemaPublished event, Provider e-mail for RESOURCE. If another schema in its scope is PUBLISHED: for RESOURCE the version is created and the schema stays REVOKED (201, response status REVOKED, no event, no e-mail); for SEARCH the response is 409 with detail 'A published federated search schema already exists.' and nothing is created.",
-    "options": [
-      "201 and re-publish",
-      "201 and stay REVOKED",
-      "Error"
-    ],
-    "basis": "SIMPL-33537/AC1 ('no published Federated Search schema ... create a new version of it ... publish') and AC5 ('after revocation, a valid Federated Search schema can be published'); the same scope rules as creation (D7, D8) keep one rule set.",
-    "status": "provisional",
-    "owner_question": "Confirm that a new version re-publishes a revoked schema when its scope has no published schema.",
-    "affects": [
-      "api",
-      "tests",
-      "events"
-    ]
-  },
-  {
-    "id": "D13",
-    "topic": "Lifecycle of a schema in one table",
-    "closes": [
-      "D-004"
-    ],
-    "decision": "The writers use the state and transition table in glossary.md (section 'Schema lifecycle'). It is the only lifecycle definition for the build; D7 to D12 are its rows. Transitions: create to PUBLISHED or REVOKED (D7, D8), new version keeps or sets PUBLISHED or keeps REVOKED (D11, D12), revoke PUBLISHED to REVOKED (PATCH), revoke REVOKED to REVOKED (no change, D10). Each row names the event and the e-mail it raises.",
-    "options": [
-      "Table in the CDM",
-      "Table in the glossary, owned by the stories"
-    ],
-    "basis": "DDD-12; the CDM has only the value set. The glossary is a file both writers read.",
-    "status": "provisional",
-    "owner_question": "Add the transition table to the CDM next to the value set.",
-    "affects": [
-      "api",
-      "tests",
-      "events",
-      "data"
-    ]
-  },
-  {
-    "id": "D14",
-    "topic": "New-version request and target schema",
-    "closes": [
-      "F-020",
-      "F-049",
-      "F-050",
-      "F-012"
-    ],
-    "decision": "The body of POST /schemas/{schemaName}/versions is exactly CreateNewSchemaVersionPayload as flat multipart fields: schemaFile and changelog required, schemaType (default RESOURCE) and resourceType optional. There is no metadata part and no schemaName field in the body; the name is the path parameter. schemaType and resourceType only select which schema of that name gets the version (D4). If no schema matches the selection the response is 404, never 409; this covers a name that exists only as RESOURCE when SEARCH is requested (SIMPL-32807/AC6 as its heading says) and SIMPL-32808/AC5. title, description, resourceType and schemaType of the schema never change through a new version. Missing changelog or schemaFile gives 400. The UI form for a new version takes schemaType and resourceType from the schema being viewed, shows them read-only and has no selection box.",
-    "options": [
-      "Flat OpenAPI fields",
-      "metadata part plus file part"
-    ],
-    "basis": "OpenAPI CreateNewSchemaVersionPayload and POST responses (404 SchemaNotFoundResponse); SIMPL-32807/AC4 and AC5 (404). The 'version that already exists' line of SIMPL-32807/AC6 has no meaning with server-generated versions (D3).",
-    "status": "provisional",
-    "owner_question": "Confirm flat fields, 404 for a missing schema of the selected type, and the read-only type in the UI form.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D15",
-    "topic": "Create request and Location header",
-    "closes": [
-      "F-019",
-      "F-071"
-    ],
-    "decision": "POST /schemas takes the flat multipart fields of CreateSchemaPayload (schemaFile, name, title, description required; resourceType, schemaType optional), not a JSON metadata part. A missing required field, or a name or resourceType that breaks its pattern, gives 400 with Problem details; a body that is not multipart/form-data gives 415. The base path is /v1 (OpenAPI server), not /api/v1. The 201 Location header on POST /schemas and POST /schemas/{schemaName}/versions is the absolute URI of the created version: {PUBLIC_BASE_URL}/schemas/{name}/{version}?schemaType={schemaType} followed by &resourceType={resourceType} for RESOURCE. A GET on it returns that version's Turtle. Tests assert that the path ends with /schemas/{name}/{version} and that the query names the schemaType.",
-    "options": [
-      "Follow the OpenAPI: flat fields; Location is the version URI",
-      "Follow the stories: JSON metadata part; Location is the concept URI"
-    ],
-    "basis": "OpenAPI CreateSchemaPayload and server URL; OpenAPI Location examples point to a version; SIMPL-32807/AC1 'Location header contains the URI for the newly created schema version'. The OpenAPI example with a UUID and /version/1 matches no path, so the existing GET path is used.",
-    "status": "provisional",
-    "owner_question": "Confirm the Location format and fix the OpenAPI example.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D16",
-    "topic": "Latest content endpoint GET /schemas/{schemaName}",
-    "closes": [
-      "F-005",
-      "F-064"
-    ],
-    "decision": "This service offers GET /v1/schemas/{schemaName} with query parameters schemaType (default RESOURCE) and resourceType (D4). It returns 200, Content-Type text/turtle, the stored content of the schema's latest version, and a Content-Location header with the same URI format as Location in D15 for that version. It works for PUBLISHED and REVOKED schemas. 404 when no schema matches. Same authentication and roles as the other reads (D26, D27): it is not public. The UI download of the latest content (SIMPL-20067) uses this operation. The SEARCH example in SIMPL-32788/AC3 is read as /schemas/FederatedSearchAsset?schemaType=SEARCH.",
-    "options": [
-      "Part of this service, added to the OpenAPI",
-      "Separate public Resolver, out of scope"
-    ],
-    "basis": "SIMPL-33537 scope and AC4 (the implementation story lists GET /schemas/{schemaName}), SIMPL-32788, SIMPL-20067/AC1. The OpenAPI is silent on this path rather than contradicting it, so the newest story adds it. 'Public' in SIMPL-13347 is replaced by SIMPL-32788 (D1).",
-    "status": "provisional",
-    "owner_question": "Add GET /schemas/{schemaName} to the OpenAPI with its roles, or confirm a separate Resolver component.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D17",
-    "topic": "Version content endpoint and revoked versions",
-    "closes": [
-      "F-011",
-      "F-033",
-      "F-024"
-    ],
-    "decision": "GET /schemas/{schemaName}/{version} returns 200 with the Turtle content of that version (text/turtle), for any status of the schema or version, and the Location header of the OpenAPI with the format of D15. 'Schema meta datas' in SIMPL-32798/AC3 and AC4 is a wording slip. SIMPL-13364 and SIMPL-32798 are this operation. It needs GA_SCHEMA_VIEWER or GA_SCHEMA_ADMIN (403 otherwise). 404 only when the schema (by key, D4) or the version does not exist, with the detail texts of the OpenAPI examples.",
-    "options": [
-      "Turtle per the OpenAPI",
-      "JSON metadata"
-    ],
-    "basis": "OpenAPI GET /schemas/{schemaName}/{version} (text/turtle); SIMPL-14354/AC1 and SIMPL-32436 (revoked schemas stay retrievable); BP 2C.7.3.",
-    "status": "follows the specs",
-    "owner_question": "Correct 'meta datas' in SIMPL-32798.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D18",
-    "topic": "Retention of revoked schemas: what is tested here",
-    "closes": [
-      "F-025",
-      "F-034"
-    ],
-    "decision": "For this component, retention means: after revocation the schema still appears in GET /schemas?status=REVOKED, its versions in GET /schemas/{schemaName}/versions, and its content in GET /schemas/{schemaName} and GET /schemas/{schemaName}/{version}, all with 200. SIMPL-14354/AC1 is tested with these four reads. The catalogue and federated search outcomes of SIMPL-14701, SIMPL-32436 and SIMPL-32497 ('reference in the published resource description', 'federated search disabled') are not tested in this build; they belong to the catalogue and search components.",
-    "options": [
-      "Test only retrievability here",
-      "Test catalogue behaviour too"
-    ],
-    "basis": "SIMPL-14354 note ('internal logic requirement ... it's still persisted'); SIMPL-14701 note ('functionality exists'); the catalogue is an external service in the CDM (DDD-13).",
-    "status": "provisional",
-    "owner_question": "Confirm that the catalogue and search criteria move to those components.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D19",
-    "topic": "Default properties: check, not enrich",
-    "closes": [
-      "F-006",
-      "F-054",
-      "D-011"
-    ],
-    "decision": "Simpl-Open does not add default properties. A RESOURCE schema (create or new version) must already contain them, else 400. The check: the schema graph contains, for each required default property, at least one node with an sh:path whose IRI local name (the part after the last '#' or '/') equals the property name. Required for every RESOURCE schema: generalServiceProperties, assetProperties, providerInformation, offeringPrice, servicePolicy, contractTemplate, edcRegistration, edcConnector, identifier (UUID, dcterms:identifier) and version (schema:version). Required in addition by resourceType: Data needs dataProperties and format; Application needs applicationProperties; Infrastructure needs infrastructureProperties. Missing ones give 400 with detail 'Default Properties Error: missing default properties: a, b' and one issue per missing property (D22). The term 'mandatory property' is retired in the build; the 'Mandatory properties error' prefix of SIMPL-14796 is replaced by 'Default Properties Error'. SIMPL-14703/AC3 and AC4 read as 'the schema fails syntax validation or lacks a default property'.",
-    "options": [
-      "Enrich: Simpl-Open adds them",
-      "Reject: the Governance Authority must include them"
-    ],
-    "basis": "SIMPL-14703, SIMPL-14796, SIMPL-24173, SIMPL-26105 criteria (reject) rank above BP02C.04 (enrich); the default-properties model named in sources.yaml says 'Default properties means the baseline property definitions, not automatically populated values' and gives the property names (sections 1.1, 1.2, 3 to 5). Local-name matching avoids an unwritten namespace.",
-    "status": "provisional",
-    "owner_question": "Confirm reject over enrich, publish the default properties with their full IRIs per resource type, and correct BP02C.04.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D20",
-    "topic": "Validation rules for SEARCH schemas",
-    "closes": [
-      "F-051"
-    ],
-    "decision": "No default properties are defined for SEARCH. A SEARCH schema gets the syntax check and the semantic check only (D22, D23), no default property check.",
-    "options": [
-      "Same default properties as RESOURCE",
-      "No default property check until the owner defines one"
-    ],
-    "basis": "SIMPL-33537/AC1 names 'rules and default properties for SEARCH' but no source lists them; the default-properties model covers resource offerings only. Assumption so both writers act the same.",
-    "status": "accepted risk",
-    "owner_question": "List the default properties and rules that apply to SEARCH schemas.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D21",
-    "topic": "Stored and returned content",
-    "closes": [
-      "F-023"
-    ],
-    "decision": "The service stores the uploaded schemaFile unchanged and every retrieval returns exactly the uploaded bytes. Tests may compare byte for byte.",
-    "options": [
-      "Byte-identical to the upload",
-      "Isomorphic graph, possibly enriched"
-    ],
-    "basis": "Follows from D19 (no enrichment); SIMPL-32802/AC1 'store the submitted SHACL file as its content'; SIMPL-32788/AC1 'complete, raw SHACL content'.",
-    "status": "follows the specs",
-    "owner_question": "None beyond D19.",
-    "affects": [
-      "api",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D22",
-    "topic": "Validation errors: status, detail and issues",
-    "closes": [
-      "F-027",
-      "F-036",
-      "D-007"
-    ],
-    "decision": "All schema validation failures on POST /schemas and POST /schemas/{schemaName}/versions return 400 application/problem+json with type urn:problem-type:simpl:badRequest, nothing is created, and issues[] holds SchemaValidationIssue objects (code, description, location). Validation runs in three stages and stops at the first stage that fails, returning all issues of that stage: (1) syntax: the file must parse as Turtle and contain at least one sh:NodeShape; detail starts 'Syntax Error: ', issue codes syntaxError (location 'line L, column C' when the parser gives it) and noNodeShape; (2) default properties, RESOURCE only (D19): detail starts 'Default Properties Error: ', issue code defaultPropertyMissing, location the property name; (3) semantics (D23): detail starts 'Semantic Validation Error: ', issue codes localReferenceUnavailable and unknownVocabularyTerm. Tests assert the status, the detail prefix and the issue codes, not the rest of the text. The four items of SIMPL-22407/AC3 map to: affected property and vocabulary term in location, failed rule in code, human-readable text in description. The one term is 'validation issue': an issue in Problem.issues is an error, an issue in validationWarnings is a warning.",
-    "options": [
-      "One issue concept with severity by place",
-      "Two concepts, error and warning"
-    ],
-    "basis": "OpenAPI SchemaValidationBadRequestResponse and SchemaValidationIssue; detail prefixes from SIMPL-14795, SIMPL-24173, SIMPL-14797 technical info; SIMPL-22407 notes ('return all semantic errors'). The OpenAPI issue object is kept as is (no extension).",
-    "status": "provisional",
-    "owner_question": "Confirm the three prefixes and issue codes as contract, and rename CDM SchemaValidationWarning to SchemaValidationIssue.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D23",
-    "topic": "Semantic validation: errors and warnings",
-    "closes": [
-      "F-035"
-    ],
-    "decision": "Semantic validation looks at every IRI used as object of sh:path, sh:class, sh:targetClass and sh:datatype. Its namespace is the IRI up to and including the last '#' or '/'. Namespaces of rdf, rdfs, xsd, sh, owl, skos, dcterms, dcat, odrl and schema.org (http and https) are skipped. A namespace that starts with INTERNAL_VOCABULARY_BASE is internal: it must be a namespace of a known internal vocabulary, else error localReferenceUnavailable (location \"namespace '<ns>'\"); and each term IRI must be a term of that vocabulary, else error unknownVocabularyTerm (location the term IRI). Any other namespace is external: it is not fetched and gives a warning externalReferenceSkipped (location \"namespace '<ns>'\"); warnings never block and are returned in validationWarnings of the 201 response. Known internal vocabularies come from the vocabulary registry of environment choice D42. All semantic errors are collected before answering.",
-    "options": [
-      "Only self-managed vocabularies checked, external ones warned",
-      "All vocabularies fetched and checked"
-    ],
-    "basis": "SIMPL-22407 notes ('only validate against self managed vocabularies', 'warnings for external vocabularies that cannot be resolved', 'don't fail on first issue'); OpenAPI codes localReferenceUnavailable and externalReferenceSkipped; CDM: the Vocabulary Manager is the vocabulary registry. The skip list and registry fixture are choices for testability.",
-    "status": "provisional",
-    "owner_question": "Confirm which checks block, the issue codes, and how the Vocabulary Manager is queried in production.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D24",
-    "topic": "Webhook events: triggers, payload, delivery",
-    "closes": [
-      "F-010",
-      "D-005"
-    ],
-    "decision": "'Publish' means a schema or a version becomes PUBLISHED. SchemaPublished is raised when (a) POST /schemas creates a schema with status PUBLISHED, (b) POST versions creates a version on a PUBLISHED schema, (c) POST versions re-publishes a REVOKED schema (D12). SchemaRevoked is raised only when PATCH changes a schema from PUBLISHED to REVOKED. No event for a schema created as REVOKED, a version created on a schema that stays REVOKED, an idempotent revoke, or the implicit REVOKED status of a replaced version. Events cover RESOURCE and SEARCH schemas. Delivery: after the change is stored and before the API answers, the service sends one HTTP POST per matching subscription to its targetUrl, Content-Type application/json, body {\"eventId\": UUID, \"eventType\": \"SchemaPublished\" or \"SchemaRevoked\", \"occurredAt\": ISO 8601 UTC, \"name\", \"schemaType\", \"resourceType\" (null for SEARCH), \"version\" (the latest version, string), \"status\"}. Timeout 5 seconds, one attempt, no retry; any failure or non-2xx answer is logged and never changes the API response. The CDM sentence 'version creation does not emit a lifecycle event' does not apply.",
-    "options": [
-      "Publish = any route to PUBLISHED, event for each",
-      "Publish = only the status transition; no event for versions"
-    ],
-    "basis": "SIMPL-19992 user story (subscriber must always use the correct schema), BP02C.05 and BP 2C.8 (a new version is published), CDM 'event delivery is synchronous', OpenAPI event enum. Payload property names follow API-13 and API-19. Single attempt is simplest to build and test.",
-    "status": "provisional",
-    "owner_question": "Define the event payload and failure handling in the OpenAPI (callbacks) or an AsyncAPI file, and confirm that new versions raise SchemaPublished.",
-    "affects": [
-      "api",
-      "events",
-      "tests"
-    ]
-  },
-  {
-    "id": "D25",
-    "topic": "Provider notifications by e-mail",
-    "closes": [
-      "F-009",
-      "F-026",
-      "F-066"
-    ],
-    "decision": "Provider notification is one e-mail per event to one configured address (NOTIFICATION_RECIPIENT, D41), which stands for all Providers (for example a distribution list). It is sent for RESOURCE schemas only, on exactly the SchemaPublished and SchemaRevoked triggers of D24; never for SEARCH, never on a failed request, never for a schema stored as REVOKED. Sent after the change is stored; a mail failure is logged and does not change the API response. Subject lines: 'Schema published: {name} version {version}' (new schema), 'Schema version published: {name} version {version}' (new version or re-publication), 'Schema revoked: {name}'. Plain-text body, one 'Label: value' line each: Schema name, Title, Description, Resource type, Version, Changelog (new version only), Timestamp (ISO 8601 UTC), Schema URL (the version URI of D15), Instructions (NOTIFICATION_INSTRUCTIONS_URL). Tests read the SMTP stub and assert the subject and the presence of these labels and values. The case in SIMPL-14712 is 'valid token without GA_SCHEMA_ADMIN': 403 and no e-mail.",
-    "options": [
-      "One e-mail to a configured address",
-      "One e-mail per Provider from a directory",
-      "Webhook events only"
-    ],
-    "basis": "SIMPL-14712 and SIMPL-14791 technical notes (address from a configuration key), SIMPL-33694 (RESOURCE only, AC5 no notification for SEARCH), BP02C.06 ('e.g. via email'). Labelled lines make the undefined 'links for instructions' testable.",
-    "status": "provisional",
-    "owner_question": "Confirm the single configured recipient, the subject lines and the body fields, and what the instruction link points to.",
-    "affects": [
-      "events",
-      "tests"
-    ]
-  },
-  {
-    "id": "D26",
-    "topic": "Authentication and authorisation responses",
-    "closes": [
-      "F-014",
-      "F-040",
-      "F-059"
-    ],
-    "decision": "The service checks the bearer token itself (OIDC JWT, D39). Missing, malformed, expired or wrongly signed token: 401 application/problem+json as UnauthorizedErrorResponse (type urn:problem-type:simpl:unauthorized), on every operation, schemas and webhooks. Valid token without the needed role: 403 as ForbiddenResponse. Every denied action of SIMPL-17066 is 403 with that body. The UI hides write actions (create, new version, revoke) from users without GA_SCHEMA_ADMIN; if the API still answers 403, the UI shows the Problem detail as an error notification and changes nothing. An expired session in the UI sends the user to login. SIMPL-13361/AC2 is a UI test with a stubbed 403.",
-    "options": [
-      "Service returns 401 and 403",
-      "Gateway returns 401; service tests cover 403 only"
-    ],
-    "basis": "SIMPL-13343/AC3, SIMPL-32258 negative criteria (401), SIMPL-13360/AC3 and SIMPL-20529 (403 Forbidden), OpenAPI UnauthorizedErrorResponse and ForbiddenResponse, API-45. SEC-12 puts enforcement at the gateway in deployment; the build has no gateway, so the service checks too.",
-    "status": "provisional",
-    "owner_question": "Add 401 to every operation in the OpenAPI, or confirm the gateway answers 401.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D27",
-    "topic": "Role names and role matrix",
-    "closes": [
-      "F-015",
-      "F-039"
-    ],
-    "decision": "The only role names are GA_SCHEMA_ADMIN and GA_SCHEMA_VIEWER, read from the token claim realm_access.roles; governance-admin and governance-viewer are the same roles and are not used. GA_SCHEMA_ADMIN includes everything GA_SCHEMA_VIEWER may do. Reads (GET /schemas, GET /schemas/{schemaName}, GET /schemas/{schemaName}/versions, GET /schemas/{schemaName}/{version}) need GA_SCHEMA_VIEWER or GA_SCHEMA_ADMIN. Writes (POST /schemas, POST /schemas/{schemaName}/versions, PATCH /schemas/{schemaName}) need GA_SCHEMA_ADMIN. 'List schema details' of SIMPL-17066 covers the three content and list reads. The same rules apply to RESOURCE and SEARCH schemas. Webhook operations follow D28, not these roles.",
-    "options": [
-      "Aliases: GA_SCHEMA_* everywhere",
-      "Separate roles"
-    ],
-    "basis": "SIMPL-17066 technical info (role names and inclusion), SIMPL-13343/AC1, SIMPL-32258; SEC-05 (Tier 1 RBAC).",
-    "status": "follows the specs",
-    "owner_question": "Replace governance-admin and governance-viewer in SIMPL-13343, SIMPL-13358 and SIMPL-32808.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D28",
-    "topic": "Access to webhook operations",
-    "closes": [
-      "F-037"
-    ],
-    "decision": "The three webhook operations need a valid token (401 otherwise) and no role: any authenticated participant may subscribe, list and delete. Tier 2 credentials (mTLS through the Tier 2 gateway) are checked by the gateway, outside this build. 'Handles the request' in SIMPL-24175 means the normal 2xx answer; 'does not handle' means 401.",
-    "options": [
-      "Gateway only, out of scope",
-      "Service checks token, no role"
-    ],
-    "basis": "SIMPL-24175 technical info ('no attribute check required ... this enables all participants', 'only for the webhook endpoints'); SEC-13 places Tier 2 checks at the gateway.",
-    "status": "provisional",
-    "owner_question": "Confirm that any authenticated participant may manage subscriptions, and whether GET /webhooks should return only the caller's own subscriptions.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D29",
-    "topic": "Webhook subscription rules",
-    "closes": [
-      "F-041",
-      "F-042",
-      "F-060",
-      "F-061",
-      "D-015"
-    ],
-    "decision": "targetUrl is checked for syntax only: an absolute URL with scheme http or https and a host; 'url', 'not-a-url', 'http://' and 'ftp://invalid.com' get 400; the service does not call the URL at subscription time. events must hold at least one value (400 otherwise). An unknown event type such as SchemaExploded gets 406 with the OpenAPI detail text, as the frozen contract says. A subscription with the same targetUrl and the same set of events as an existing one gets 409; the same URL with another set of events is a new subscription. DELETE returns 204 only. webhookId is a server-generated UUID. A subscription has no states: 'active' in SIMPL-19992/AC2 means 'existing'; GET /webhooks returns all subscriptions.",
-    "options": [
-      "Syntax only",
-      "Syntax plus reachability call"
-    ],
-    "basis": "SIMPL-19992/AC4, OpenAPI POST /webhooks (400, 406 unsupportedEvent example, 409), DELETE 204, CDM Webhook (uniqueness by URL and events).",
-    "status": "follows the specs",
-    "owner_question": "API-12 would prefer 400 for an unknown event type; confirm 406 or change the OpenAPI.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D30",
-    "topic": "Fields of the schema list and the versions list",
-    "closes": [
-      "F-016",
-      "F-017",
-      "F-031",
-      "F-070",
-      "D-014"
-    ],
-    "decision": "GET /schemas returns one item per schema (not per version) with: name, title, description, resourceType (absent for SEARCH), schemaType, version and changelog of the latest version, status of the schema, and created (schema creation time, ISO 8601 UTC, added to the OpenAPI item). Without schemaType it returns only RESOURCE schemas; there is no call that lists both types. GET /schemas/{schemaName}/versions returns items with: name, graphName (the version URI of D15), version, changelog, created (version creation time), schemaType, resourceType (absent for SEARCH) and status (derived, D11). The paging wrapper is the one of GetAllSchemasResponsePayload (page, totalPages, total, pageSize, next, metadata). No source has a creator: the UI drops the Creator columns. Title and description belong to the schema, are set at creation and never change; the CDM names map as lifecycleStatus = status, createdAt = created, modifiedAt = modified, rdfContent = schema definition.",
-    "options": [
-      "Extend the API responses",
-      "Drop the columns the API lacks"
-    ],
-    "basis": "OpenAPI GetAllSchemasResponsePayload and the versions example (the versions schema file is not in the specs, D-010); UI columns of SIMPL-32790 and SIMPL-32787; SIMPL-32258/AC1 (default RESOURCE). created and status are additive; creator has no source at all.",
-    "status": "provisional",
-    "owner_question": "Provide common-components.yaml, add created to list items and status and resourceType to version items, and say whether a creator is needed.",
-    "affects": [
-      "api",
-      "ui",
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D31",
-    "topic": "Ordering, paging and sorting",
-    "closes": [
-      "F-018"
-    ],
-    "decision": "GET /schemas orders by name, then schemaType, then resourceType, ascending. GET /schemas/{schemaName}/versions orders by version as a number, ascending. Defaults page 1 and pageSize 20; next is null on the last page. GET /schemas beyond the last page returns 200 with an empty list; GET versions beyond the last page returns 404 as the OpenAPI says. The UI sorts the rows of the current page only, in the browser, on Schema Name, Title, Version and Creation Date; no sort parameter is added to the API.",
-    "options": [
-      "Server-side sort parameter",
-      "Client-side sort of the current page"
-    ],
-    "basis": "OpenAPI parameters (no sort) and versions description ('an empty page returns 404'); client-side sort needs no contract change. Numeric version order replaces 'by version-subject URI', which would put 10 before 2.",
-    "status": "provisional",
-    "owner_question": "Say whether sorting must cover the whole result; if so add a sort parameter like the vocabularies endpoints.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D32",
-    "topic": "UI: errors, messages and navigation",
-    "closes": [
-      "F-028",
-      "F-032",
-      "F-056",
-      "F-055"
-    ],
-    "decision": "Forms (create schema, create version): on an API error the UI stays on the form and shows an error banner at the top of the form with the Problem detail and, when present, one line per issues[].description. Fixed texts: 409 on create 'A schema with that name already exists.', or 'A published federated search schema already exists.' when the detail says so. SIMPL-13355/AC2 is triggered by an existing name (409) or an invalid file (400). Missing required fields are caught in the form with inline messages and a disabled submit button. List actions (revoke): errors appear as an error notification with the Problem detail. After a successful create the user goes to the new schema's detail page; after a new version, back to the schema's detail page with the new version in the list. On a failed list load the page shows an error message with a Retry button; an expired session goes to login.",
-    "options": [
-      "One error pattern for forms and one for list actions",
-      "Per-story behaviour"
-    ],
-    "basis": "SIMPL-32808 and SIMPL-32800 (newest UI stories, D1), SIMPL-13361 technical details ('use the detail parameter of the response'), SIMPL-20770/AC3.",
-    "status": "provisional",
-    "owner_question": "Confirm the error placement and the fixed texts.",
-    "affects": [
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D33",
-    "topic": "UI: revoking a schema",
-    "closes": [
-      "F-029"
-    ],
-    "decision": "The Revoke button shows only for PUBLISHED schemas. Clicking it opens a confirmation popup with Cancel and Revoke; Cancel closes it and does nothing. On success the list refreshes and shows 'Schema \"{name}\" revoked successfully.'. There is no Publish button (D9).",
-    "options": [
-      "Popup and text of SIMPL-13361",
-      "No popup and text of SIMPL-20530"
-    ],
-    "basis": "SIMPL-13361 is the dedicated revoke story with a mockup; the publish half of SIMPL-20530 is withdrawn (D9).",
-    "status": "provisional",
-    "owner_question": "Confirm the popup and the success text.",
-    "affects": [
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D34",
-    "topic": "UI: schema type and resource type filters",
-    "closes": [
-      "F-045"
-    ],
-    "decision": "When the user selects schemaType SEARCH in the list filters or the create form, the UI clears and disables the resourceType control and never sends resourceType with SEARCH, so the 400 of the API cannot occur from the UI.",
-    "options": [
-      "Disable and clear the filter",
-      "Show the 400 error"
-    ],
-    "basis": "SIMPL-32800/AC2 (resourceType disabled for SEARCH in the form); OpenAPI GET /schemas 400 rule. Simplest for the user and the tests.",
-    "status": "provisional",
-    "owner_question": "Confirm the behaviour in the list filters.",
-    "affects": [
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D35",
-    "topic": "UI: downloads and story scope",
-    "closes": [
-      "F-046",
-      "F-058",
-      "F-068",
-      "F-069"
-    ],
-    "decision": "Downloading a version uses GET /schemas/{schemaName}/{version} with the schema's schemaType and resourceType; downloading the latest content uses GET /schemas/{schemaName} (D16). The file name is {name}-v{version}.ttl. Success shows 'Schema downloaded.'; any error shows the Problem detail as an error notification. Comparing versions (SIMPL-13346) and editing the SHACL content (SIMPL-20067) are out of scope: download only.",
-    "options": [
-      "Download through the content endpoints",
-      "Through the versions list"
-    ],
-    "basis": "OpenAPI: only the content endpoints return Turtle; SIMPL-32797 technical info points to the list by mistake. No criterion covers compare or edit.",
-    "status": "provisional",
-    "owner_question": "Confirm the file name and the messages, and that compare and edit are not wanted.",
-    "affects": [
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D36",
-    "topic": "Terms for schema, schema types, actors and update",
-    "closes": [
-      "D-006",
-      "D-013",
-      "D-016",
-      "D-018"
-    ],
-    "decision": "Use 'schema' for the aggregate (CDM Schema); 'schema concept' and 'schema category' are retired in code, tests and UI text (the wire name SchemaCategory stays in the OpenAPI). Use 'resource description schema' for schemaType RESOURCE and 'federated search schema' for SEARCH. 'Governance Authority' is the actor only; the component is 'Schema Manager'; the platform is 'Simpl-Open'. 'New version' is creating a version; 'update' is not used, as no metadata update operation exists (D2).",
-    "options": [
-      "Terms as listed",
-      "Keep synonyms"
-    ],
-    "basis": "DDD-01, DDD-02; BP02C and the API summaries already use 'resource description schema'; CDM uses Schema and Schema Manager.",
-    "status": "provisional",
-    "owner_question": "Rename SchemaCategory to Schema in the next API revision and align the story wording.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D37",
-    "topic": "Criteria that need an internal failure",
-    "closes": [
-      "F-052"
-    ],
-    "decision": "Criteria triggered by an internal failure (SIMPL-20528/AC2, SIMPL-20534/AC2, SIMPL-13357/AC6, SIMPL-32807/AC9, SIMPL-20529/AC9) are verified only in component tests with an injected fault in the store, expecting 500 with InternalServerErrorResponse and no stored change. They are not part of end-to-end tests.",
-    "options": [
-      "Fault injection in component tests",
-      "Review only"
-    ],
-    "basis": "These cannot be caused from outside; API-44 and API-45 fix the response shape.",
-    "status": "provisional",
-    "owner_question": "None.",
-    "affects": [
-      "tests"
-    ]
-  },
-  {
-    "id": "D38",
-    "topic": "Environment: base URL and ports",
-    "closes": [],
-    "decision": "Backend at http://localhost:8080 with base path /v1. PUBLIC_BASE_URL (default http://localhost:8080/v1) builds Location, Content-Location, graphName and e-mail links. The UI runs at http://localhost:4200 and calls the backend base URL.",
-    "options": [],
-    "basis": "Environment choice; the specs fix only /v1.",
-    "status": "provisional",
-    "owner_question": "None.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D39",
-    "topic": "Environment: identity provider and test users",
-    "closes": [],
-    "decision": "OIDC with JWT bearer tokens signed RS256; issuer and JWKS location from OIDC_ISSUER_URI and OIDC_JWKS_URI; roles in realm_access.roles (Keycloak layout); audience is not checked. Test users: ga-admin (GA_SCHEMA_ADMIN), ga-viewer (GA_SCHEMA_VIEWER), ga-norole (no schema role), participant (no role, used for webhooks). Tests may mint tokens with a local test key pair published at the JWKS location instead of running Keycloak.",
-    "options": [],
-    "basis": "SEC-07 (Keycloak for Tier 1), SIMPL-17066 role names.",
-    "status": "provisional",
-    "owner_question": "None.",
-    "affects": [
-      "api",
-      "ui",
-      "tests"
-    ]
-  },
-  {
-    "id": "D40",
-    "topic": "Environment: store and test isolation",
-    "closes": [],
-    "decision": "The store is the builder's choice but the service must start with an empty store in tests (for example an in-memory mode, STORE=memory). Because the one-published rules are global per resource type and for SEARCH, each test scenario runs against a fresh, empty instance. No reset or test-only endpoint is added.",
-    "options": [],
-    "basis": "Global uniqueness rules (D7, D8) make shared state between tests unsafe.",
-    "status": "provisional",
-    "owner_question": "None.",
-    "affects": [
-      "tests",
-      "data"
-    ]
-  },
-  {
-    "id": "D41",
-    "topic": "Environment: mail stub",
-    "closes": [],
-    "decision": "SMTP stub at NOTIFICATION_SMTP_HOST:NOTIFICATION_SMTP_PORT (default localhost:1025) with a MailHog-compatible HTTP API on port 8025 for tests. NOTIFICATION_RECIPIENT default providers@simpl.test, NOTIFICATION_SENDER default schema-manager@simpl.test, NOTIFICATION_INSTRUCTIONS_URL default https://simpl.test/schemas/instructions.",
-    "options": [],
-    "basis": "D25 needs an observable channel.",
-    "status": "provisional",
-    "owner_question": "None.",
-    "affects": [
-      "events",
-      "tests"
-    ]
-  },
-  {
-    "id": "D42",
-    "topic": "Environment: vocabulary registry stub",
-    "closes": [],
-    "decision": "Known internal vocabularies come from a JSON file at VOCABULARY_FIXTURE: a list of objects {\"namespace\": IRI, \"terms\": [IRI, ...]}. INTERNAL_VOCABULARY_BASE default https://vocabulary.simpl.test/. The production adapter to the Vocabulary Manager is behind the same port and not tested here.",
-    "options": [],
-    "basis": "D23; the Vocabulary Manager is external (CDM).",
-    "status": "provisional",
-    "owner_question": "None.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D43",
-    "topic": "Environment: webhook receiver",
-    "closes": [],
-    "decision": "Tests run a local HTTP receiver that records each POST (headers and JSON body) and can answer 200 or 500 or delay beyond 5 seconds, to check D24 delivery and that failures do not change the API response.",
-    "options": [],
-    "basis": "D24.",
-    "status": "provisional",
-    "owner_question": "None.",
-    "affects": [
-      "events",
-      "tests"
-    ]
-  },
-  {
-    "id": "D44",
-    "topic": "Build contract: decisions over the frozen OpenAPI",
-    "closes": [
-      "P-005"
-    ],
-    "decision": "The builder implements from the frozen OpenAPI plus these decisions, and the decisions win wherever the two differ (item 1 of the source hierarchy in decisions.md, now also a decision). No patched OpenAPI is handed over in this run. Server stubs, request validation and contract tests may be generated from the OpenAPI only if the builder then applies every difference below; a generated validator must not answer differently from a decision. The known differences: GET /schemas/{schemaName} exists (D16); every in-scope operation can answer 401 (D26); the security scheme is read as D45; the nine out-of-scope operations are not implemented and answer 404 (D2); GET /schemas items carry created and GET versions items carry status and resourceType (D30); Location and Content-Location use the format of D15, not the /schemas/<uuid>/version/N examples; webhook events are sent as D24 says, without a callbacks object; one 404 problem type (D47); value rules for resourceType and version (D48); webhook target allow list (D46). The external reference GetSchemaVersionsResponsePayload (common-components.yaml, not in the specs) is built as the paging wrapper of GetAllSchemasResponsePayload (page, totalPages, total, pageSize, next, metadata) with the version items of D30. Contract tests assert the decided behaviour, not the frozen examples, where the two differ.",
-    "options": [
-      "Patched OpenAPI as the single build contract",
-      "Frozen OpenAPI plus a precedence rule"
-    ],
-    "basis": "Source hierarchy in decisions.md (decisions first, OpenAPI second); this step writes decisions only and cannot ship a patched OpenAPI. Simplest to build: one rule and one list of differences, no second contract file to keep in step.",
-    "status": "provisional",
-    "owner_question": "API owner: publish a revised OpenAPI (for example 1.2.0) with the differences listed here (D16, 401 on every operation, D45 scheme, D30 fields, D15 Location format, D24 callbacks, D46 to D48, inlined GetSchemaVersionsResponsePayload, the nine out-of-scope operations removed or marked deprecated). From then on that file is the build contract.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D45",
-    "topic": "Security scheme of the OpenAPI versus D26 to D28",
-    "closes": [
-      "P-001"
-    ],
-    "decision": "The service validates the bearer token itself as D26 and D39 say; it does not rely on a gateway. It checks roles only, per the matrix of D27 and D28, and never checks OAuth2 scopes: the read and write scopes of OAuth2Auth and the authorizationUrl and tokenUrl placeholders are ignored. The webhook operations never answer 403, because D28 requires no role; the 403 listed on GET /webhooks, POST /webhooks and DELETE /webhooks/{webhookId} is not built and not tested. Tests use the D39 test users; no test sends or expects scopes.",
-    "options": [
-      "Patch the OpenAPI to match D26 to D28 and D39",
-      "Keep the OpenAPI as is; D26 to D28 alone define the behaviour"
-    ],
-    "basis": "D26, D27, D28, D39 and D44 (decisions over the OpenAPI); SEC-07 (OpenID Connect through the Tier 1 Authentication Provider). No operation requests a scope, so ignoring scopes changes no specified behaviour.",
-    "status": "follows the specs",
-    "owner_question": "API owner: replace OAuth2Auth by an openIdConnect scheme (or http bearer JWT) without scopes, drop 'provided by gateway', state the role per operation (description or x-required-roles), add 401 and remove 403 from the three webhook operations.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D46",
-    "topic": "Webhook target allow list",
-    "closes": [
-      "P-002"
-    ],
-    "decision": "POST /webhooks checks targetUrl in this order, each failure 400 with type urn:problem-type:simpl:badRequest and nothing stored: (1) syntax as D29 ('The targetUrl is invalid or malformed.'); (2) scheme: https always allowed, http only when WEBHOOK_ALLOW_HTTP is true (detail 'The targetUrl must use https.'); (3) host: the URL host, compared case-insensitively and exactly (no wildcards, no subdomain match, port ignored), must be in WEBHOOK_ALLOWED_HOSTS, a comma-separated list (detail 'The targetUrl host is not on the allow list.'). An IP literal passes only if it is listed as written. Defaults fail closed: WEBHOOK_ALLOWED_HOSTS empty (every subscription gets 400) and WEBHOOK_ALLOW_HTTP false. The 409 duplicate check of D29 runs after these checks. At delivery (D24) the service checks the host again against the current list, skips and logs a subscription whose host is no longer allowed, and does not follow redirects (a 3xx counts as a failed delivery, logged, no change to the API response). Test configuration: WEBHOOK_ALLOWED_HOSTS=localhost,127.0.0.1,allowed.example.test and WEBHOOK_ALLOW_HTTP=true, so the D43 receiver at localhost is allowed; tests that need a rejected host use https://not-allowed.example.test/hook. Other D29 rules are unchanged.",
-    "options": [
-      "Allow list by configuration, 400 for other hosts",
-      "Accept the risk for this build and record it against OWASP-11"
-    ],
-    "basis": "OWASP-11 is a MUST rule: outgoing requests to URLs taken from input are checked against an allow list. D28 lets any authenticated participant subscribe and D24 makes the service POST to the URL, so without a list this is a server-side request forgery path. A configured exact-host list is the simplest check two builders implement the same way; failing closed keeps an unconfigured deployment safe. Same 400 problem type as D22 and D29.",
-    "status": "provisional",
-    "owner_question": "Security and API owner: confirm the allow list and its fail-closed default, say who maintains WEBHOOK_ALLOWED_HOSTS in a data space (for example the Governance Authority operator), confirm that plain http is refused outside tests, and add the two 400 detail texts and the https rule to CreateWebhookRequest.targetUrl in the OpenAPI.",
-    "affects": [
-      "api",
-      "events",
-      "tests"
-    ]
-  },
-  {
-    "id": "D47",
-    "topic": "One not-found problem type",
-    "closes": [
-      "P-003"
-    ],
-    "decision": "Every 404 of an in-scope operation, schemas and webhooks, answers application/problem+json with type urn:problem-type:simpl:notFound, title 'Resource Not Found', status 404 and the href of SchemaNotFoundResponse. This includes GET /schemas/{schemaName}/{version} (instead of urn:problem-type:iana:notFound and 'Not Found'), GET /schemas/{schemaName} (D16) and the 404 of the out-of-scope operations (D2). The detail texts stay as D17 fixes them. Tests assert type, title and status on every 404.",
-    "options": [
-      "urn:problem-type:simpl:notFound everywhere",
-      "Keep urn:problem-type:iana:notFound on the version read"
-    ],
-    "basis": "API-46 allows only urn:problem-type:simpl: types; the shared SchemaNotFoundResponse and the webhook DELETE 404 already use urn:problem-type:simpl:notFound with title 'Resource Not Found'. One type per situation, as step 30a requires.",
-    "status": "provisional",
-    "owner_question": "API owner: change the two 404 examples of GET /schemas/{schemaName}/{version} to urn:problem-type:simpl:notFound and 'Resource Not Found', and add a 404 example to GET /schemas/{schemaName}.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  },
-  {
-    "id": "D48",
-    "topic": "Value rules for resourceType and version",
-    "closes": [
-      "P-004"
-    ],
-    "decision": "resourceType: D6 applies on every operation that takes it, as query parameter or form field: only Data, Application and Infrastructure, anything else 400, even though the OpenAPI pattern would accept it. schemaType SEARCH with a resourceType gives 400 on every operation (D4), not only on GET /schemas. version path parameter of GET /schemas/{schemaName}/{version}: it is looked up as given; any value that is not an existing version of the selected schema, whether well-formed ('7') or not ('abc', '1.0.0', '9.9.9'), gives 404 with the version-not-found detail of D17 and the problem type of D47. Order of checks: authentication and role (401, 403), then query parameters (400 for resourceType or schemaType), then lookup (404).",
-    "options": [
-      "400 for a malformed version, 404 for a well-formed version that does not exist",
-      "404 for any version that does not exist, malformed or not"
-    ],
-    "basis": "D6 and D4 already settle resourceType; the OpenAPI only lacks the enum (API-58). For version, the frozen OpenAPI has no pattern and its own 404 example uses '9.9.9', and D17 says 404 when the version does not exist; one rule for every unknown version is simplest to build and test.",
-    "status": "provisional",
-    "owner_question": "API owner: add enum [Data, Application, Infrastructure] to the six resourceType places, repeat the SEARCH plus resourceType rule on every operation, and describe version as a whole number written as a string without a pattern that would turn a malformed version into 400.",
-    "affects": [
-      "api",
-      "tests"
-    ]
-  }
+ {
+  "id": "D1",
+  "topic": "Older stories versus [ENHANCE] and SIMPL-33537 stories",
+  "closes": [
+   "F-030",
+   "F-057"
+  ],
+  "decision": "Where an [ENHANCE] story, or a story marked 'covered with the implementation of SIMPL-33537', restates an older story, the newer story replaces the older one on every point where they differ; criteria of the older story that the newer one does not touch still apply. Pairs: SIMPL-13343 by SIMPL-32258, SIMPL-13345 by SIMPL-32786, SIMPL-13346 by SIMPL-32787, SIMPL-13347 by SIMPL-32788, SIMPL-13353 by SIMPL-32802, SIMPL-13355 by SIMPL-32800, SIMPL-13357 by SIMPL-32807, SIMPL-13358 and SIMPL-20770 by SIMPL-32808, SIMPL-13364 by SIMPL-32798, SIMPL-13365 by SIMPL-32797, SIMPL-15837 by SIMPL-32790, SIMPL-20686 by SIMPL-32801, SIMPL-14709, SIMPL-14712 and SIMPL-14791 by SIMPL-33694. Misspelled codes and paths are read as meant: '409 CONFIG' and '409 Config' are 409 Conflict, '500 Error' is 500 Internal Server Error, '/schemas/{schemaName{}}' is /schemas/{schemaName}. Every other decision here wins over any story text.",
+  "options": [
+   "Newer replaces older",
+   "Newer extends older; conflicts resolved case by case"
+  ],
+  "basis": "Source hierarchy in decisions.md: the newer stories were written against the same API definition task (SIMPL-30422) as the frozen OpenAPI, so they are the latest statement of intent.",
+  "status": "provisional",
+  "owner_question": "Confirm that each [ENHANCE] story replaces its original, and cancel or update the originals.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D2",
+  "topic": "Scope of the build",
+  "closes": [
+   "F-044",
+   "D-008",
+   "D-009",
+   "D-010",
+   "D-019",
+   "F-065"
+  ],
+  "decision": "Build and test only: the schema operations (GET /schemas, POST /schemas, PATCH /schemas/{schemaName}, GET /schemas/{schemaName} added by D16, GET and POST /schemas/{schemaName}/versions, GET /schemas/{schemaName}/{version}), the three webhook operations, webhook event delivery, the Provider e-mail and the schema management UI. Out of scope: the six /vocabularies operations (legacy, owned by the Vocabulary Manager), the three metadata quality profile operations (no story, no process step), SIMPL-28815 (billing clause in the resource description wizard, another component), the unused UpdateSchemaPayload and UpdateSchemaResponsePayload (no metadata update operation exists; 'update' in SIMPL-33694/AC5 means a new version), and the catalogue and federated search checks of the retention stories (D18). Out-of-scope operations are not implemented; a call to them gets 404.",
+  "options": [
+   "Build the whole OpenAPI",
+   "Build what stories and the process cover"
+  ],
+  "basis": "No story or BP02C step covers vocabularies or quality profiles; the CDM calls /vocabularies legacy and points to the Vocabulary Manager (DDD-13). The CDM endpoint table for quality profiles describes another API revision (D-010). SIMPL-28815 names no schema manager operation. Simplest to build and test.",
+  "status": "provisional",
+  "owner_question": "Mark the /vocabularies operations deprecated or remove them; say whether metadata quality profiles belong to this component and, if so, write stories and align the CDM with the frozen API.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D3",
+  "topic": "Version identifier",
+  "closes": [
+   "F-001",
+   "D-002"
+  ],
+  "decision": "A version is a server-generated whole number written as a string: the first version of a schema is \"1\", each new version is the highest existing version of that schema plus 1. Clients never send a version; any extra form field named version is ignored. The SemVer criteria are withdrawn: SIMPL-13357/AC3 (409 for an existing version) and AC5 (400 for a bad version format) are not built, and SemVer examples such as \"1.2.0\" in stories are read as a plain number such as \"3\". The UI has no version field. Wire names stay as in the OpenAPI: schemaVersion in the POST /schemas response, version in list items, in the new-version response and in the path, latestVersion in the PATCH response (a pointer to the highest version). In prose, tests and code identifiers the one term is 'version'.",
+  "options": [
+   "Server-generated integer per the OpenAPI and SIMPL-20528/20534/20770",
+   "SemVer per SIMPL-13353/13357/13358"
+  ],
+  "basis": "OpenAPI (version descriptions, no version field in CreateNewSchemaVersionPayload); SIMPL-20528 and SIMPL-20534 technical details; SIMPL-20770; SIMPL-33537 scope 'server-generated version numbers'. Renaming wire fields would break the frozen contract, so only the term is unified (DDD-09 for the glossary).",
+  "status": "follows the specs",
+  "owner_question": "Confirm SemVer is withdrawn everywhere; rename schemaVersion to version in the next API revision.",
+  "affects": [
+   "api",
+   "ui",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D4",
+  "topic": "Schema identity key and addressing",
+  "closes": [
+   "F-007",
+   "F-048",
+   "F-063"
+  ],
+  "decision": "A schema is identified by the key (name, schemaType, resourceType). For RESOURCE, resourceType is required and up to three RESOURCE schemas (one per resource type) may share a name. For SEARCH, resourceType is absent. POST /schemas returns 409 when a schema with the same key exists, whatever its status, so a revoked schema's name cannot be reused for the same key. POST /schemas with schemaType RESOURCE (or omitted) and no resourceType returns 400. Any request with schemaType SEARCH and a resourceType returns 400. Operations that address a schema by name (PATCH /schemas/{schemaName}, GET /schemas/{schemaName}, GET and POST /schemas/{schemaName}/versions, GET /schemas/{schemaName}/{version}) take schemaType (default RESOURCE) and resourceType: from query parameters on GET and PATCH, from form fields on POST versions. If resourceType is omitted for RESOURCE and exactly one RESOURCE schema has that name, it is addressed; if several match, the response is 400 with detail 'resourceType is required: several RESOURCE schemas share this name'; if none matches, 404.",
+  "options": [
+   "name only",
+   "name + schemaType",
+   "name + schemaType + resourceType"
+  ],
+  "basis": "SIMPL-32802/AC4 (409 only for same name and same resourceType), SIMPL-32798 hint (three RESOURCE instances per name), SIMPL-32802 technical info (resourceType mandatory for RESOURCE, empty for SEARCH), OpenAPI resourceType and schemaType parameters on PATCH and GET. Newer stories replace SIMPL-13353/AC2 (D1).",
+  "status": "provisional",
+  "owner_question": "Confirm the three-part key, that a revoked schema's name stays taken, and the 400 for an ambiguous name.",
+  "affects": [
+   "api",
+   "ui",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D5",
+  "topic": "One name for the schema identity",
+  "closes": [
+   "D-001",
+   "F-047"
+  ],
+  "decision": "The term is 'schema name'. On the wire the OpenAPI names stay: form field and body property name (CreateSchemaPayload, list items, SchemaCategory, new-version response), path parameter schemaName, and schemaName in the POST /schemas response. The UI create form sends name, title, description, schemaFile, schemaType and, for RESOURCE, resourceType (never a field called schemaName). The CDM attribute Schema.schemaName and SchemaMetadata.name are the same value.",
+  "options": [
+   "schemaName everywhere",
+   "name in bodies and schemaName as path parameter, recorded as one identity",
+   "keep both and add the key to the CDM"
+  ],
+  "basis": "OpenAPI is the wire contract (source hierarchy); SIMPL-32802/AC1 example body uses name; SIMPL-32802 technical info makes resourceType mandatory for RESOURCE, so the UI must send it (SIMPL-32800/AC1 omits it by mistake).",
+  "status": "provisional",
+  "owner_question": "Rename CreateSchemaResponsePayload.schemaName to name in the next API revision, and record the key in the CDM.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D6",
+  "topic": "Resource type values",
+  "closes": [
+   "F-013",
+   "D-012"
+  ],
+  "decision": "resourceType is a closed set of three stored values: Data, Application, Infrastructure (PascalCase, case-sensitive, they match the OpenAPI pattern). Any other value, including data, data-schema, APP or LegalPerson, gets 400 on every operation that takes resourceType. The UI shows the labels data, application, infrastructure and sends Data, Application, Infrastructure. The values map one to one to offeringType data, application, infrastructure of the resource description.",
+  "options": [
+   "Closed set in PascalCase: Data, Application, Infrastructure",
+   "Free PascalCase string per the OpenAPI pattern"
+  ],
+  "basis": "BP02C Overview ('Each resource type (data, application, infrastructure)'), SIMPL-13355/AC1 and SIMPL-32800/AC1 UI options, OpenAPI pattern ^[A-Z][a-zA-Z0-9]*$, default-properties model offeringType. A closed set makes the one-published-per-resource-type rule testable (DDD-04, DDD-05).",
+  "status": "provisional",
+  "owner_question": "Confirm the closed set and the PascalCase spelling, or name the open set and who maintains it.",
+  "affects": [
+   "api",
+   "ui",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D7",
+  "topic": "Status of a new RESOURCE schema",
+  "closes": [
+   "F-003",
+   "F-067"
+  ],
+  "decision": "POST /schemas with schemaType RESOURCE always returns 201 when validation passes. The new schema gets status PUBLISHED when no other RESOURCE schema of the same resourceType is PUBLISHED; otherwise it is stored with status REVOKED and the published one stays PUBLISHED. A schema stored as REVOKED raises no SchemaPublished event and sends no Provider e-mail. The status is not in the POST response (the OpenAPI response has no status); tests read it with GET /schemas.",
+  "options": [
+   "Stored as REVOKED, no notification (SIMPL-20686/32801)",
+   "Rejected with 409",
+   "Published, and the previously published one revoked"
+  ],
+  "basis": "SIMPL-32801/AC1 to AC3 (newest story on this rule, D1) and SIMPL-20529 technical details 'only 1 schema per resource type can be published'. BP02C.05 is a general statement and ranks below the criteria.",
+  "status": "provisional",
+  "owner_question": "Confirm that a second schema for a resource type is created as REVOKED rather than rejected, and that Providers are not told.",
+  "affects": [
+   "api",
+   "tests",
+   "events",
+   "data"
+  ],
+  "refined_by": [
+   "D54",
+   "D55"
+  ],
+  "later_change": "writes serialised per scope (D54); check order (D55)"
+ },
+ {
+  "id": "D8",
+  "topic": "Only one published federated search schema",
+  "closes": [
+   "F-008",
+   "F-062"
+  ],
+  "decision": "At most one SEARCH schema is PUBLISHED at any time, whatever its name. POST /schemas with schemaType SEARCH: 409 when a PUBLISHED SEARCH schema exists (detail 'A published federated search schema already exists.'); otherwise 201 and the new schema is PUBLISHED. REVOKED SEARCH schemas do not count. A new SEARCH schema may not reuse the name of an existing SEARCH schema, revoked or not (409, D4). After revocation, a SEARCH schema is published again by creating a new SEARCH schema with another name, or by a new version of the revoked one (D12). description and title are required for SEARCH as for RESOURCE.",
+  "options": [
+   "Only a PUBLISHED SEARCH schema blocks creation",
+   "Any SEARCH schema blocks creation"
+  ],
+  "basis": "SIMPL-33537 scope ('A revoked Federated Search schema does not count as published') and AC2, SIMPL-32801/AC5, SIMPL-32802/AC6, SIMPL-32800/AC5. SIMPL-32801/AC6 and SIMPL-31098/AC3 are read as 'a published SEARCH schema' (newer stories, D1). OpenAPI CreateSchemaPayload required fields.",
+  "status": "follows the specs",
+  "owner_question": "Confirm that 409 applies only to a PUBLISHED SEARCH schema and that a revoked SEARCH schema's name stays taken.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ],
+  "refined_by": [
+   "D54",
+   "D55"
+  ],
+  "later_change": "writes serialised per scope (D54); check order (D55)"
+ },
+ {
+  "id": "D9",
+  "topic": "No publication through PATCH",
+  "closes": [
+   "F-002",
+   "F-043",
+   "F-038",
+   "F-053"
+  ],
+  "decision": "PATCH /schemas/{schemaName} accepts only {\"status\": \"REVOKED\"}. Any other value, PUBLISHED included, gets 400. A REVOKED schema is published again only by creating a new version of it (D12) or by creating a new schema. SIMPL-20529/AC1 and AC8, the publish scenarios of SIMPL-20530 and SIMPL-31098/AC2 are withdrawn; the UI has no Publish button. The 'publish a schema' action of SIMPL-17066/AC4 and AC10 is creating a schema or a new version, which needs GA_SCHEMA_ADMIN.",
+  "options": [
+   "Extend the PATCH enum with PUBLISHED, 200",
+   "No re-publication by PATCH; criteria withdrawn"
+  ],
+  "basis": "OpenAPI SchemaStatusUpdateRequest ('Only REVOKED is supported for this endpoint') and PATCH summary 'Revoke'; the OpenAPI wins on which operations and values exist (source hierarchy). SIMPL-33537/AC1 and AC5 publish by creating a schema or a version.",
+  "status": "provisional",
+  "owner_question": "Confirm that re-publication by PATCH is dropped, or extend the OpenAPI enum and response codes.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D10",
+  "topic": "Revoking a schema that is already revoked",
+  "closes": [
+   "F-022"
+  ],
+  "decision": "PATCH with REVOKED on a schema that is already REVOKED returns 200 with the unchanged SchemaCategory. It raises no event and sends no e-mail. No 409 on PATCH.",
+  "options": [
+   "409 Conflict, added to the OpenAPI",
+   "200 OK, no change (idempotent)"
+  ],
+  "basis": "OpenAPI PATCH responses list no 409; idempotent PATCH is simplest to build and test (API-12). SIMPL-20529/AC7 is withdrawn with the publish scenarios (D9).",
+  "status": "provisional",
+  "owner_question": "Confirm idempotent 200, or add 409 to the OpenAPI.",
+  "affects": [
+   "api",
+   "tests",
+   "events"
+  ]
+ },
+ {
+  "id": "D11",
+  "topic": "Status of a version",
+  "closes": [
+   "F-004",
+   "D-003"
+  ],
+  "decision": "Status belongs to the schema. A version has no stored status; its status is derived: the latest version has the status of its schema, every older version is REVOKED. So after a new version is created on a PUBLISHED schema, the new version is PUBLISHED and the previous one REVOKED; after a schema is revoked, all its versions are REVOKED. There is no SUPERSEDED value and the word 'unavailable' is not used. The versions list returns this derived status per item (D30).",
+  "options": [
+   "Status per version, stored",
+   "Status per schema only, versions inherit",
+   "Separate SUPERSEDED value"
+  ],
+  "basis": "SIMPL-32807/AC1 to AC3 and BP02C.05 ('the previous version is revoked') are met by the derived value; SIMPL-20530 technical details ('a new version does not have its own status') is met because nothing is stored per version; CDM value set SchemaVersion.lifecycleStatus PUBLISHED, REVOKED (DDD-04, DDD-12). Simplest to keep consistent.",
+  "status": "provisional",
+  "owner_question": "Confirm that a replaced version shows REVOKED and that version status is derived, not stored.",
+  "affects": [
+   "api",
+   "ui",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D12",
+  "topic": "New version of a revoked schema",
+  "closes": [
+   "F-021"
+  ],
+  "decision": "POST /schemas/{schemaName}/versions is allowed for a REVOKED schema. If no other schema in its scope (same resourceType for RESOURCE, any SEARCH schema for SEARCH) is PUBLISHED, the schema becomes PUBLISHED with the new version: 201, response status PUBLISHED, SchemaPublished event, Provider e-mail for RESOURCE. If another schema in its scope is PUBLISHED: for RESOURCE the version is created and the schema stays REVOKED (201, response status REVOKED, no event, no e-mail); for SEARCH the response is 409 with detail 'A published federated search schema already exists.' and nothing is created.",
+  "options": [
+   "201 and re-publish",
+   "201 and stay REVOKED",
+   "Error"
+  ],
+  "basis": "SIMPL-33537/AC1 ('no published Federated Search schema ... create a new version of it ... publish') and AC5 ('after revocation, a valid Federated Search schema can be published'); the same scope rules as creation (D7, D8) keep one rule set.",
+  "status": "provisional",
+  "owner_question": "Confirm that a new version re-publishes a revoked schema when its scope has no published schema.",
+  "affects": [
+   "api",
+   "tests",
+   "events"
+  ],
+  "refined_by": [
+   "D54",
+   "D55"
+  ],
+  "later_change": "writes serialised per scope (D54); check order (D55)"
+ },
+ {
+  "id": "D13",
+  "topic": "Lifecycle of a schema in one table",
+  "closes": [
+   "D-004"
+  ],
+  "decision": "The writers use the state and transition table in glossary.md (section 'Schema lifecycle'). It is the only lifecycle definition for the build; D7 to D12 are its rows. Transitions: create to PUBLISHED or REVOKED (D7, D8), new version keeps or sets PUBLISHED or keeps REVOKED (D11, D12), revoke PUBLISHED to REVOKED (PATCH), revoke REVOKED to REVOKED (no change, D10). Each row names the event and the e-mail it raises.",
+  "options": [
+   "Table in the CDM",
+   "Table in the glossary, owned by the stories"
+  ],
+  "basis": "DDD-12; the CDM has only the value set. The glossary is a file both writers read.",
+  "status": "provisional",
+  "owner_question": "Add the transition table to the CDM next to the value set.",
+  "affects": [
+   "api",
+   "tests",
+   "events",
+   "data"
+  ]
+ },
+ {
+  "id": "D14",
+  "topic": "New-version request and target schema",
+  "closes": [
+   "F-020",
+   "F-049",
+   "F-050",
+   "F-012"
+  ],
+  "decision": "The body of POST /schemas/{schemaName}/versions is exactly CreateNewSchemaVersionPayload as flat multipart fields: schemaFile and changelog required, schemaType (default RESOURCE) and resourceType optional. There is no metadata part and no schemaName field in the body; the name is the path parameter. schemaType and resourceType only select which schema of that name gets the version (D4). If no schema matches the selection the response is 404, never 409; this covers a name that exists only as RESOURCE when SEARCH is requested (SIMPL-32807/AC6 as its heading says) and SIMPL-32808/AC5. title, description, resourceType and schemaType of the schema never change through a new version. Missing changelog or schemaFile gives 400. The UI form for a new version takes schemaType and resourceType from the schema being viewed, shows them read-only and has no selection box.",
+  "options": [
+   "Flat OpenAPI fields",
+   "metadata part plus file part"
+  ],
+  "basis": "OpenAPI CreateNewSchemaVersionPayload and POST responses (404 SchemaNotFoundResponse); SIMPL-32807/AC4 and AC5 (404). The 'version that already exists' line of SIMPL-32807/AC6 has no meaning with server-generated versions (D3).",
+  "status": "provisional",
+  "owner_question": "Confirm flat fields, 404 for a missing schema of the selected type, and the read-only type in the UI form.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D15",
+  "topic": "Create request and Location header",
+  "closes": [
+   "F-019",
+   "F-071"
+  ],
+  "decision": "POST /schemas takes the flat multipart fields of CreateSchemaPayload (schemaFile, name, title, description required; resourceType, schemaType optional), not a JSON metadata part. A missing required field, or a name or resourceType that breaks its pattern, gives 400 with Problem details; a body that is not multipart/form-data gives 415. The base path is /v1 (OpenAPI server), not /api/v1. The 201 Location header on POST /schemas and POST /schemas/{schemaName}/versions is the absolute URI of the created version: {PUBLIC_BASE_URL}/schemas/{name}/{version}?schemaType={schemaType} followed by &resourceType={resourceType} for RESOURCE. A GET on it returns that version's Turtle. Tests assert that the path ends with /schemas/{name}/{version} and that the query names the schemaType.",
+  "options": [
+   "Follow the OpenAPI: flat fields; Location is the version URI",
+   "Follow the stories: JSON metadata part; Location is the concept URI"
+  ],
+  "basis": "OpenAPI CreateSchemaPayload and server URL; OpenAPI Location examples point to a version; SIMPL-32807/AC1 'Location header contains the URI for the newly created schema version'. The OpenAPI example with a UUID and /version/1 matches no path, so the existing GET path is used.",
+  "status": "provisional",
+  "owner_question": "Confirm the Location format and fix the OpenAPI example.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D16",
+  "topic": "Latest content endpoint GET /schemas/{schemaName}",
+  "closes": [
+   "F-005",
+   "F-064"
+  ],
+  "decision": "This service offers GET /v1/schemas/{schemaName} with query parameters schemaType (default RESOURCE) and resourceType (D4). It returns 200, Content-Type text/turtle, the stored content of the schema's latest version, and a Content-Location header with the same URI format as Location in D15 for that version. It works for PUBLISHED and REVOKED schemas. 404 when no schema matches. Same authentication and roles as the other reads (D26, D27): it is not public. The UI download of the latest content (SIMPL-20067) uses this operation. The SEARCH example in SIMPL-32788/AC3 is read as /schemas/FederatedSearchAsset?schemaType=SEARCH.",
+  "options": [
+   "Part of this service, added to the OpenAPI",
+   "Separate public Resolver, out of scope"
+  ],
+  "basis": "SIMPL-33537 scope and AC4 (the implementation story lists GET /schemas/{schemaName}), SIMPL-32788, SIMPL-20067/AC1. The OpenAPI is silent on this path rather than contradicting it, so the newest story adds it. 'Public' in SIMPL-13347 is replaced by SIMPL-32788 (D1).",
+  "status": "provisional",
+  "owner_question": "Add GET /schemas/{schemaName} to the OpenAPI with its roles, or confirm a separate Resolver component.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D17",
+  "topic": "Version content endpoint and revoked versions",
+  "closes": [
+   "F-011",
+   "F-033",
+   "F-024"
+  ],
+  "decision": "GET /schemas/{schemaName}/{version} returns 200 with the Turtle content of that version (text/turtle), for any status of the schema or version, and the Location header of the OpenAPI with the format of D15. 'Schema meta datas' in SIMPL-32798/AC3 and AC4 is a wording slip. SIMPL-13364 and SIMPL-32798 are this operation. It needs GA_SCHEMA_VIEWER or GA_SCHEMA_ADMIN (403 otherwise). 404 only when the schema (by key, D4) or the version does not exist, with the detail texts of the OpenAPI examples.",
+  "options": [
+   "Turtle per the OpenAPI",
+   "JSON metadata"
+  ],
+  "basis": "OpenAPI GET /schemas/{schemaName}/{version} (text/turtle); SIMPL-14354/AC1 and SIMPL-32436 (revoked schemas stay retrievable); BP 2C.7.3.",
+  "status": "follows the specs",
+  "owner_question": "Correct 'meta datas' in SIMPL-32798.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D18",
+  "topic": "Retention of revoked schemas: what is tested here",
+  "closes": [
+   "F-025",
+   "F-034"
+  ],
+  "decision": "For this component, retention means: after revocation the schema still appears in GET /schemas?status=REVOKED, its versions in GET /schemas/{schemaName}/versions, and its content in GET /schemas/{schemaName} and GET /schemas/{schemaName}/{version}, all with 200. SIMPL-14354/AC1 is tested with these four reads. The catalogue and federated search outcomes of SIMPL-14701, SIMPL-32436 and SIMPL-32497 ('reference in the published resource description', 'federated search disabled') are not tested in this build; they belong to the catalogue and search components.",
+  "options": [
+   "Test only retrievability here",
+   "Test catalogue behaviour too"
+  ],
+  "basis": "SIMPL-14354 note ('internal logic requirement ... it's still persisted'); SIMPL-14701 note ('functionality exists'); the catalogue is an external service in the CDM (DDD-13).",
+  "status": "provisional",
+  "owner_question": "Confirm that the catalogue and search criteria move to those components.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D19",
+  "topic": "Default properties: check, not enrich",
+  "closes": [
+   "F-006",
+   "F-054",
+   "D-011"
+  ],
+  "decision": "Simpl-Open does not add default properties. A RESOURCE schema (create or new version) must already contain them, else 400. The check: the schema graph contains, for each required default property, at least one node with an sh:path whose IRI local name (the part after the last '#' or '/') equals the property name. Required for every RESOURCE schema: generalServiceProperties, assetProperties, providerInformation, offeringPrice, servicePolicy, contractTemplate, edcRegistration, edcConnector, identifier (UUID, dcterms:identifier) and version (schema:version). Required in addition by resourceType: Data needs dataProperties and format; Application needs applicationProperties; Infrastructure needs infrastructureProperties. Missing ones give 400 with detail 'Default Properties Error: missing default properties: a, b' and one issue per missing property (D22). The term 'mandatory property' is retired in the build; the 'Mandatory properties error' prefix of SIMPL-14796 is replaced by 'Default Properties Error'. SIMPL-14703/AC3 and AC4 read as 'the schema fails syntax validation or lacks a default property'.",
+  "options": [
+   "Enrich: Simpl-Open adds them",
+   "Reject: the Governance Authority must include them"
+  ],
+  "basis": "SIMPL-14703, SIMPL-14796, SIMPL-24173, SIMPL-26105 criteria (reject) rank above BP02C.04 (enrich); the default-properties model named in sources.yaml says 'Default properties means the baseline property definitions, not automatically populated values' and gives the property names (sections 1.1, 1.2, 3 to 5). Local-name matching avoids an unwritten namespace.",
+  "status": "provisional",
+  "owner_question": "Confirm reject over enrich, publish the default properties with their full IRIs per resource type, and correct BP02C.04.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D20",
+  "topic": "Validation rules for SEARCH schemas",
+  "closes": [
+   "F-051"
+  ],
+  "decision": "No default properties are defined for SEARCH. A SEARCH schema gets the syntax check and the semantic check only (D22, D23), no default property check.",
+  "options": [
+   "Same default properties as RESOURCE",
+   "No default property check until the owner defines one"
+  ],
+  "basis": "SIMPL-33537/AC1 names 'rules and default properties for SEARCH' but no source lists them; the default-properties model covers resource offerings only. Assumption so both writers act the same.",
+  "status": "accepted risk",
+  "owner_question": "List the default properties and rules that apply to SEARCH schemas.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D21",
+  "topic": "Stored and returned content",
+  "closes": [
+   "F-023"
+  ],
+  "decision": "The service stores the uploaded schemaFile unchanged and every retrieval returns exactly the uploaded bytes. Tests may compare byte for byte.",
+  "options": [
+   "Byte-identical to the upload",
+   "Isomorphic graph, possibly enriched"
+  ],
+  "basis": "Follows from D19 (no enrichment); SIMPL-32802/AC1 'store the submitted SHACL file as its content'; SIMPL-32788/AC1 'complete, raw SHACL content'.",
+  "status": "follows the specs",
+  "owner_question": "None beyond D19.",
+  "affects": [
+   "api",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D22",
+  "topic": "Validation errors: status, detail and issues",
+  "closes": [
+   "F-027",
+   "F-036",
+   "D-007"
+  ],
+  "decision": "All schema validation failures on POST /schemas and POST /schemas/{schemaName}/versions return 400 application/problem+json with type urn:problem-type:simpl:badRequest, nothing is created, and issues[] holds SchemaValidationIssue objects (code, description, location). Validation runs in three stages and stops at the first stage that fails, returning all issues of that stage: (1) syntax: the file must parse as Turtle and contain at least one sh:NodeShape; detail starts 'Syntax Error: ', issue codes syntaxError (location 'line L, column C' when the parser gives it) and noNodeShape; (2) default properties, RESOURCE only (D19): detail starts 'Default Properties Error: ', issue code defaultPropertyMissing, location the property name; (3) semantics (D23): detail starts 'Semantic Validation Error: ', issue codes localReferenceUnavailable and unknownVocabularyTerm. Tests assert the status, the detail prefix and the issue codes, not the rest of the text. The four items of SIMPL-22407/AC3 map to: affected property and vocabulary term in location, failed rule in code, human-readable text in description. The one term is 'validation issue': an issue in Problem.issues is an error, an issue in validationWarnings is a warning.",
+  "options": [
+   "One issue concept with severity by place",
+   "Two concepts, error and warning"
+  ],
+  "basis": "OpenAPI SchemaValidationBadRequestResponse and SchemaValidationIssue; detail prefixes from SIMPL-14795, SIMPL-24173, SIMPL-14797 technical info; SIMPL-22407 notes ('return all semantic errors'). The OpenAPI issue object is kept as is (no extension).",
+  "status": "provisional",
+  "owner_question": "Confirm the three prefixes and issue codes as contract, and rename CDM SchemaValidationWarning to SchemaValidationIssue.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D23",
+  "topic": "Semantic validation: errors and warnings",
+  "closes": [
+   "F-035"
+  ],
+  "decision": "Semantic validation looks at every IRI used as object of sh:path, sh:class, sh:targetClass and sh:datatype. Its namespace is the IRI up to and including the last '#' or '/'. Namespaces of rdf, rdfs, xsd, sh, owl, skos, dcterms, dcat, odrl and schema.org (http and https) are skipped. A namespace that starts with INTERNAL_VOCABULARY_BASE is internal: it must be a namespace of a known internal vocabulary, else error localReferenceUnavailable (location \"namespace '<ns>'\"); and each term IRI must be a term of that vocabulary, else error unknownVocabularyTerm (location the term IRI). Any other namespace is external: it is not fetched and gives a warning externalReferenceSkipped (location \"namespace '<ns>'\"); warnings never block and are returned in validationWarnings of the 201 response. Known internal vocabularies come from the vocabulary registry of environment choice D42. All semantic errors are collected before answering.",
+  "options": [
+   "Only self-managed vocabularies checked, external ones warned",
+   "All vocabularies fetched and checked"
+  ],
+  "basis": "SIMPL-22407 notes ('only validate against self managed vocabularies', 'warnings for external vocabularies that cannot be resolved', 'don't fail on first issue'); OpenAPI codes localReferenceUnavailable and externalReferenceSkipped; CDM: the Vocabulary Manager is the vocabulary registry. The skip list and registry fixture are choices for testability.",
+  "status": "provisional",
+  "owner_question": "Confirm which checks block, the issue codes, and how the Vocabulary Manager is queried in production.",
+  "affects": [
+   "api",
+   "tests"
+  ],
+  "refined_by": [
+   "D51"
+  ],
+  "later_change": "Vocabulary Manager timeout, retry and 503 (D51)"
+ },
+ {
+  "id": "D24",
+  "topic": "Webhook events: triggers, payload, delivery",
+  "closes": [
+   "F-010",
+   "D-005"
+  ],
+  "decision": "'Publish' means a schema or a version becomes PUBLISHED. SchemaPublished is raised when (a) POST /schemas creates a schema with status PUBLISHED, (b) POST versions creates a version on a PUBLISHED schema, (c) POST versions re-publishes a REVOKED schema (D12). SchemaRevoked is raised only when PATCH changes a schema from PUBLISHED to REVOKED. No event for a schema created as REVOKED, a version created on a schema that stays REVOKED, an idempotent revoke, or the implicit REVOKED status of a replaced version. Events cover RESOURCE and SEARCH schemas. Delivery: after the change is stored and before the API answers, the service sends one HTTP POST per matching subscription to its targetUrl, Content-Type application/json, body {\"eventId\": UUID, \"eventType\": \"SchemaPublished\" or \"SchemaRevoked\", \"occurredAt\": ISO 8601 UTC, \"name\", \"schemaType\", \"resourceType\" (null for SEARCH), \"version\" (the latest version, string), \"status\"}. Timeout 5 seconds, one attempt, no retry; any failure or non-2xx answer is logged and never changes the API response. The CDM sentence 'version creation does not emit a lifecycle event' does not apply.",
+  "options": [
+   "Publish = any route to PUBLISHED, event for each",
+   "Publish = only the status transition; no event for versions"
+  ],
+  "basis": "SIMPL-19992 user story (subscriber must always use the correct schema), BP02C.05 and BP 2C.8 (a new version is published), CDM 'event delivery is synchronous', OpenAPI event enum. Payload property names follow API-13 and API-19. Single attempt is simplest to build and test.",
+  "status": "provisional",
+  "owner_question": "Define the event payload and failure handling in the OpenAPI (callbacks) or an AsyncAPI file, and confirm that new versions raise SchemaPublished.",
+  "affects": [
+   "api",
+   "events",
+   "tests"
+  ],
+  "overridden_by": "D50",
+  "later_change": "delivery now via an outbox after the answer, with retries (D50); triggers, payload and mail content stay"
+ },
+ {
+  "id": "D25",
+  "topic": "Provider notifications by e-mail",
+  "closes": [
+   "F-009",
+   "F-026",
+   "F-066"
+  ],
+  "decision": "Provider notification is one e-mail per event to one configured address (NOTIFICATION_RECIPIENT, D41), which stands for all Providers (for example a distribution list). It is sent for RESOURCE schemas only, on exactly the SchemaPublished and SchemaRevoked triggers of D24; never for SEARCH, never on a failed request, never for a schema stored as REVOKED. Sent after the change is stored; a mail failure is logged and does not change the API response. Subject lines: 'Schema published: {name} version {version}' (new schema), 'Schema version published: {name} version {version}' (new version or re-publication), 'Schema revoked: {name}'. Plain-text body, one 'Label: value' line each: Schema name, Title, Description, Resource type, Version, Changelog (new version only), Timestamp (ISO 8601 UTC), Schema URL (the version URI of D15), Instructions (NOTIFICATION_INSTRUCTIONS_URL). Tests read the SMTP stub and assert the subject and the presence of these labels and values. The case in SIMPL-14712 is 'valid token without GA_SCHEMA_ADMIN': 403 and no e-mail.",
+  "options": [
+   "One e-mail to a configured address",
+   "One e-mail per Provider from a directory",
+   "Webhook events only"
+  ],
+  "basis": "SIMPL-14712 and SIMPL-14791 technical notes (address from a configuration key), SIMPL-33694 (RESOURCE only, AC5 no notification for SEARCH), BP02C.06 ('e.g. via email'). Labelled lines make the undefined 'links for instructions' testable.",
+  "status": "provisional",
+  "owner_question": "Confirm the single configured recipient, the subject lines and the body fields, and what the instruction link points to.",
+  "affects": [
+   "events",
+   "tests"
+  ],
+  "refined_by": [
+   "D50"
+  ],
+  "later_change": "failure handling of deliveries replaced by D50"
+ },
+ {
+  "id": "D26",
+  "topic": "Authentication and authorisation responses",
+  "closes": [
+   "F-014",
+   "F-040",
+   "F-059"
+  ],
+  "decision": "The service checks the bearer token itself (OIDC JWT, D39). Missing, malformed, expired or wrongly signed token: 401 application/problem+json as UnauthorizedErrorResponse (type urn:problem-type:simpl:unauthorized), on every operation, schemas and webhooks. Valid token without the needed role: 403 as ForbiddenResponse. Every denied action of SIMPL-17066 is 403 with that body. The UI hides write actions (create, new version, revoke) from users without GA_SCHEMA_ADMIN; if the API still answers 403, the UI shows the Problem detail as an error notification and changes nothing. An expired session in the UI sends the user to login. SIMPL-13361/AC2 is a UI test with a stubbed 403.",
+  "options": [
+   "Service returns 401 and 403",
+   "Gateway returns 401; service tests cover 403 only"
+  ],
+  "basis": "SIMPL-13343/AC3, SIMPL-32258 negative criteria (401), SIMPL-13360/AC3 and SIMPL-20529 (403 Forbidden), OpenAPI UnauthorizedErrorResponse and ForbiddenResponse, API-45. SEC-12 puts enforcement at the gateway in deployment; the build has no gateway, so the service checks too.",
+  "status": "provisional",
+  "owner_question": "Add 401 to every operation in the OpenAPI, or confirm the gateway answers 401.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D27",
+  "topic": "Role names and role matrix",
+  "closes": [
+   "F-015",
+   "F-039"
+  ],
+  "decision": "The only role names are GA_SCHEMA_ADMIN and GA_SCHEMA_VIEWER, read from the token claim realm_access.roles; governance-admin and governance-viewer are the same roles and are not used. GA_SCHEMA_ADMIN includes everything GA_SCHEMA_VIEWER may do. Reads (GET /schemas, GET /schemas/{schemaName}, GET /schemas/{schemaName}/versions, GET /schemas/{schemaName}/{version}) need GA_SCHEMA_VIEWER or GA_SCHEMA_ADMIN. Writes (POST /schemas, POST /schemas/{schemaName}/versions, PATCH /schemas/{schemaName}) need GA_SCHEMA_ADMIN. 'List schema details' of SIMPL-17066 covers the three content and list reads. The same rules apply to RESOURCE and SEARCH schemas. Webhook operations follow D28, not these roles.",
+  "options": [
+   "Aliases: GA_SCHEMA_* everywhere",
+   "Separate roles"
+  ],
+  "basis": "SIMPL-17066 technical info (role names and inclusion), SIMPL-13343/AC1, SIMPL-32258; SEC-05 (Tier 1 RBAC).",
+  "status": "follows the specs",
+  "owner_question": "Replace governance-admin and governance-viewer in SIMPL-13343, SIMPL-13358 and SIMPL-32808.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D28",
+  "topic": "Access to webhook operations",
+  "closes": [
+   "F-037"
+  ],
+  "decision": "The three webhook operations need a valid token (401 otherwise) and no role: any authenticated participant may subscribe, list and delete. Tier 2 credentials (mTLS through the Tier 2 gateway) are checked by the gateway, outside this build. 'Handles the request' in SIMPL-24175 means the normal 2xx answer; 'does not handle' means 401.",
+  "options": [
+   "Gateway only, out of scope",
+   "Service checks token, no role"
+  ],
+  "basis": "SIMPL-24175 technical info ('no attribute check required ... this enables all participants', 'only for the webhook endpoints'); SEC-13 places Tier 2 checks at the gateway.",
+  "status": "provisional",
+  "owner_question": "Confirm that any authenticated participant may manage subscriptions, and whether GET /webhooks should return only the caller's own subscriptions.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D29",
+  "topic": "Webhook subscription rules",
+  "closes": [
+   "F-041",
+   "F-042",
+   "F-060",
+   "F-061",
+   "D-015"
+  ],
+  "decision": "targetUrl is checked for syntax only: an absolute URL with scheme http or https and a host; 'url', 'not-a-url', 'http://' and 'ftp://invalid.com' get 400; the service does not call the URL at subscription time. events must hold at least one value (400 otherwise). An unknown event type such as SchemaExploded gets 406 with the OpenAPI detail text, as the frozen contract says. A subscription with the same targetUrl and the same set of events as an existing one gets 409; the same URL with another set of events is a new subscription. DELETE returns 204 only. webhookId is a server-generated UUID. A subscription has no states: 'active' in SIMPL-19992/AC2 means 'existing'; GET /webhooks returns all subscriptions.",
+  "options": [
+   "Syntax only",
+   "Syntax plus reachability call"
+  ],
+  "basis": "SIMPL-19992/AC4, OpenAPI POST /webhooks (400, 406 unsupportedEvent example, 409), DELETE 204, CDM Webhook (uniqueness by URL and events).",
+  "status": "follows the specs",
+  "owner_question": "API-12 would prefer 400 for an unknown event type; confirm 406 or change the OpenAPI.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D30",
+  "topic": "Fields of the schema list and the versions list",
+  "closes": [
+   "F-016",
+   "F-017",
+   "F-031",
+   "F-070",
+   "D-014"
+  ],
+  "decision": "GET /schemas returns one item per schema (not per version) with: name, title, description, resourceType (absent for SEARCH), schemaType, version and changelog of the latest version, status of the schema, and created (schema creation time, ISO 8601 UTC, added to the OpenAPI item). Without schemaType it returns only RESOURCE schemas; there is no call that lists both types. GET /schemas/{schemaName}/versions returns items with: name, graphName (the version URI of D15), version, changelog, created (version creation time), schemaType, resourceType (absent for SEARCH) and status (derived, D11). The paging wrapper is the one of GetAllSchemasResponsePayload (page, totalPages, total, pageSize, next, metadata). No source has a creator: the UI drops the Creator columns. Title and description belong to the schema, are set at creation and never change; the CDM names map as lifecycleStatus = status, createdAt = created, modifiedAt = modified, rdfContent = schema definition.",
+  "options": [
+   "Extend the API responses",
+   "Drop the columns the API lacks"
+  ],
+  "basis": "OpenAPI GetAllSchemasResponsePayload and the versions example (the versions schema file is not in the specs, D-010); UI columns of SIMPL-32790 and SIMPL-32787; SIMPL-32258/AC1 (default RESOURCE). created and status are additive; creator has no source at all.",
+  "status": "provisional",
+  "owner_question": "Provide common-components.yaml, add created to list items and status and resourceType to version items, and say whether a creator is needed.",
+  "affects": [
+   "api",
+   "ui",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D31",
+  "topic": "Ordering, paging and sorting",
+  "closes": [
+   "F-018"
+  ],
+  "decision": "GET /schemas orders by name, then schemaType, then resourceType, ascending. GET /schemas/{schemaName}/versions orders by version as a number, ascending. Defaults page 1 and pageSize 20; next is null on the last page. GET /schemas beyond the last page returns 200 with an empty list; GET versions beyond the last page returns 404 as the OpenAPI says. The UI sorts the rows of the current page only, in the browser, on Schema Name, Title, Version and Creation Date; no sort parameter is added to the API.",
+  "options": [
+   "Server-side sort parameter",
+   "Client-side sort of the current page"
+  ],
+  "basis": "OpenAPI parameters (no sort) and versions description ('an empty page returns 404'); client-side sort needs no contract change. Numeric version order replaces 'by version-subject URI', which would put 10 before 2.",
+  "status": "provisional",
+  "owner_question": "Say whether sorting must cover the whole result; if so add a sort parameter like the vocabularies endpoints.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D32",
+  "topic": "UI: errors, messages and navigation",
+  "closes": [
+   "F-028",
+   "F-032",
+   "F-056",
+   "F-055"
+  ],
+  "decision": "Forms (create schema, create version): on an API error the UI stays on the form and shows an error banner at the top of the form with the Problem detail and, when present, one line per issues[].description. Fixed texts: 409 on create 'A schema with that name already exists.', or 'A published federated search schema already exists.' when the detail says so. SIMPL-13355/AC2 is triggered by an existing name (409) or an invalid file (400). Missing required fields are caught in the form with inline messages and a disabled submit button. List actions (revoke): errors appear as an error notification with the Problem detail. After a successful create the user goes to the new schema's detail page; after a new version, back to the schema's detail page with the new version in the list. On a failed list load the page shows an error message with a Retry button; an expired session goes to login.",
+  "options": [
+   "One error pattern for forms and one for list actions",
+   "Per-story behaviour"
+  ],
+  "basis": "SIMPL-32808 and SIMPL-32800 (newest UI stories, D1), SIMPL-13361 technical details ('use the detail parameter of the response'), SIMPL-20770/AC3.",
+  "status": "provisional",
+  "owner_question": "Confirm the error placement and the fixed texts.",
+  "affects": [
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D33",
+  "topic": "UI: revoking a schema",
+  "closes": [
+   "F-029"
+  ],
+  "decision": "The Revoke button shows only for PUBLISHED schemas. Clicking it opens a confirmation popup with Cancel and Revoke; Cancel closes it and does nothing. On success the list refreshes and shows 'Schema \"{name}\" revoked successfully.'. There is no Publish button (D9).",
+  "options": [
+   "Popup and text of SIMPL-13361",
+   "No popup and text of SIMPL-20530"
+  ],
+  "basis": "SIMPL-13361 is the dedicated revoke story with a mockup; the publish half of SIMPL-20530 is withdrawn (D9).",
+  "status": "provisional",
+  "owner_question": "Confirm the popup and the success text.",
+  "affects": [
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D34",
+  "topic": "UI: schema type and resource type filters",
+  "closes": [
+   "F-045"
+  ],
+  "decision": "When the user selects schemaType SEARCH in the list filters or the create form, the UI clears and disables the resourceType control and never sends resourceType with SEARCH, so the 400 of the API cannot occur from the UI.",
+  "options": [
+   "Disable and clear the filter",
+   "Show the 400 error"
+  ],
+  "basis": "SIMPL-32800/AC2 (resourceType disabled for SEARCH in the form); OpenAPI GET /schemas 400 rule. Simplest for the user and the tests.",
+  "status": "provisional",
+  "owner_question": "Confirm the behaviour in the list filters.",
+  "affects": [
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D35",
+  "topic": "UI: downloads and story scope",
+  "closes": [
+   "F-046",
+   "F-058",
+   "F-068",
+   "F-069"
+  ],
+  "decision": "Downloading a version uses GET /schemas/{schemaName}/{version} with the schema's schemaType and resourceType; downloading the latest content uses GET /schemas/{schemaName} (D16). The file name is {name}-v{version}.ttl. Success shows 'Schema downloaded.'; any error shows the Problem detail as an error notification. Comparing versions (SIMPL-13346) and editing the SHACL content (SIMPL-20067) are out of scope: download only.",
+  "options": [
+   "Download through the content endpoints",
+   "Through the versions list"
+  ],
+  "basis": "OpenAPI: only the content endpoints return Turtle; SIMPL-32797 technical info points to the list by mistake. No criterion covers compare or edit.",
+  "status": "provisional",
+  "owner_question": "Confirm the file name and the messages, and that compare and edit are not wanted.",
+  "affects": [
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D36",
+  "topic": "Terms for schema, schema types, actors and update",
+  "closes": [
+   "D-006",
+   "D-013",
+   "D-016",
+   "D-018"
+  ],
+  "decision": "Use 'schema' for the aggregate (CDM Schema); 'schema concept' and 'schema category' are retired in code, tests and UI text (the wire name SchemaCategory stays in the OpenAPI). Use 'resource description schema' for schemaType RESOURCE and 'federated search schema' for SEARCH. 'Governance Authority' is the actor only; the component is 'Schema Manager'; the platform is 'Simpl-Open'. 'New version' is creating a version; 'update' is not used, as no metadata update operation exists (D2).",
+  "options": [
+   "Terms as listed",
+   "Keep synonyms"
+  ],
+  "basis": "DDD-01, DDD-02; BP02C and the API summaries already use 'resource description schema'; CDM uses Schema and Schema Manager.",
+  "status": "provisional",
+  "owner_question": "Rename SchemaCategory to Schema in the next API revision and align the story wording.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D37",
+  "topic": "Criteria that need an internal failure",
+  "closes": [
+   "F-052"
+  ],
+  "decision": "Criteria triggered by an internal failure (SIMPL-20528/AC2, SIMPL-20534/AC2, SIMPL-13357/AC6, SIMPL-32807/AC9, SIMPL-20529/AC9) are verified only in component tests with an injected fault in the store, expecting 500 with InternalServerErrorResponse and no stored change. They are not part of end-to-end tests.",
+  "options": [
+   "Fault injection in component tests",
+   "Review only"
+  ],
+  "basis": "These cannot be caused from outside; API-44 and API-45 fix the response shape.",
+  "status": "provisional",
+  "owner_question": "None.",
+  "affects": [
+   "tests"
+  ]
+ },
+ {
+  "id": "D38",
+  "topic": "Environment: base URL and ports",
+  "closes": [],
+  "decision": "Backend at http://localhost:8080 with base path /v1. PUBLIC_BASE_URL (default http://localhost:8080/v1) builds Location, Content-Location, graphName and e-mail links. The UI runs at http://localhost:4200 and calls the backend base URL.",
+  "options": [],
+  "basis": "Environment choice; the specs fix only /v1.",
+  "status": "provisional",
+  "owner_question": "None.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D39",
+  "topic": "Environment: identity provider and test users",
+  "closes": [],
+  "decision": "OIDC with JWT bearer tokens signed RS256; issuer and JWKS location from OIDC_ISSUER_URI and OIDC_JWKS_URI; roles in realm_access.roles (Keycloak layout); audience is not checked. Test users: ga-admin (GA_SCHEMA_ADMIN), ga-viewer (GA_SCHEMA_VIEWER), ga-norole (no schema role), participant (no role, used for webhooks). Tests may mint tokens with a local test key pair published at the JWKS location instead of running Keycloak.",
+  "options": [],
+  "basis": "SEC-07 (Keycloak for Tier 1), SIMPL-17066 role names.",
+  "status": "provisional",
+  "owner_question": "None.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D40",
+  "topic": "Environment: store and test isolation",
+  "closes": [],
+  "decision": "The store is the builder's choice but the service must start with an empty store in tests (for example an in-memory mode, STORE=memory). Because the one-published rules are global per resource type and for SEARCH, each test scenario runs against a fresh, empty instance. No reset or test-only endpoint is added.",
+  "options": [],
+  "basis": "Global uniqueness rules (D7, D8) make shared state between tests unsafe.",
+  "status": "provisional",
+  "owner_question": "None.",
+  "affects": [
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D41",
+  "topic": "Environment: mail stub",
+  "closes": [],
+  "decision": "SMTP stub at NOTIFICATION_SMTP_HOST:NOTIFICATION_SMTP_PORT (default localhost:1025) with a MailHog-compatible HTTP API on port 8025 for tests. NOTIFICATION_RECIPIENT default providers@simpl.test, NOTIFICATION_SENDER default schema-manager@simpl.test, NOTIFICATION_INSTRUCTIONS_URL default https://simpl.test/schemas/instructions.",
+  "options": [],
+  "basis": "D25 needs an observable channel.",
+  "status": "provisional",
+  "owner_question": "None.",
+  "affects": [
+   "events",
+   "tests"
+  ]
+ },
+ {
+  "id": "D42",
+  "topic": "Environment: vocabulary registry stub",
+  "closes": [],
+  "decision": "Known internal vocabularies come from a JSON file at VOCABULARY_FIXTURE: a list of objects {\"namespace\": IRI, \"terms\": [IRI, ...]}. INTERNAL_VOCABULARY_BASE default https://vocabulary.simpl.test/. The production adapter to the Vocabulary Manager is behind the same port and not tested here.",
+  "options": [],
+  "basis": "D23; the Vocabulary Manager is external (CDM).",
+  "status": "provisional",
+  "owner_question": "None.",
+  "affects": [
+   "api",
+   "tests"
+  ],
+  "refined_by": [
+   "D51"
+  ],
+  "later_change": "Vocabulary Manager unavailable gives 503 (D51)"
+ },
+ {
+  "id": "D43",
+  "topic": "Environment: webhook receiver",
+  "closes": [],
+  "decision": "Tests run a local HTTP receiver that records each POST (headers and JSON body) and can answer 200 or 500 or delay beyond 5 seconds, to check D24 delivery and that failures do not change the API response.",
+  "options": [],
+  "basis": "D24.",
+  "status": "provisional",
+  "owner_question": "None.",
+  "affects": [
+   "events",
+   "tests"
+  ],
+  "refined_by": [
+   "D50"
+  ],
+  "later_change": "webhook receiver gets at-least-once delivery with the same eventId (D50)"
+ },
+ {
+  "id": "D44",
+  "topic": "Build contract: decisions over the frozen OpenAPI",
+  "closes": [
+   "P-005"
+  ],
+  "decision": "The builder implements from the frozen OpenAPI plus these decisions, and the decisions win wherever the two differ (item 1 of the source hierarchy in decisions.md, now also a decision). No patched OpenAPI is handed over in this run. Server stubs, request validation and contract tests may be generated from the OpenAPI only if the builder then applies every difference below; a generated validator must not answer differently from a decision. The known differences: GET /schemas/{schemaName} exists (D16); every in-scope operation can answer 401 (D26); the security scheme is read as D45; the nine out-of-scope operations are not implemented and answer 404 (D2); GET /schemas items carry created and GET versions items carry status and resourceType (D30); Location and Content-Location use the format of D15, not the /schemas/<uuid>/version/N examples; webhook events are sent as D24 says, without a callbacks object; one 404 problem type (D47); value rules for resourceType and version (D48); webhook target allow list (D46). The external reference GetSchemaVersionsResponsePayload (common-components.yaml, not in the specs) is built as the paging wrapper of GetAllSchemasResponsePayload (page, totalPages, total, pageSize, next, metadata) with the version items of D30. Contract tests assert the decided behaviour, not the frozen examples, where the two differ.",
+  "options": [
+   "Patched OpenAPI as the single build contract",
+   "Frozen OpenAPI plus a precedence rule"
+  ],
+  "basis": "Source hierarchy in decisions.md (decisions first, OpenAPI second); this step writes decisions only and cannot ship a patched OpenAPI. Simplest to build: one rule and one list of differences, no second contract file to keep in step.",
+  "status": "provisional",
+  "owner_question": "API owner: publish a revised OpenAPI (for example 1.2.0) with the differences listed here (D16, 401 on every operation, D45 scheme, D30 fields, D15 Location format, D24 callbacks, D46 to D48, inlined GetSchemaVersionsResponsePayload, the nine out-of-scope operations removed or marked deprecated). From then on that file is the build contract.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D45",
+  "topic": "Security scheme of the OpenAPI versus D26 to D28",
+  "closes": [
+   "P-001"
+  ],
+  "decision": "The service validates the bearer token itself as D26 and D39 say; it does not rely on a gateway. It checks roles only, per the matrix of D27 and D28, and never checks OAuth2 scopes: the read and write scopes of OAuth2Auth and the authorizationUrl and tokenUrl placeholders are ignored. The webhook operations never answer 403, because D28 requires no role; the 403 listed on GET /webhooks, POST /webhooks and DELETE /webhooks/{webhookId} is not built and not tested. Tests use the D39 test users; no test sends or expects scopes.",
+  "options": [
+   "Patch the OpenAPI to match D26 to D28 and D39",
+   "Keep the OpenAPI as is; D26 to D28 alone define the behaviour"
+  ],
+  "basis": "D26, D27, D28, D39 and D44 (decisions over the OpenAPI); SEC-07 (OpenID Connect through the Tier 1 Authentication Provider). No operation requests a scope, so ignoring scopes changes no specified behaviour.",
+  "status": "follows the specs",
+  "owner_question": "API owner: replace OAuth2Auth by an openIdConnect scheme (or http bearer JWT) without scopes, drop 'provided by gateway', state the role per operation (description or x-required-roles), add 401 and remove 403 from the three webhook operations.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D46",
+  "topic": "Webhook target allow list",
+  "closes": [
+   "P-002"
+  ],
+  "decision": "POST /webhooks checks targetUrl in this order, each failure 400 with type urn:problem-type:simpl:badRequest and nothing stored: (1) syntax as D29 ('The targetUrl is invalid or malformed.'); (2) scheme: https always allowed, http only when WEBHOOK_ALLOW_HTTP is true (detail 'The targetUrl must use https.'); (3) host: the URL host, compared case-insensitively and exactly (no wildcards, no subdomain match, port ignored), must be in WEBHOOK_ALLOWED_HOSTS, a comma-separated list (detail 'The targetUrl host is not on the allow list.'). An IP literal passes only if it is listed as written. Defaults fail closed: WEBHOOK_ALLOWED_HOSTS empty (every subscription gets 400) and WEBHOOK_ALLOW_HTTP false. The 409 duplicate check of D29 runs after these checks. At delivery (D24) the service checks the host again against the current list, skips and logs a subscription whose host is no longer allowed, and does not follow redirects (a 3xx counts as a failed delivery, logged, no change to the API response). Test configuration: WEBHOOK_ALLOWED_HOSTS=localhost,127.0.0.1,allowed.example.test and WEBHOOK_ALLOW_HTTP=true, so the D43 receiver at localhost is allowed; tests that need a rejected host use https://not-allowed.example.test/hook. Other D29 rules are unchanged.",
+  "options": [
+   "Allow list by configuration, 400 for other hosts",
+   "Accept the risk for this build and record it against OWASP-11"
+  ],
+  "basis": "OWASP-11 is a MUST rule: outgoing requests to URLs taken from input are checked against an allow list. D28 lets any authenticated participant subscribe and D24 makes the service POST to the URL, so without a list this is a server-side request forgery path. A configured exact-host list is the simplest check two builders implement the same way; failing closed keeps an unconfigured deployment safe. Same 400 problem type as D22 and D29.",
+  "status": "provisional",
+  "owner_question": "Security and API owner: confirm the allow list and its fail-closed default, say who maintains WEBHOOK_ALLOWED_HOSTS in a data space (for example the Governance Authority operator), confirm that plain http is refused outside tests, and add the two 400 detail texts and the https rule to CreateWebhookRequest.targetUrl in the OpenAPI.",
+  "affects": [
+   "api",
+   "events",
+   "tests"
+  ]
+ },
+ {
+  "id": "D47",
+  "topic": "One not-found problem type",
+  "closes": [
+   "P-003"
+  ],
+  "decision": "Every 404 of an in-scope operation, schemas and webhooks, answers application/problem+json with type urn:problem-type:simpl:notFound, title 'Resource Not Found', status 404 and the href of SchemaNotFoundResponse. This includes GET /schemas/{schemaName}/{version} (instead of urn:problem-type:iana:notFound and 'Not Found'), GET /schemas/{schemaName} (D16) and the 404 of the out-of-scope operations (D2). The detail texts stay as D17 fixes them. Tests assert type, title and status on every 404.",
+  "options": [
+   "urn:problem-type:simpl:notFound everywhere",
+   "Keep urn:problem-type:iana:notFound on the version read"
+  ],
+  "basis": "API-46 allows only urn:problem-type:simpl: types; the shared SchemaNotFoundResponse and the webhook DELETE 404 already use urn:problem-type:simpl:notFound with title 'Resource Not Found'. One type per situation, as step 30a requires.",
+  "status": "provisional",
+  "owner_question": "API owner: change the two 404 examples of GET /schemas/{schemaName}/{version} to urn:problem-type:simpl:notFound and 'Resource Not Found', and add a 404 example to GET /schemas/{schemaName}.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D48",
+  "topic": "Value rules for resourceType and version",
+  "closes": [
+   "P-004"
+  ],
+  "decision": "resourceType: D6 applies on every operation that takes it, as query parameter or form field: only Data, Application and Infrastructure, anything else 400, even though the OpenAPI pattern would accept it. schemaType SEARCH with a resourceType gives 400 on every operation (D4), not only on GET /schemas. version path parameter of GET /schemas/{schemaName}/{version}: it is looked up as given; any value that is not an existing version of the selected schema, whether well-formed ('7') or not ('abc', '1.0.0', '9.9.9'), gives 404 with the version-not-found detail of D17 and the problem type of D47. Order of checks: authentication and role (401, 403), then query parameters (400 for resourceType or schemaType), then lookup (404).",
+  "options": [
+   "400 for a malformed version, 404 for a well-formed version that does not exist",
+   "404 for any version that does not exist, malformed or not"
+  ],
+  "basis": "D6 and D4 already settle resourceType; the OpenAPI only lacks the enum (API-58). For version, the frozen OpenAPI has no pattern and its own 404 example uses '9.9.9', and D17 says 404 when the version does not exist; one rule for every unknown version is simplest to build and test.",
+  "status": "provisional",
+  "owner_question": "API owner: add enum [Data, Application, Infrastructure] to the six resourceType places, repeat the SEARCH plus resourceType rule on every operation, and describe version as a whole number written as a string without a pattern that would turn a malformed version into 400.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D49",
+  "topic": "Decisions over the BP02C process text",
+  "closes": [
+   "B-001",
+   "B-005"
+  ],
+  "decision": "The decisions win over BP02C wherever the two differ, as item 1 of the source hierarchy over item 5. BP02C gives intent and vocabulary; the lifecycle is only the table of D13. Read BP02C as follows. BP02C.05 'upon successful validation ... is published' means: a valid request ends as the D13 table says, which may be PUBLISHED, stored as REVOKED (D7, D12) or 409 for SEARCH (D8, D12). Overview 'each resource type has one schema' means: at most one PUBLISHED RESOURCE schema per resource type, and at most one PUBLISHED SEARCH schema; more schemas may exist as REVOKED. BP02C.05 'the previous version is revoked' means the derived version status of D11, with no event. BP02C.03 and the Assumptions do not forbid a way back: a REVOKED schema may be published again by a new version (D12). BP02C.04 'enriches' is D19 (check, not enrich). BP02C has no step for schema events; the build still sends them as D24 and D50 say, to any subscribed participant (D28). A subscriber is expected to stop offering a schema for new resource descriptions on SchemaRevoked and to start on SchemaPublished; that behaviour belongs to the subscriber and is not tested here.",
+  "options": [
+   "Decisions win over BP02C; the process owner aligns the text",
+   "BP02C wins: every valid schema is published; D7 and D12 reopened"
+  ],
+  "basis": "Source hierarchy in decisions.md ranks the process fifth, as intent; D1 and D44 state the same rule for stories and the OpenAPI, this decision states it for BP02C. The D13 lifecycle rests on the newest criteria (SIMPL-32801/AC1 to AC3, SIMPL-33537/AC1 and AC5). Webhook stories SIMPL-19992 and SIMPL-24175 are in scope (D2) although the process has no step for them.",
+  "status": "provisional",
+  "owner_question": "Process owner: confirm the D13 lifecycle as the process, and align BP02C.03, .04, .05, the Overview ('one published schema per resource type') and 2C.8. Add a step 'Publish schema events to subscribers' with the subscriber as actor, or name the process that owns schema events.",
+  "affects": [
+   "api",
+   "events",
+   "tests"
+  ]
+ },
+ {
+  "id": "D50",
+  "topic": "Event and e-mail delivery: after the answer, with retries",
+  "closes": [
+   "B-002",
+   "B-003"
+  ],
+  "decision": "Delivery of schema events and Provider e-mails changes from D24 and D25; triggers, payload, subjects and body stay as they are. (1) Outbox: in the same atomic step that stores the schema change, the service stores one delivery record per matching subscription (matched at that moment) and one per Provider e-mail. Nothing is sent before the API answers; the GA request never waits for a subscriber or the mail server. (2) Dispatch: a background worker sends the records. A webhook attempt has a 5 second timeout; a non-2xx answer, a 3xx, a timeout or a host no longer on the allow list (D46) is a failure. Attempts: the first as soon as possible, then retries after the delays in WEBHOOK_RETRY_DELAYS_MS (default '2000,10000,60000', so four attempts in all). E-mails use the same rule with MAIL_RETRY_DELAYS_MS (same default). A retry sends the same body with the same eventId. (3) Order: per subscription, events are sent in the order they were stored; the next event of a subscription waits until the previous one is delivered or given up. (4) Give up: after the last failed attempt the record is marked failed and the service logs one ERROR line with the fixed key 'schema.delivery.failed' and eventId, webhookId or 'mail', targetUrl and the last error. No API shows failed deliveries. (5) A subscription deleted before its delivery is skipped. (6) Guarantee: at least once while the store holds the outbox. Subscribers must ignore an eventId they have seen. A subscriber that suspects a gap reconciles by reading GET /schemas with the role of D52. With STORE=memory (D40) the outbox is lost on restart; a production store keeps it. (7) Subscriptions: the service stores the token subject (sub) of the caller with each subscription, not shown in the API. One caller may hold at most WEBHOOK_MAX_PER_CALLER subscriptions (default 10). The next POST /webhooks answers 409 application/problem+json, type urn:problem-type:simpl:conflict, detail 'The maximum number of webhook subscriptions for this caller is reached.', and stores nothing. This check runs after the D46 and D29 checks. Tests: set both delay lists to '100,200,300' and poll the receiver (D43) and the mail stub (D41) for up to 10 seconds; the receiver can answer 500 a given number of times and then 200.",
+  "options": [
+   "Deliver after the answer from a stored outbox, retries with backoff, cap per caller",
+   "Keep synchronous delivery, send in parallel, cap total wait and count",
+   "Accept at most once; subscribers reconcile by polling"
+  ],
+  "basis": "MSV-03 (the publisher does not wait for its consumers), MSV-06 (timeout, retries with backoff), MSV-08 (each hand-over has a defined failure outcome; no lost step after a stored change), OWA-API6 (limit on a flow open to any participant, D28), OWT-A10 (no half-done change: the outbox is written with the change). SIMPL-19992 asks that a subscriber always uses the correct schema, which at most once cannot give. A fixed delay list and a per-caller count are simple for two builders to make the same and to test. 409 reuses a code the OpenAPI already lists on POST /webhooks.",
+  "status": "provisional",
+  "owner_question": "Confirm at-least-once delivery after the answer, the retry delays, the per-caller limit of 10, and who watches 'schema.delivery.failed' in operations. Describe delivery, retries, eventId deduplication and the 409 limit in the OpenAPI callbacks or an AsyncAPI file.",
+  "affects": [
+   "api",
+   "events",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D51",
+  "topic": "Vocabulary Manager slow or down, and deprecated vocabularies",
+  "closes": [
+   "B-004"
+  ],
+  "decision": "The semantic stage of D22 queries the vocabulary registry (D42 port) with a timeout of VOCABULARY_TIMEOUT_MS (default 3000) per call and one retry after 500 ms. If the registry still does not answer, or answers with an error, POST /schemas and POST /schemas/{schemaName}/versions fail closed: 503 application/problem+json, type urn:problem-type:simpl:serviceUnavailable, title 'Service Unavailable', detail 'The vocabulary registry is not available. Try again later.', header Retry-After: 30, nothing stored, no event, no e-mail. It is never a 400 and never localReferenceUnavailable: that code stays for a namespace the registry does not know. The 503 can only happen when the request reaches the semantic stage (syntax and default properties passed). A vocabulary in the registry has status ACTIVE or DEPRECATED. A term of a DEPRECATED vocabulary is accepted and gives a warning with code deprecatedVocabulary (location \"namespace '<ns>'\") in validationWarnings of the 201, like externalReferenceSkipped (D23). The fixture of D42 gets an optional field \"status\" per entry, default ACTIVE. The 503 path is tested in component tests with a fault injected into the registry port (as D37), not end to end.",
+  "options": [
+   "503 with a retry hint after a fixed timeout; deprecated terms give a warning",
+   "Treat as validation error 400 localReferenceUnavailable"
+  ],
+  "basis": "MSV-06 (timeout, retry with backoff, what the caller sees), OWT-A10 (fail closed, no half-done change), API-44 (a server-side dependency failure is 5xx, not a client error). The OpenAPI vocabulary model has ACTIVE and DEPRECATED, and a new vocabulary version deprecates the previous one, so a deprecated term is old but valid. SchemaValidationIssue.code is a free string.",
+  "status": "provisional",
+  "owner_question": "Confirm 503 with Retry-After when the Vocabulary Manager is down, the timeout, and that deprecated vocabulary terms only warn. Add the 503 response to both write operations in the OpenAPI.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D52",
+  "topic": "Read path for the Provider hand-over (BP05B)",
+  "closes": [
+   "B-006"
+  ],
+  "decision": "Providers do not call the Schema Manager. The hand-over to BP05B goes through the catalogue component inside the agent (out of scope, D2, D18): it learns of changes from schema events (D24, D50) and reads schemas and content through the existing read operations with a technical client that holds GA_SCHEMA_VIEWER. No new role and no public read are added; D27 stands. Any other subscriber that needs the content, or that reconciles after missed events (D50), needs the same role, granted by the Governance Authority. Tests in this build cover the read with the ga-viewer user of D39 only.",
+  "options": [
+   "Technical client with GA_SCHEMA_VIEWER; no new role",
+   "New reader role for the catalogue or Providers",
+   "Public read of published schemas"
+  ],
+  "basis": "SIMPL-24175 technical info: the service has no ingress, so only components inside the agent (for example the catalogue) or the Tier 2 gateway reach it. D27 (reads need a GA role), D16 (not public), OWA-API5 (roles per operation). No story names a Provider or the catalogue as reader, so reusing an existing role is the simplest choice that adds nothing to build or test.",
+  "status": "provisional",
+  "owner_question": "Confirm that the catalogue reads schemas with GA_SCHEMA_VIEWER as a technical client, or define a separate reader role and say which operations it may call.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D53",
+  "topic": "Replacing a published schema, and revoking the last one",
+  "closes": [
+   "B-007"
+  ],
+  "decision": "There is no atomic replace operation. A change of content is a new version of the same schema (BP02C.02), which has no gap. A change of name for RESOURCE goes: create the new schema (stored REVOKED by D7), revoke the old one (PATCH), then publish the new one by a new version (D12); the gap lasts between the last two requests. For SEARCH: revoke the old one, then create the new one or a new version of it (D8, D12). Revoking the last PUBLISHED schema of a scope is allowed: 200 as D9 and D10, no warning in the API. The UI confirmation popup of D33 is the only safeguard. Tests check that after such a revoke the scope has no PUBLISHED schema and that a later create or new version publishes again.",
+  "options": [
+   "Accept the gap; content changes use a new version",
+   "Atomic replace step and transition",
+   "Refuse revoking the last published schema of a scope"
+  ],
+  "basis": "SIMPL-32436/AC2 accepts that revoking the federated search schema disables federated search; SIMPL-33537/AC5 publishes again after revocation. The Governance Authority admin is a trusted actor (D27). An atomic replace has no story and would add a transition to D13. Simplest to build and test.",
+  "status": "provisional",
+  "owner_question": "Confirm that the gap is accepted, and say whether the process should state 'content changes by new version, name changes by revoke and re-publish'. Say whether the API should refuse or warn when the last published schema of a scope is revoked.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D54",
+  "topic": "Concurrent writes in one scope",
+  "closes": [
+   "B-008"
+  ],
+  "decision": "The rules 'one key' (D4) and 'at most one PUBLISHED schema per scope' (D7, D8, D12) hold under concurrent requests. A scope is RESOURCE plus one resourceType, or SEARCH. Every write that can create a key or change which schema of a scope is PUBLISHED (POST /schemas, POST versions, PATCH) checks the rules and stores the change, with its outbox records (D50), in one step that is serialised per scope (for example a lock per scope or unique constraints in the store; the builder chooses). The losing request is answered as if it had arrived after the winner: 409 for the same key (D4), REVOKED for a RESOURCE create or new version (D7, D12), 409 for SEARCH (D8, D12). Validation may run before that step; the rules are checked again inside it. Component test: 20 parallel creates of different names in one empty RESOURCE scope give exactly one PUBLISHED and nineteen REVOKED; 20 parallel SEARCH creates give one 201 and nineteen 409; 20 parallel creates of the same key give one 201 and nineteen 409.",
+  "options": [
+   "Serialise writes per scope; the loser follows D4, D7, D8 or D12",
+   "Accept the race; an operator repairs by revoking one"
+  ],
+  "basis": "OWT-A10 (no error leaves an invalid state; fail closed); the one-published rule is the state BP02C relies on (D49). Answering the loser as if it came later reuses existing rows of the D13 table, so no new status or code.",
+  "status": "provisional",
+  "owner_question": "Confirm that concurrent writes are serialised per scope and that the losing request gets the D13 outcome.",
+  "affects": [
+   "api",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D55",
+  "topic": "Order of checks on schema writes",
+  "closes": [
+   "B-009"
+  ],
+  "decision": "POST /schemas and POST /schemas/{schemaName}/versions check in this order and stop at the first failure: (1) token 401, role 403 (D26, D27); (2) request media type 415 and Accept 406 (D15); (3) request fields 400: required fields, schemaType and resourceType rules, file present (D4, D6, D14, D15, D48); (4) existence and conflict: 404 when the target schema of a new version does not exist (D14), 409 when the key exists on create (D4), 409 when a PUBLISHED SEARCH schema blocks the request (D8, D12); (5) validation 400 in the three stages of D22, with 503 if the vocabulary registry is down (D51); (6) the serialised store step of D54, which checks step 4 again and sets PUBLISHED or REVOKED (D7, D12). So a request that is both invalid and in conflict gets 409 and no validation issues. PATCH /schemas/{schemaName} keeps the order of D48 (401, 403, 400, 404).",
+  "options": [
+   "Auth, fields, existence and conflict, then validation (cheap checks first)",
+   "Auth, fields, validation, then conflict (BP02C order .04 before .05)"
+  ],
+  "basis": "Same pattern as D48 for reads and D46 for webhooks: cheap checks first, so a conflicting request does not pay for semantic validation or call the Vocabulary Manager. BP02C step order is intent, not check order (D49). The re-check in step 6 keeps D54 correct.",
+  "status": "provisional",
+  "owner_question": "Confirm the order, in particular that 409 comes before validation errors.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ }
 ]

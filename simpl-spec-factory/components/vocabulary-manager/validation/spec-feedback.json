@@ -2,8 +2,8 @@
  "component": "vocabulary-manager",
  "counts": {
   "blocker": 14,
-  "major": 42,
-  "minor": 29
+  "major": 48,
+  "minor": 32
  },
  "findings": [
   {
@@ -1557,6 +1557,224 @@
    "code": "BUILD",
    "step": "21b",
    "theme": "Other"
+  },
+  {
+   "id": "B-001",
+   "target": "BP02B (Overview, Assumptions); /external-vocabularies operations",
+   "rule": "FLOW",
+   "severity": "major",
+   "finding": "The process names the registration and use of external vocabularies in its overview, but no step and no requirement covers registering or removing one. So the process does not say who registers an external vocabulary, that this must happen before an internal vocabulary that references it is created, or what a removal does to the vocabularies and lookups that still use it.",
+   "evidence": "BP02B Overview: 'enabling registration and use of external vocabularies'; Assumptions: 'External vocabularies can be referenced within the data space'. Steps BP02B.01 to BP02B.06 and requirements BP2B.1 to BP2B.6 only treat internal vocabularies. OpenAPI: POST, GET, DELETE /external-vocabularies and two content and search operations. D30 and D41 fix the operations; D41: DELETE removes metadata and content, 'internal vocabularies already stored are not touched'. D12: an unregistered external namespace gives warning externalReferenceSkipped, so the order register then reference changes the outcome of BP02B.02. D16: only GA_VOCABULARY_ADMIN registers and deletes.",
+   "question": "Should BP02B get a step 'Register external vocabulary' (and one for removal), placed before BP02B.01 and BP02B.04, with the Governance Authority admin role as actor? When an external vocabulary is removed while internal versions reference it, is the removal allowed, refused, or followed by a warning to the Governance Authority?",
+   "options": [
+    "Add register and remove steps to BP02B, removal allowed without check (as D41)",
+    "Add the steps, removal refused while an ACTIVE internal version references the namespace",
+    "Keep external vocabularies outside BP02B and describe them in a separate process"
+   ],
+   "see": [
+    "P-004",
+    "P-005",
+    "D-008",
+    "D12",
+    "D16",
+    "D30",
+    "D41"
+   ],
+   "from_22a": [],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-002",
+   "target": "BP02B.05; BP2B.6; vocabulary and version state tables",
+   "rule": "FLOW",
+   "severity": "major",
+   "finding": "The decided states let a vocabulary and a version go back from DEPRECATED to ACTIVE, and let one version be deprecated by hand through the API only. No process step reaches these transitions: the process only deprecates. The stories that restore ACTIVE (and the manual version change, which has no story) have no clear place in the process.",
+   "evidence": "Glossary state tables: vocabulary DEPRECATED to ACTIVE by PATCH /vocabularies/{vocabularyName}; version DEPRECATED to ACTIVE by PATCH .../versions/{version}, 'so two may be ACTIVE'. SIMPL-18174 so that 'restore it to ACTIVE'; SIMPL-18175/AC1 'ACTIVE or DEPRECATED'; SIMPL-18170/AC2 'can later be manually changed to DEPRECATED or back to ACTIVE'. D4: version PATCH 'API only, no UI control'. BP02B.05 names only deprecation, with the scenarios 'Version Update' and 'Full Vocabulary Deprecation'; BP2B.6 and BP2B.6.1 'deprecates a vocabulary'. 22a links SIMPL-18174 and SIMPL-18175 only to 2B.6.1.",
+   "question": "Is reactivating a vocabulary or a version a governance action of BP02B? If yes, which step and requirement hold it, and may the Governance Authority deprecate or reactivate a single version from the UI, or only through the API?",
+   "options": [
+    "Add a step 'Reactivate vocabulary or version' and a requirement 2B.7",
+    "Reactivation is a correction outside the process; keep it in the API and UI without a step",
+    "Drop reactivation: DEPRECATED is final"
+   ],
+   "see": [
+    "F-015",
+    "F-038",
+    "P-004",
+    "D-007",
+    "D3",
+    "D4"
+   ],
+   "from_22a": [],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-003",
+   "target": "BP02B.03, BP02B.04, BP02B.05 (version creation and automatic deprecation)",
+   "rule": "OWT-A10",
+   "severity": "major",
+   "finding": "The outcome of two changes to the same vocabulary at the same time is not defined. Version numbers are 'highest plus 1' and a new version deprecates every older ACTIVE version, but nothing says what happens when two new versions are submitted together, or when a status change runs during a version creation. Two builders could give both requests the same number, store two ACTIVE versions, or refuse one.",
+   "evidence": "D7: 'each new version gets the highest existing number plus 1'. D4: creating a version sets every older ACTIVE version to DEPRECATED 'in the same transaction'. D8: a failed request leaves the store unchanged. OpenAPI POST /vocabularies/{vocabularyName}/versions responses: 201, 400, 404, 406, 413, 415, 500 (no 409). No criterion or decision on concurrent requests.",
+   "question": "When two version creations (or a version creation and a status PATCH) for the same vocabulary overlap, are they serialised so that each gets its own number and the later one deprecates the earlier, or does the second request fail (with which status, for example 409) and store nothing?",
+   "options": [
+    "Serialise per vocabulary: numbers n+1 and n+2, the later version deprecates the earlier",
+    "Optimistic check: the second request returns 409 and stores nothing; the client retries",
+    "Leave it to the store and accept the risk"
+   ],
+   "see": [
+    "D4",
+    "D7",
+    "D8"
+   ],
+   "from_22a": [],
+   "code": "OWT-A10",
+   "step": "22b",
+   "theme": "Other"
+  },
+  {
+   "id": "B-004",
+   "target": "BP02B.01 to BP02B.05 (store and identity provider)",
+   "rule": "MSV-06",
+   "severity": "major",
+   "finding": "Every step depends on the store and on the identity provider, but their behaviour when slow or down is not defined: no timeout, no retry, and no rule on what the caller sees. The outcome of a store failure is only 'nothing stored'. It is also open whether token validation fails closed when the identity provider keys cannot be fetched.",
+   "evidence": "E3: Apache Jena Fuseki as the store. E1 and D17: the service validates the Keycloak token and the roles itself. D8: 'Any 4xx or 5xx ... leaves the store unchanged'. SIMPL-18172/AC3: 'an unexpected error occurs ... I am advised to retry or contact support'. D24: UI error tests stub 500. OpenAPI GET /health returns 503 with DEGRADED or DOWN, but no operation declares 503 and no decision maps a dependency failure to a status.",
+   "question": "For the store and for the identity provider: which timeout and how many retries apply, does the caller get 500 or 503 (with which problem type), and does a request fail closed with 401 or 503 when the token keys cannot be fetched?",
+   "options": [
+    "Timeout and no retry on writes, 503 with a problem type, fail closed with 503",
+    "Retry reads with backoff, no retry on writes, 500 for all dependency failures",
+    "Leave to the build, test only the 500 outcome"
+   ],
+   "see": [
+    "D8",
+    "D17",
+    "D24",
+    "E1",
+    "E3"
+   ],
+   "from_22a": [],
+   "code": "MSV-06",
+   "step": "22b",
+   "theme": "Other"
+  },
+  {
+   "id": "B-005",
+   "target": "BP02B Outcomes; BP02B.03, BP02B.05",
+   "rule": "MSV-03",
+   "severity": "major",
+   "finding": "The process ends with a vocabulary 'provided for semantic schema validation' and with older versions deprecated, but it does not say how the consumers learn this. Schema Manager reads vocabularies through the search and content operations; no event is named for publication or deprecation. If a consumer keeps a copy, a deprecation or a new version stays unseen. The providers whose schemas use a version that becomes deprecated are not told either.",
+   "evidence": "BP02B Outcomes: 'New or updated vocabulary provided for semantic schema validation; older versions may be deprecated when replaced'. BP02B.05: deprecated versions 'remaining accessible for legacy schemas'. 23b glossary: Schema Manager is the 'caller of the search and content operations'. api-review: 'No input names Kafka or any event for this component' (API-62 not applicable). D1: Schema Manager is outside this build. D36: deprecation is shown only in this component's UI.",
+   "question": "Do consumers read the vocabulary state at use time only (no copy kept), or must Vocabulary Manager publish an event when a version is published or a vocabulary or version is deprecated? Who tells the providers whose schemas reference a version that has just been deprecated?",
+   "options": [
+    "Pull only: consumers read at use time, no event, no notice to providers",
+    "Publish events on publication and on each status change; consumers subscribe",
+    "Pull for Schema Manager, plus a notice to providers handled outside the system"
+   ],
+   "see": [
+    "D1",
+    "D-010",
+    "D-019",
+    "D5",
+    "D36"
+   ],
+   "from_22a": [],
+   "code": "MSV-03",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-006",
+   "target": "BP02B.04, BP02B.05 (automatic deprecation)",
+   "rule": "OWA-API6",
+   "severity": "major",
+   "finding": "Creating a version deprecates every older ACTIVE version at once, which puts a cost on everyone whose schemas use them. There is no limit and no check on this flow: no cap on versions, no refusal of a version identical to the latest, and no confirmation before the deprecating submit. A script or a mistake with the admin role can churn versions and deprecate the version in use within seconds. No abuse case is written as a criterion or decision.",
+   "evidence": "D4: older ACTIVE versions become DEPRECATED in the same transaction. D33: 'a description-only change creates a new version'. D15: 5 MB per file is the only size limit; D22 and D38 limit pages and searches, not writes. D16: writes need GA_VOCABULARY_ADMIN. SIMPL-18172/AC2 submits and creates without a confirmation. D11 and D36: users of the deprecated version then get warnings. Recovery is a manual PATCH (D4), which leaves two ACTIVE versions.",
+   "question": "Should version creation have a limit (per vocabulary or per time), a check that refuses a version whose content and description equal the latest version, and a confirmation in the UI that names the versions it will deprecate? Which abuse cases should become criteria?",
+   "options": [
+    "Refuse identical versions (400 or 409) and add a UI confirmation; no rate limit",
+    "Add a rate limit per user and vocabulary at the gateway, plus the identical-version check",
+    "Accept the risk: admin role only, recovery by PATCH"
+   ],
+   "see": [
+    "D4",
+    "D11",
+    "D15",
+    "D16",
+    "D33",
+    "D36",
+    "OWT-A06"
+   ],
+   "from_22a": [],
+   "code": "OWA-API6",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-007",
+   "target": "BP02B.02, BP02B.03, BP02B.05, BP02B.06; BP2B.4, BP2B.5",
+   "rule": "FLOW",
+   "severity": "minor",
+   "finding": "The process text lags behind the decided flow. It lists validation, publication and the report as separate steps by separate parties, while the decisions make them one automatic request: submit, validate, store as ACTIVE and deprecate older versions, or return the report and store nothing. The order in the text also hides the branches: BP02B.04 does not lead back to BP02B.02, and BP02B.06 (the failure branch of BP02B.02) is listed last.",
+   "evidence": "BP02B.02: 'semantic validation is performed through a combination of automated checks and manual review' vs D6: manual review is off-line, before upload. BP2B.4 and BP2B.5: 'The Governance Authority validates' and 'publishes' vs D6, SIMPL-18186/AC1 and SIMPL-18187: automatic. BP02B.06: 'Simpl-Open sends a report' and 2B.4.4 'receives a notification' vs D14: the report is the transient 400 response. BP02B.03 and 2B.5.3: 'the previous version' vs D4: every older ACTIVE version. BP02B.05 scenario 2: 'all versions deprecated' vs D3: a vocabulary flag, versions unchanged, 'effectively deprecated'.",
+   "question": "Can the process owner restate BP02B as one path with a failure branch (create or new version, automatic validation, automatic publication with deprecation of older ACTIVE versions; on failure the report is returned and nothing is stored), mark the manual review as an off-line step before upload, and align 'publish', 'notification' and 'all versions deprecated' with D3, D4, D6 and D14?",
+   "options": [
+    "Restate the process text",
+    "Keep the text, add a note that the decisions win"
+   ],
+   "see": [
+    "F-012",
+    "D-004",
+    "D-016",
+    "D3",
+    "D4",
+    "D6",
+    "D14"
+   ],
+   "from_22a": [],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-008",
+   "target": "BP02B process steps and requirements",
+   "rule": "FLOW",
+   "severity": "minor",
+   "finding": "The steps and the requirements are not linked to each other, so the coverage of the steps can only be read through the requirements (22a: steps 0 of 6 covered). The requirement 2B.1 (consult) has no step, and the step 'Trigger vocabulary management' has no id.",
+   "evidence": "bp-checks: step 0 of 6, requirement 6 of 6, detailed requirement 13 of 13. Mapping read from the text: BP02B.01 to 2B.2; BP02B.02 to 2B.4.1 to 2B.4.3; BP02B.03 to 2B.5.1 and 2B.5.2; BP02B.04 to 2B.3; BP02B.05 to 2B.5.3 and 2B.6; BP02B.06 to 2B.4.4; 2B.1 to no step. inventory-review: the links use the requirement headings.",
+   "question": "Can the process name, for each step, the requirements it holds, give the trigger an id, and say whether 'consult' (2B.1) is a step of the flow or a supporting activity?",
+   "options": [
+    "Add a step-to-requirement table to BP02B",
+    "Accept the mapping above for this build"
+   ],
+   "see": [],
+   "from_22a": [],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
+  },
+  {
+   "id": "B-009",
+   "target": "BP02B Assumptions; Trigger vocabulary management",
+   "rule": "FLOW",
+   "severity": "minor",
+   "finding": "The flow can start from a provider proposal by email, but this hand-over is outside the system: no step, no record that ties a new version to the proposal, and no answer back to the provider.",
+   "evidence": "BP02B Assumptions: 'Providers can propose documented modifications to vocabularies via email with metadata and impact analysis'. Trigger: 'The Governance Authority initiates the management of a vocabulary'. BP02B.04: 'to incorporate changes and stakeholder input'. D31 and D32: the changelog is free text.",
+   "question": "Is the email proposal route outside this component for good? If so, should the changelog of a new version name the proposal, and who tells the provider the outcome?",
+   "options": [
+    "Off-line route; changelog names the proposal",
+    "Off-line route; nothing recorded in the system"
+   ],
+   "see": [
+    "D31",
+    "D32"
+   ],
+   "from_22a": [],
+   "code": "FLOW",
+   "step": "22b",
+   "theme": "Business process flow"
   }
  ]
 }

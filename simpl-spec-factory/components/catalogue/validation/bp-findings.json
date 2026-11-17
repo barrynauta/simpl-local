@@ -1,0 +1,259 @@
+[
+ {
+  "id": "B-001",
+  "target": "BP05B.12, BP05B.15, BP5B.6.1, BP5B.8.1, BP5B.9.1",
+  "rule": "MSV-03",
+  "severity": "blocker",
+  "finding": "Informing Consumers about a new version or a revocation is a main step of BP05B, but its party, its trigger and its receiver are all open. The step texts are passive ('the Consumers of this resource are informed'). The requirement titles 5B.6 and 5B.9 make the Provider the sender, while the 5B.8 description makes the Governance Authority the sender. No decision says which service learns of the change and how: D18 and D35 define publication of a new version and revocation as synchronous calls that emit nothing, and no event, webhook or callback exists for either change. The catalogue also does not know who the 'Consumers of this resource' are: they are the parties with usage contracts (BP07), which live outside the catalogue. Two builders would build different flows: one emits an event from catalogue-be, the other builds nothing.",
+  "evidence": "BP05B.12 'If a resource description is updated, the Consumers of this resource are informed about the new version'; BP05B.15 same for revocation; 5B.6 title 'A Provider notifies Consumers', description 'enabling a Provider to automatically notify Consumers'; 5B.8 description 'Simpl-Open shall enable the Governance Authority to ... Notify Consumers regarding the revocation'; 5B.9 'support a Provider to automatically notify Consumers'. D18 transitions and D35 201 outcome name no event; D4 builds no notification operation; BA-025 and BA-028 (no criterion).",
+  "question": "Which party informs the Consumers (Provider, Governance Authority, or the catalogue service on their behalf), what signal starts it (an event from catalogue-be on publication of a new version and on revocation, or an action in another component), and who resolves the list of Consumers with a contract? Or are both notification steps out of the catalogue build, to be recorded as a decision?",
+  "options": [
+   "Out of the catalogue build: record a step 30 addendum that BP05B.12 and BP05B.15 belong to the contract or connector side, with no event from catalogue-be",
+   "catalogue-be publishes an event (resource description superseded, resource description revoked) after the state change and does not wait; another component resolves Consumers and informs them",
+   "The Provider informs Consumers itself through its own connector after a successful revoke or publication response"
+  ],
+  "from_22a": ["BA-025", "BA-028"],
+  "see": ["D18", "D35", "D4", "D-005"]
+ },
+ {
+  "id": "B-002",
+  "target": "BP05B.11, BP05B.12, BP05B.15, BP5B.1.3",
+  "rule": "FLOW",
+  "severity": "major",
+  "finding": "The process gives a superseded version and a revoked resource description two different follow-ups (BP05B.12 inform about new version, BP05B.15 inform about revocation), but the decided lifecycle has one state for both: revoked. Neither the stored record nor the version list says why a version was revoked. Any later notification (B-001) or the Provider's version history (5B.1.3) cannot tell 'replaced by version n+1' from 'withdrawn by the Provider'. The 409 rule of D35 works only because the latest version is revoked solely by an explicit revoke, which is an implicit rule, not a stored fact.",
+  "evidence": "D18 'Publishing a new version revokes the previous published version'; decided glossary: revoked = 'State of a withdrawn or superseded resource description'; D40 version items carry status active or revoked only; D35 '409 conflict' when 'the latest version of that id is revoked (the Provider revoked the resource description)'; D-005 asked whether a superseded version is a separate state.",
+  "question": "Does a superseded version need to be told apart from a withdrawn one (a separate state such as superseded, or a revocation reason on the version), so that BP05B.12 and BP05B.15 and the version history can be driven from the record?",
+  "options": [
+   "Keep one revoked state and add a revocation reason (superseded or withdrawn) to the version metadata",
+   "Add a state superseded to the lifecycle",
+   "Keep D18 as is; nothing downstream needs the difference"
+  ],
+  "from_22a": ["BA-003", "BA-024"],
+  "see": ["D18", "D35", "D40", "D-005", "B-001"]
+ },
+ {
+  "id": "B-003",
+  "target": "BP05B.13, BP05B.14, BP5B.7.1, BP5B.8.1",
+  "rule": "FLOW",
+  "severity": "major",
+  "finding": "The process makes revocation a hand-over between two parties: the Provider requests (BP05B.13), then the Governance Authority revokes 'upon receiving a request' (BP05B.14). The decisions collapse this into one synchronous Provider call with immediate effect: POST .../revoke with a publisher role and ownership check. That is a valid reading if the catalogue service acts for the Governance Authority automatically, but it is not stated, and there is no path for a Governance Authority to refuse a request or to revoke on its own initiative (for example a non-compliant description). D37 gives the Governance Authority no role on revoke at all.",
+  "evidence": "BP05B.13 'The Provider ... initiates the revocation'; BP05B.14 'Upon receiving a request for revocation, the Governance Authority revokes'; 5B.7 'request to the Governance Authority the revocation'; D18 'Revoke moves published to revoked'; D37 revoke needs a publisher role and simpl:providedBy equal to participant_id; BA-026, BA-027; P-012 (no story for revoke).",
+  "question": "Is the Governance Authority's revocation the automatic execution of a valid Provider request by the catalogue service (no review), and can the Governance Authority also revoke a resource description without a Provider request?",
+  "options": [
+   "Automatic: the catalogue service revokes for the Governance Authority on a valid owner request; no Governance Authority initiative in this release",
+   "Automatic for owner requests, plus a Governance Authority revoke with its own role",
+   "A request state with Governance Authority approval before revocation"
+  ],
+  "from_22a": ["BA-026", "BA-027"],
+  "see": ["D18", "D37", "P-012"]
+ },
+ {
+  "id": "B-004",
+  "target": "BP05B.04, BP05B.05, BP05B.07, bp05b-dynamic-view",
+  "rule": "FLOW",
+  "severity": "major",
+  "finding": "The two BP05B files give a different order for the main path. The process steps validate first and publish after (BP05B.05 validate, BP05B.06 remediate, BP05B.07 publish), which matches the decided synchronous gate (D17, D18: 201 or an error, no pending state). The dynamic view signs and 'publishes the signed self-description to the Catalogue' first, and only 'after publication' runs semantic validation and the quality check, then stores the description and notifies the end user. A builder who follows the dynamic view builds an asynchronous flow with a submitted or pending state that D18 rejects.",
+  "evidence": "bp05b-dynamic-view steps 5 to 8: 'Signing and Publication ... then publishes the signed self-description to the Catalogue'; 'Semantic Validation: After publication, the Catalogue ... initiates Semantic Validation'; 'the End User receives a confirmation notification'; 'Database Storage: Upon passing all validations'. README BP05B.05 to BP05B.07. D17 synchronous; D18 'no pending state, so the 202 response is not used'.",
+  "question": "Can the dynamic view be aligned with the process steps (validation and the quality gate before publication, one synchronous answer), and the word 'publishes' in step 5 changed to 'submits'?",
+  "options": [
+   "Align the dynamic view with BP05B.05 to BP05B.07 and D17, D18",
+   "Keep an asynchronous flow and add a pending state to the lifecycle (reopens D18)"
+  ],
+  "from_22a": [],
+  "see": ["D17", "D18", "D-005"]
+ },
+ {
+  "id": "B-005",
+  "target": "BP05B.04 to BP05B.07, bp05b-dynamic-view steps 4 and 5",
+  "rule": "MSV-08",
+  "severity": "major",
+  "finding": "Publication spans several components before the catalogue answers: the dynamic view registers the description as an asset in the Connector (step 4), signs it with the Signer and stores a signed copy in the Provider's Wallet (step 5), and only then submits it to the catalogue. The catalogue can still refuse it (400, 403, 409, 422, 500 under D35 and D17). Nothing says what happens to the connector asset and the wallet copy of a refused description: undone, kept as a draft, or reused on the resubmission that BP05B.06 asks for. A refusal can leave an offer registered in the connector for a description that is in no catalogue, and a resubmission can register a second asset.",
+  "evidence": "bp05b-dynamic-view step 4 'the self-description is directed to the Connector component, where it is registered as an asset'; step 5 'A copy of the signed self-description is also stored locally in the Provider's Wallet'; BP05B.06 'The Provider must remediate and resubmit'; D35 check order and D17 outcomes define the catalogue side only ('not stored').",
+  "question": "When the catalogue refuses a submission, what happens to the connector asset and the wallet copy made before it, and does a resubmission reuse them? Is registering the asset after a successful publication an option?",
+  "options": [
+   "Register the connector asset only after the catalogue returns 201",
+   "Keep the asset and the copy as drafts; resubmission reuses them; define a cleanup for abandoned drafts",
+   "Undo both (compensating steps) on any refusal"
+  ],
+  "from_22a": [],
+  "see": ["D17", "D35", "OWT-A10"]
+ },
+ {
+  "id": "B-006",
+  "target": "BP05B.05, BP5B.5.7, BP5B.5.8",
+  "rule": "BP-01",
+  "severity": "major",
+  "finding": "Semantic validation of a submitted description against its schema and the vocabulary is a named main-path check (BP05B.05) and the dynamic view gives it to the catalogue, but no criterion and no decision defines it. D35 checks the JSON shape, four required fields, that the schema version is published, ownership and the revoked state; D17 adds the quality gate. Whether the credential subject is validated against the SHACL shapes of the schema version, and what a violation returns, is open. One builder will reject a description that breaks its shapes, another will publish it.",
+  "evidence": "BP05B.05 'performs syntactic validation, semantic validation against schema and vocabulary, and quality-rules validation'; 5B.5.7 'Validates semantics', 5B.5.8 'Notifies about semantic errors'; dynamic view step 6 'the Catalogue on the governance node initiates Semantic Validation'; D35 list of checks; D17 quality gate. BA-022, BA-023.",
+  "question": "Does catalogue-be validate the credential subject against the SHACL shapes of the referenced schema version before the quality gate, and does a violation return 400 invalidInput with the failing shape in detail? Or is semantic validation part of the Quality Scoring Service call?",
+  "options": [
+   "catalogue-be validates against the schema shapes; violation gives 400 invalidInput, nothing stored, before the quality gate",
+   "The Quality Scoring Service covers it; a violation is a quality failure (422)",
+   "Out of this build; record a decision"
+  ],
+  "from_22a": ["BA-022", "BA-023"],
+  "see": ["D35", "D17", "D-009"]
+ },
+ {
+  "id": "B-007",
+  "target": "BP05B assumptions, BP5B.2, BP5B.3, BP5B.5.2",
+  "rule": "FLOW",
+  "severity": "major",
+  "finding": "The process assumes a new description or version 'always uses the latest version of a schema', and 5B.5.2 has the Governance Authority notify the Provider about an inactive schema. D35 accepts any schema name and version that is 'a published RESOURCE schema version'. It is not said whether an older version stays published after a newer one is published, so a submission against an older version is accepted by one builder and refused by another, and the refusal for an inactive schema has no own outcome.",
+  "evidence": "BP05B assumption 1; 5B.2 'based on the latest versions of the resource description schema'; 5B.3 'based on the latest version of the schema'; 5B.5.2 'Alerts providers to schema status issues'; D35 'schema name and version not a published RESOURCE schema version in the Schema Manager 400 invalidInput'; D41 GET /schemas returns 'the latest published' version. BA-016, BA-017.",
+  "question": "Must the submitted dct:hasVersion be the latest published version of the schema, and does a submission against an older or revoked version get its own 400 detail?",
+  "options": [
+   "Latest version only: older version gives 400 invalidInput with a detail naming the latest version",
+   "Any published version is accepted; the assumption is relaxed"
+  ],
+  "from_22a": ["BA-016", "BA-017"],
+  "see": ["D35", "D41", "D1"]
+ },
+ {
+  "id": "B-008",
+  "target": "BP06.04, BP06.11",
+  "rule": "FLOW",
+  "severity": "major",
+  "finding": "BP06.04 is titled 'Conduct a quality rating of the resources' but its text describes the Consumer accessing the returned results per scope. It sits before the federated steps BP06.05 to BP06.10 and the collection step BP06.11, so read in order the Consumer sees results before the Trustor results are collected. The decided flow returns one grouped response after all groups are done (D24, D25), and no quality rating happens at search time: the score comes from the record stored at publication (D17, D26). The title and the position of BP06.04 disagree with the decided flow.",
+  "evidence": "BP06.04 title vs text 'The Consumer accesses the resource descriptions returned for the search ... The search results are available to the Consumer'; BP06.11 'These resource descriptions are provided together to the Consumer'; D24 one grouped response; D17 QAR stored at publication; D26 Trustor items carry null quality.",
+  "question": "Can BP06.04 be renamed (for example 'Consult the search results') and moved after BP06.11, and is any quality rating done at search time, or only the stored rating applied as a filter?",
+  "options": [
+   "Rename and move BP06.04 after BP06.11; quality is only read from the stored record",
+   "Keep the order and state that BP06.04 is the own-only path that skips BP06.05 to BP06.11"
+  ],
+  "from_22a": [],
+  "see": ["D24", "D25", "D26", "D17"]
+ },
+ {
+  "id": "B-009",
+  "target": "BP06.03, BP06.11, BP6.6.1",
+  "rule": "OWT-A10",
+  "severity": "major",
+  "finding": "The failure of a Trustor in a federated search is defined (D25: group status unavailable, still 200), but the failure of the own catalogue is not. In a mixed search, the Trusted adapter searches its own catalogue-be as one group: if that call fails or times out, it is open whether the own group gets status unavailable or the whole search fails. In an own-only search (D33 routing to the local tier 2 operations), the status list names 400, 401 and 403 but no outcome for a failing catalogue-be. The UI texts of D23, D29 and D31 cover no search failure.",
+  "evidence": "D25 'A failing Trustor never fails the whole search' (Trustor only); D24 own catalogue is one group in the grouped response; D33 'Statuses: 401 and 403 as in D20 and D37; 400 invalidInput ...' with no 500; D36 500 problem type exists but no search case uses it.",
+  "question": "When the own catalogue fails during a search, does its group get status unavailable (mixed search) and does an own-only search return 500 internalServerError, and what text does the UI show?",
+  "options": [
+   "Same rule as D25 for the own group in a mixed search; own-only search returns 500 and the UI shows 'The search could not be completed.'",
+   "Any own-catalogue failure fails the whole search with 500"
+  ],
+  "from_22a": [],
+  "see": ["D24", "D25", "D33", "D36"]
+ },
+ {
+  "id": "B-010",
+  "target": "BP06.05, BP06.08, BP6.5.1",
+  "rule": "OWA-API6",
+  "severity": "major",
+  "finding": "A federated search creates load at every selected Trustor Governance Authority, another party, on behalf of one Consumer. The decided limits are a page size cap of 100 (D33) and a 10 second timeout (D25). There is no limit on the number of catalogueIds in one request, no rate limit per Consumer at the Trusted side, and no limit at the Trustor per Trusted Governance Authority. An automated Consumer can fan out many searches per second to all Trustors. No criterion or decision covers this abuse case.",
+  "evidence": "BP06.05 'forwards the search request to each Trustor Governance Authority'; D33 'catalogueIds required, at least one item' (no maximum), 'pageSize ... capped at 100'; D25 10 second timeout; D28 Trustor operations take no token in the build (D37); OWT-A06 asks abuse cases next to normal cases.",
+  "question": "Which limits apply to federated search: a maximum number of catalogueIds per request, a rate limit per Consumer at the Trusted side, a rate limit per Trusted Governance Authority at the Trustor (and its status, 429)? Which of these belong to the gateway?",
+  "options": [
+   "maxItems on catalogueIds equal to the number of listed catalogues, plus 429 rate limits at the gateway on both sides, recorded as a decision",
+   "Gateway rate limits only, outside the catalogue build, recorded as a decision"
+  ],
+  "from_22a": [],
+  "see": ["D25", "D27", "D28", "D33", "D37"]
+ },
+ {
+  "id": "B-011",
+  "target": "BP05B.04, BP05B.05",
+  "rule": "FLOW",
+  "severity": "minor",
+  "finding": "The process has the Provider sign the description with its credentials (BP05B.04), but no step verifies the signature: BP05B.05 lists syntactic, semantic and quality validation only, and D35 says the build does not verify the proof. Ownership is checked against the token (D35), which limits the risk. The process should say which party verifies the signature and when.",
+  "evidence": "BP05B.04 'signs the new resource description with the Provider's credentials'; BP05B.05 list of validations; D35 'The build does not verify the proof' and owner question 'that the proof is verified elsewhere'. BA-015.",
+  "question": "Which party verifies the Provider's signature on a submitted description, and should BP05B.05 name that check?",
+  "options": [
+   "catalogue-be verifies the proof before the other checks (400 on failure)",
+   "The gateway or the signer side verifies; BP05B.05 says so"
+  ],
+  "from_22a": ["BA-015"],
+  "see": ["D35"]
+ },
+ {
+  "id": "B-012",
+  "target": "BP05B.07, BP05B.11",
+  "rule": "OWT-A10",
+  "severity": "minor",
+  "finding": "Publishing a new version stores the new version and revokes the previous one (BP05B.07, BP05B.11, D18). D35 defines that a refused publication leaves the previous version published, but not that the two writes of a successful one are one transaction. If the revoke of the previous version fails after the new one is stored, two published versions exist, which D7 (detail returns the latest published version) does not expect.",
+  "evidence": "BP05B.11 'If the new version of the resource description is valid, the Governance Authority revokes the current (previous) resource description version'; D18; D35 'A failed publication of a new version leaves the previous version published'; D7.",
+  "question": "Confirm that storing the new version and revoking the previous one happen in one transaction in catalogue-be, so at most one published version exists per resource description.",
+  "options": [
+   "One transaction; at most one published version per id is an invariant tests can check"
+  ],
+  "from_22a": [],
+  "see": ["D18", "D35", "D7"]
+ },
+ {
+  "id": "B-013",
+  "target": "BP5B.1.2, BP5B.1.3",
+  "rule": "FLOW",
+  "severity": "minor",
+  "finding": "The Provider consults its own descriptions (5B.1) through the same reads as a Consumer: the detail returns published versions only and both detail and version list apply the discovery access policy (D40, D34). A Provider whose identity attributes do not meet its own policy gets 404 on its own description, and a Provider cannot read the content of its own revoked description. The overview of own descriptions (5B.1.1) is out of the build by D4 (GET /self-descriptions not built).",
+  "evidence": "5B.1.2 'consults the details of one of its own resource descriptions'; 5B.1.3 version history; D40 detail 'latest published version', versions 'applies the discovery access policy like the detail'; D31 404 when the policy is not met; D4 excludes GET /self-descriptions.",
+  "question": "Does the owner of a resource description bypass the discovery access policy on its own detail and version list, and may it read revoked versions?",
+  "options": [
+   "Owner (simpl:providedBy equal to the caller) bypasses the policy; revoked versions readable by the owner only",
+   "No owner view in this build; 5B.1 out of scope by D4"
+  ],
+  "from_22a": ["BA-001", "BA-002", "BA-003"],
+  "see": ["D4", "D31", "D34", "D40"]
+ },
+ {
+  "id": "B-014",
+  "target": "BP05B.06, BP05B.08",
+  "rule": "OWA-API6",
+  "severity": "minor",
+  "finding": "Each submission calls the Quality Scoring Service synchronously (D17), and each new version revokes the previous one and, by the process, informs every Consumer of the resource (BP05B.12). The remediate-and-resubmit loop of BP05B.06 and repeated new versions have no limit, so an automated Provider can load the scoring service and flood Consumers with new-version notices. No abuse case is written down.",
+  "evidence": "BP05B.06 'The Provider must remediate and resubmit'; BP05B.08 new version; BP05B.12; D17 synchronous scoring call per submission; D35 no rate rule.",
+  "question": "Is a rate limit per Provider on POST /self-descriptions/resource needed (status 429), or is this left to the gateway?",
+  "options": [
+   "Gateway rate limit, recorded as a decision",
+   "No limit in this release, accepted risk"
+  ],
+  "from_22a": [],
+  "see": ["D17", "D35", "B-001"]
+ },
+ {
+  "id": "B-015",
+  "target": "BP06 steps, BP6.7.5 to BP6.7.8",
+  "rule": "FLOW",
+  "severity": "minor",
+  "finding": "The federated detail flow (the Trusted Governance Authority forwards a detail request, the Trustor maps attributes and returns the details) is a cross-party hand-over with four requirements (6.7.5 to 6.7.8), six stories and two decisions (D30, D31), but no process step. The process steps stop at the search; the Consumer opening a federated detail is only one sentence in BP06.04. The process text lags behind the stories.",
+  "evidence": "BP06.04 'can access and display the details of selected resource descriptions'; 6.7.5 to 6.7.8; SIMPL-31149 to SIMPL-31153, SIMPL-33885; D30, D31.",
+  "question": "Can BP06 add steps for the federated detail request (forward, map, provide, return), mirroring BP06.05 to BP06.10?",
+  "options": [
+   "Add the detail steps to BP06",
+   "Keep them as requirements only"
+  ],
+  "from_22a": [],
+  "see": ["D30", "D31"]
+ },
+ {
+  "id": "B-016",
+  "target": "BP06.01, SIMPL-35874",
+  "rule": "BP-03",
+  "severity": "minor",
+  "finding": "SIMPL-35874 (advanced search with the SEARCH schema for federated queries) has no link to the process, and BP06 has no text for it: BP06.01 and 6.1.2 speak of advanced search on 'attributes of the resource description' without saying that a federated advanced search uses the one federated search schema. The story belongs to BP06.01 and 6.1.2; the process text lags behind the story and D24, D29.",
+  "evidence": "BA-037; BP06 overview 'Advanced search: specify values for one or more attributes'; 6.1.2; D24 'In a mixed advanced search all catalogues ... are searched with the SEARCH schema fields'; D29.",
+  "question": "Can BP06.01 say that an advanced search over federated catalogues uses the federated search schema, and can SIMPL-35874 be linked to 6.1.2?",
+  "options": [
+   "Add the sentence and the link"
+  ],
+  "from_22a": ["BA-037"],
+  "see": ["D24", "D29", "D-020"]
+ },
+ {
+  "id": "B-017",
+  "target": "BP06.01, BP06.11, BP06.12, BP6.8, BP6.9, BP6.10",
+  "rule": "FLOW",
+  "severity": "minor",
+  "finding": "The DOME Marketplace scope (BP06.12, 6.8 to 6.10, prerequisite BP02G) has no story and no criterion, and 22a does not list it because the requirements have no detailed requirements. The step 30 glossary marks DOME offerings 'Out of the build (no story)' and cites D5, but D5's decision text is about searching all federated catalogues and does not mention DOME. The exclusion is therefore not in any decision text, and the failure and abuse cases of forwarding to DOME (an external party) stay unaddressed.",
+  "evidence": "BP06.12; 6.8 to 6.10 'None published at the time of capture'; decided glossary 'DOME Marketplace offering ... Out of the build (no story). D5'; D5 text; D23 selector lists only own and Trustor catalogues.",
+  "question": "Can the DOME exclusion be stated in a decision text (D5 or a new one), so the selector, the grouped response and the tests are known to have no DOME scope?",
+  "options": [
+   "Extend D5 (or add a decision): DOME scope, BP06.12 and 6.8 to 6.10 out of this build"
+  ],
+  "from_22a": [],
+  "see": ["D5", "D23", "D24", "D-014"]
+ }
+]
