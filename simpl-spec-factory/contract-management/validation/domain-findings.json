@@ -1,0 +1,601 @@
+[
+ {
+  "id": "D-001",
+  "target": "cross",
+  "ids": [
+   "SIMPL-35584",
+   "SIMPL-21928",
+   "SIMPL-35660",
+   "SIMPL-21948",
+   "BP7.7.2"
+  ],
+  "rule": "DDD-01",
+  "severity": "blocker",
+  "finding": "The main business object has four live names. The business process and the stories say 'usage contract'; the CDM, the API paths and schemas say 'contract agreement'; newer API stories say 'contract'; the dynamic view says 'Usage Contract Agreement'. A test writer working from the stories and a code writer working from the API will name the same thing differently.",
+  "evidence": "BP07 README: 'establish a legally binding usage contract'; 'usage contract' appears in 30+ stories (for example SIMPL-31053, 31115, 31118, 19927). CDM:contract-manager-be:ContractAgreement; contract-manager-be paths /agreements/{contractAgreementId}, schemas ContractAgreementData, ContractAgreementCreate, operation summary 'Get Contract Agreement'. SIMPL-35584 title 'Contract Manager validates and signs contract agreement'; SIMPL-21928 'based on a contract agreement'; SIMPL-35660 'the contract is signed on the consumer side'; SIMPL-21948 'the contract is not marked as successfully validated'. bp07-dynamic-view.md: 'Verifiable Credential (VC) for the Usage Contract Agreement'. CDM:consent-management-be:ContractAgreement references the same class.",
+  "question": "Which single term names the legally binding contract between Consumer and Provider, in the stories, the CDM class and the API schemas?",
+  "options": [
+   "Proposed: 'usage contract' everywhere (business process and 30+ stories use it); rename the CDM class to UsageContract and treat ContractAgreement as a deprecated alias until the API moves",
+   "Keep 'contract agreement' in the CDM and the API, and record in the glossary that it is the technical name of 'usage contract' (weaker: DDD-01 asks for one term)",
+   "Rewrite the stories to 'contract agreement' (not proposed: against the business process)"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-004"
+  ]
+ },
+ {
+  "id": "D-002",
+  "target": "cross",
+  "ids": [
+   "SIMPL-35526/AC1",
+   "SIMPL-35584/AC1"
+  ],
+  "rule": "DDD-02",
+  "severity": "blocker",
+  "finding": "'Contract agreement' names two different concepts. The Contract Consumption CDM separates the EDC operational agreement (EDCContractAgreement) from the business ContractAgreement owned by the Contract Manager and says no identifier equivalence is implied. Yet the Contract Manager API is called by the EDC connector with a contractAgreementId in the path, so the same id appears to serve both. A builder cannot tell whether contractAgreementId is the EDC agreement id or a Contract Manager key.",
+  "evidence": "CDM:contract-consumption-adapter-be:EDCContractAgreement: 'operational agreement produced by EDC negotiation finalization, distinct from the business ContractAgreement owned by Contract Manager BE'; section 8: 'These are distinct concepts; no direct integration or identifier equivalence is implied.' CDM:contract-manager-be:ContractAgreement.contractAgreementId 'UUID PK'. SIMPL-35526/AC1: 'the EDC connector sends a POST request to the API endpoint /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create'. SIMPL-35584/AC1 same pattern for .../validateAndIssue. contract-consumption-adapter-be ContractNegotiation.contractAgreementId (EDC value).",
+  "question": "Is the Contract Manager's contractAgreementId the EDC agreement id, or its own key with a separate reference to the EDC agreement?",
+  "options": [
+   "Same id: the usage contract is keyed by the EDC agreement id; then the Contract Consumption CDM's 'no identifier equivalence' note must change",
+   "Different ids: the Contract Manager mints its own usage contract id and stores the EDC agreement id as a reference (for example edcContractAgreementId); the API paths then need renaming"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-002"
+  ]
+ },
+ {
+  "id": "D-003",
+  "target": "cross",
+  "ids": [
+   "SIMPL-19829/AC1",
+   "SIMPL-22690/AC1",
+   "SIMPL-32511/AC1"
+  ],
+  "rule": "DDD-02",
+  "severity": "blocker",
+  "finding": "'ContractOffer' names two different concepts. In the Contract Manager CDM it is an external class (the EDC contract offer, referenced by contractOfferId). In both APIs it is the human-readable presentation of the offer (HTML, hash, status), which the Contract UI CDM calls HumanReadableContractData. The usage contract offer of the business process is a third reading. Tests and code built from different sources will attach offer status to different objects.",
+  "evidence": "CDM:contract-manager-be:ContractOffer '<<external>>', relation 'ContractOffer \"1\" --> \"0..*\" ContractAgreement : is accepted as'; ContractAgreementData.contractOfferId. contract-manager-be#ContractOffer {humanReadable, hash, status CREATED/APPROVED/REJECTED}, operation 'Transfer contract offer presentation'. contract-ui-be#ContractOffer {humanReadable, hash, status CREATED/ACCEPTED/REJECTED}, operation 'Create contract offer presentation'. CDM:contract-ui-be:HumanReadableContractData {contractNegotiationId, humanReadableData, status, contractData}. BP7.3.1 'A Provider creates the usage contract offer'. SIMPL-19829/AC1 'a machine-readable usage contract offer ... is created in JSON format'.",
+  "question": "Are the EDC contract offer, the machine-readable usage contract offer and the human-readable offer presentation one concept or three, and which of them owns the offer status?",
+  "options": [
+   "Proposed: three terms. 'usage contract offer' (business object with the status), 'human-readable usage contract offer' (its HTML rendering and hash, a value object), 'EDC contract offer' (external, contractOfferId only)",
+   "One concept 'usage contract offer' whose rendering is an attribute; drop HumanReadableContractData and mark the EDC offer as a reference only"
+  ],
+  "from_23a": [
+   "contract-ui-be#ContractOffer DDD-06",
+   "contract-ui-be.md#HumanReadableContractData DDD-06",
+   "contract-manager-be#ContractOffer.humanReadable DDD-08",
+   "contract-manager-be#ContractOffer.hash DDD-08",
+   "contract-manager-be#ContractOffer.status DDD-08"
+  ],
+  "see": [
+   "F-002",
+   "F-044"
+  ]
+ },
+ {
+  "id": "D-004",
+  "target": "cross",
+  "ids": [
+   "SIMPL-30959/AC1",
+   "SIMPL-32511/AC1",
+   "SIMPL-35440/AC1"
+  ],
+  "rule": "DDD-09",
+  "severity": "blocker",
+  "finding": "The usage contract (and its offer) has no single identity. Offer, verification, VC and one search endpoint are keyed by contractNegotiationId; the agreement, credential and status endpoints by contractAgreementId. The same collection /agreements is addressed by a negotiation id in one path and an agreement id in another. The UI overview of usage contracts shows 'Contract negotiation ID' as the contract's id. The offer is created through a path that already requires a contractAgreementId, before any agreement exists.",
+  "evidence": "contract-manager-be: POST /agreements/{contractNegotiationId}/search and GET /agreements/{contractAgreementId}; /contractOffers/{contractNegotiationId}; PUT /verifications/{contractNegotiationId}; POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create. contract-ui-be: /contractOffers/{contractNegotiationId}. SIMPL-30959/AC1 overview columns 'Contract negotiation ID; Resource description ID; ...'. SIMPL-32511/AC1 '/credentials/agreements/{contractAgreementId}/.../create' then 'the usage contract offer overview is created'. SIMPL-35440 'GET /verifications/{contractNegotiationId}/vc'. CDM:contract-manager-be:ContractAgreement has both contractAgreementId (PK) and contractNegotiationId.",
+  "question": "Which identifier identifies a usage contract offer and the resulting usage contract over the whole lifecycle, and under which name do the APIs expose it?",
+  "options": [
+   "One id for the whole lifecycle (for example contractNegotiationId from the first request), with contractAgreementId as an attribute set at finalisation",
+   "Two entities with two ids: usage contract offer keyed by contractNegotiationId, usage contract keyed by contractAgreementId, with a written link; then /agreements/{contractNegotiationId}/search and the offer-creating .../create path need new names"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-001",
+   "F-002"
+  ]
+ },
+ {
+  "id": "D-005",
+  "target": "cross",
+  "ids": [
+   "SIMPL-30959/AC1",
+   "SIMPL-31053/AC2",
+   "SIMPL-31076/AC2",
+   "SIMPL-31115/AC2",
+   "SIMPL-31116/AC2",
+   "SIMPL-31117/AC2",
+   "SIMPL-31118/AC2",
+   "SIMPL-19934/AC1"
+  ],
+  "rule": "DDD-12",
+  "severity": "blocker",
+  "finding": "No lifecycle is defined once for the usage contract offer or the usage contract. The Contract Manager CDM types the status as ContractAgreementStatus but never lists its values; the Contract UI CDM has no value set at all (the values sit only in cdm.puml next to the API). The stories add Suspended, Revocation requested, Revoked, Reactivation requested and Terminated with transitions, and no API operation changes them. The 23a script found 18 value-set mismatches; they all trace back to this missing definition.",
+  "evidence": "CDM:contract-manager-be:ContractAgreement.status 'ContractAgreementStatus' (no value set in the CDM). CDM:contract-ui-be:HumanReadableContractData.status (no values); specs/api/contract-ui-be/cdm.puml 'Allowed statuses: CREATED (default) ACCEPTED REJECTED'. contract-manager-be ConfirmationResponse.status and ContractAgreementData.status INITIATED, CREATED, FINALIZING, FINALIZED, TERMINATED ('Status of the process'); StatusUpdate FINALIZED, TERMINATED. SIMPL-31053/AC2 'Revocation requested'; SIMPL-31076/AC2 'Revoked', AC3 'changed back to Active'; SIMPL-31115/AC2 'Suspended'; SIMPL-31116/AC2 'Reactivation requested'; SIMPL-31117/AC2 'Active'; SIMPL-31118/AC2 'Terminated'. 23a: 'Revocation requested' in 6 clauses, 'Reactivation requested' in 4, 'Requested' in 1, with no API or CDM value.",
+  "question": "Where is the one state machine for the usage contract offer and the usage contract written down (states, allowed transitions, who triggers each), and which operation performs each transition?",
+  "options": [
+   "Proposed: one state machine for the usage contract in the Contract Manager CDM, with the offer states as its first phase (Requested, Accepted, Rejected, Signed) and the contract states after it (Active, Suspended, Reactivation requested, Revocation requested, Revoked, Terminated)",
+   "Two state machines: usage contract offer (in the Contract UI CDM) and usage contract (in the Contract Manager CDM), with the hand-over state named"
+  ],
+  "from_23a": [
+   "contract-manager-be#ConfirmationResponse.status DDD-04 (2)",
+   "contract-manager-be#ContractOffer.status DDD-04 (2)",
+   "contract-manager-be#ContractOfferStatusUpdate.status DDD-04 (2)",
+   "contract-manager-be#ContractAgreementData.status DDD-04 (2)",
+   "contract-manager-be#StatusUpdate.status DDD-04",
+   "contract-ui-be#ContractOffer.status DDD-04 (2)",
+   "stories DDD-04 Revocation requested",
+   "stories DDD-04 Reactivation requested",
+   "stories DDD-04 Requested"
+  ],
+  "see": [
+   "F-004",
+   "F-005",
+   "F-018",
+   "F-037",
+   "F-048",
+   "F-049"
+  ]
+ },
+ {
+  "id": "D-006",
+  "target": "cross",
+  "ids": [
+   "SIMPL-32505/AC2",
+   "SIMPL-30959/AC1"
+  ],
+  "rule": "DDD-04",
+  "severity": "blocker",
+  "finding": "The accepted offer has two values on the main path. The Contract UI backend stores ACCEPTED and forwards the decision to the Contract Manager, whose offer status enum has APPROVED instead. The stories say 'Accepted'. A builder of either side has to guess the translation.",
+  "evidence": "contract-ui-be#ContractOffer.status enum CREATED, ACCEPTED, REJECTED; PATCH description 'Capture user decision about ACCEPTED or REJECTED contract offer'. contract-manager-be#ContractOffer.status and #ContractOfferStatusUpdate.status enum CREATED, APPROVED, REJECTED. SIMPL-32505/AC2 'the updated status \"Accepted\"'; SIMPL-30959/AC1 'Status (Requested, Rejected, Accepted, Signed, Active)'. cdm.puml 'ACCEPTED'.",
+  "question": "Is the accepted state ACCEPTED or APPROVED in both APIs?",
+  "options": [
+   "Proposed: ACCEPTED (stories, UI API, cdm.puml and the 'accept' operation all use it)",
+   "APPROVED in both"
+  ],
+  "from_23a": [
+   "contract-manager-be#ContractOffer.status DDD-04",
+   "contract-manager-be#ContractOfferStatusUpdate.status DDD-04"
+  ],
+  "see": [
+   "F-004"
+  ]
+ },
+ {
+  "id": "D-007",
+  "target": "cross",
+  "ids": [
+   "SIMPL-30959/AC1",
+   "SIMPL-30960/AC1",
+   "SIMPL-32511/AC1",
+   "SIMPL-21924/AC2"
+  ],
+  "rule": "DDD-05",
+  "severity": "major",
+  "finding": "The UI labels for statuses have no written mapping to stored values. 'Requested', 'Signed' and 'Active' have no API value at all; 'Requested' also appears as an API response value in SIMPL-32511 while the enum says CREATED; 'In progress' is used for a newly created usage contract.",
+  "evidence": "SIMPL-30959/AC1 and SIMPL-30960/AC1 'Status (Requested, Rejected, Accepted, Signed, Active)'. SIMPL-32511/AC1 response \"status: 'Requested' (String)\". SIMPL-21924/AC2 'A usage contract with the status \"In progress\" is created'. SIMPL-35692/AC1 'pending contract offer', AC4 'shown with status Terminated'. contract-ui-be ContractOffer.status CREATED, ACCEPTED, REJECTED.",
+  "question": "For each UI label, which stored value does it show, and where is that mapping kept?",
+  "options": [
+   "Use the stored values as labels (no mapping needed)",
+   "Keep business labels in the UI and add a mapping table to the glossary and the UI CDM"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-004",
+   "F-032"
+  ]
+ },
+ {
+  "id": "D-008",
+  "target": "cross",
+  "ids": [
+   "SIMPL-31118/AC2",
+   "SIMPL-35692/AC1",
+   "SIMPL-35692/AC4",
+   "SIMPL-35660/AC3"
+  ],
+  "rule": "DDD-02",
+  "severity": "major",
+  "finding": "'Terminated' means three different things: a usage contract ended by the Provider because its termination conditions are met; an unsigned offer closed by the scheduler after the timeout (which is sent on as a reject); and a contract negotiation that ended without agreement (API value TERMINATED, EDC state).",
+  "evidence": "SIMPL-31118/AC2 'the usage contract is terminated ... changed to Terminated'. SIMPL-35692/AC1 'the contract offer is terminated', Technical Description 'Send a rejection request to the Contract Manager /contractOffers/{contractNegotiationId}/reject'. SIMPL-35660/AC3 'so that EDC terminates the negotiation'. contract-manager-be StatusUpdate.status FINALIZED, TERMINATED. CDM:contract-consumption-adapter-be NegotiationState TERMINATED 'Negotiation ended without agreement'.",
+  "question": "Should an offer closed by timeout and a contract ended by the Provider carry different state names?",
+  "options": [
+   "Proposed: 'Terminated' only for a usage contract ended by the Provider; 'Expired' (or 'Rejected' with reason timeout) for an offer closed by the scheduler; TERMINATED stays an EDC negotiation state",
+   "Keep 'Terminated' for both and add a reason field"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-037",
+   "F-004"
+  ]
+ },
+ {
+  "id": "D-009",
+  "target": "SIMPL-19938",
+  "ids": [
+   "SIMPL-19938/AC1.1",
+   "SIMPL-19938/AC5",
+   "SIMPL-19927/AC1",
+   "SIMPL-19934/AC1"
+  ],
+  "rule": "DDD-02",
+  "severity": "major",
+  "finding": "'Signed usage contract' is used for the offer signed only by the Consumer and for the contract signed by both. The business process keeps them apart ('signed usage contract offer' after the Consumer signs, 'signed usage contract' after the Provider signs), but SIMPL-19938 says the Provider receives 'a signed usage contract' from the Consumer.",
+  "evidence": "BP7.5.2 'stores the signed usage contract offer and provide it to the Provider'; BP7.7.2 'A Provider stores the signed usage contract'. SIMPL-19938/AC1.1 'I receive a signed usage contract from a Consumer And I digitally sign the usage contract'; AC5 'a usage contract is received by the Provider'. SIMPL-19927/AC1 'fully-signed usage contract'; SIMPL-19934/AC1 'the final contract signed by both parties'.",
+  "question": "Do the stories adopt the business process pair 'signed usage contract offer' (Consumer signature only) and 'signed usage contract' (both signatures)?",
+  "options": [
+   "Proposed: yes; retire 'fully-signed usage contract' and 'final contract signed by both parties' as synonyms of 'signed usage contract'"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-007"
+  ]
+ },
+ {
+  "id": "D-010",
+  "target": "cross",
+  "ids": [
+   "SIMPL-35677/AC1",
+   "SIMPL-21948/AC1",
+   "SIMPL-19933/AC1"
+  ],
+  "rule": "DDD-01",
+  "severity": "major",
+  "finding": "The check of the other party's signed offer or contract is called 'validate' in the business process and most stories, and 'verify' in the API and SIMPL-35677, which implements BP 7.8.1. The business process uses 'verify' for a different step (access policy and existing contract, BP 7.2).",
+  "evidence": "BP7.6.1 'A Provider validates the signed usage contract offer'; BP7.8.1 'A Consumer validates the signed usage contract'; BP7.2.1 'verifies the access policies'; BP7.2.2 'verifies existence of a usage contract'. contract-manager-be PUT /verifications/{contractNegotiationId}, operationId contract#verifyCredential, VerificationConfirmationResponse. SIMPL-35677 title 'Contract Manager verify contract on consumer side', AC1 'the providers VC is verified'. SIMPL-21948/AC1 'the validation result is marked as successful'. SIMPL-35863 '/isValid/...'.",
+  "question": "Should the API resource and the stories use 'validation' for the signed offer and contract check, and keep 'verify' for the BP 7.2 checks?",
+  "options": [
+   "Proposed: 'validate' / 'validation' for BP 7.6 and 7.8 (business process wording); 'verify' only for BP 7.2",
+   "Keep /verifications and record 'verification' as a synonym in the glossary"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-003",
+   "F-011"
+  ]
+ },
+ {
+  "id": "D-011",
+  "target": "cross",
+  "ids": [
+   "SIMPL-30959/AC1",
+   "SIMPL-32509/AC1",
+   "SIMPL-35526",
+   "SIMPL-32511/AC1"
+  ],
+  "rule": "DDD-09",
+  "severity": "major",
+  "finding": "The resource a contract covers is identified by three different ids under three names: resourceDescriptionId in the stories and the UI overview, assetId in the Contract Manager API and CDM, and selfDescriptionId in SIMPL-35526. No source says how they relate, so the overview cannot show 'Resource description ID' for a contract stored with an assetId.",
+  "evidence": "SIMPL-30959/AC1 'Resource description ID'; SIMPL-32509/AC1 'resourceDescriptionId (UUID)'; SIMPL-19824 'resource description'. contract-manager-be ContractAgreementCreate.assetId, ContractAgreementData.assetId; CDM:contract-manager-be:Asset (external), ContractAgreement.assetId. SIMPL-35526 technical notes 'use selfDescriptionId instead of assetId + contractDefinitionId'. CDM:consent-management-be:ResourceDescription (owned by Federated Catalogue); CDM:contract-consumption-adapter-be:Dataset.assetId.",
+  "question": "Is the usage contract linked to the resource description (catalogue identity) or to the EDC asset, and under which name?",
+  "options": [
+   "Proposed: reference the resource description by resourceDescriptionId (catalogue owns it); keep assetId only as the EDC reference",
+   "Keep assetId and document how a resource description id is derived from it"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-044",
+   "F-046"
+  ]
+ },
+ {
+  "id": "D-012",
+  "target": "contract-manager-be.md#VerifiableCredential",
+  "rule": "DDD-13",
+  "severity": "major",
+  "finding": "The Contract Manager CDM defines VerifiableCredential as its own class with its own attributes, while the Issuer Service CDM owns VerifiableCredential with different attributes and the Wallet CDM calls the stored object Credential. The API schema follows the W3C data model, which neither CDM matches. The class should be external and point to its owner.",
+  "evidence": "CDM:contract-manager-be:VerifiableCredential {credentialType, issuer, issuanceDate, validFrom, validUntil, credentialStatus, credentialSubject}, no <<external>> stereotype. CDM:issuer-service-be:VerifiableCredential {type[], issuanceDate, validity, schema}, CredentialStatusType ACTIVE, REVOKED, SUSPENDED. CDM:wallet-service-be:Credential {type, issuer}. contract-manager-be#VerifiableCredential '@context, id, type, name, description, issuer, issuanceDate, credentialSubject, validFrom, validUntil, credentialStatus, credentialSchema, refreshService, termsOfUse, evidence, proof' ('W3C Verifiable Credential').",
+  "question": "Should the Contract Manager CDM mark VerifiableCredential as external (owned by the VC Issuer) and keep only the reference it needs?",
+  "options": [
+   "Proposed: yes, <<external>> VerifiableCredential owned by Issuer Service BE, with the relation 'usage contract is signed by'; no attributes redefined"
+  ],
+  "from_23a": [
+   "contract-manager-be#VerifiableCredential.* DDD-08 (10)"
+  ],
+  "see": [
+   "F-025"
+  ]
+ },
+ {
+  "id": "D-013",
+  "target": "contract-manager-be.md",
+  "rule": "DDD-13",
+  "severity": "major",
+  "finding": "The external classes of the Contract Manager CDM name no owner, and their names differ from the owners' CDMs: Asset (catalogue says ResourceDescription, the consumption CDM says Dataset), Provider and Consumer as classes (the owners model Participant with a role), ContractNegotiation and ContractDefinition (the consumption CDM names them EDCContractNegotiation and EDCContractDefinition, owned by the EDC Connector).",
+  "evidence": "CDM:contract-manager-be: ContractDefinition, ContractNegotiation, ContractOffer, Asset, Provider, Consumer, all '<<external>>' with no owner. CDM:contract-consumption-adapter-be: 'Participant | Identity Provider', 'PartyRole ... is an interaction role, not a Participant attribute', EDCContractNegotiation and EDCContractDefinition 'External, EDC Connector'. CDM:consent-management-be: Participant (Identity Provider), ResourceDescription (Federated Catalogue), PartyType PROVIDER, CONSUMER.",
+  "question": "Should the Contract Manager CDM reference external concepts by their owners' names and list each owner?",
+  "options": [
+   "Proposed: Participant (Identity Provider) with roles Provider and Consumer; ResourceDescription (Federated Catalogue); EDC contract negotiation, definition and offer marked as EDC Connector references"
+  ],
+  "from_23a": [],
+  "see": []
+ },
+ {
+  "id": "D-014",
+  "target": "cross",
+  "ids": [
+   "SIMPL-22690/AC1",
+   "SIMPL-35660/AC1",
+   "SIMPL-35677/AC1",
+   "SIMPL-35584/AC1"
+  ],
+  "rule": "DDD-14",
+  "severity": "major",
+  "finding": "The Contract Manager API speaks the EDC connector's language: its paths and payloads are keyed on contract negotiation, contract definition, asset and contract offer ids, and its info says it is for 'interaction with the Dataspace connector'. The translation to EDC also sits in two places: the stories have the Contract Manager call EDC endpoints directly, while SIMPL-22690 and flow.puml put a Contract Orchestrator and Kafka in between. The business process notes that negotiation of terms is not a current requirement, yet 'contract negotiation' is the main key.",
+  "evidence": "contract-manager-be info.description 'Contract Manager HTTP APIs for interaction with the Dataspace connector'; paths with {contractNegotiationId}, {contractDefinitionId}; ContractAgreementCreate {contractNegotiationId, assetId, providerId, consumerId, contractOfferId}. SIMPL-35660 'the EDC endpoint /signed is called'; SIMPL-35677 '/isValid/{contractNegotiationId}/true is called'; SIMPL-35584 'Inform EDC by calling the sign endpoint'. SIMPL-22690 'Contract UI Frontend -> Contract UI Backend -> Contract Backend -> Kafka -> Contract Orchestrator -> EDC'; flow.puml participants EDC, Contract orchestrator, Contract backend. BP07 README: 'usage contract term negotiation ... is not a current requirement'.",
+  "question": "Where is the one translation layer between Contract Management and the EDC connector (Contract Manager itself, or the Contract Orchestrator), and which business terms does the Contract Manager API use instead of EDC terms?",
+  "options": [
+   "Proposed: one anti-corruption layer (the Contract Orchestrator, if it is kept) that maps EDC negotiation, agreement and asset ids to usage contract terms; the Contract Manager API then uses usage contract offer, usage contract and resource description",
+   "The Contract Manager is the translation layer; drop the Contract Orchestrator from the flow and record the EDC term mapping in its CDM"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-021",
+   "F-029"
+  ]
+ },
+ {
+  "id": "D-015",
+  "target": "cross",
+  "ids": [
+   "SIMPL-35692/AC1",
+   "SIMPL-22690/AC1",
+   "SIMPL-35660/AC1"
+  ],
+  "rule": "DDD-11",
+  "severity": "major",
+  "finding": "The usage contract offer is changed in two components with no named root. The Contract UI backend stores the offer and its status and takes the accept or reject decision; the Contract Manager has its own PATCH on the same path, a PUT that sets the offer status 'on UI side', and creates the offer through the agreement path. It is not said which component owns the offer aggregate.",
+  "evidence": "contract-ui-be POST, GET, PATCH /contractOffers/{contractNegotiationId}[/{operation}]. contract-manager-be POST /contractOffers/{contractNegotiationId} ('Transfers a contract offer presentation to contract-ui-backend'), PATCH /contractOffers/{contractNegotiationId}/{operation}, PUT /contractOffers/{contractNegotiationId}/update ('Get status update from provider side and transfer it to UI side'). CDM:contract-ui-be:HumanReadableContractData.status. SIMPL-35692 'Mark it as terminated in contract UI database' then reject via the Contract Manager.",
+  "question": "Which component is the root of the usage contract offer (holds its state and performs its transitions), and which only shows it?",
+  "options": [
+   "Contract Manager owns the offer; the Contract UI backend keeps a read model",
+   "Contract UI backend owns the offer until acceptance; the Contract Manager owns the usage contract after it"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-005",
+   "F-044"
+  ]
+ },
+ {
+  "id": "D-016",
+  "target": "cross",
+  "ids": [
+   "SIMPL-21948/AC2",
+   "SIMPL-19933/AC2",
+   "SIMPL-31053/AC1",
+   "SIMPL-28846/AC2",
+   "SIMPL-34633/AC1",
+   "SIMPL-21966/AC1"
+  ],
+  "rule": "DDD-06",
+  "severity": "major",
+  "finding": "Several business objects the stories rely on have no CDM class and no API schema: the validation result with its rejection reason, the revocation request with its reason, the suspension and reactivation reasons, the Contract Clause document with its hash metadata, the usage contract audit data and the notification request. The code writer will invent their names.",
+  "evidence": "SIMPL-21948 table 'Validation result ... SUCCESS | REJECTED / FAILED ... Rejection reason INVALID_PROVIDER_SIGNATURE ...'; SIMPL-19933/AC2 'the rejection reason indicates invalid Consumer signature'. SIMPL-31053/AC1 'provide a reason for the revocation request'; SIMPL-31115/AC2 'provide a reason for the suspension'; SIMPL-31116/AC2 'provide a justification'. SIMPL-28846/AC2 'document metadata including hash, hashAlgorithm, document reference / source reference and documentId, documentName, mediaType'. SIMPL-34633 'the usage contract audit', 'amount of usage contracts per status'. SIMPL-21966 'EmailNotification'. None in CDM:contract-manager-be or CDM:contract-ui-be.",
+  "question": "Which of these are Contract Management business objects that belong in its CDM, and which are owned elsewhere (Notification Service, document storage, logging and monitoring)?",
+  "options": [
+   "Proposed: add ValidationResult (with rejection reason) and the lifecycle request objects to the Contract Manager CDM; mark EmailNotification external (Notification Service); decide the owner of the Contract Clause document before modelling it"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-009",
+   "F-013",
+   "F-015",
+   "F-023"
+  ]
+ },
+ {
+  "id": "D-017",
+  "target": "cross",
+  "ids": [
+   "SIMPL-32511/AC1"
+  ],
+  "rule": "DDD-08",
+  "severity": "major",
+  "finding": "The attributes of the human-readable offer have three sets of names: humanReadable and hash in both APIs, humanReadableData and contractData in the Contract UI CDM, and usageContract (html) and usageContractHash in the SIMPL-32511 response. The hash is one concept with two names.",
+  "evidence": "contract-manager-be#ContractOffer and contract-ui-be#ContractOffer {humanReadable 'Human readable format of contract offer in html format', hash 'Hash calculated for human readable field', status}. CDM:contract-ui-be:HumanReadableContractData {contractNegotiationId, humanReadableData, status, contractData}. SIMPL-32511/AC1 response 'usageContract (html) usageContractHash'.",
+  "question": "Which attribute names does the human-readable usage contract offer use in the CDM and both APIs?",
+  "options": [
+   "Proposed: humanReadable and hash (already in both APIs); align the UI CDM and SIMPL-32511 to them",
+   "humanReadableContent and contentHash everywhere"
+  ],
+  "from_23a": [
+   "contract-manager-be#ContractOffer.humanReadable DDD-08",
+   "contract-manager-be#ContractOffer.hash DDD-08"
+  ],
+  "see": [
+   "F-032"
+  ]
+ },
+ {
+  "id": "D-018",
+  "target": "cross",
+  "rule": "DATA-01",
+  "severity": "major",
+  "finding": "Each API has a CDM in the register, but all three are 'In review, not approved for delivery'. The Contract Manager CDM has two own classes and the Contract UI CDM one, against about ten business objects in the stories. The two Contract Management CDMs still point to API definitions in the old development/contract-billing repositories, not to the APIs they describe.",
+  "evidence": "cdm-index.md rows 'Contract Manager BE | C&B Team | In review | No', 'Contract UI BE | C&B Team | In review | No', 'Contract Consumption BE | Data01 | In review | No'. CDM:contract-manager-be classes ContractAgreement, VerifiableCredential (own) plus six external; CDM:contract-ui-be one class. contract-manager-be.md 'API definition: https://code.europa.eu/simpl/simpl-open/development/contract-billing/contract/...'; contract-ui-be.md '.../development/contract-billing/contract-ui-backend/...'. sources.yaml api projects under simpl-open/governance/contract-management/.",
+  "question": "When will the Contract Manager and Contract UI CDMs be completed (offer, lifecycle, validation result), linked to the current API repositories and approved?",
+  "from_23a": [
+   "contract-manager-be DATA-01",
+   "contract-ui-be DATA-01",
+   "contract-consumption-adapter-be DATA-01",
+   "contract-manager-be DDD-06 (other repository)",
+   "contract-ui-be DDD-06 (other repository)"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-019",
+  "target": "cross",
+  "rule": "DDD-15",
+  "severity": "major",
+  "finding": "There is no context map for Contract Management, although it depends on at least seven other contexts (EDC connector, VC Issuer, Signer Service, Wallet, Notification Service, Consent Management, Federated Catalogue). The register links a concept reference index that is not in the snapshot. The consumption and consent CDMs carry traceability tables; the two Contract Management CDMs do not, so the consent CDM's reference to ContractAgreement is not mirrored.",
+  "evidence": "cdm-index.md 'Related indexes: CDM Concept Ownership and Reference Index (./cdm-concept-reference-index.md)' (not in cdm/). CDM:consent-management-be 'Referenced concepts, by owning CDM: Contract Manager | ContractAgreement'. CDM:contract-consumption-adapter-be 'CDM Traceability' section. CDM:contract-manager-be and CDM:contract-ui-be: no traceability section. bp07-dynamic-view.md participants connector, contract-manager, vc-issuer, signer-service, wallet. SIMPL-21966 Notification Service; SIMPL-31047 consent manager.",
+  "question": "Who draws the context map for Contract Management, and does it live with the CDM register or with the component?",
+  "from_23a": [],
+  "see": [
+   "F-021"
+  ]
+ },
+ {
+  "id": "D-020",
+  "target": "cross",
+  "ids": [
+   "SIMPL-19824/AC1",
+   "SIMPL-19829/AC1",
+   "SIMPL-32509/AC1"
+  ],
+  "rule": "DDD-01",
+  "severity": "minor",
+  "finding": "The Consumer's request has three names: 'usage contract offer request' (business process and the newer stories), 'usage contract request' (older stories) and 'Contract Offer Request' (dynamic view).",
+  "evidence": "BP7.1.1 'initiate a usage contract offer request'; SIMPL-32509/AC1 'submits a usage contract offer request'; SIMPL-32511/AC1 'Given a usage contract offer request'. SIMPL-19824 'handling the usage contract request'; SIMPL-19829/AC1 'a usage contract request for a specific resource description'. bp07-dynamic-view.md 'creating a \"Contract Offer Request\"'.",
+  "question": "Adopt 'usage contract offer request' everywhere?",
+  "options": [
+   "Proposed: yes (business process term)"
+  ],
+  "from_23a": [],
+  "see": []
+ },
+ {
+  "id": "D-021",
+  "target": "cross",
+  "ids": [
+   "SIMPL-19824/AC1",
+   "SIMPL-19824/AC6",
+   "SIMPL-19829/AC2"
+  ],
+  "rule": "DDD-01",
+  "severity": "minor",
+  "finding": "The end-to-end process has two names: 'contract establishment process' and 'contract negotiation process' or 'flow', sometimes inside the same story.",
+  "evidence": "SIMPL-19824/AC1 'the contract establishment process is continued', AC6 'the contract negotiation process is halted'. SIMPL-19829 user story 'further processing in the contract negotiation flow', AC2 'the contract establishment process is prevented from proceeding'. SIMPL-21963 'usage contract establishment process'. BP07 title 'establish a usage contract'.",
+  "question": "Adopt 'usage contract establishment' for the business process and keep 'contract negotiation' for the EDC protocol exchange only?",
+  "options": [
+   "Proposed: yes"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-001"
+  ]
+ },
+ {
+  "id": "D-022",
+  "target": "cross",
+  "ids": [
+   "SIMPL-19934/AC1",
+   "SIMPL-19927/AC1",
+   "SIMPL-22690/AC1"
+  ],
+  "rule": "DDD-01",
+  "severity": "minor",
+  "finding": "Collaborating components have several names each: Signer Service and Digital Signature Service; Wallet, digital wallet and wallet service; Contract Manager and Contract Backend; VC Issuer and VC Issuer Service; EDC, EDC connector, Connector and Dataspace connector.",
+  "evidence": "bp07-dynamic-view.md 'Signer Service', 'Wallet', 'VC Issuer', 'Connector'. SIMPL-19934 'Digital Signature Service', 'VC Issuer Service'; SIMPL-35584 'Signer Service', 'wallet service'; SIMPL-19927 'digital wallet'. SIMPL-22690 'Contract Backend'; flow.puml 'Contract backend'. contract-manager-be info 'Dataspace connector'.",
+  "question": "Adopt the dynamic view names (Signer Service, Wallet, VC Issuer, Connector, Contract Manager) in the stories?",
+  "options": [
+   "Proposed: yes (business process names)"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-025"
+  ]
+ },
+ {
+  "id": "D-023",
+  "target": "contract-manager-be",
+  "rule": "DDD-07",
+  "severity": "minor",
+  "finding": "Two response or command wrappers carry state the CDM lacks: ConfirmationResponse returns a process status with five values, and ContractOfferStatusUpdate carries an offer status and additionalInfo. TransferConfirmationResponse and 'Transfer contract offer presentation' use 'transfer', which in the neighbouring context means an EDC data transfer.",
+  "evidence": "contract-manager-be#ConfirmationResponse.status INITIATED, CREATED, FINALIZING, FINALIZED, TERMINATED; #ContractOfferStatusUpdate {status CREATED, APPROVED, REJECTED; additionalInfo}; #TransferConfirmationResponse {contractNegotiationId, status INITIATED}. CDM:contract-consumption-adapter-be:EDCTransferProcess.",
+  "question": "Once the lifecycle (D-005) is in the CDM, do these wrappers carry only its values, and can 'transfer' be dropped from offer operations?",
+  "options": [
+   "Proposed: yes; rename to OfferHandoverConfirmation or similar"
+  ],
+  "from_23a": [
+   "contract-manager-be#ConfirmationResponse DDD-07",
+   "contract-manager-be#ContractOfferStatusUpdate DDD-07"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-024",
+  "target": "contract-ui-be.md#HumanReadableContractData",
+  "rule": "DATA-09",
+  "severity": "minor",
+  "finding": "The Contract UI CDM's only class is named after data, not a business noun, and two of its attributes are generic ('humanReadableData', 'contractData'). The same pattern appears in the API schema ContractAgreementData. This also touches DATA-04 (describe the business, not the storage).",
+  "evidence": "CDM:contract-ui-be:HumanReadableContractData {contractNegotiationId, humanReadableData, status, contractData}. contract-manager-be#ContractAgreementData. Stories use 'human-readable usage contract offer' (SIMPL-22690/AC1).",
+  "question": "Rename the class to the business term chosen for the human-readable offer (see D-003)?",
+  "options": [
+   "Proposed: HumanReadableUsageContractOffer, or an attribute of UsageContractOffer"
+  ],
+  "from_23a": [
+   "contract-ui-be.md#HumanReadableContractData DDD-01"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-025",
+  "target": "SIMPL-31047",
+  "ids": [
+   "SIMPL-31047/AC1",
+   "SIMPL-32511/AC1"
+  ],
+  "rule": "DDD-01",
+  "severity": "minor",
+  "finding": "The consent concept has two names in one story ('contract consent assertion status', 'contract consent status'), and SIMPL-32511 adds 'resource consent status'. The owning CDM names it ConsentAssertion with Type CONTRACT or RESOURCE and Status ACTIVE or WITHDRAWN.",
+  "evidence": "SIMPL-31047 title 'contract consent assertion status'; AC1 'check the contract consent status'. SIMPL-32511/AC1 'resource consent status'. CDM:consent-management-be:ConsentAssertion {Type: RESOURCE, CONTRACT; Status: ACTIVE, WITHDRAWN}.",
+  "question": "Use 'contract consent assertion' and 'resource consent assertion' with the owner's status values?",
+  "options": [
+   "Proposed: yes (owner's names)"
+  ],
+  "from_23a": [],
+  "see": [
+   "F-047"
+  ]
+ },
+ {
+  "id": "D-026",
+  "target": "cross",
+  "rule": "DDD-03",
+  "severity": "minor",
+  "finding": "No glossary existed for Contract Management. This step drafts one (validation/glossary.md); it is a proposal for the spec owners, not an agreed list.",
+  "evidence": "rules.json DDD-03 note 'No Simpl component has one yet; step 23 drafts it.' No glossary in specs/.",
+  "question": "Who owns and approves the Contract Management glossary?",
+  "from_23a": [],
+  "see": []
+ },
+ {
+  "id": "D-027",
+  "target": "contract-consumption-adapter-be",
+  "rule": "DDD-01",
+  "severity": "minor",
+  "finding": "Context only. The adapter's template has three names: ResourceAddressTemplate in its CDM, Template in the API schema, and DestinationAddressTemplate in the operation ids and summaries.",
+  "evidence": "CDM:contract-consumption-adapter-be:ResourceAddressTemplate (Owned). contract-consumption-adapter-be#Template {id, label}; operationIds getDestinationAddressTemplate, getDestinationAddressTemplates, getDestinationAddressUiSchema.",
+  "question": "Which name does the adapter use for its owned template?",
+  "options": [
+   "Proposed: ResourceAddressTemplate (CDM, paths /resourceAddresses/templates)"
+  ],
+  "from_23a": [
+   "contract-consumption-adapter-be#Template DDD-06",
+   "contract-consumption-adapter-be.md#ResourceAddressTemplate DDD-06"
+  ],
+  "see": []
+ },
+ {
+  "id": "D-028",
+  "target": "contract-consumption-adapter-be",
+  "ids": [
+   "SIMPL-21924/AC2"
+  ],
+  "rule": "DDD-09",
+  "severity": "minor",
+  "finding": "Context only. The EDC agreement id is contractAgreementId in ContractNegotiation and contractId in TransferRequest and TransferProcess, and the /contracts path creates and returns negotiations, not contracts. SIMPL-21924 is the one Contract Management story that uses this API.",
+  "evidence": "contract-consumption-adapter-be#ContractNegotiation.contractAgreementId; #TransferRequest.contractId; #TransferProcess.contractId; POST /contracts 'Initiate a new contract negotiation' returns ContractNegotiationId. CDM:contract-consumption-adapter-be:EDCContractAgreement 'referenced by contractAgreementId/contractId'. inventory-review.md link 21924/AC2 to POST /contracts.",
+  "question": "Should the adapter use one name for the EDC agreement id and name its negotiation path after negotiations?",
+  "options": [
+   "Proposed: contractAgreementId everywhere; /contractNegotiations for negotiations"
+  ],
+  "from_23a": [],
+  "see": []
+ }
+]

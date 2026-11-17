@@ -19,10 +19,11 @@ The steps are being split so each one does one job and can be chained: a fixed i
 | 10 | Collect the input set from a manifest per component (`<component>/sources.yaml`): OpenAPI and business processes from code.europa.eu at pinned commits, stories from Jira through the local model; `--verify` compares the manifest with `specs/` | done (stories was step 0) | [`collect_specs.py`](./collect_specs.py), [`collect_stories.py`](./collect_stories.py) |
 | 11 | Guideline rules: guidelines to numbered, checkable rules | new | [`11-guideline-rules.md`](./11-guideline-rules.md), output in [`../guidelines/`](../guidelines/README.md) |
 | 12 | Spec inventory: a stable id for every story, AC, operation and BP requirement (12a script, 12b review) | new | [`12-spec-inventory.md`](./12-spec-inventory.md), [`extract_inventory.py`](./extract_inventory.py) |
-| 20 | Validate the ACs: complete, unambiguous, testable, consistent | planned | |
+| 20 | Validate the ACs: 20a mechanical checks (structure, wording), 20b judgement (completeness, testability, ambiguity, consistency, correctness against API and process); blockers gate step 30 | done for Contract Management (57 findings, 14 blockers); 20a on all four | [`20-validate-acs.md`](./20-validate-acs.md), [`check_acs.py`](./check_acs.py) |
 | 21 | Validate the API: against the ACs and the `API-` rules | planned | |
 | 22 | Validate the business process: every requirement has a story and an operation | planned | |
-| 29 | Spec feedback report for the spec owners | planned | |
+| 23 | Validate the domain language: each API against its CDM (snapshot of the CDM register in [`../cdm/`](../cdm/inventory.md)) and both against the stories; `DDD-` rules (ubiquitous language, entities in the APIs) and the CDM rules; draft glossary | in progress | [`23-validate-domain.md`](./23-validate-domain.md), [`collect_cdms.py`](./collect_cdms.py), [`extract_cdm.py`](./extract_cdm.py), [`check_domain.py`](./check_domain.py) |
+| 29 | Spec feedback report for the spec owners, assembled from 12b, 20 and 23 | done for Contract Management (85 findings, 20 blockers) | [`29-spec-feedback.md`](./29-spec-feedback.md), [`build_feedback.py`](./build_feedback.py) |
 | 30 | Decisions (the spec digest), only for what 20 to 22 leave open | was step 1 | [`01-spec-digest.md`](./01-spec-digest.md) |
 | 40 | Test writer, API | was step 2 | [`02-test-writer-api.md`](./02-test-writer-api.md) |
 | 50 | Code writer | was steps 3 and 3b | [`03-code-writer.md`](./03-code-writer.md), [`03b-code-writer-rust.md`](./03b-code-writer-rust.md) |

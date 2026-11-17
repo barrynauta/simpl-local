@@ -1,0 +1,284 @@
+# Shared API envelope types. Policy and UI field internals remain opaque here.
+components:
+  schemas:
+    EdcBindings:
+      type: object
+      additionalProperties: false
+      required: [artifactVersion, complete, bindings, unresolved]
+      properties:
+        artifactVersion:
+          type: integer
+          enum: [1]
+        complete:
+          type: boolean
+          description: True only when unresolved is empty.
+        bindings:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdcBinding'
+        unresolved:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [templateId, path, reason]
+            properties:
+              templateId:
+                $ref: '#/components/schemas/TemplateId'
+              path:
+                type: string
+              reason:
+                type: string
+    EdcBinding:
+      type: object
+      additionalProperties: false
+      required: [scope, ruleType]
+      oneOf:
+        - required: [action]
+        - required: [leftOperand]
+      properties:
+        scope:
+          type: string
+          enum: [contract.negotiation, transfer.process]
+        ruleType:
+          type: string
+          enum: [permission, prohibition, duty]
+        action:
+          type: string
+          format: uri
+        leftOperand:
+          type: string
+          format: uri
+    TemplateId:
+      type: string
+      pattern: '^[a-z][a-z0-9-]{0,63}$'
+    TemplateKind:
+      type: string
+      enum: [access, usage]
+      description: Author-assigned catalogue category, not an inferred ODRL rule type.
+    IntendedScopes:
+      type: array
+      description: Required for access templates and optional for usage templates. Display hint only; does not configure or guarantee EDC evaluation.
+      minItems: 1
+      uniqueItems: true
+      items:
+        type: string
+        enum: [catalog, contract.negotiation, transfer.process]
+    TemplateSummary:
+      type: object
+      required: [id, name, description, kind]
+      additionalProperties: false
+      oneOf:
+        - required: [intendedScopes]
+          properties:
+            kind:
+              type: string
+              enum: [access]
+        - properties:
+            kind:
+              type: string
+              enum: [usage]
+      properties:
+        id:
+          $ref: '#/components/schemas/TemplateId'
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        kind:
+          $ref: '#/components/schemas/TemplateKind'
+        intendedScopes:
+          $ref: '#/components/schemas/IntendedScopes'
+    Template:
+      type: object
+      required: [id, name, description, kind, policy]
+      additionalProperties: false
+      oneOf:
+        - required: [intendedScopes]
+          properties:
+            kind:
+              type: string
+              enum: [access]
+        - properties:
+            kind:
+              type: string
+              enum: [usage]
+      properties:
+        id:
+          $ref: '#/components/schemas/TemplateId'
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        kind:
+          $ref: '#/components/schemas/TemplateKind'
+        intendedScopes:
+          $ref: '#/components/schemas/IntendedScopes'
+        policy:
+          type: object
+          additionalProperties: true
+          description: Authored ODRL JSON-LD policy, returned unchanged. Internal terms are outside this CDM.
+        fields:
+          type: array
+          description: Optional ordered UI field declarations. Supported TEMPLATE_* source URL placeholders are retained in storage and resolved in responses using deployment configuration at creation and startup.
+          items:
+            $ref: '#/components/schemas/TemplateField'
+    TemplateField:
+      type: object
+      required: [name, title, path, render]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z][a-zA-Z0-9]{0,63}$'
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+          description: Optional guidance shown beside this field.
+        path:
+          type: string
+          description: JSON Pointer to a null slot in the authored policy.
+        type:
+          type: string
+          enum: [string, integer, number, decimal, boolean, date-time, iri]
+          description: Explicit input type; older templates may omit it when the policy slot implies one.
+        repeat:
+          type: string
+          description: JSON Pointer to the first object in a single-prototype array. For multi-select fields, clone that object once per selected value. The field path must be inside the prototype, and no other field may target the array.
+          example: /odrl:permission/odrl:constraint/0
+        render:
+          type: string
+          enum: [input, text, select, multi-select]
+        enum:
+          type: array
+          minItems: 1
+          description: Static choices for select and multi-select fields.
+          items: {}
+        source:
+          $ref: '#/components/schemas/TemplateFieldSource'
+        default:
+          description: Optional UI prefill value, validated against type and static choices. It is not a fallback for omitted input.
+    TemplateFieldSource:
+      type: object
+      required: [url, auth, itemsPointer, labelPointer, valuePointer]
+      additionalProperties: false
+      properties:
+        url:
+          type: string
+          description: HTTPS source URL. Creation also accepts supported ${TEMPLATE_*} deployment placeholders; responses contain the resolved HTTPS URL.
+        auth:
+          type: string
+          enum: [none, cookies, bearer]
+        itemsPointer:
+          type: string
+        labelPointer:
+          type: string
+        valuePointer:
+          type: string
+        pagination:
+          $ref: '#/components/schemas/TemplateFieldSourcePagination'
+    TemplateFieldSourcePagination:
+      type: object
+      additionalProperties: false
+      required: [pageParameter, pageSizeParameter, firstPage, pageSize, pagePointer, pageSizePointer, totalPointer]
+      description: Optional zero-based pagination. Set the two query parameters on source.url, preserving filters. Use returned page and page size to calculate the next offset; stop when (page + 1) * pageSize >= total. Preserve selections across pages. Never follow response links with bearer credentials.
+      properties:
+        pageParameter:
+          type: string
+          pattern: '^[a-z][a-zA-Z0-9]{0,63}$'
+        pageSizeParameter:
+          type: string
+          pattern: '^[a-z][a-zA-Z0-9]{0,63}$'
+        firstPage:
+          type: integer
+          enum: [0]
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+        pagePointer:
+          type: string
+          description: JSON Pointer to the returned zero-based page index.
+        pageSizePointer:
+          type: string
+          description: JSON Pointer to the returned positive effective page size.
+        totalPointer:
+          type: string
+          description: JSON Pointer to the nonnegative total number of filtered items, not pages.
+    TemplateList:
+      type: object
+      required: [items]
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateSummary'
+    TemplateMaterializationRequest:
+      type: object
+      description: Values keyed by the selected template's field names.
+      additionalProperties: true
+    TemplateMaterializationResult:
+      type: object
+      required: [valid, errors, policy]
+      additionalProperties: false
+      properties:
+        valid:
+          type: boolean
+          description: True only when errors is empty and the policy is materialized.
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateFieldError'
+        policy:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: Materialized ODRL JSON-LD policy, or null when validation fails.
+    TemplateFieldError:
+      type: object
+      required: [field, message]
+      additionalProperties: false
+      properties:
+        field:
+          type: string
+          description: Template field name, or $ for form-level errors.
+        message:
+          type: string
+    Health:
+      type: object
+      required: [status]
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum: [UP]
+    Problem:
+      type: object
+      description: RFC 9457 problem detail with a stable service-specific code extension.
+      required: [type, title, status, code, detail]
+      properties:
+        type:
+          type: string
+          format: uri
+          pattern: '^urn:problem-type:simpl:policyManager:[a-z][a-zA-Z0-9]*$'
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+        code:
+          type: string
+        instance:
+          type: string
+          format: uri

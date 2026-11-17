@@ -61,7 +61,7 @@ def proj(path):
 
 
 def commit(project, ref):
-    c = get(f"{proj(project)}/repository/commits/{urllib.parse.quote(ref)}")
+    c = get(f"{proj(project)}/repository/commits/{urllib.parse.quote(ref, safe='')}")
     return c["id"], c["committed_date"][:10]
 
 

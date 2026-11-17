@@ -1,0 +1,798 @@
+[
+  {
+    "id": "F-001",
+    "target": "cross",
+    "ids": [
+      "SIMPL-19824/AC1",
+      "SIMPL-19824/AC2",
+      "SIMPL-32509/AC1",
+      "SIMPL-35858/AC1"
+    ],
+    "check": "AC-C04",
+    "severity": "blocker",
+    "finding": "Three stories describe the existence check with three different interaction models: an async ACK plus a later callback, a synchronous 200 with a boolean, and a Contract Manager call to an EDC endpoint. The live criteria also place the check on different sides.",
+    "evidence": "SIMPL-19824/AC1: 'the system returns an ACK (acknowledge) message with HTTP status code 200 (OK)' ... 'the system sends a response to the dedicated endpoint' (endpoint POST /agreements/{contractNegotiationId}/search). SIMPL-32509/AC1: 'the Provider invokes the POST /resourceDescriptions/{resourceDescriptionId}/validateExistenceContract API' ... 'Exists (boolean)' (path not in any OpenAPI). SIMPL-35858: 'As a Contract Manager on consumer side ... inform EDC whether an active contract already exists', AC1 'the CM sends a POST request to ... /isPresent/{contractNegotiationId}/{isPresent}'. BP7.2.2: 'A Provider verifies existence of a usage contract'.",
+    "question": "Which model is the target for the existence check: the existing async search endpoint with a callback, the new synchronous validateExistenceContract endpoint, or the /isPresent callback to EDC; and on which side (Provider or Consumer) does the Contract Manager run it?",
+    "options": [
+      "Async: POST /agreements/{contractNegotiationId}/search returns an ACK, result reported to EDC via /isPresent (SIMPL-19824 + SIMPL-35858)",
+      "Sync: POST /resourceDescriptions/{resourceDescriptionId}/validateExistenceContract returns 200 with exists (SIMPL-32509), no callback"
+    ],
+    "from_20a": [
+      "AC-S05"
+    ]
+  },
+  {
+    "id": "F-002",
+    "target": "cross",
+    "ids": [
+      "SIMPL-19829/AC1",
+      "SIMPL-32511/AC1",
+      "SIMPL-35526/AC1"
+    ],
+    "check": "AC-C04",
+    "severity": "blocker",
+    "finding": "The create endpoint is assigned to the Provider in two stories and the process, and moved to the Consumer side in a third. The response also differs: an ACK with a later callback, a full offer body, or a 201 that triggers the Contract UI backend.",
+    "evidence": "SIMPL-19829/AC1 and SIMPL-32511 'As a Provider, I want to create a usage contract offer' on POST /credentials/agreements/{contractAgreementId}/definitions/{contractDefinitionId}/create; BP7.3.1 'A Provider creates the usage contract offer'. SIMPL-35526 'As a EDC connector on the consumer side', technical notes: 'Execute on the consumer side instead of the provider side', 'Do not call EDC callback endpoint afterwards', 'Call the Contract UI backend to store the prepared data (POST /contractOffers/{contractNegotiationId})'.",
+    "question": "On which side does /create run, and what does it return: ACK plus callback to the Provider Connector (SIMPL-19829), the offer body with usageContract and usageContractHash (SIMPL-32511), or 201 with a push to the Contract UI backend and a user notification (SIMPL-35526)?",
+    "options": [
+      "Provider side, creates the offer and returns it (SIMPL-19829 / SIMPL-32511, BP7.3.1)",
+      "Consumer side, prepares offer data for the UI and notifies the user (SIMPL-35526)"
+    ],
+    "from_20a": [
+      "AC-S10"
+    ]
+  },
+  {
+    "id": "F-003",
+    "target": "cross",
+    "ids": [
+      "SIMPL-19933/AC10",
+      "SIMPL-19934/AC1",
+      "SIMPL-21948/AC10",
+      "SIMPL-35584/AC1",
+      "SIMPL-35677/AC1"
+    ],
+    "check": "AC-C04",
+    "severity": "blocker",
+    "finding": "Validation and Provider signing are specified twice with different observable outcomes. The older stories say validation is asynchronous and checked through persisted state and logs; the newer ones return 201 after validating and signing, or call EDC /isValid. SIMPL-19934 expects 200 with 'Finalized' from a signing call.",
+    "evidence": "SIMPL-19933/AC10: 'the final validation result is not expected to be returned synchronously in the triggering request'. SIMPL-35584/AC1: POST .../validateAndIssue 'returns a 201 Created response' 'And the VC from the consumer side is validated' 'And the contract is signed on the provider side'. SIMPL-19934/AC1: 'the system returns HTTP 200 (OK) with status \"Finalized\"'. SIMPL-21948/AC10 (async, persisted) versus SIMPL-35677/AC1 ('the EDC endpoint /isValid/{contractNegotiationId}/true is called').",
+    "question": "Which stories define the target validation and signing flow on each side, and which ones are superseded? What does a test observe: the HTTP response, the persisted state, or the EDC callback?",
+    "options": [
+      "New flow: SIMPL-35584 (Provider) and SIMPL-35677 (Consumer) with EDC callbacks; SIMPL-19933, 19934, 21948 describe the same steps and only add the rejection reasons",
+      "Old flow: SIMPL-19933, 19934, 21948 stay normative; SIMPL-35584 and 35677 only add the EDC trigger"
+    ],
+    "from_20a": []
+  },
+  {
+    "id": "F-004",
+    "target": "cross",
+    "ids": [
+      "SIMPL-30959/AC1",
+      "SIMPL-21924/AC2",
+      "SIMPL-32511/AC1",
+      "SIMPL-32505/AC2",
+      "SIMPL-32505/AC3",
+      "SIMPL-35692/AC4",
+      "SIMPL-31053/AC2",
+      "SIMPL-31115/AC2",
+      "SIMPL-31116/AC2",
+      "SIMPL-19934/AC1"
+    ],
+    "check": "AC-C04",
+    "severity": "blocker",
+    "finding": "Each story uses its own set of status names for the same offer or contract, and the two APIs use yet other enums. A UI overview, a filter and the scheduler cannot be built without one agreed set and a mapping.",
+    "evidence": "SIMPL-30959/AC1 'Status (Requested, Rejected, Accepted, Signed, Active)'; SIMPL-21924/AC2 'status \"In progress\"'; SIMPL-32511/AC1 \"status: 'Requested'\"; SIMPL-32505/AC3 'accepted, active, rejected, suspended or terminated'; SIMPL-35692/AC4 'status Terminated', AC1 'pending'; SIMPL-31053/AC2 'Revocation requested'; SIMPL-31115/AC2 'Suspended'; SIMPL-31116/AC2 'Reactivation requested'; SIMPL-19934/AC1 'Finalized'. contract-ui-be ContractOffer.status enum CREATED, ACCEPTED, REJECTED; contract-manager-be ContractOffer.status CREATED, APPROVED, REJECTED; ConfirmationResponse.status INITIATED, CREATED, FINALIZING, FINALIZED, TERMINATED.",
+    "question": "What is the one status set for a usage contract offer and a usage contract (including Suspended, Revocation requested, Revoked, Reactivation requested, Terminated), and how does each map to the API enums?",
+    "from_20a": []
+  },
+  {
+    "id": "F-005",
+    "target": "cross",
+    "ids": [
+      "SIMPL-31053/AC3",
+      "SIMPL-31076/AC4.1",
+      "SIMPL-31076/AC4.2",
+      "SIMPL-31115/AC3",
+      "SIMPL-31116/AC3",
+      "SIMPL-31117/AC3",
+      "SIMPL-31118/AC3"
+    ],
+    "check": "AC-C05",
+    "severity": "blocker",
+    "finding": "The lifecycle stories (revoke, respond, suspend, reactivate, terminate) need operations that no OpenAPI offers, and each has a criterion where the other party sees the new status. No story says how the change reaches the other participant.",
+    "evidence": "SIMPL-31053/AC3 'the requesting Participant has requested the revocation ... I can observe that the status ... has changed to 'Revocation requested''; SIMPL-31076/AC4.1, SIMPL-31115/AC3, SIMPL-31116/AC3, SIMPL-31117/AC3, SIMPL-31118/AC3 (same pattern). contract-ui-be offers only GET/POST/PATCH on /contractOffers with operation enum accept, reject; contract-manager-be has no revoke, suspend, reactivate or terminate operation. inventory-review.md: these criteria have 'no operation and no requirement'.",
+    "question": "Which backend owns the lifecycle state and operations (contract-manager-be or contract-ui-be), and through which channel (EDC, Kafka, other) is a status change passed to the other participant?",
+    "from_20a": []
+  },
+  {
+    "id": "F-006",
+    "target": "cross",
+    "ids": [
+      "SIMPL-19927/AC2",
+      "SIMPL-19927/AC3",
+      "SIMPL-19927/AC4",
+      "SIMPL-19938/AC2.1",
+      "SIMPL-19938/AC2.2",
+      "SIMPL-19938/AC3.1",
+      "SIMPL-19938/AC3.2",
+      "SIMPL-19938/AC4.1",
+      "SIMPL-19938/AC4.2"
+    ],
+    "check": "AC-C03",
+    "severity": "blocker",
+    "finding": "The wallet failure criteria ask the user to name another secure location, but storage happens inside an automatic backend flow with no user in the loop. A builder can read this as a UI prompt or as a failed step with an error.",
+    "evidence": "SIMPL-19927/AC2 'I receive an error message stating \"Secure storage location unavailable\" And I am requested to specify another secure location for archiving the contract'; same in AC3, AC4 and SIMPL-19938/AC2.1 to AC4.2. SIMPL-35584 technical description: 'Store the VC in the wallet service' inside the EDC-triggered handler; SIMPL-19934: 'Human UI interaction is not required.'",
+    "question": "When the wallet is unavailable, full or corrupted during the automatic signing flow, what happens: a user prompt for another location, or the step fails, the error is logged and EDC is told (for example /signed/{id}/false)? What does 'another secure location' mean, if anything?",
+    "options": [
+      "UI prompt to choose another storage location (as written)",
+      "No prompt: the flow fails with an error, the contract is not finalised and EDC is informed"
+    ],
+    "from_20a": []
+  },
+  {
+    "id": "F-007",
+    "target": "SIMPL-19938",
+    "check": "AC-C03",
+    "severity": "blocker",
+    "finding": "The story holds two live versions of AC1 to AC4 with different actors and outcomes. A builder does not know which version counts.",
+    "evidence": "SIMPL-19938/AC1.1 'Given that I am authenticated as a Provider ... And I digitally sign the usage contract ... Then I store securely'; SIMPL-19938/AC1.2 'Given a fully signed usage contract is received by the Provider ... Then the contract is securely stored ... And the contract is retrievable via Contract Manager API'. Same pattern for AC2 to AC4.",
+    "question": "Which version of AC1 to AC4 is the live one: the user-driven list items (AC1.1 to AC4.1) or the system-level headings (AC1.2 to AC4.2)?",
+    "options": [
+      "List-item version (AC1.1, AC2.1, AC3.1, AC4.1)",
+      "Heading version (AC1.2, AC2.2, AC3.2, AC4.2)"
+    ],
+    "from_20a": [
+      "AC-S07"
+    ]
+  },
+  {
+    "id": "F-008",
+    "target": "SIMPL-21924/AC2",
+    "check": "AC-C03",
+    "severity": "blocker",
+    "finding": "The criterion expects the user to see the result of the access-policy and existence checks right after clicking, but the story's own technical description says the UI only starts the negotiation and does not poll. The checks run later at the Provider.",
+    "evidence": "SIMPL-21924/AC2 'Then I see the result of the positive validation of the usage contract offer request ... And A usage contract with the status \"In progress\" is created'. Technical Description: 'the Catalogue UI shall invoke the startNegotiation API and, upon receiving a successful response, update the negotiation status accordingly without triggering any polling process'. SIMPL-19824/AC1: async search with ACK. Same issue for AC3 and AC4 (errors shown by the catalogue UI).",
+    "question": "Does the catalogue UI show the validation result (positive, access denied, contract exists), or only that the request was sent, with the result shown later in the contract manager UI?",
+    "options": [
+      "The UI waits for or polls the Provider checks and shows the result (AC2 to AC4 as written)",
+      "The UI shows 'request sent' only; results appear later in the contract manager UI"
+    ],
+    "from_20a": []
+  },
+  {
+    "id": "F-009",
+    "target": "SIMPL-34633/AC1",
+    "check": "AC-C02",
+    "severity": "blocker",
+    "finding": "The only criterion has no oracle: no endpoint, no format, no 'given moment', and the 'audit rule package' from the user story is not described anywhere.",
+    "evidence": "SIMPL-34633/AC1 'Then the contract manager produces the usage contract audit And makes it available through an endpoint for the logging & monitoring component'. Note: 'the amount of usage contracts per status at a given moment'. User story: 'according to a supplied audit rule package'. No such endpoint in contract-manager-be.",
+    "question": "What is the endpoint and response format of the audit data, which status set is counted, what is 'a given moment' (on request, scheduled), and what is the audit rule package?",
+    "from_20a": [
+      "AC-S10"
+    ]
+  },
+  {
+    "id": "F-010",
+    "target": "SIMPL-35660/AC1",
+    "check": "AC-C05",
+    "severity": "blocker",
+    "finding": "The story calls the accept and reject operation with POST and expects 201, while contract-manager-be defines PATCH /contractOffers/{contractNegotiationId}/{operation} returning 200. Tests from the story and a build from the API will disagree.",
+    "evidence": "SIMPL-35660/AC1 'sends a POST request to the API endpoint /contractOffers/{contractNegotiationId}/{operation} with the accept operation Then the API returns a 201 Created response'. contract-manager-be: 'PATCH /contractOffers/{contractNegotiationId}/{operation}' responses 200 'Transfer initiated', 400, 401, 403, 405, 406, 415, 500. inventory-review.md row e flags the method mismatch.",
+    "question": "Is the operation PATCH with 200 (as in the OpenAPI) or POST with 201 (as in the story)?",
+    "options": [
+      "PATCH, 200 (OpenAPI)",
+      "POST, 201 (story)"
+    ],
+    "from_20a": []
+  },
+  {
+    "id": "F-011",
+    "target": "SIMPL-35677/AC1",
+    "check": "AC-C05",
+    "severity": "blocker",
+    "finding": "The story calls /verifications with POST and expects '202 Created'; the OpenAPI defines PUT returning 200 with a VC in the request body. The story also says the Contract Manager fetches the VC itself through EDC, so the body may not be needed.",
+    "evidence": "SIMPL-35677/AC1 'the EDC sends a POST request to the API endpoint /verifications/{contractNegotiationId} Then the API returns a 202 Created response'. Technical Description: 'Get the providers VC using the new EDC endpoint'. contract-manager-be: 'PUT /verifications/{contractNegotiationId}', requestBody VerifyCredentialRequest, response 200 VerificationConfirmationResponse.",
+    "question": "Which method and status code apply (PUT/200, POST/201 or POST/202), and does EDC still send the VC in the body or does the Contract Manager fetch it via /vcExchange?",
+    "options": [
+      "PUT, 200, VC in body (OpenAPI)",
+      "POST, 202 Accepted, no body, VC fetched via EDC (story)"
+    ],
+    "from_20a": [
+      "AC-S10"
+    ]
+  },
+  {
+    "id": "F-012",
+    "target": "SIMPL-35584",
+    "check": "AC-C01",
+    "severity": "blocker",
+    "finding": "The story has no criterion for the main failure: the consumer VC is invalid or cannot be fetched. A builder must guess whether the call returns an error code, returns 201 and reports false to EDC, or stays pending.",
+    "evidence": "SIMPL-35584 has AC1 (success, 201), AC2 (401), AC3 (400 on consumer side) only. Technical Description: 'Get the VC from the consumer using the new EDC endpoint', 'Technical validation', 'Business validation', 'Inform EDC by calling the sign endpoint'. SIMPL-35863 offers /isValid/{contractNegotiationId}/{isValid} 'on consumer or provider side'. SIMPL-19933/AC2 to AC9 list rejection reasons for the same step.",
+    "question": "What does validateAndIssue return and do when the consumer VC fails technical or business validation, when the VC cannot be fetched via EDC, and when the Signer, VC Issuer or wallet fails?",
+    "options": [
+      "Synchronous error code (4xx or 5xx), contract not signed",
+      "201 accepted, then EDC is told via /isValid/{id}/false or /signed/{id}/false"
+    ],
+    "from_20a": []
+  },
+  {
+    "id": "F-013",
+    "target": "SIMPL-28846/AC1",
+    "check": "AC-C05",
+    "severity": "blocker",
+    "finding": "The validation rules are delegated to an upload API that is not in the input set, and the story itself lists format, size, endpoint and errors as still to be clarified. A tester cannot write the pass or fail case for AC1 and AC3.",
+    "evidence": "SIMPL-28846/AC1 'validates the document against the supported document format, MIME type and file size rules defined by the upload API implementation'. AC3 same rules. Dependencies: 'The upload API definition must clarify: endpoint path and method, ... supported MIME types, maximum file size, validation errors'. No upload operation in contract-manager-be or contract-ui-be.",
+    "question": "Which upload operation, supported MIME types and maximum file size apply, and which component exposes the upload?",
+    "from_20a": [
+      "AC-W05",
+      "AC-S10"
+    ]
+  },
+  {
+    "id": "F-014",
+    "target": "cross",
+    "ids": [
+      "SIMPL-19933/AC1",
+      "SIMPL-19933/AC8",
+      "SIMPL-21948/AC1",
+      "SIMPL-21948/AC8"
+    ],
+    "check": "AC-C02",
+    "severity": "blocker",
+    "finding": "The success outcome of both validation stories is 'updated according to the agreed lifecycle' without naming the status, and the technical-error case allows two end states. There is no pass condition on the main path.",
+    "evidence": "SIMPL-19933/AC1 'the contract negotiation status is updated according to the agreed lifecycle'; SIMPL-21948/AC1 'the contract status is updated according to the agreed lifecycle'; SIMPL-19933/AC8 and SIMPL-21948/AC8 'the validation result is marked as failed or remains pending according to the agreed lifecycle'. SIMPL-21948 table: 'Contract marked as validated / finalized according to lifecycle', 'FAILED / PENDING_RETRY'.",
+    "question": "Which status does the negotiation or contract get after a successful validation, and after a technical error: FAILED or PENDING_RETRY (with retry)?",
+    "options": [
+      "Technical error ends in FAILED",
+      "Technical error ends in PENDING_RETRY and is retried"
+    ],
+    "from_20a": []
+  },
+  {
+    "id": "F-015",
+    "target": "cross",
+    "ids": [
+      "SIMPL-19933/AC2",
+      "SIMPL-19933/AC6",
+      "SIMPL-19933/AC9",
+      "SIMPL-21948/AC2",
+      "SIMPL-21948/AC9"
+    ],
+    "check": "AC-C03",
+    "severity": "major",
+    "finding": "The failure criteria say 'rejected or failed' without saying which, and only the Consumer-side story maps cases to reason codes. The Provider side has no codes.",
+    "evidence": "SIMPL-19933/AC2 'the validation result is marked as rejected or failed ... the rejection reason indicates invalid Consumer signature' (same in AC3 to AC6, AC9); SIMPL-21948/AC2 to AC9 same wording; SIMPL-21948 technical info table: 'REJECTED / FAILED', 'INVALID_PROVIDER_SIGNATURE', ... SIMPL-19933 has no table.",
+    "question": "Which value (REJECTED or FAILED) belongs to each case, and do the Provider-side reasons use the same codes as the SIMPL-21948 table (with CONSUMER instead of PROVIDER)?",
+    "from_20a": [
+      "AC-S10"
+    ]
+  },
+  {
+    "id": "F-016",
+    "target": "cross",
+    "ids": [
+      "SIMPL-19933/AC1",
+      "SIMPL-19933/AC4",
+      "SIMPL-21948/AC1",
+      "SIMPL-21948/AC4"
+    ],
+    "check": "AC-C03",
+    "severity": "major",
+    "finding": "Both validation stories check a validity period, but no API schema or story defines where an offer or contract carries its validity dates.",
+    "evidence": "SIMPL-19933/AC1 'the contract offer is within its validity period'; SIMPL-19933/AC4 'the contract offer validity period is outside the allowed timeframe'; SIMPL-21948/AC1, AC4 same. ContractOffer, ContractAgreementCreate and ContractAgreementData have no validity fields.",
+    "question": "Which field or rule defines the validity period of an offer and of a contract?",
+    "from_20a": [
+      "AC-W05"
+    ]
+  },
+  {
+    "id": "F-017",
+    "target": "cross",
+    "ids": [
+      "SIMPL-19933/AC7",
+      "SIMPL-21948/AC7"
+    ],
+    "check": "AC-C03",
+    "severity": "major",
+    "finding": "Duplicate or replayed submissions must be detected, but the key is not named. Two builders will pick different keys (negotiation id, signature, payload hash).",
+    "evidence": "SIMPL-19933/AC7 'When the same signed contract offer is received again ... the duplicate or replayed submission is detected'; SIMPL-21948/AC7 same; SIMPL-21948 table 'REJECTED / IGNORED'.",
+    "question": "What makes two submissions 'the same' (contractNegotiationId, signature value, payload hash), and is the result REJECTED or IGNORED?",
+    "from_20a": []
+  },
+  {
+    "id": "F-018",
+    "target": "cross",
+    "ids": [
+      "SIMPL-32509/AC1",
+      "SIMPL-21924/AC4",
+      "SIMPL-19824/AC2"
+    ],
+    "check": "AC-C03",
+    "severity": "major",
+    "finding": "'Active usage contract' decides whether a new offer may be created, but the lifecycle stories add Suspended, Revocation requested and Reactivation requested. It is not said whether these count as active.",
+    "evidence": "SIMPL-32509 user story 'verify if the Consumer already has an active usage contract'; SIMPL-21924/AC4 'I already have an active usage contract'; SIMPL-19824/AC2 'an active contract exists'. SIMPL-31115/AC2 'Suspended', SIMPL-31053/AC2 'Revocation requested'.",
+    "question": "Which statuses count as 'active' for the existence check?",
+    "from_20a": []
+  },
+  {
+    "id": "F-019",
+    "target": "cross",
+    "ids": [
+      "SIMPL-21928/AC1",
+      "SIMPL-35660/AC1",
+      "SIMPL-32505/AC2"
+    ],
+    "check": "AC-C04",
+    "severity": "major",
+    "finding": "Consumer signing is described in three places with different triggers: a generic 'signing process is triggered', the accept operation on the Contract Manager, and the UI accept action. It is unclear whether SIMPL-21928 adds behaviour beyond SIMPL-35660.",
+    "evidence": "SIMPL-21928/AC1 'When the signing process is triggered Then Contract Manager completes the Consumer signing process'; SIMPL-35660/AC1 'with the accept operation ... the contract is signed on the consumer side'; SIMPL-32505/AC2 'I see the usage contract with the updated status \"Accepted\"'.",
+    "question": "Is SIMPL-35660 the concrete trigger for SIMPL-21928, so that accept means sign at once, or is signing a separate user step after accept?",
+    "options": [
+      "Accept triggers signing at once (SIMPL-35660)",
+      "Accept and sign are separate steps"
+    ],
+    "from_20a": []
+  },
+  {
+    "id": "F-020",
+    "target": "cross",
+    "ids": [
+      "SIMPL-35440/AC1",
+      "SIMPL-35584/AC1"
+    ],
+    "check": "AC-C05",
+    "severity": "major",
+    "finding": "Two Contract Manager endpoints in the criteria are not in the OpenAPI, so request body, response body and error codes are unknown.",
+    "evidence": "SIMPL-35440/AC1 'GET /verifications/{contractNegotiationId}/vc'; SIMPL-35584/AC1 'POST ... /validateAndIssue' with 'Dependencies: SIMPL-35587 (API definition)'. inventory-review.md: 'Endpoints named in stories that are not in the three OpenAPI files'.",
+    "question": "Where are these two operations defined (request and response schema, error codes), and will they be added to contract-manager-be openapi3-v1.yaml?",
+    "from_20a": []
+  },
+  {
+    "id": "F-021",
+    "target": "cross",
+    "ids": [
+      "SIMPL-35858/AC1",
+      "SIMPL-35863/AC1",
+      "SIMPL-35888/AC1",
+      "SIMPL-35889"
+    ],
+    "check": "AC-C06",
+    "severity": "major",
+    "finding": "Four stories specify endpoints of the EDC connector, not of the Contract Management component. For this component they only define the client side of a call.",
+    "evidence": "SIMPL-35858/AC1 'the EDC API accepts the contract existence result'; SIMPL-35863/AC1 'the EDC API accepts the validation result'; SIMPL-35888/AC1 'EDC retrieves the VC from the other participant's EDC'; SIMPL-35889 'this task extends the EDC API' (no acceptance criteria). SIMPL-35584 Dependencies: 'EDC VC exchange endpoint ... (Connector team)'.",
+    "question": "Are these stories in scope for the Contract Management build, or only as an interface contract the Contract Manager calls?",
+    "options": [
+      "In scope: build them here",
+      "Out of scope: treat as the interface the Contract Manager calls"
+    ],
+    "from_20a": [
+      "AC-S08"
+    ]
+  },
+  {
+    "id": "F-022",
+    "target": "cross",
+    "ids": [
+      "SIMPL-31115/AC2",
+      "SIMPL-31117/AC2",
+      "SIMPL-31118/AC2",
+      "SIMPL-31076/AC2"
+    ],
+    "check": "AC-C03",
+    "severity": "major",
+    "finding": "The lifecycle stories say why (remove or restore access) but no criterion says what happens to resource access, or who enforces it, when a contract becomes Suspended, Revoked, Terminated or Active again.",
+    "evidence": "SIMPL-31115 'So that I have the flexibility to temporarily remove access to a resource'; SIMPL-31118 'So that I can remove access to a resource'; SIMPL-31117 'make the resource available again'. The Thens only check the status: SIMPL-31115/AC2 'status ... changed to 'Suspended''.",
+    "question": "Must the Contract Manager tell another component (connector, consumption adapter) about a status change so that access is removed or restored, and how is that observed?",
+    "from_20a": []
+  },
+  {
+    "id": "F-023",
+    "target": "cross",
+    "ids": [
+      "SIMPL-31053/AC2",
+      "SIMPL-31076/AC3",
+      "SIMPL-31115/AC2",
+      "SIMPL-31116/AC2",
+      "SIMPL-31118/AC2"
+    ],
+    "check": "AC-C01",
+    "severity": "major",
+    "finding": "Reasons and justifications are asked for in five actions, but no criterion says whether they are mandatory, what limits apply, or whether the other party sees them.",
+    "evidence": "SIMPL-31053/AC1 'I am requested to provide a reason'; SIMPL-31076/AC3 'I provide a justification for the denial'; SIMPL-31115/AC2 'I provide a reason for the suspension'; SIMPL-31116/AC2 'I provide a justification'; SIMPL-31118/AC2 'I provide a justification related to the termination conditions'.",
+    "question": "Is the reason mandatory (and what happens if it is empty), is there a length limit, and is it shown to the other participant?",
+    "from_20a": []
+  },
+  {
+    "id": "F-024",
+    "target": "cross",
+    "ids": [
+      "SIMPL-19927/AC1",
+      "SIMPL-19938/AC1.1",
+      "SIMPL-19938/AC1.2"
+    ],
+    "check": "AC-C02",
+    "severity": "major",
+    "finding": "The 'securely stored' outcomes have no oracle beyond the wallet call, and 'access is restricted to authorized roles' names no role.",
+    "evidence": "SIMPL-19927/AC1 'Then I store securely the fully-signed usage contract in my digital wallet ... And its access is restricted to authorized roles'; SIMPL-19938/AC1.1 same; SIMPL-19938/AC1.2 'the contract is securely stored in the Provider digital wallet'.",
+    "question": "What does a test check for 'securely stored' (VC present in the wallet, retrievable via GET /agreements/{contractAgreementId}?), and which roles may read it?",
+    "from_20a": [
+      "AC-W01"
+    ]
+  },
+  {
+    "id": "F-025",
+    "target": "cross",
+    "ids": [
+      "SIMPL-21928/AC2",
+      "SIMPL-19934/AC1"
+    ],
+    "check": "AC-C04",
+    "severity": "minor",
+    "finding": "One story forbids an 'unsigned VC' as an intermediate artefact while another describes one as a step. Signer naming also differs.",
+    "evidence": "SIMPL-21928: 'This story must not assume an \"unsigned VC\" as a formal intermediate artefact.' SIMPL-19934: 'the Contract Manager requests the VC Issuer Service to create an unsigned Signature VC', 'Digital Signature Service'; SIMPL-35584/35660: 'Signer Service'.",
+    "question": "Is the unsigned Signature VC a defined artefact, and are 'Digital Signature Service' and 'Signer Service' the same service?",
+    "from_20a": []
+  },
+  {
+    "id": "F-026",
+    "target": "cross",
+    "ids": [
+      "SIMPL-35858/AC1",
+      "SIMPL-35863/AC1"
+    ],
+    "check": "AC-C02",
+    "severity": "minor",
+    "finding": "The EDC callback criteria do not name the response code for an accepted result.",
+    "evidence": "SIMPL-35858/AC1 'the EDC API accepts the contract existence result (asynchronous)'; SIMPL-35863/AC1 'the EDC API accepts the validation result'.",
+    "question": "Which status code does EDC return when it accepts the result (200, 202, 204)?",
+    "from_20a": []
+  },
+  {
+    "id": "F-027",
+    "target": "SIMPL-19824",
+    "check": "AC-C06",
+    "severity": "major",
+    "finding": "The replaced story is still live and holds requirements its replacement lacks: 400 and 405 handling, error logging, and 'the contract establishment process is prevented from proceeding'.",
+    "evidence": "SIMPL-19824/AC3 '400 (Bad Request) ... the error event is logged ... prevented from proceeding'; AC5 '405 (Method Not Allowed)'; AC6 '500 ... the contract negotiation process is halted'. SIMPL-32509 'Replaces SIMPL-19824' has 200, 404, 'appropriate error', 401, 403 only.",
+    "question": "Should SIMPL-19824 be closed, and do its 400, 405, logging and 'prevent proceeding' outcomes carry over to SIMPL-32509?",
+    "from_20a": [
+      "AC-S11"
+    ]
+  },
+  {
+    "id": "F-028",
+    "target": "SIMPL-19829",
+    "check": "AC-C06",
+    "severity": "major",
+    "finding": "The replaced story is still live and holds error cases its replacement lacks: 400, 401, 405, 415, 500 and 'no contract offer is created'.",
+    "evidence": "SIMPL-19829/AC2 to AC6 (400, 401, 405, 415, 500, each 'And no contract offer is created'). SIMPL-32511 'Replaces SIMPL-19829' has 201, 403, 404 only; its change log says 'Response codes: Following is added: 403, 404'.",
+    "question": "Should SIMPL-19829 be closed, and do its error criteria (including 'no contract offer is created') carry over to SIMPL-32511?",
+    "from_20a": [
+      "AC-S11"
+    ]
+  },
+  {
+    "id": "F-029",
+    "target": "SIMPL-22690",
+    "check": "AC-C06",
+    "severity": "major",
+    "finding": "The replaced story is still live and adds requirements its replacement lacks: a failure case, idempotency per contractNegotiationId, an immutable audit record and correlationId. Its criteria also point to an API (SIMPL-28977) that is not in the input.",
+    "evidence": "SIMPL-22690/AC2 'the acceptance process fails Then an error response is returned And the contract negotiation remains active'; Security: 'acceptance endpoint idempotent per contractNegotiationId', 'acceptance decision recorded immutably in audit log'; AC1.2 'using the API defined in SIMPL-28977', 'logged with sufficient technical details'. SIMPL-32505 'Replaces SIMPL-22690' has no failure criterion.",
+    "question": "Should SIMPL-22690 be closed, and do the failure case, idempotency and audit requirements carry over to SIMPL-32505? What does 'remains active' mean as a status?",
+    "from_20a": [
+      "AC-S11",
+      "AC-S04",
+      "AC-W01",
+      "AC-S10"
+    ]
+  },
+  {
+    "id": "F-030",
+    "target": "SIMPL-32509/AC4",
+    "check": "AC-C02",
+    "severity": "major",
+    "finding": "The catch-all error criterion has no oracle: 'cannot be properly fulfilled' is not a condition, and the code is 'appropriate' with examples.",
+    "evidence": "SIMPL-32509/AC4 'And the request cannot be properly fulfilled Then an appropriate error response is returned (e.g. 400, 406, 415, 500)'.",
+    "question": "Which conditions map to 400, 406, 415 and 500 for this endpoint?",
+    "from_20a": [
+      "AC-W01"
+    ]
+  },
+  {
+    "id": "F-031",
+    "target": "SIMPL-32509",
+    "check": "AC-C03",
+    "severity": "major",
+    "finding": "The 401 and 403 cases are about the Consumer's authentication and role, while the call is made by the Provider and the APIs use an API key. Whose credentials are checked is unclear. AC3 is also missing from the numbering.",
+    "evidence": "SIMPL-32509/AC5 'Given an unauthenticated Consumer ... When ... the Provider invokes the POST ... Then the request is rejected with a 401'; AC6 'without a role authorised to submit a usage contract offer request ... 403'. contract-manager-be security: ApiKeyAuth (X-Api-Key). Labels: AC1, AC2, AC4, AC5, AC6.",
+    "question": "Is 401/403 about the caller's API key or about the Consumer identity carried in the request, and which role is required?",
+    "options": [
+      "Caller (EDC/Provider) API key",
+      "Consumer identity and role in the request"
+    ],
+    "from_20a": []
+  },
+  {
+    "id": "F-032",
+    "target": "SIMPL-32511/AC1",
+    "check": "AC-C05",
+    "severity": "major",
+    "finding": "The response status 'Requested' is not a value of the response enum, and the added response fields are not yet in the OpenAPI. A typo 'proverId' and '201 Ok' would be copied into tests.",
+    "evidence": "SIMPL-32511/AC1 \"status: 'Requested' (String)\", 'proverId (String)', 'I receive a 201 Ok response', 'usageContractHash' (no type). contract-manager-be /create 201 ConfirmationResponse.status enum INITIATED, CREATED, FINALIZING, FINALIZED, TERMINATED.",
+    "question": "Which enum value is returned on creation, and is the field providerId?",
+    "from_20a": []
+  },
+  {
+    "id": "F-033",
+    "target": "SIMPL-35526/AC1",
+    "check": "AC-C02",
+    "severity": "major",
+    "finding": "The user notification has no channel or content, and the failure paths (Contract UI backend or catalogue unavailable, no user email) have no criterion.",
+    "evidence": "SIMPL-35526/AC1 'And the Consumer user is notified that a usage contract offer is available for review'. Technical notes: 'Collect the user email and notify the user', 'Call the Contract UI backend to store the prepared data'. Only AC2 (401) as a negative case.",
+    "question": "How is the user notified (Notification Service email, UI only), and what does /create return when the Contract UI backend call or the notification fails?",
+    "from_20a": []
+  },
+  {
+    "id": "F-034",
+    "target": "SIMPL-35660",
+    "check": "AC-C01",
+    "severity": "major",
+    "finding": "The reject criterion has no response code, signing failures have no criterion, and there is no criterion for a call on the provider side, although the handler acts 'only when called on the consumer side'.",
+    "evidence": "SIMPL-35660/AC3 'Then the contract is not signed And the EDC endpoint /signed/{contractNegotiationId}/false is called' (no status code). Technical details: 'should (only when called on the consumer side)'. SIMPL-35584/AC3 and SIMPL-35677/AC4 do have a 400 'called on the wrong side' case.",
+    "question": "What does the reject call return, what happens when Signer, VC Issuer or wallet fails, and is a provider-side call answered with 400 as in SIMPL-35584/AC3?",
+    "from_20a": []
+  },
+  {
+    "id": "F-035",
+    "target": "SIMPL-35677",
+    "check": "AC-C01",
+    "severity": "major",
+    "finding": "No criterion covers the VC fetch failing (EDC unreachable, other side returns 404 per SIMPL-35440/AC2), and AC3 gives no response code.",
+    "evidence": "SIMPL-35677 Technical Description 'Get the providers VC using the new EDC endpoint'. AC3 'the provider VC fails the technical or business validation Then the EDC endpoint /isValid/{contractNegotiationId}/false is called' (no status code). SIMPL-35440/AC2 '404 Not Found'.",
+    "question": "When the provider VC cannot be fetched, is that /isValid false, an error response, or a retry? Which code does the call return in AC3?",
+    "from_20a": []
+  },
+  {
+    "id": "F-036",
+    "target": "SIMPL-35440",
+    "check": "AC-C01",
+    "severity": "major",
+    "finding": "The 404 case covers 'not signed yet' only. An unknown contractNegotiationId and an unavailable wallet have no criterion, though the handler checks both.",
+    "evidence": "SIMPL-35440/AC2 'the participant didn't signt the contract yet, so VC is not stored in the wallet ... 404'. Technical details: 'Check whether the contractNegotiationId exists in the Contract Manager DB', 'Collect the VC ... from the wallet service'.",
+    "question": "What is returned for an unknown contractNegotiationId and when the wallet service is unavailable?",
+    "from_20a": []
+  },
+  {
+    "id": "F-037",
+    "target": "SIMPL-35692",
+    "check": "AC-C03",
+    "severity": "major",
+    "finding": "'Pending' and 'finalized' are not values of the Contract UI backend status enum, so the scheduler's selection is open. 'Terminated' is also not in the enum. A failing reject call to the Contract Manager has no criterion.",
+    "evidence": "SIMPL-35692/AC1 'a pending contract offer'; AC3 'already finalized'; AC4 'shown with status Terminated'. Technical Description: 'contract offers in the Pending state', 'Mark it as terminated', 'Send a rejection request to the Contract Manager'. contract-ui-be ContractOffer.status enum CREATED, ACCEPTED, REJECTED.",
+    "question": "Which UI statuses are 'pending' (CREATED only, or CREATED and ACCEPTED) and 'finalized'? Is Terminated a new enum value? What happens if the reject call to the Contract Manager fails?",
+    "options": [
+      "Pending = CREATED",
+      "Pending = CREATED or ACCEPTED (not yet signed)"
+    ],
+    "from_20a": []
+  },
+  {
+    "id": "F-038",
+    "target": "SIMPL-19934/AC1",
+    "check": "AC-C05",
+    "severity": "major",
+    "finding": "The success response differs from the signing operation it links to: 200 in the story, 201 in the OpenAPI. The 'backend API' is not named.",
+    "evidence": "SIMPL-19934/AC1 'the system returns HTTP 200 (OK) with status \"Finalized\"'. contract-manager-be POST .../issue 'Issue Verifiable credential. Start the process of signing contract.' responses 201 ConfirmationResponse.",
+    "question": "Is the Provider signing call POST .../issue (201) or another operation, and is the returned status FINALIZED or FINALIZING?",
+    "from_20a": []
+  },
+  {
+    "id": "F-039",
+    "target": "SIMPL-21963",
+    "check": "AC-C02",
+    "severity": "major",
+    "finding": "The criteria describe abilities ('can access', 'can continue') and 'sufficient evidence' without an observable check. The story defers the mechanism to other stories.",
+    "evidence": "SIMPL-21963/AC1 'the Provider can access the Consumer-signed usage contract offer or signing evidence'; AC3 'cannot continue as successful'; AC4 'there is sufficient evidence to confirm'. Technical note: 'Evidence may be existing Contract API result, persisted backend state or logs'.",
+    "question": "Which observable item proves delivery (a status on GET /agreements/{contractAgreementId}, a PATCH .../status call, a log entry), and does this story add anything beyond SIMPL-35660 and SIMPL-35584?",
+    "from_20a": [
+      "AC-W01",
+      "AC-S10"
+    ]
+  },
+  {
+    "id": "F-040",
+    "target": "SIMPL-21928",
+    "check": "AC-C02",
+    "severity": "major",
+    "finding": "The outcomes 'signing result is registered' and 'rejected' have no observable form: no status, no field, no response code.",
+    "evidence": "SIMPL-21928/AC1 'the signing result is registered for the usage contract offer'; AC2 'using the agreed backend signing flow'; AC3 'the signing request is rejected And the usage contract offer is not marked as signed'.",
+    "question": "Where is the signing result visible (status value, field), and what does a rejected request return (401, 403)?",
+    "from_20a": []
+  },
+  {
+    "id": "F-041",
+    "target": "SIMPL-21966",
+    "check": "AC-C03",
+    "severity": "major",
+    "finding": "The Provider must send an email to the Consumer, but the recipient is 'resolved from participant context' with no source for the address, and retry is deferred to a contract that is not in the input.",
+    "evidence": "SIMPL-21966/AC2 'the Consumer recipient context is resolved from the contract negotiation / participant context'; AC5 'handled according to the error handling / retry behaviour defined by the agreed Notification Service integration contract'; Technical Notes: 'defined under SIMPL-29268', 'Recipient contact details must not be hardcoded'.",
+    "question": "Where does the Provider get the Consumer email address, and what retry rule applies when the Notification Service rejects the message?",
+    "from_20a": [
+      "AC-W05"
+    ]
+  },
+  {
+    "id": "F-042",
+    "target": "SIMPL-28846",
+    "check": "AC-C02",
+    "severity": "major",
+    "finding": "'Clear' error messages have no oracle: no status code, no error format, no message text.",
+    "evidence": "SIMPL-28846/AC3 'returns a clear validation error'; AC4 and AC5 'returns a clear error message to the Provider user'.",
+    "question": "Which status codes and error format (for example RFC 9457 Problem) apply to validation, metadata and storage failures?",
+    "from_20a": [
+      "AC-W01"
+    ]
+  },
+  {
+    "id": "F-043",
+    "target": "SIMPL-28846/AC6",
+    "check": "AC-C03",
+    "severity": "major",
+    "finding": "Re-upload of identical content can reuse the stored object or create a new one. The criterion and the functional rules allow both, so the returned documentId differs between builds.",
+    "evidence": "SIMPL-28846/AC6 'processes the upload as a separate upload request ... must not silently overwrite'. Functional rules: 'reuse of an existing stored document object may be allowed only if the exact content hash matches ... Otherwise, a new stored document object and a new document reference must be created'.",
+    "question": "For identical content, is a new documentId always created, or is the existing one returned?",
+    "options": [
+      "Always a new document object and documentId",
+      "Reuse the existing object when the hash matches"
+    ],
+    "from_20a": []
+  },
+  {
+    "id": "F-044",
+    "target": "SIMPL-30959/AC1",
+    "check": "AC-C05",
+    "severity": "major",
+    "finding": "The overview needs fields and a list that the Contract UI backend does not return: GET /contractOffers returns a single ContractOffer with humanReadable, hash and status only. Active contracts live in the Contract Manager, not in the UI backend.",
+    "evidence": "SIMPL-30959/AC1 'an overview of all my usage contracts (including those still being established)' with 'Contract negotiation ID; Resource description ID; Resource name; Provider name; Status'; filters on the same fields. contract-ui-be GET /contractOffers 200 schema ContractOffer (not an array).",
+    "question": "Which API serves the overview of offers and contracts, with which fields and filters?",
+    "from_20a": []
+  },
+  {
+    "id": "F-045",
+    "target": "SIMPL-30959/AC1",
+    "check": "AC-C01",
+    "severity": "major",
+    "finding": "The overview offers a Reject button, but no UI story says what Reject does or shows, and the replacement accept story has no failure case.",
+    "evidence": "SIMPL-30959/AC1 \"perform following actions on the usage contract offers with status 'Requested': 'Accept' or 'Reject'\". SIMPL-32505 covers accept only; SIMPL-35660/AC3 covers the backend reject. BP7.4.2 'A Consumer notifies the Provider about the rejection'.",
+    "question": "What does the user see after Reject (status 'Rejected'?), and what happens when accept or reject fails?",
+    "from_20a": []
+  },
+  {
+    "id": "F-046",
+    "target": "SIMPL-30960/AC1",
+    "check": "AC-C01",
+    "severity": "major",
+    "finding": "The details view has no criterion for an offer that is not found or a user without the role, while the API has 403 and 404. The detail fields (resource name, Provider name, policies, clauses) are not in ContractOffer.",
+    "evidence": "SIMPL-30960/AC1 only. contract-ui-be GET /contractOffers/{contractNegotiationId} responses 403, 404; ContractOffer has humanReadable, hash, status.",
+    "question": "What does the UI show for 403 and 404, and where do the detail fields come from?",
+    "from_20a": []
+  },
+  {
+    "id": "F-047",
+    "target": "SIMPL-31047",
+    "check": "AC-C05",
+    "severity": "major",
+    "finding": "The consent status shown in the UI has no field in any API, and the story does not say how a change made in the consent manager reaches the contract manager UI or how 'consent not defined' is known.",
+    "evidence": "SIMPL-31047/AC3 'I can observe the change of the contract consent status for the usage contract in the contract manager UI'; AC4 'a usage contract for which contract consent is not defined'. No consent field in ContractOffer or ContractAgreementData.",
+    "question": "Which source provides the consent status and the 'defined or not' flag, and is the UI refreshed or does it read the status on load?",
+    "from_20a": []
+  },
+  {
+    "id": "F-048",
+    "target": "SIMPL-31117",
+    "check": "AC-C01",
+    "severity": "major",
+    "finding": "A reactivation request can only be granted. There is no criterion for the Provider declining it, so the contract could stay in 'Reactivation requested' with no way back to 'Suspended'.",
+    "evidence": "SIMPL-31116/AC2 'Reactivation requested'; SIMPL-31117/AC2 'Suspended' or 'Reactivation requested' -> 'Active'. No decline action in SIMPL-31116 or SIMPL-31117.",
+    "question": "Can the Provider decline a reactivation request, and to which status does the contract go?",
+    "from_20a": []
+  },
+  {
+    "id": "F-049",
+    "target": "SIMPL-31118/AC1",
+    "check": "AC-C03",
+    "severity": "major",
+    "finding": "The title says 'active' but the Given allows any status that is 'not revoked or terminated', which includes offers, Suspended and Revocation requested.",
+    "evidence": "SIMPL-31118/AC1 'I select one of my usage contracts that is not revoked or terminated'; heading 'terminate of one of their active usage contract'.",
+    "question": "From which statuses can a Provider terminate: Active only, or also Suspended, Revocation requested, Reactivation requested and open offers?",
+    "options": [
+      "Active only",
+      "Every status except Revoked and Terminated"
+    ],
+    "from_20a": []
+  },
+  {
+    "id": "F-050",
+    "target": "SIMPL-21924",
+    "check": "AC-C06",
+    "severity": "major",
+    "finding": "AC1, AC3 and AC4 describe the catalogue UI (button, error messages), which is another component. Only AC2 creates state in the contract manager.",
+    "evidence": "SIMPL-21924/AC3 'the catalogue UI displays an error message'; AC4 same; Technical Description 'the Catalogue UI shall invoke the startNegotiation API' (contract-consumption-adapter-be POST /contracts).",
+    "question": "Are the catalogue UI criteria part of this component's build, or only the contract manager part of AC2?",
+    "from_20a": []
+  },
+  {
+    "id": "F-051",
+    "target": "SIMPL-30959/AC2",
+    "check": "AC-C05",
+    "severity": "minor",
+    "finding": "The empty overview expects an empty table, while GET /contractOffers lists a 404 response. A builder may treat 'no offers' as 404.",
+    "evidence": "SIMPL-30959/AC2 'returns the structure of the overview ... in an empty table'. contract-ui-be GET /contractOffers responses include 404 'Not Found'.",
+    "question": "Does an empty list return 200 with no items?",
+    "from_20a": []
+  },
+  {
+    "id": "F-052",
+    "target": "SIMPL-30959/AC3",
+    "check": "AC-C02",
+    "severity": "minor",
+    "finding": "'I cannot open the contract manager UI' does not say what the user sees (login redirect, error page), and it merges unauthenticated and authenticated-without-role.",
+    "evidence": "SIMPL-30959/AC3 'Given I am not authenticated as Consumer with a role authorising the management of usage contracts ... Then I cannot open the contract manager UI'.",
+    "question": "What is shown when not logged in, and when logged in without the role?",
+    "from_20a": []
+  },
+  {
+    "id": "F-053",
+    "target": "SIMPL-31116/AC2",
+    "check": "AC-C02",
+    "severity": "minor",
+    "finding": "The outcome is written as an And under When, with no Then. The intended outcome is clear.",
+    "evidence": "SIMPL-31116/AC2 'When I select the action to request the reactivation ... And I provide a justification ... And I can observe that the status ... has changed to 'Reactivation requested''.",
+    "question": "Confirm that the last clause is the Then.",
+    "from_20a": [
+      "AC-S03"
+    ]
+  },
+  {
+    "id": "F-054",
+    "target": "SIMPL-31076",
+    "check": "AC-C04",
+    "severity": "minor",
+    "finding": "Two criteria share the label AC4, and the same decision is called 'deny' in AC3 and 'Reject' in AC4.2. SIMPL-31053/AC3 is headed 'Accept case' but only shows the request.",
+    "evidence": "SIMPL-31076/AC3 \"respond with 'deny'\"; AC4.2 \"with a 'Reject' decision\"; labels AC4 twice; SIMPL-31053/AC3 heading '(Accept case)'.",
+    "question": "Renumber AC4 (Reject) as AC5, pick one word (deny or reject), and fix the SIMPL-31053/AC3 heading?",
+    "from_20a": [
+      "AC-S07"
+    ]
+  },
+  {
+    "id": "F-055",
+    "target": "SIMPL-21924/AC1",
+    "check": "AC-C04",
+    "severity": "minor",
+    "finding": "Headings of AC1 to AC4 name the Provider, while the clauses are written for the Consumer end user.",
+    "evidence": "SIMPL-21924/AC1 heading 'A Provider requests a usage contract via UI' with 'Given I am authenticated as a Consumer end user'.",
+    "question": "Change the headings to 'A Consumer'?",
+    "from_20a": []
+  },
+  {
+    "id": "F-056",
+    "target": "SIMPL-28846/AC2",
+    "check": "AC-C03",
+    "severity": "minor",
+    "finding": "AC2 uses 'the configured hash algorithm' while the description fixes SHA-256 unless the API says otherwise.",
+    "evidence": "SIMPL-28846/AC2 'using the configured hash algorithm'; description 'The hash algorithm must be SHA-256 unless the upload API definition specifies a different agreed algorithm'.",
+    "question": "Is the algorithm fixed (SHA-256) or configurable?",
+    "from_20a": []
+  },
+  {
+    "id": "F-057",
+    "target": "SIMPL-21966/AC6",
+    "check": "AC-C02",
+    "severity": "minor",
+    "finding": "The criterion is a design constraint ('does not implement its own email sender'); it can be checked only by code review.",
+    "evidence": "SIMPL-21966/AC6 'Contract Management does not implement its own email sender or custom notification delivery mechanism'.",
+    "question": "Accept review as the verification method for AC6?",
+    "from_20a": []
+  }
+]
