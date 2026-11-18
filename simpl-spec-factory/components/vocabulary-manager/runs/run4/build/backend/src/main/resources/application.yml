@@ -1,0 +1,58 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /v1
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: never
+    include-message: never
+  tomcat:
+    max-swallow-size: -1
+    max-http-form-post-size: 25MB
+  shutdown: graceful
+
+spring:
+  application:
+    name: vocabulary-manager-be
+  main:
+    banner-mode: off
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 21MB
+      file-size-threshold: 1MB
+  mvc:
+    problemdetails:
+      enabled: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+logging:
+  structured:
+    format:
+      console: ${LOG_FORMAT:ecs}
+    ecs:
+      service:
+        name: vocabulary-manager-be
+  level:
+    root: INFO
+    org.apache.jena: WARN
+
+vocabulary:
+  content-base-url: ${VOCABULARY_CONTENT_BASE_URL:https://authority.example/vocabulary-manager}
+  max-upload-bytes: 5242880
+  store:
+    url: ${VOCABULARY_STORE_URL:http://localhost:3030/vocabulary}
+    connect-timeout: 2s
+    response-timeout: 10s
+    read-retries: 2
+    health-timeout: 2s
+  security:
+    jwks-url: ${KEYCLOAK_JWKS_URL:http://localhost:8180/realms/simpl/protocol/openid-connect/certs}
+    issuer: ${KEYCLOAK_ISSUER:http://localhost:8180/realms/simpl}
+    audience: ${KEYCLOAK_AUDIENCE:vocabulary-manager-be}
+    key-fetch-timeout: 2s

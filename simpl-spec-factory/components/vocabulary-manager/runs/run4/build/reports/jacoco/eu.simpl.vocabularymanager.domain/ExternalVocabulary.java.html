@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalVocabulary.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.domain</a> &gt; <span class="el_source">ExternalVocabulary.java</span></div><h1>ExternalVocabulary.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.domain;
+
+import java.time.Instant;
+import java.util.List;
+
+/** A registered cached copy of a vocabulary Simpl-Open does not control (decision D30). */
+public record ExternalVocabulary(
+        String name,
+        String namespaceUri,
+        List&lt;String&gt; aliasUris,
+        String sourceUri,
+        String description,
+        String createdBy,
+        Instant creationDate) {
+
+<span class="fc" id="L16">    public ExternalVocabulary {</span>
+<span class="pc bpc" id="L17" title="1 of 2 branches missed.">        aliasUris = aliasUris == null ? List.of() : List.copyOf(aliasUris);</span>
+<span class="fc" id="L18">    }</span>
+
+    /** True when the URI, normalised, equals the namespace URI or one of the alias URIs. */
+    public boolean matches(String uri) {
+<span class="fc" id="L22">        String key = Namespaces.normalise(uri);</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        if (Namespaces.normalise(namespaceUri).equals(key)) {</span>
+<span class="fc" id="L24">            return true;</span>
+        }
+<span class="fc" id="L26">        return aliasUris.stream().map(Namespaces::normalise).anyMatch(key::equals);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

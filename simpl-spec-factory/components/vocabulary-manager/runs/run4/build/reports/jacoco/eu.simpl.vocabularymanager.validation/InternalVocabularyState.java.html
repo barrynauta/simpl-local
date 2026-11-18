@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InternalVocabularyState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">InternalVocabularyState.java</span></div><h1>InternalVocabularyState.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+/**
+ * What the reference check needs to know about one internal vocabulary.
+ *
+ * @param name the vocabulary name
+ * @param status the vocabulary status
+ * @param versionStatuses version status by version number
+ */
+public record InternalVocabularyState(
+        String name, VocabularyStatus status, Map&lt;Integer, VocabularyStatus&gt; versionStatuses) {
+
+<span class="fc" id="L19">    public InternalVocabularyState {</span>
+<span class="fc" id="L20">        versionStatuses = new TreeMap&lt;&gt;(versionStatuses);</span>
+<span class="fc" id="L21">    }</span>
+
+    /** The highest version number (decision D5). */
+    public int latestVersion() {
+<span class="fc" id="L25">        return ((SortedMap&lt;Integer, VocabularyStatus&gt;) versionStatuses).lastKey();</span>
+    }
+
+    /** The highest-numbered version whose version status is ACTIVE (decision D5). */
+    public OptionalInt latestActiveVersion() {
+<span class="fc" id="L30">        return versionStatuses.entrySet().stream()</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">                .filter(entry -&gt; entry.getValue() == VocabularyStatus.ACTIVE)</span>
+<span class="fc" id="L32">                .mapToInt(Map.Entry::getKey)</span>
+<span class="fc" id="L33">                .max();</span>
+    }
+
+    /** True when the version's own status or the vocabulary status is DEPRECATED (decision D3). */
+    public boolean isEffectivelyDeprecated(int version) {
+<span class="fc bfc" id="L38" title="All 4 branches covered.">        return status == VocabularyStatus.DEPRECATED || versionStatuses.get(version) == VocabularyStatus.DEPRECATED;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

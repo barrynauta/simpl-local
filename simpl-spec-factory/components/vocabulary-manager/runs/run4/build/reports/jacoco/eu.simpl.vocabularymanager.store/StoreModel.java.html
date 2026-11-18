@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StoreModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">StoreModel.java</span></div><h1>StoreModel.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import java.time.Instant;
+import java.util.Base64;
+import java.util.UUID;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResourceFactory;
+
+/** The RDF terms the component uses in its store, and conversions between Java values and literals. */
+final class StoreModel {
+
+    static final String NS = &quot;https://simpl.example/ns/vocabulary-manager#&quot;;
+    static final String INTERNAL_GRAPH = &quot;urn:simpl:vocabulary-manager:graph:internal&quot;;
+    static final String EXTERNAL_GRAPH = &quot;urn:simpl:vocabulary-manager:graph:external&quot;;
+    static final String PREFIXES = &quot;PREFIX vm: &lt;&quot; + NS + &quot;&gt;\nPREFIX xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;\n&quot;;
+
+    private StoreModel() {}
+
+    static String vocabularyIri(String name) {
+<span class="fc" id="L24">        return &quot;urn:simpl:vocabulary-manager:vocabulary:&quot; + name;</span>
+    }
+
+    static String versionIri(String name, int version) {
+<span class="fc" id="L28">        return vocabularyIri(name) + &quot;:version:&quot; + version;</span>
+    }
+
+    static String externalIri(String name) {
+<span class="fc" id="L32">        return &quot;urn:simpl:vocabulary-manager:external:&quot; + name;</span>
+    }
+
+    static ParameterizedSparqlString command(String text) {
+<span class="fc" id="L36">        ParameterizedSparqlString pss = new ParameterizedSparqlString(PREFIXES + text);</span>
+<span class="fc" id="L37">        pss.setIri(&quot;internalGraph&quot;, INTERNAL_GRAPH);</span>
+<span class="fc" id="L38">        pss.setIri(&quot;externalGraph&quot;, EXTERNAL_GRAPH);</span>
+<span class="fc" id="L39">        return pss;</span>
+    }
+
+    static Literal dateTime(Instant instant) {
+<span class="fc" id="L43">        return ResourceFactory.createTypedLiteral(instant.toString(), XSDDatatype.XSDdateTime);</span>
+    }
+
+    /**
+     * Marker bound in place of the content and replaced after the command is built (see {@link #withContent}). It is
+     * random per process, so no client text can collide with it.
+     */
+<span class="fc" id="L50">    private static final String MARKER_TEXT = &quot;vm-content-&quot; + UUID.randomUUID();</span>
+
+<span class="fc" id="L52">    static final Literal CONTENT_MARKER = ResourceFactory.createPlainLiteral(MARKER_TEXT);</span>
+
+    /**
+     * Puts the Base64 content into a built command. Base64 text needs no escaping in a quoted literal, and doing this
+     * after ParameterizedSparqlString keeps large uploads fast.
+     */
+    static String withContent(ParameterizedSparqlString command, byte[] bytes) {
+<span class="fc" id="L59">        return command.toString()</span>
+<span class="fc" id="L60">                .replace(&quot;\&quot;&quot; + MARKER_TEXT + &quot;\&quot;&quot;, &quot;\&quot;&quot; + Base64.getEncoder().encodeToString(bytes) + &quot;\&quot;&quot;);</span>
+    }
+
+    static Literal integer(int value) {
+<span class="fc" id="L64">        return ResourceFactory.createTypedLiteral(Integer.toString(value), XSDDatatype.XSDinteger);</span>
+    }
+
+    static String text(QuerySolution row, String variable) {
+<span class="fc" id="L68">        RDFNode node = row.get(variable);</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        return node == null ? null : node.asLiteral().getLexicalForm();</span>
+    }
+
+    static int number(QuerySolution row, String variable) {
+<span class="fc" id="L73">        return Integer.parseInt(text(row, variable));</span>
+    }
+
+    static Instant instant(QuerySolution row, String variable) {
+<span class="fc" id="L77">        String value = text(row, variable);</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        return value == null ? null : Instant.parse(value);</span>
+    }
+
+    static byte[] bytes(QuerySolution row, String variable) {
+<span class="fc" id="L82">        return Base64.getDecoder().decode(text(row, variable));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

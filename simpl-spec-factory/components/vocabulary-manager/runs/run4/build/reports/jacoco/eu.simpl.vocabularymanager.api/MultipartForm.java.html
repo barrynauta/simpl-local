@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MultipartForm.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">MultipartForm.java</span></div><h1>MultipartForm.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.Problems;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * The parts of a multipart/form-data request. Only the fields of the operation are accepted (OWA-API3); the file part
+ * may be larger than the upload limit, the limit is checked by the caller.
+ */
+public final class MultipartForm {
+
+    private final Map&lt;String, List&lt;String&gt;&gt; fields;
+    private final Map&lt;String, List&lt;byte[]&gt;&gt; files;
+
+<span class="fc" id="L26">    private MultipartForm(Map&lt;String, List&lt;String&gt;&gt; fields, Map&lt;String, List&lt;byte[]&gt;&gt; files) {</span>
+<span class="fc" id="L27">        this.fields = fields;</span>
+<span class="fc" id="L28">        this.files = files;</span>
+<span class="fc" id="L29">    }</span>
+
+    /**
+     * Reads the parts.
+     *
+     * @param fileField the name of the file part; it may also arrive as a plain field
+     * @param allowed every accepted part name
+     * @param forbiddenDetail detail per part name that is explicitly refused (for example 'version')
+     * @throws eu.simpl.vocabularymanager.error.VocabularyManagerException 400 for unknown or refused parts
+     */
+    public static MultipartForm read(
+            HttpServletRequest request, String fileField, Set&lt;String&gt; allowed, Map&lt;String, String&gt; forbiddenDetail)
+            throws IOException, ServletException {
+<span class="fc" id="L42">        Map&lt;String, List&lt;String&gt;&gt; fields = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L43">        Map&lt;String, List&lt;byte[]&gt;&gt; files = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L44">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        for (Part part : request.getParts()) {</span>
+<span class="fc" id="L46">            String name = part.getName();</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">            if (forbiddenDetail.containsKey(name)) {</span>
+<span class="fc" id="L48">                issues.add(Issue.schemaViolation(&quot;body&quot;, name, null, forbiddenDetail.get(name)));</span>
+<span class="fc" id="L49">                continue;</span>
+            }
+<span class="fc bfc" id="L51" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc" id="L52">                issues.add(Issue.schemaViolation(&quot;body&quot;, name, null, &quot;Form field '&quot; + name + &quot;' is not supported.&quot;));</span>
+<span class="fc" id="L53">                continue;</span>
+            }
+            byte[] bytes;
+<span class="fc" id="L56">            try (InputStream in = part.getInputStream()) {</span>
+<span class="fc" id="L57">                bytes = in.readAllBytes();</span>
+            }
+<span class="fc bfc" id="L59" title="All 2 branches covered.">            if (name.equals(fileField)) {</span>
+<span class="fc" id="L60">                files.computeIfAbsent(name, k -&gt; new ArrayList&lt;&gt;()).add(bytes);</span>
+            } else {
+<span class="fc" id="L62">                fields.computeIfAbsent(name, k -&gt; new ArrayList&lt;&gt;()).add(new String(bytes, StandardCharsets.UTF_8));</span>
+            }
+<span class="fc" id="L64">        }</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L66">            throw Problems.badRequest(issues);</span>
+        }
+<span class="fc" id="L68">        return new MultipartForm(fields, files);</span>
+    }
+
+    /** All values of a text field. */
+    public List&lt;String&gt; values(String name) {
+<span class="fc" id="L73">        return fields.getOrDefault(name, List.of());</span>
+    }
+
+    /** The single value of a text field, or null. */
+    public String value(String name) {
+<span class="fc" id="L78">        List&lt;String&gt; list = values(name);</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        return list.isEmpty() ? null : list.get(0);</span>
+    }
+
+    /** Number of parts with this name. */
+    public int count(String name) {
+<span class="fc" id="L84">        return values(name).size() + files.getOrDefault(name, List.of()).size();</span>
+    }
+
+    /** The file bytes, or null when the part is missing. */
+    public byte[] file(String name) {
+<span class="fc" id="L89">        List&lt;byte[]&gt; list = files.get(name);</span>
+<span class="pc bpc" id="L90" title="2 of 4 branches missed.">        return list == null || list.isEmpty() ? null : list.get(0);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

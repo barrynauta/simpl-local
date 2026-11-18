@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BearerTokenFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">BearerTokenFilter.java</span></div><h1>BearerTokenFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import eu.simpl.vocabularymanager.error.VocabularyManagerException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Authenticates the bearer token before any role or body check (decision D17). No header: the request continues as
+ * anonymous and the access rules answer 401. An invalid token: 401. Keys not available: 503 (decision D44).
+ */
+public class BearerTokenFilter extends OncePerRequestFilter {
+
+<span class="fc" id="L21">    private static final Logger LOG = LoggerFactory.getLogger(BearerTokenFilter.class);</span>
+    private static final String PREFIX = &quot;bearer &quot;;
+
+    private final TokenValidator validator;
+    private final ProblemWriter problemWriter;
+
+<span class="fc" id="L27">    public BearerTokenFilter(TokenValidator validator, ProblemWriter problemWriter) {</span>
+<span class="fc" id="L28">        this.validator = validator;</span>
+<span class="fc" id="L29">        this.problemWriter = problemWriter;</span>
+<span class="fc" id="L30">    }</span>
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+<span class="fc" id="L34">        return &quot;/health&quot;.equals(request.getServletPath());</span>
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L40">        String header = request.getHeader(&quot;Authorization&quot;);</span>
+<span class="pc bpc" id="L41" title="1 of 4 branches missed.">        if (header == null || header.isBlank()) {</span>
+<span class="fc" id="L42">            chain.doFilter(request, response);</span>
+<span class="fc" id="L43">            return;</span>
+        }
+        try {
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (!header.regionMatches(true, 0, PREFIX, 0, PREFIX.length())) {</span>
+<span class="fc" id="L47">                throw new VocabularyManagerException(</span>
+                        eu.simpl.vocabularymanager.error.AccessErrorCode.UNAUTHORIZED,
+                        &quot;Authorization header is not a bearer token.&quot;);
+            }
+<span class="fc" id="L51">            AuthenticatedUser user =</span>
+<span class="fc" id="L52">                    validator.validate(header.substring(PREFIX.length()).trim());</span>
+<span class="fc" id="L53">            SecurityContextHolder.getContext().setAuthentication(user);</span>
+<span class="fc" id="L54">        } catch (VocabularyManagerException e) {</span>
+<span class="fc" id="L55">            LOG.warn(</span>
+                    &quot;Authentication failed: method={} path={} status={} reason={}&quot;,
+<span class="fc" id="L57">                    request.getMethod(),</span>
+<span class="fc" id="L58">                    request.getServletPath(),</span>
+<span class="fc" id="L59">                    e.code().status(),</span>
+<span class="fc" id="L60">                    e.detail());</span>
+<span class="fc" id="L61">            SecurityContextHolder.clearContext();</span>
+<span class="fc" id="L62">            problemWriter.write(response, e.code(), e.detail(), e.issues());</span>
+<span class="fc" id="L63">            return;</span>
+<span class="fc" id="L64">        }</span>
+<span class="fc" id="L65">        chain.doFilter(request, response);</span>
+<span class="fc" id="L66">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

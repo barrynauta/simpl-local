@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FormFields.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">FormFields.java</span></div><h1>FormFields.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.Issue;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+
+/** Field rules of decision D37, shared by the create forms. */
+final class FormFields {
+
+    static final int MAX_TEXT = 1000;
+
+    private FormFields() {}
+
+    /** A required text field of 1 to 1000 characters after trimming; returns the trimmed value. */
+    static String requiredText(MultipartForm form, String field, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L17" title="All 2 branches covered.">        if (form.count(field) == 0) {</span>
+<span class="fc" id="L18">            issues.add(Issue.schemaViolation(&quot;body&quot;, field, null, &quot;Field '&quot; + field + &quot;' is required.&quot;));</span>
+<span class="fc" id="L19">            return null;</span>
+        }
+<span class="fc" id="L21">        return checkedText(form, field, issues, true);</span>
+    }
+
+    /** An optional text field of at most 1000 characters after trimming; blank counts as absent. */
+    static String optionalText(MultipartForm form, String field, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (form.count(field) == 0) {</span>
+<span class="fc" id="L27">            return null;</span>
+        }
+<span class="fc" id="L29">        String value = checkedText(form, field, issues, false);</span>
+<span class="pc bpc" id="L30" title="2 of 4 branches missed.">        return value == null || value.isEmpty() ? null : value;</span>
+    }
+
+    private static String checkedText(MultipartForm form, String field, List&lt;Issue&gt; issues, boolean required) {
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        if (form.count(field) &gt; 1) {</span>
+<span class="nc" id="L35">            issues.add(Issue.schemaViolation(&quot;body&quot;, field, null, &quot;Field '&quot; + field + &quot;' must be given once.&quot;));</span>
+<span class="nc" id="L36">            return null;</span>
+        }
+<span class="fc" id="L38">        String value = form.value(field);</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        String trimmed = value == null ? &quot;&quot; : value.trim();</span>
+<span class="pc bpc" id="L40" title="1 of 6 branches missed.">        if ((required &amp;&amp; trimmed.isEmpty()) || trimmed.length() &gt; MAX_TEXT) {</span>
+<span class="fc" id="L41">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;,
+                    field,
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">                    trimmed.length() &gt; 100 ? trimmed.substring(0, 100) + &quot;...&quot; : trimmed,</span>
+                    &quot;Field '&quot; + field + &quot;' must have 1 to &quot; + MAX_TEXT + &quot; characters after trimming.&quot;));
+<span class="fc" id="L46">            return null;</span>
+        }
+<span class="fc" id="L48">        return trimmed;</span>
+    }
+
+    /** A required name of 3 to 64 characters matching ^[A-Z][a-zA-Z0-9]*$ (decision D37). */
+    static String name(MultipartForm form, List&lt;Issue&gt; issues) {
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (form.count(&quot;name&quot;) == 0) {</span>
+<span class="nc" id="L54">            issues.add(Issue.schemaViolation(&quot;body&quot;, &quot;name&quot;, null, &quot;Field 'name' is required.&quot;));</span>
+<span class="nc" id="L55">            return null;</span>
+        }
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        if (form.count(&quot;name&quot;) &gt; 1) {</span>
+<span class="nc" id="L58">            issues.add(Issue.schemaViolation(&quot;body&quot;, &quot;name&quot;, null, &quot;Field 'name' must be given once.&quot;));</span>
+<span class="nc" id="L59">            return null;</span>
+        }
+<span class="fc" id="L61">        String value = form.value(&quot;name&quot;);</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        if (!PathParameters.isValidName(value)) {</span>
+<span class="fc" id="L63">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;, &quot;name&quot;, value, &quot;Field 'name' must have 3 to 64 characters and match ^[A-Z][a-zA-Z0-9]*$.&quot;));
+<span class="fc" id="L65">            return null;</span>
+        }
+<span class="fc" id="L67">        return value;</span>
+    }
+
+    /** The required file part, given once. */
+    static byte[] file(MultipartForm form, String field, List&lt;Issue&gt; issues) {
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (form.count(field) == 0) {</span>
+<span class="nc" id="L73">            issues.add(Issue.schemaViolation(&quot;body&quot;, field, null, &quot;Field '&quot; + field + &quot;' is required.&quot;));</span>
+<span class="nc" id="L74">            return null;</span>
+        }
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (form.count(field) &gt; 1) {</span>
+<span class="nc" id="L77">            issues.add(Issue.schemaViolation(&quot;body&quot;, field, null, &quot;Field '&quot; + field + &quot;' must be given once.&quot;));</span>
+<span class="nc" id="L78">            return null;</span>
+        }
+<span class="fc" id="L80">        return form.file(field);</span>
+    }
+
+    /** True when the value is an absolute URI. */
+    static boolean isAbsoluteUri(String value) {
+<span class="pc bpc" id="L85" title="2 of 6 branches missed.">        if (value == null || value.isBlank() || value.chars().anyMatch(Character::isWhitespace)) {</span>
+<span class="fc" id="L86">            return false;</span>
+        }
+        try {
+<span class="fc" id="L89">            return new URI(value).isAbsolute();</span>
+<span class="nc" id="L90">        } catch (URISyntaxException e) {</span>
+<span class="nc" id="L91">            return false;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

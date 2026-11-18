@@ -1,0 +1,47 @@
+{
+ "project": "Simpl-Open",
+ "component": "vocabulary-manager",
+ "run": "run4",
+ "engine": "0cbc4c6",
+ "project_root": "~/src/simpl-local/simpl-spec-factory",
+ "rules": 383,
+ "build_profile": {
+  "component": "vocabulary-manager",
+  "compose_project": "vm-factory-run4",
+  "start": "docker compose -p vm-factory-run4 up -d --build --wait",
+  "stack": {
+   "backend": "Java 21, Spring Boot 3, Maven (one project, modules allowed)",
+   "store": "Apache Jena Fuseki, dataset 'vocabulary' (decision E3)",
+   "identity_provider": "Keycloak with the realm, clients and users of decision E1, imported at startup; password grant enabled for a public test client 'vocabulary-tests'",
+   "ui": "Vue 3 + Vite + TypeScript, plain component library, served by nginx that also proxies the API"
+  },
+  "ports": {
+   "api": 8196,
+   "ui": 4433,
+   "keycloak": 8193,
+   "fuseki": 3141
+  },
+  "tests": {
+   "harness": "Python 3, behave, requests; Playwright for Python for the UI steps of step 60",
+   "environment": {
+    "API_URL": "http://localhost:8196/v1",
+    "TOKEN_URL": "http://localhost:8193/realms/simpl/protocol/openid-connect/token",
+    "TOKEN_CLIENT": "vocabulary-tests",
+    "UI_URL": "http://localhost:4433"
+   },
+   "users": "from decision E1 (ga-admin, ga-viewer, ga-norole, password 'Password1!')",
+   "reset": "tests may not reset the store; every scenario creates its own data with a unique run id"
+  },
+  "finish_line": [
+   "the start command succeeds from a clean state",
+   {
+    "smoke.sh": "token for ga-admin, create a vocabulary, create a new version, list, download, search; ga-viewer gets 403 on create; no token gets 401"
+   },
+   "mvn verify green, with a JaCoCo report",
+   "leave the stack running"
+  ],
+  "compare_with": {
+   "run": "run1 (27 Oct 2026), components/vocabulary-manager/generated/run1, 74 of 74 API and 22 of 22 UI scenarios of its own suite"
+  }
+ }
+}

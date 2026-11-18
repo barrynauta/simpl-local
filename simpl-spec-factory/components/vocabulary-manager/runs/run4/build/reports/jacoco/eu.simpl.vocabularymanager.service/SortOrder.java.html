@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SortOrder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">SortOrder.java</span></div><h1>SortOrder.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import java.util.Comparator;
+import java.util.Optional;
+
+/** The sort values of the list operations (decision D23). */
+public final class SortOrder {
+
+    private SortOrder() {}
+
+<span class="fc" id="L13">    private static final Comparator&lt;Vocabulary&gt; BY_NAME = Comparator.comparing(Vocabulary::name);</span>
+<span class="fc" id="L14">    private static final Comparator&lt;VocabularyVersion&gt; BY_VERSION_DESC =</span>
+<span class="fc" id="L15">            Comparator.comparingInt(VocabularyVersion::version).reversed();</span>
+
+    /** Order of GET /vocabularies; ties are broken by name ascending. Empty for an unknown value. */
+    public static Optional&lt;Comparator&lt;Vocabulary&gt;&gt; vocabularies(String sort) {
+<span class="fc bfc" id="L19" title="All 2 branches covered.">        if (sort == null) {</span>
+<span class="fc" id="L20">            return Optional.of(BY_NAME);</span>
+        }
+<span class="fc" id="L22">        boolean descending = sort.startsWith(&quot;-&quot;);</span>
+<span class="fc bfc" id="L23" title="All 7 branches covered.">        Comparator&lt;Vocabulary&gt; primary = switch (descending ? sort.substring(1) : sort) {</span>
+<span class="fc" id="L24">            case &quot;name&quot; -&gt; BY_NAME;</span>
+<span class="fc" id="L25">            case &quot;status&quot; -&gt; Comparator.comparing(v -&gt; v.status().name());</span>
+<span class="fc" id="L26">            case &quot;creationDate&quot; -&gt; Comparator.comparing(Vocabulary::creationDate);</span>
+<span class="fc" id="L27">            case &quot;lastUpdated&quot; -&gt; Comparator.comparing(Vocabulary::lastUpdateDate);</span>
+<span class="fc" id="L28">            default -&gt; null;</span>
+        };
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (primary == null) {</span>
+<span class="fc" id="L31">            return Optional.empty();</span>
+        }
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        return Optional.of((descending ? primary.reversed() : primary).thenComparing(BY_NAME));</span>
+    }
+
+    /** Order of GET .../versions; default version descending, ties by version descending. */
+    public static Optional&lt;Comparator&lt;VocabularyVersion&gt;&gt; versions(String sort) {
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (sort == null) {</span>
+<span class="fc" id="L39">            return Optional.of(BY_VERSION_DESC);</span>
+        }
+<span class="fc" id="L41">        boolean descending = sort.startsWith(&quot;-&quot;);</span>
+<span class="fc bfc" id="L42" title="All 6 branches covered.">        Comparator&lt;VocabularyVersion&gt; primary = switch (descending ? sort.substring(1) : sort) {</span>
+<span class="fc" id="L43">            case &quot;name&quot; -&gt; Comparator.comparing(VocabularyVersion::name);</span>
+<span class="fc" id="L44">            case &quot;status&quot; -&gt; Comparator.comparing(v -&gt; v.status().name());</span>
+<span class="fc" id="L45">            case &quot;creationDate&quot; -&gt; Comparator.comparing(VocabularyVersion::creationDate);</span>
+<span class="fc" id="L46">            default -&gt; null;</span>
+        };
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        if (primary == null) {</span>
+<span class="fc" id="L49">            return Optional.empty();</span>
+        }
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        return Optional.of((descending ? primary.reversed() : primary).thenComparing(BY_VERSION_DESC));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

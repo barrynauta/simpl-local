@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HealthController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">HealthController.java</span></div><h1>HealthController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.api.ApiModel.HealthResponse;
+import eu.simpl.vocabularymanager.config.VocabularyManagerProperties;
+import eu.simpl.vocabularymanager.security.RealmKeys;
+import eu.simpl.vocabularymanager.store.SparqlClient;
+import jakarta.servlet.http.HttpServletRequest;
+import java.time.Duration;
+import java.util.Set;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * GET /health (decision D44): DOWN (503) when the store does not answer within 2 s; DEGRADED when the store answers
+ * but no realm keys are loaded and Keycloak does not answer; otherwise UP. No token needed.
+ */
+@RestController
+public class HealthController {
+
+    private final SparqlClient sparql;
+    private final RealmKeys realmKeys;
+    private final Duration storeTimeout;
+
+<span class="fc" id="L26">    public HealthController(SparqlClient sparql, RealmKeys realmKeys, VocabularyManagerProperties properties) {</span>
+<span class="fc" id="L27">        this.sparql = sparql;</span>
+<span class="fc" id="L28">        this.realmKeys = realmKeys;</span>
+<span class="fc" id="L29">        this.storeTimeout = properties.store().healthTimeout();</span>
+<span class="fc" id="L30">    }</span>
+
+    @GetMapping(value = &quot;/health&quot;, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity&lt;HealthResponse&gt; health(HttpServletRequest request) {
+<span class="fc" id="L34">        QueryParameters.read(request, Set.of());</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (!sparql.ping(storeTimeout)) {</span>
+<span class="fc" id="L36">            return ResponseEntity.status(503).body(new HealthResponse(&quot;DOWN&quot;));</span>
+        }
+<span class="pc bpc" id="L38" title="3 of 4 branches missed.">        if (!realmKeys.hasKeys() &amp;&amp; !realmKeys.refreshQuietly()) {</span>
+<span class="nc" id="L39">            return ResponseEntity.ok(new HealthResponse(&quot;DEGRADED&quot;));</span>
+        }
+<span class="fc" id="L41">        return ResponseEntity.ok(new HealthResponse(&quot;UP&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RealmKeys.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">RealmKeys.java</span></div><h1>RealmKeys.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import eu.simpl.vocabularymanager.config.VocabularyManagerProperties;
+import eu.simpl.vocabularymanager.error.Problems;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.text.ParseException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
+/**
+ * The realm keys of the identity provider (decision D44): fetched at start and again when a token names an unknown key
+ * id, with a 2 s timeout and no retry inside a request. Cached keys keep working while Keycloak is down.
+ */
+@Component
+public class RealmKeys {
+
+<span class="fc" id="L31">    private static final Logger LOG = LoggerFactory.getLogger(RealmKeys.class);</span>
+<span class="fc" id="L32">    private static final Duration MIN_REFRESH_INTERVAL = Duration.ofSeconds(5);</span>
+
+    private final HttpClient httpClient;
+    private final URI jwksUri;
+    private final Duration timeout;
+    private final Clock clock;
+<span class="fc" id="L38">    private final Map&lt;String, JWK&gt; keys = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L39">    private volatile Instant lastSuccessfulFetch = Instant.EPOCH;</span>
+
+<span class="fc" id="L41">    public RealmKeys(VocabularyManagerProperties properties, Clock clock) {</span>
+<span class="fc" id="L42">        this.jwksUri = URI.create(properties.security().jwksUrl());</span>
+<span class="fc" id="L43">        this.timeout = properties.security().keyFetchTimeout();</span>
+<span class="fc" id="L44">        this.clock = clock;</span>
+<span class="fc" id="L45">        this.httpClient = HttpClient.newBuilder()</span>
+<span class="fc" id="L46">                .connectTimeout(timeout)</span>
+<span class="fc" id="L47">                .followRedirects(HttpClient.Redirect.NEVER)</span>
+<span class="fc" id="L48">                .build();</span>
+<span class="fc" id="L49">    }</span>
+
+    /** Loads the keys when the application is ready; a failure only makes the health DEGRADED. */
+    @EventListener(ApplicationReadyEvent.class)
+    public void loadAtStart() {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (!refreshQuietly()) {</span>
+<span class="fc" id="L55">            LOG.warn(&quot;Realm keys could not be loaded at start; they will be fetched on first use&quot;);</span>
+        }
+<span class="fc" id="L57">    }</span>
+
+    public boolean hasKeys() {
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        return !keys.isEmpty();</span>
+    }
+
+    /** Fetches the keys, never throws. */
+    public boolean refreshQuietly() {
+        try {
+<span class="fc" id="L66">            refresh();</span>
+<span class="fc" id="L67">            return true;</span>
+<span class="fc" id="L68">        } catch (KeyFetchFailure e) {</span>
+<span class="fc" id="L69">            LOG.debug(&quot;Realm key fetch failed: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L70">            return false;</span>
+        }
+    }
+
+    /**
+     * Returns the key with this id, fetching the key set once when the id is not cached.
+     *
+     * @return the key, or null when the identity provider does not know it
+     * @throws eu.simpl.vocabularymanager.error.VocabularyManagerException 503 when the keys cannot be fetched
+     */
+    public JWK key(String keyId) {
+<span class="fc" id="L81">        JWK cached = keys.get(keyId);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (cached != null) {</span>
+<span class="fc" id="L83">            return cached;</span>
+        }
+<span class="fc" id="L85">        synchronized (this) {</span>
+<span class="fc" id="L86">            cached = keys.get(keyId);</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">            if (cached != null) {</span>
+<span class="nc" id="L88">                return cached;</span>
+            }
+<span class="fc bfc" id="L90" title="All 2 branches covered.">            if (Duration.between(lastSuccessfulFetch, clock.instant()).compareTo(MIN_REFRESH_INTERVAL) &lt; 0) {</span>
+<span class="fc" id="L91">                return null;</span>
+            }
+            try {
+<span class="fc" id="L94">                refresh();</span>
+<span class="fc" id="L95">            } catch (KeyFetchFailure e) {</span>
+<span class="fc" id="L96">                throw Problems.identityProviderUnavailable(e);</span>
+<span class="fc" id="L97">            }</span>
+<span class="fc" id="L98">            return keys.get(keyId);</span>
+        }
+    }
+
+    private void refresh() {
+<span class="fc" id="L103">        HttpRequest request = HttpRequest.newBuilder(jwksUri)</span>
+<span class="fc" id="L104">                .timeout(timeout)</span>
+<span class="fc" id="L105">                .header(&quot;Accept&quot;, &quot;application/json&quot;)</span>
+<span class="fc" id="L106">                .GET()</span>
+<span class="fc" id="L107">                .build();</span>
+        try {
+<span class="fc" id="L109">            HttpResponse&lt;String&gt; response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">            if (response.statusCode() != 200) {</span>
+<span class="fc" id="L111">                throw new KeyFetchFailure(new IOException(&quot;Key endpoint answered &quot; + response.statusCode()));</span>
+            }
+<span class="fc" id="L113">            JWKSet set = JWKSet.parse(response.body());</span>
+<span class="fc" id="L114">            Map&lt;String, JWK&gt; fresh = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">            for (JWK jwk : set.getKeys()) {</span>
+<span class="pc bpc" id="L116" title="2 of 4 branches missed.">                if (jwk.getKeyID() != null &amp;&amp; !jwk.isPrivate()) {</span>
+<span class="fc" id="L117">                    fresh.put(jwk.getKeyID(), jwk);</span>
+                }
+<span class="fc" id="L119">            }</span>
+<span class="fc" id="L120">            keys.clear();</span>
+<span class="fc" id="L121">            keys.putAll(fresh);</span>
+<span class="fc" id="L122">            lastSuccessfulFetch = clock.instant();</span>
+<span class="fc" id="L123">        } catch (IOException | ParseException e) {</span>
+<span class="fc" id="L124">            throw new KeyFetchFailure(e);</span>
+<span class="nc" id="L125">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L126">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L127">            throw new KeyFetchFailure(e);</span>
+<span class="fc" id="L128">        }</span>
+<span class="fc" id="L129">    }</span>
+
+    /** The key set could not be fetched. */
+    static final class KeyFetchFailure extends RuntimeException {
+        KeyFetchFailure(Throwable cause) {
+<span class="fc" id="L134">            super(cause.getMessage(), cause);</span>
+<span class="fc" id="L135">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

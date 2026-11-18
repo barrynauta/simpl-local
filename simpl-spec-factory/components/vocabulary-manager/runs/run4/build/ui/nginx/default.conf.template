@@ -1,0 +1,36 @@
+server {
+    listen 8080;
+    server_name _;
+    server_tokens off;
+    root /usr/share/nginx/html;
+    client_max_body_size 25m;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "no-referrer" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ${KEYCLOAK_URL}; frame-src ${KEYCLOAK_URL}; form-action 'self' ${KEYCLOAK_URL}; frame-ancestors 'none'; base-uri 'self'" always;
+
+    location /v1/ {
+        proxy_pass ${API_UPSTREAM};
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+        proxy_request_buffering off;
+    }
+
+    location = /config.json {
+        default_type application/json;
+        expires -1;
+        return 200 '{"keycloakUrl":"${KEYCLOAK_URL}","realm":"${KEYCLOAK_REALM}","clientId":"${KEYCLOAK_CLIENT_ID}","apiBase":"/v1"}';
+    }
+
+    location /assets/ {
+        expires 7d;
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

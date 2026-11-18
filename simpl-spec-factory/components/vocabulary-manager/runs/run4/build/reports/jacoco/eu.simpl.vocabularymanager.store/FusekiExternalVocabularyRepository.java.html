@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FusekiExternalVocabularyRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">FusekiExternalVocabularyRepository.java</span></div><h1>FusekiExternalVocabularyRepository.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import static eu.simpl.vocabularymanager.store.StoreModel.command;
+
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.QuerySolution;
+import org.springframework.stereotype.Repository;
+
+/** Stores external vocabularies as RDF in the external graph of the Fuseki dataset 'vocabulary'. */
+@Repository
+public class FusekiExternalVocabularyRepository implements ExternalVocabularyRepository {
+
+    private static final String SELECT = &quot;&quot;&quot;
+            SELECT ?name ?namespaceUri ?aliasUris ?sourceUri ?description ?createdBy ?creationDate WHERE {
+              GRAPH ?externalGraph {
+                ?e a vm:ExternalVocabulary ; vm:name ?name ; vm:namespaceUri ?namespaceUri ; vm:aliasUris ?aliasUris ;
+                   vm:createdBy ?createdBy ; vm:creationDate ?creationDate .
+                OPTIONAL { ?e vm:sourceUri ?sourceUri }
+                OPTIONAL { ?e vm:description ?description }
+              }
+            }
+            &quot;&quot;&quot;;
+
+    private final SparqlClient sparql;
+
+<span class="fc" id="L31">    public FusekiExternalVocabularyRepository(SparqlClient sparql) {</span>
+<span class="fc" id="L32">        this.sparql = sparql;</span>
+<span class="fc" id="L33">    }</span>
+
+    @Override
+    public List&lt;ExternalVocabulary&gt; findAll() {
+<span class="fc" id="L37">        return sparql.select(command(SELECT).toString()).stream()</span>
+<span class="fc" id="L38">                .map(FusekiExternalVocabularyRepository::toExternal)</span>
+<span class="fc" id="L39">                .toList();</span>
+    }
+
+    @Override
+    public Optional&lt;ExternalVocabulary&gt; findByName(String name) {
+<span class="fc" id="L44">        ParameterizedSparqlString query = command(SELECT);</span>
+<span class="fc" id="L45">        query.setIri(&quot;e&quot;, StoreModel.externalIri(name));</span>
+<span class="fc" id="L46">        return sparql.select(query.toString()).stream()</span>
+<span class="fc" id="L47">                .map(FusekiExternalVocabularyRepository::toExternal)</span>
+<span class="fc" id="L48">                .findFirst();</span>
+    }
+
+    @Override
+    public Optional&lt;byte[]&gt; findContent(String name) {
+<span class="fc" id="L53">        ParameterizedSparqlString query =</span>
+<span class="fc" id="L54">                command(&quot;SELECT ?content WHERE { GRAPH ?externalGraph { ?e vm:content ?content } }&quot;);</span>
+<span class="fc" id="L55">        query.setIri(&quot;e&quot;, StoreModel.externalIri(name));</span>
+<span class="fc" id="L56">        return sparql.select(query.toString()).stream()</span>
+<span class="fc" id="L57">                .map(row -&gt; StoreModel.bytes(row, &quot;content&quot;))</span>
+<span class="fc" id="L58">                .findFirst();</span>
+    }
+
+    @Override
+    public void create(ExternalVocabulary vocabulary, byte[] content) {
+<span class="fc" id="L63">        StringBuilder text = new StringBuilder(&quot;&quot;&quot;</span>
+                INSERT DATA { GRAPH ?externalGraph {
+                  ?e a vm:ExternalVocabulary ; vm:name ?name ; vm:nameKey ?key ; vm:namespaceUri ?namespaceUri ;
+                     vm:aliasUris ?aliasUris ; vm:createdBy ?createdBy ; vm:creationDate ?creationDate ;
+                     vm:content ?content .
+                &quot;&quot;&quot;);
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (vocabulary.sourceUri() != null) {</span>
+<span class="fc" id="L70">            text.append(&quot;  ?e vm:sourceUri ?sourceUri .\n&quot;);</span>
+        }
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if (vocabulary.description() != null) {</span>
+<span class="fc" id="L73">            text.append(&quot;  ?e vm:description ?description .\n&quot;);</span>
+        }
+<span class="fc" id="L75">        text.append(&quot;} }&quot;);</span>
+<span class="fc" id="L76">        ParameterizedSparqlString update = command(text.toString());</span>
+<span class="fc" id="L77">        update.setIri(&quot;e&quot;, StoreModel.externalIri(vocabulary.name()));</span>
+<span class="fc" id="L78">        update.setLiteral(&quot;name&quot;, vocabulary.name());</span>
+<span class="fc" id="L79">        update.setLiteral(&quot;key&quot;, vocabulary.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L80">        update.setLiteral(&quot;namespaceUri&quot;, vocabulary.namespaceUri());</span>
+<span class="fc" id="L81">        update.setLiteral(&quot;aliasUris&quot;, String.join(&quot; &quot;, vocabulary.aliasUris()));</span>
+<span class="fc" id="L82">        update.setLiteral(&quot;createdBy&quot;, vocabulary.createdBy());</span>
+<span class="fc" id="L83">        update.setLiteral(&quot;creationDate&quot;, StoreModel.dateTime(vocabulary.creationDate()));</span>
+<span class="fc" id="L84">        update.setLiteral(&quot;content&quot;, StoreModel.CONTENT_MARKER);</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        if (vocabulary.sourceUri() != null) {</span>
+<span class="fc" id="L86">            update.setLiteral(&quot;sourceUri&quot;, vocabulary.sourceUri());</span>
+        }
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (vocabulary.description() != null) {</span>
+<span class="fc" id="L89">            update.setLiteral(&quot;description&quot;, vocabulary.description());</span>
+        }
+<span class="fc" id="L91">        sparql.update(StoreModel.withContent(update, content));</span>
+<span class="fc" id="L92">    }</span>
+
+    @Override
+    public void delete(String name) {
+<span class="fc" id="L96">        ParameterizedSparqlString update = command(&quot;DELETE WHERE { GRAPH ?externalGraph { ?e ?p ?o } }&quot;);</span>
+<span class="fc" id="L97">        update.setIri(&quot;e&quot;, StoreModel.externalIri(name));</span>
+<span class="fc" id="L98">        sparql.update(update.toString());</span>
+<span class="fc" id="L99">    }</span>
+
+    private static ExternalVocabulary toExternal(QuerySolution row) {
+<span class="fc" id="L102">        String aliases = StoreModel.text(row, &quot;aliasUris&quot;);</span>
+<span class="pc bpc" id="L103" title="2 of 4 branches missed.">        List&lt;String&gt; aliasUris = aliases == null || aliases.isBlank()</span>
+<span class="nc" id="L104">                ? List.of()</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">                : Arrays.stream(aliases.split(&quot; &quot;)).filter(s -&gt; !s.isBlank()).toList();</span>
+<span class="fc" id="L106">        return new ExternalVocabulary(</span>
+<span class="fc" id="L107">                StoreModel.text(row, &quot;name&quot;),</span>
+<span class="fc" id="L108">                StoreModel.text(row, &quot;namespaceUri&quot;),</span>
+                aliasUris,
+<span class="fc" id="L110">                StoreModel.text(row, &quot;sourceUri&quot;),</span>
+<span class="fc" id="L111">                StoreModel.text(row, &quot;description&quot;),</span>
+<span class="fc" id="L112">                StoreModel.text(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L113">                StoreModel.instant(row, &quot;creationDate&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

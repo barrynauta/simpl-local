@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyManagerException.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.error</a> &gt; <span class="el_source">VocabularyManagerException.java</span></div><h1>VocabularyManagerException.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.error;
+
+import java.util.List;
+
+/**
+ * The one exception class of the component (CODE-43). The error code gives the HTTP status and problem type; the
+ * detail and the issues are returned to the client in the problem body.
+ */
+public class VocabularyManagerException extends RuntimeException {
+
+    private final transient ErrorCode code;
+    private final String detail;
+    private final transient List&lt;Issue&gt; issues;
+
+    public VocabularyManagerException(ErrorCode code, String detail) {
+<span class="fc" id="L16">        this(code, detail, List.of(), null);</span>
+<span class="fc" id="L17">    }</span>
+
+    public VocabularyManagerException(ErrorCode code, String detail, List&lt;Issue&gt; issues) {
+<span class="fc" id="L20">        this(code, detail, issues, null);</span>
+<span class="fc" id="L21">    }</span>
+
+    public VocabularyManagerException(ErrorCode code, String detail, List&lt;Issue&gt; issues, Throwable cause) {
+<span class="fc" id="L24">        super(code + &quot;: &quot; + detail, cause);</span>
+<span class="fc" id="L25">        this.code = code;</span>
+<span class="fc" id="L26">        this.detail = detail;</span>
+<span class="pc bpc" id="L27" title="1 of 2 branches missed.">        this.issues = issues == null ? List.of() : List.copyOf(issues);</span>
+<span class="fc" id="L28">    }</span>
+
+    public ErrorCode code() {
+<span class="fc" id="L31">        return code;</span>
+    }
+
+    public String detail() {
+<span class="fc" id="L35">        return detail;</span>
+    }
+
+    public List&lt;Issue&gt; issues() {
+<span class="fc" id="L39">        return issues;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

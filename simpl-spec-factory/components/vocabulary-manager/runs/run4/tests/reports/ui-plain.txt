@@ -1,0 +1,458 @@
+Feature: Role-based access in the UI
+
+  Scenario: An administrator sees every action
+    Given a vocabulary "Health" exists ... passed in 0.133s
+    And I sign in to the UI as "ga-admin" ... passed in 0.959s
+    When I open the vocabulary list ... passed in 0.598s
+    Then I see the action "New Vocabulary +" ... passed in 0.124s
+    And the row of vocabulary "Health" has the actions "View vocabulary details, Download vocabulary, Update, Deprecate" ... passed in 3.356s
+
+  Scenario: A viewer does not see the restricted actions
+    Given a vocabulary "Health" exists ... passed in 0.075s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.780s
+    When I open the vocabulary list ... passed in 0.618s
+    Then I do not see the action "New Vocabulary +" ... passed in 3.919s
+    And I do not see the action "Update" ... passed in 0.537s
+    And I do not see the action "Deprecate" ... passed in 0.536s
+
+  Scenario Outline: Opening a restricted form directly shows an authorisation message (ga-viewer) -- @1.1 
+    Given a vocabulary "Health" exists ... passed in 0.070s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.908s
+    When I open the address of the create form directly ... passed in 0.561s
+    Then I see "You are not authorized to perform this action." ... passed in 0.015s
+
+  Scenario Outline: Opening a restricted form directly shows an authorisation message (ga-viewer) -- @1.2 
+    Given a vocabulary "Health" exists ... passed in 0.060s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.724s
+    When I open the address of the new version of "Health" form directly ... passed in 0.563s
+    Then I see "You are not authorized to perform this action." ... passed in 0.014s
+
+  Scenario Outline: Opening a restricted form directly shows an authorisation message (ga-norole) -- @1.3 
+    Given a vocabulary "Health" exists ... passed in 0.063s
+    And I sign in to the UI as "ga-norole" ... passed in 0.732s
+    When I open the address of the create form directly ... passed in 0.548s
+    Then I see "You are not authorized to perform this action." ... passed in 0.017s
+
+  Scenario: A 403 from the API shows the authorisation message
+    Given a vocabulary "Health" exists ... passed in 0.065s
+    And the API is stubbed to answer 403 to "updateVocabularyStatus" ... passed in 0.049s
+    And I sign in to the UI as "ga-admin" ... passed in 0.696s
+    When I open the vocabulary list ... passed in 0.597s
+    And I click "Deprecate" for vocabulary "Health" ... passed in 3.370s
+    Then I see "You are not authorized to perform this action." ... passed in 0.262s
+
+  Scenario: A user without a token is sent to sign in
+    When I open the UI without signing in ... passed in 0.041s
+    And I open the UI address "/vocabularies" ... passed in 0.572s
+    Then I am sent to the sign-in page ... passed in 0.017s
+
+Feature: Accessibility of the main UI pages
+
+  Scenario Outline: The vocabulary list page has no WCAG 2.1 AA violations -- @1.1 
+    Given a vocabulary "Health" exists with 2 versions ... passed in 0.113s
+    And I sign in to the UI as "ga-admin" ... passed in 0.722s
+    When I open the vocabulary list page for the accessibility check ... passed in 1.122s
+    Then the page has no WCAG 2.1 AA violations ... passed in 0.188s
+
+  Scenario Outline: The vocabulary details page has no WCAG 2.1 AA violations -- @1.2 
+    Given a vocabulary "Health" exists with 2 versions ... passed in 0.108s
+    And I sign in to the UI as "ga-admin" ... passed in 0.698s
+    When I open the vocabulary details page for the accessibility check ... passed in 1.190s
+    Then the page has no WCAG 2.1 AA violations ... passed in 0.117s
+
+  Scenario Outline: The creation form page has no WCAG 2.1 AA violations -- @1.3 
+    Given a vocabulary "Health" exists with 2 versions ... passed in 0.137s
+    And I sign in to the UI as "ga-admin" ... passed in 0.713s
+    When I open the creation form page for the accessibility check ... passed in 1.087s
+    Then the page has no WCAG 2.1 AA violations ... passed in 0.091s
+
+  Scenario Outline: The new version form page has no WCAG 2.1 AA violations -- @1.4 
+    Given a vocabulary "Health" exists with 2 versions ... passed in 0.147s
+    And I sign in to the UI as "ga-admin" ... passed in 0.744s
+    When I open the new version form page for the accessibility check ... passed in 1.101s
+    Then the page has no WCAG 2.1 AA violations ... passed in 0.088s
+
+Feature: Create a vocabulary and a new version in the UI
+
+  Scenario: The creation form has name, description and file, but no version or change log
+    Given I sign in to the UI as "ga-admin" ... passed in 0.748s
+    When I open the vocabulary list ... passed in 0.595s
+    And I click "New Vocabulary +" ... passed in 0.024s
+    Then the form shows the fields "Name, Description, File upload" ... passed in 0.005s
+    And the form does not show the fields "Version, Change log" ... passed in 0.004s
+
+  Scenario Outline: The creation form reports invalid input (name format) -- @1.1 
+    Given a vocabulary "Taken" exists ... passed in 0.063s
+    And I sign in to the UI as "ga-admin" ... passed in 0.750s
+    When I open the vocabulary list ... passed in 0.618s
+    And I click "New Vocabulary +" ... passed in 0.022s
+    And I fill in "Name" with "lower" ... passed in 0.003s
+    And I fill in "Description" with "A desc" ... passed in 0.002s
+    And I choose the file "valid-skos.ttl" ... passed in 0.305s
+    And I submit the form ... passed in 0.624s
+    Then I see "Name" ... passed in 0.006s
+    And the form stays open ... passed in 0.505s
+
+  Scenario Outline: The creation form reports invalid input (name not unique) -- @1.2 
+    Given a vocabulary "Taken" exists ... passed in 0.074s
+    And I sign in to the UI as "ga-admin" ... passed in 0.742s
+    When I open the vocabulary list ... passed in 0.619s
+    And I click "New Vocabulary +" ... passed in 0.021s
+    And I fill in "Name" with "${name:Taken}" ... passed in 0.002s
+    And I fill in "Description" with "A desc" ... passed in 0.002s
+    And I choose the file "valid-skos.ttl" ... passed in 0.306s
+    And I submit the form ... passed in 0.625s
+    Then I see "Vocabulary with name '${name:Taken}' already exists." ... passed in 0.006s
+    And the form stays open ... passed in 0.506s
+
+  Scenario Outline: The creation form reports invalid input (unsupported file) -- @1.3 
+    Given a vocabulary "Taken" exists ... passed in 0.082s
+    And I sign in to the UI as "ga-admin" ... passed in 0.728s
+    When I open the vocabulary list ... passed in 0.626s
+    And I click "New Vocabulary +" ... passed in 0.034s
+    And I fill in "Name" with "${run}New" ... passed in 0.003s
+    And I fill in "Description" with "A desc" ... passed in 0.002s
+    And I choose the file "not-turtle.json" ... passed in 0.308s
+    And I submit the form ... passed in 0.309s
+    Then I see "line 1" ... passed in 0.003s
+    And the form stays open ... passed in 0.506s
+
+  Scenario: A valid new vocabulary is published as ACTIVE version 1
+    Given I sign in to the UI as "ga-admin" ... passed in 0.790s
+    When I open the vocabulary list ... passed in 0.612s
+    And I click "New Vocabulary +" ... passed in 0.025s
+    And I fill in "Name" with "${run}Fresh" ... passed in 0.003s
+    And I fill in "Description" with "A new vocabulary." ... passed in 0.002s
+    And I choose the file "valid-skos.ttl" ... passed in 0.307s
+    And I submit the form ... passed in 0.624s
+    Then I see "Version 1 of ${run}Fresh was created." ... passed in 0.006s
+    And the row of vocabulary "Fresh" shows "Active" ... passed in 3.915s
+
+  Scenario: The update form is pre-filled with the latest version
+    Given a vocabulary "Health" exists with: ... passed in 0.101s
+      | field       | value            |
+      | description | Current wording. |
+    And I sign in to the UI as "ga-admin" ... passed in 0.739s
+    When I open the vocabulary list ... passed in 0.618s
+    And I click "Update" for vocabulary "Health" ... passed in 3.359s
+    Then the field "Description" holds "Current wording." in the form ... passed in 0.027s
+    And the file "${name:Health}.ttl (current content)" is attached in the form ... passed in 0.003s
+    And the field "Change log" is empty in the form ... passed in 0.002s
+    And I see "Submitting creates version 2 and deprecates every older ACTIVE version." ... passed in 0.002s
+
+  Scenario: Submitting the update form creates the next version and deprecates the older ones
+    Given a vocabulary "Health" exists ... passed in 0.066s
+    And I sign in to the UI as "ga-admin" ... passed in 0.717s
+    When I open the vocabulary list ... passed in 0.610s
+    And I click "Update" for vocabulary "Health" ... passed in 3.382s
+    Then the form does not show the fields "Version" ... passed in 0.028s
+    When I fill in "Change log" with "Clarified labels." ... passed in 0.003s
+    And I choose the file "cpsv-like.ttl" ... passed in 0.311s
+    And I submit the form ... passed in 0.624s
+    Then I see "Version 2 of ${name:Health} was created." ... passed in 0.004s
+    When I open the details of vocabulary "Health" ... passed in 3.967s
+    Then the row of version 2 shows "Active" ... passed in 0.027s
+    And the row of version 1 shows "Deprecated" ... passed in 0.003s
+
+  Scenario: A description-only change creates a new version
+    Given a vocabulary "Health" exists ... passed in 0.064s
+    And I sign in to the UI as "ga-admin" ... passed in 0.757s
+    When I open the vocabulary list ... passed in 0.603s
+    And I click "Update" for vocabulary "Health" ... passed in 3.379s
+    And I fill in "Description" with "Only the description changed." ... passed in 0.027s
+    And I fill in "Change log" with "Description reworded." ... passed in 0.004s
+    And I submit the form ... passed in 0.620s
+    Then I see "Version 2 of ${name:Health} was created." ... passed in 0.006s
+
+  Scenario: Resubmitting the latest version unchanged shows the conflict above the form
+    Given a vocabulary "Health" exists ... passed in 0.069s
+    And I sign in to the UI as "ga-admin" ... passed in 0.763s
+    When I open the vocabulary list ... passed in 0.612s
+    And I click "Update" for vocabulary "Health" ... passed in 3.361s
+    And I fill in "Change log" with "Nothing really changed." ... passed in 0.027s
+    And I submit the form ... passed in 0.622s
+    Then I see "Version 1 of vocabulary '${name:Health}' already has this content and description." ... passed in 0.004s
+    And the form stays open ... passed in 0.505s
+
+  Scenario Outline: An unexpected error during version creation is reported (500) -- @1.1 
+    Given a vocabulary "Health" exists ... passed in 0.090s
+    And the API is stubbed to answer 500 to "createVocabularyVersion" ... passed in 0.078s
+    And I sign in to the UI as "ga-admin" ... passed in 0.719s
+    When I open the vocabulary list ... passed in 0.611s
+    And I click "Update" for vocabulary "Health" ... passed in 3.374s
+    And I fill in "Change log" with "Will fail." ... passed in 0.027s
+    And I choose the file "cpsv-like.ttl" ... passed in 0.310s
+    And I submit the form ... passed in 0.632s
+    Then I see "retry or contact support" ... passed in 0.004s
+    And the form stays open ... passed in 0.506s
+
+  Scenario Outline: An unexpected error during version creation is reported (503) -- @1.2 
+    Given a vocabulary "Health" exists ... passed in 0.079s
+    And the API is stubbed to answer 503 to "createVocabularyVersion" ... passed in 0.047s
+    And I sign in to the UI as "ga-admin" ... passed in 0.713s
+    When I open the vocabulary list ... passed in 0.624s
+    And I click "Update" for vocabulary "Health" ... passed in 3.368s
+    And I fill in "Change log" with "Will fail." ... passed in 0.026s
+    And I choose the file "cpsv-like.ttl" ... passed in 0.309s
+    And I submit the form ... passed in 0.636s
+    Then I see "retry or contact support" ... passed in 0.005s
+    And the form stays open ... passed in 0.507s
+
+  Scenario: A file over 5 MB is refused in the browser
+    Given I sign in to the UI as "ga-admin" ... passed in 0.775s
+    When I open the vocabulary list ... passed in 0.604s
+    And I click "New Vocabulary +" ... passed in 0.026s
+    And I choose the file "<bytes:5242881>" ... passed in 0.571s
+    Then I see "The maximum allowed upload size is 5 MB" ... passed in 0.006s
+    And the button "Submit" is disabled ... passed in 0.003s
+
+Feature: Vocabulary details and version history in the UI
+
+  Scenario: Opening the history shows the details page with every version, newest first
+    Given a vocabulary "Health" exists with 3 versions ... passed in 0.249s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.757s
+    When I open the vocabulary list ... passed in 0.617s
+    And I click "View vocabulary details" for vocabulary "Health" ... passed in 3.373s
+    Then I am on the UI address "/vocabularies/${name:Health}" ... passed in 0.000s
+    And I see "${name:Health}" ... passed in 0.258s
+    And the version list shows the columns "Version, Status, Date created, Description, Change log, Actions" ... passed in 0.010s
+    And the version list shows the versions "3, 2, 1" in this order ... passed in 0.007s
+
+  Scenario: A viewer sees deprecated versions labelled as such
+    Given a vocabulary "Health" exists with 2 versions ... passed in 0.149s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.725s
+    When I open the details of vocabulary "Health" ... passed in 3.971s
+    Then the row of version 1 shows "Deprecated" ... passed in 0.027s
+    And the row of version 2 shows "Active" ... passed in 0.003s
+
+  Scenario: Selecting a deprecated version shows all its metadata
+    Given a vocabulary "Health" exists with 2 versions ... passed in 0.115s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.708s
+    When I open the details of vocabulary "Health" ... passed in 3.971s
+    And I select version 1 ... passed in 0.116s
+    Then the version panel shows "Version, Status, Date created, Creator, Description, Change log, Download" ... passed in 0.016s
+    And I see "${email:ga-admin}" ... passed in 0.002s
+
+  Scenario: A selected version is downloaded as its own file
+    Given a vocabulary "Health" exists with 2 versions ... passed in 0.124s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.732s
+    When I open the details of vocabulary "Health" ... passed in 3.958s
+    And I select version 1 ... passed in 0.074s
+    And I click "Download" ... passed in 0.025s
+    Then a file "${name:Health}-v1.ttl" is downloaded with the content of version 1 of "Health" ... passed in 0.255s
+
+  Scenario: A deprecated version links to the latest ACTIVE version
+    Given a vocabulary "Health" exists with 2 versions ... passed in 0.128s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.756s
+    When I open the details of vocabulary "Health" ... passed in 3.991s
+    Then the row of version 1 shows "This version is deprecated." ... passed in 0.004s
+    And the row of version 1 shows "Latest ACTIVE version: 2" ... passed in 0.002s
+    And the link "Latest ACTIVE version: 2" leads to version 2 ... passed in 0.286s
+
+  Scenario: Without an ACTIVE version only the deprecation warning is shown
+    Given a vocabulary "Health" exists with 2 versions ... passed in 0.135s
+    And version 2 of vocabulary "Health" has status "DEPRECATED" ... passed in 0.056s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.746s
+    When I open the details of vocabulary "Health" ... passed in 3.988s
+    Then the row of version 1 shows "This version is deprecated." ... passed in 0.005s
+    And the row of version 1 does not show "Latest ACTIVE version" ... passed in 0.003s
+
+  Scenario: The versions of a deprecated vocabulary are effectively deprecated
+    Given a vocabulary "Health" exists ... passed in 0.062s
+    And the vocabulary "Health" has status "DEPRECATED" ... passed in 0.040s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.746s
+    When I open the details of vocabulary "Health" ... passed in 3.972s
+    Then the row of version 1 shows "This version is deprecated." ... passed in 0.004s
+
+  Scenario: An unknown vocabulary shows a not-found message with a way back
+    Given I sign in to the UI as "ga-viewer" ... passed in 0.759s
+    When I open the UI address "/vocabularies/${name:Missing}" ... passed in 0.554s
+    Then I see "Vocabulary not found." ... passed in 0.016s
+    And I see the action "Back to the list" ... passed in 0.012s
+
+Feature: Vocabulary list in the UI
+
+  Scenario: The list shows every vocabulary with its columns and row actions
+    Given a vocabulary "Alpha" exists ... passed in 0.074s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.732s
+    When I open the vocabulary list ... passed in 0.616s
+    Then the vocabulary list shows the columns "Actions, Name, Description, Latest version, Status, Date created, Last updated, Creator" ... passed in 0.015s
+    And the row of vocabulary "Alpha" shows "Active" ... passed in 3.321s
+    And the row of vocabulary "Alpha" has the actions "View vocabulary details, Download vocabulary" ... passed in 0.024s
+
+  Scenario: A load error is reported with the problem detail
+    Given the API is stubbed to answer 500 to "getVocabularies" ... passed in 0.036s
+    And I sign in to the UI as "ga-admin" ... passed in 0.695s
+    When I open the vocabulary list ... passed in 0.584s
+    Then I see "The vocabulary list could not be loaded." ... passed in 0.002s
+    And I see "Internal Server Error" ... passed in 0.002s
+
+  Scenario: An empty list shows a message
+    Given the API is stubbed to answer 200 to "getVocabularies with no items" ... passed in 0.034s
+    And I sign in to the UI as "ga-admin" ... passed in 0.696s
+    When I open the vocabulary list ... passed in 0.592s
+    Then I see "No vocabularies found." ... passed in 0.003s
+
+  Scenario: Filters narrow the list
+    Given a vocabulary "Shaclshapes" exists ... passed in 0.076s
+    And a vocabulary "Other" exists ... passed in 0.056s
+    And the vocabulary "Other" has status "DEPRECATED" ... passed in 0.037s
+    And I sign in to the UI as "ga-admin" ... passed in 0.716s
+    When I open the vocabulary list ... passed in 0.609s
+    And I set the filter "Name" to "${runlower}shacl" ... passed in 0.007s
+    Then the vocabulary list shows "Shaclshapes" in this order ... passed in 0.607s
+    When I set the filter "Name" to "${run}" ... passed in 0.006s
+    And I set the filter "Status" to "Deprecated" ... passed in 0.005s
+    Then the vocabulary list shows "Other" in this order ... passed in 0.265s
+
+  Scenario Outline: A sortable column sorts ascending, then descending (Name) -- @1.1 
+    Given a vocabulary "Alpha" exists ... passed in 0.069s
+    And a vocabulary "Beta" exists ... passed in 0.050s
+    And I sign in to the UI as "ga-admin" ... passed in 0.738s
+    When I open the vocabulary list ... passed in 0.611s
+    And I set the filter "Name" to "${run}" ... passed in 0.007s
+    And I click the column header "Name" 1 times ... passed in 0.338s
+    Then the vocabulary list shows "Alpha, Beta" in this order ... failed in 10.129s
+ASSERT FAILED: list order is not ['V8wmx58oaucAlpha', 'V8wmx58oaucBeta']
+observed: ['V8wmx58oaucBeta', 'V8wmx58oaucAlpha']
+
+  Scenario Outline: A sortable column sorts ascending, then descending (Name) -- @1.2 
+    Given a vocabulary "Alpha" exists ... passed in 0.110s
+    And a vocabulary "Beta" exists ... passed in 0.045s
+    And I sign in to the UI as "ga-admin" ... passed in 0.734s
+    When I open the vocabulary list ... passed in 0.604s
+    And I set the filter "Name" to "${run}" ... passed in 0.008s
+    And I click the column header "Name" 2 times ... passed in 0.646s
+    Then the vocabulary list shows "Beta, Alpha" in this order ... failed in 10.091s
+ASSERT FAILED: list order is not ['Vyif5gfb7eiBeta', 'Vyif5gfb7eiAlpha']
+observed: ['Vyif5gfb7eiAlpha', 'Vyif5gfb7eiBeta']
+
+  Scenario: A deprecated vocabulary carries a warning in the list and on its details page
+    Given a vocabulary "Old" exists ... passed in 0.067s
+    And the vocabulary "Old" has status "DEPRECATED" ... passed in 0.046s
+    And I sign in to the UI as "ga-viewer" ... passed in 0.761s
+    When I open the vocabulary list ... passed in 0.605s
+    Then the row of vocabulary "Old" shows "This vocabulary is deprecated. Its use is discouraged." ... passed in 3.325s
+    When I open the details of vocabulary "Old" ... passed in 3.941s
+    Then I see "This vocabulary is deprecated. Its use is discouraged." ... passed in 0.003s
+
+  Scenario: The download action gives the latest version
+    Given a vocabulary "Health" exists with 2 versions ... passed in 0.114s
+    And I sign in to the UI as "ga-admin" ... passed in 0.730s
+    When I open the vocabulary list ... passed in 0.620s
+    And I click "Download vocabulary" for vocabulary "Health" ... passed in 3.371s
+    Then a file "${name:Health}.ttl" is downloaded with the content of version 2 of "Health" ... passed in 0.254s
+    When I click "View vocabulary details" for vocabulary "Health" ... passed in 0.064s
+    Then I see "${name:Health}" ... passed in 0.259s
+
+Feature: Change the vocabulary status in the UI
+
+  Scenario: A vocabulary is deprecated from the list
+    Given a vocabulary "Health" exists ... passed in 0.073s
+    And I sign in to the UI as "ga-admin" ... passed in 0.737s
+    When I open the vocabulary list ... passed in 0.618s
+    And I click "Deprecate" for vocabulary "Health" ... passed in 0.062s
+    Then the row of vocabulary "Health" shows "Deprecated" ... passed in 0.281s
+    And I see a success notification ... passed in 0.003s
+
+  Scenario: A deprecated vocabulary is restored to Active, the only status offered
+    Given a vocabulary "Health" exists ... passed in 0.061s
+    And the vocabulary "Health" has status "DEPRECATED" ... passed in 0.049s
+    And I sign in to the UI as "ga-admin" ... passed in 0.735s
+    When I open the vocabulary list ... passed in 0.609s
+    Then I do not see the action "Deprecate" ... passed in 3.938s
+    When I click "Activate" for vocabulary "Health" ... passed in 0.036s
+    Then the row of vocabulary "Health" shows "Active" ... passed in 0.267s
+
+  Scenario: A vocabulary that is no longer available is reported as not found
+    Given a vocabulary "Health" exists ... passed in 0.057s
+    And the API is stubbed to answer 404 to "updateVocabularyStatus" ... passed in 0.041s
+    And I sign in to the UI as "ga-admin" ... passed in 0.721s
+    When I open the vocabulary list ... passed in 0.615s
+    And I click "Deprecate" for vocabulary "Health" ... passed in 0.057s
+    Then I see "not found" ... passed in 0.261s
+    And the row of vocabulary "Health" shows "Active" ... passed in 0.014s
+
+  Scenario: A failed status update leaves the status unchanged
+    Given a vocabulary "Health" exists ... passed in 0.107s
+    And the API is stubbed to answer 500 to "updateVocabularyStatus" ... passed in 0.047s
+    And I sign in to the UI as "ga-admin" ... passed in 0.710s
+    When I open the vocabulary list ... passed in 0.620s
+    And I click "Deprecate" for vocabulary "Health" ... passed in 3.369s
+    Then I see "could not be updated" ... passed in 0.260s
+    And the row of vocabulary "Health" shows "Active" ... passed in 0.009s
+
+Feature: Validation feedback in the UI
+
+  Scenario: A valid file passes the upload check
+    Given I sign in to the UI as "ga-admin" ... passed in 0.761s
+    When I open the vocabulary list ... passed in 0.607s
+    And I click "New Vocabulary +" ... passed in 0.035s
+    And I choose the file "valid-skos.ttl" ... passed in 0.307s
+    Then I see "Syntax check passed." ... passed in 0.004s
+
+  Scenario: A syntax error is shown on upload with its position and blocks the submit
+    Given I sign in to the UI as "ga-admin" ... passed in 0.779s
+    When I open the vocabulary list ... passed in 0.617s
+    And I click "New Vocabulary +" ... passed in 0.038s
+    And I choose the file "syntax-error-line4.ttl" ... passed in 0.309s
+    Then I see "line 4" ... passed in 0.005s
+    And the button "Submit" is disabled ... passed in 0.002s
+
+  Scenario: Semantic errors on creation are listed in the report panel
+    Given I sign in to the UI as "ga-admin" ... passed in 0.769s
+    When I open the vocabulary list ... passed in 0.607s
+    And I click "New Vocabulary +" ... passed in 0.036s
+    And I fill in "Name" with "${run}Semantic" ... passed in 0.003s
+    And I fill in "Description" with "Has a semantic error." ... passed in 0.002s
+    And I choose the file "s1-literal-for-object-property.ttl" ... passed in 0.311s
+    And I submit the form ... passed in 0.633s
+    Then the report panel lists an issue "Literal value for object property" at "statement" ... passed in 0.006s
+    And the form stays open ... passed in 0.505s
+
+  Scenario: All semantic errors of a new version are listed together
+    Given a vocabulary "Health" exists ... passed in 0.069s
+    And I sign in to the UI as "ga-admin" ... passed in 0.748s
+    When I open the vocabulary list ... passed in 0.606s
+    And I click "Update" for vocabulary "Health" ... passed in 3.366s
+    And I fill in "Change log" with "Broken on purpose." ... passed in 0.025s
+    And I choose the file "three-semantic-errors.ttl" ... passed in 0.306s
+    And I submit the form ... passed in 0.621s
+    Then the report panel lists 3 issues ... passed in 0.007s
+    And the form stays open ... passed in 0.504s
+
+  Scenario: The flow cannot complete until the errors are fixed
+    Given I sign in to the UI as "ga-admin" ... passed in 0.728s
+    When I open the vocabulary list ... passed in 0.590s
+    And I click "New Vocabulary +" ... passed in 0.034s
+    And I fill in "Name" with "${run}Fixed" ... passed in 0.002s
+    And I fill in "Description" with "Fixed after the report." ... passed in 0.002s
+    And I choose the file "s4-duplicate-preflabel.ttl" ... passed in 0.305s
+    And I submit the form ... passed in 0.628s
+    Then the report panel lists 1 issues ... passed in 0.006s
+    When I choose the file "valid-skos.ttl" ... passed in 0.310s
+    And I submit the form ... passed in 0.633s
+    Then I see "Version 1 of ${run}Fixed was created." ... passed in 0.004s
+
+  Scenario: A semantically valid submission is confirmed
+    Given I sign in to the UI as "ga-admin" ... passed in 0.765s
+    When I open the vocabulary list ... passed in 0.586s
+    And I click "New Vocabulary +" ... passed in 0.025s
+    And I fill in "Name" with "${run}Good" ... passed in 0.002s
+    And I fill in "Description" with "Valid." ... passed in 0.002s
+    And I choose the file "valid-skos.ttl" ... passed in 0.304s
+    And I submit the form ... passed in 0.628s
+    Then I see "Version 1 of ${run}Good was created." ... passed in 0.005s
+
+  Scenario: A reference to a deprecated version shows a warning that names it and the ACTIVE version
+    Given a vocabulary "Base" exists with 2 versions ... passed in 0.138s
+    And a vocabulary "Health" exists ... passed in 0.041s
+    And I sign in to the UI as "ga-admin" ... passed in 0.720s
+    When I open the vocabulary list ... passed in 0.606s
+    And I click "Update" for vocabulary "Health" ... passed in 3.369s
+    And I fill in "Change log" with "Reuses an old base." ... passed in 0.026s
+    And I choose the file "references-base-v1.ttl" ... passed in 0.311s
+    And I submit the form ... passed in 0.635s
+    Then I see "Version 2 of ${name:Health} was created." ... passed in 0.005s
+    And the warnings panel lists "Referenced internal vocabulary '${name:Base}' version 1 is deprecated. Use version 2, the latest ACTIVE version." ... passed in 0.007s
+

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContentController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">ContentController.java</span></div><h1>ContentController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.service.VocabularyCommands.Content;
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Set;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+/** Downloads of vocabulary content: the stored Turtle bytes as uploaded (decision D29). */
+@RestController
+public class ContentController {
+
+    static final String TURTLE = &quot;text/turtle&quot;;
+
+    private final VocabularyService service;
+
+<span class="fc" id="L23">    public ContentController(VocabularyService service) {</span>
+<span class="fc" id="L24">        this.service = service;</span>
+<span class="fc" id="L25">    }</span>
+
+    /** GET /content/{vocabularyName}: the latest version, filename '&lt;Name&gt;.ttl'. */
+    @GetMapping(value = &quot;/content/{vocabularyName}&quot;, produces = TURTLE)
+    public ResponseEntity&lt;byte[]&gt; latest(@PathVariable String vocabularyName, HttpServletRequest request) {
+<span class="fc" id="L30">        String name = PathParameters.name(&quot;vocabularyName&quot;, vocabularyName);</span>
+<span class="fc" id="L31">        QueryParameters.read(request, Set.of());</span>
+<span class="fc" id="L32">        Content content = service.latestContent(name);</span>
+<span class="fc" id="L33">        return turtle(content.bytes(), name + &quot;.ttl&quot;);</span>
+    }
+
+    /** GET /content/{vocabularyName}/versions/{version}: filename '&lt;Name&gt;-v&lt;n&gt;.ttl'. */
+    @GetMapping(value = &quot;/content/{vocabularyName}/versions/{version}&quot;, produces = TURTLE)
+    public ResponseEntity&lt;byte[]&gt; version(
+            @PathVariable String vocabularyName, @PathVariable String version, HttpServletRequest request) {
+<span class="fc" id="L40">        String name = PathParameters.name(&quot;vocabularyName&quot;, vocabularyName);</span>
+<span class="fc" id="L41">        int number = PathParameters.version(version);</span>
+<span class="fc" id="L42">        QueryParameters.read(request, Set.of());</span>
+<span class="fc" id="L43">        Content content = service.versionContent(name, number);</span>
+<span class="fc" id="L44">        return turtle(content.bytes(), name + &quot;-v&quot; + number + &quot;.ttl&quot;);</span>
+    }
+
+    static ResponseEntity&lt;byte[]&gt; turtle(byte[] bytes, String filename) {
+<span class="fc" id="L48">        return ResponseEntity.ok()</span>
+<span class="fc" id="L49">                .contentType(MediaType.parseMediaType(TURTLE))</span>
+<span class="fc" id="L50">                .header(</span>
+                        HttpHeaders.CONTENT_DISPOSITION,
+<span class="fc" id="L52">                        ContentDisposition.attachment()</span>
+<span class="fc" id="L53">                                .filename(filename)</span>
+<span class="fc" id="L54">                                .build()</span>
+<span class="fc" id="L55">                                .toString())</span>
+<span class="fc" id="L56">                .body(bytes);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

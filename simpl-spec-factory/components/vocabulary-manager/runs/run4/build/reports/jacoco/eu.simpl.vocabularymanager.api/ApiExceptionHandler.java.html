@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">ApiExceptionHandler.java</span></div><h1>ApiExceptionHandler.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import eu.simpl.vocabularymanager.error.Problems;
+import eu.simpl.vocabularymanager.error.RequestErrorCode;
+import eu.simpl.vocabularymanager.error.ResourceErrorCode;
+import eu.simpl.vocabularymanager.error.TechnicalErrorCode;
+import eu.simpl.vocabularymanager.error.VocabularyManagerException;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+/** Turns every exception into an RFC 9457 problem; internals never reach the client (BLG-err-sanit, OWT-A02). */
+@RestControllerAdvice
+public class ApiExceptionHandler {
+
+<span class="fc" id="L29">    private static final Logger LOG = LoggerFactory.getLogger(ApiExceptionHandler.class);</span>
+    private final ProblemWriter writer;
+
+<span class="fc" id="L32">    public ApiExceptionHandler(ProblemWriter writer) {</span>
+<span class="fc" id="L33">        this.writer = writer;</span>
+<span class="fc" id="L34">    }</span>
+
+    /**
+     * The component's own errors.
+     *
+     * @throws IOException when the response cannot be written
+     */
+    @ExceptionHandler(VocabularyManagerException.class)
+    public void handle(VocabularyManagerException e, HttpServletResponse response) throws IOException {
+<span class="fc" id="L43">        int status = e.code().status();</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        if (status &gt;= 500) {</span>
+<span class="fc" id="L45">            LOG.error(&quot;Request failed: {}&quot;, e.getMessage(), e);</span>
+        } else {
+<span class="fc" id="L47">            LOG.info(&quot;Request rejected: status={} detail={}&quot;, status, e.detail());</span>
+        }
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        String detail = status == 500 ? &quot;Internal Server Error&quot; : e.detail();</span>
+<span class="fc" id="L50">        writer.write(response, e.code(), detail, e.issues());</span>
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Upload above the multipart limit.
+     *
+     * @throws IOException when the response cannot be written
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public void tooLarge(MaxUploadSizeExceededException e, HttpServletResponse response) throws IOException {
+<span class="nc" id="L60">        handle(Problems.uploadTooLarge(), response);</span>
+<span class="nc" id="L61">    }</span>
+
+    /**
+     * A multipart body that cannot be read.
+     *
+     * @throws IOException when the response cannot be written
+     */
+    @ExceptionHandler(MultipartException.class)
+    public void badMultipart(MultipartException e, HttpServletResponse response) throws IOException {
+<span class="nc" id="L70">        LOG.info(&quot;Multipart request rejected: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L71">        writer.write(</span>
+                response,
+                RequestErrorCode.BAD_REQUEST,
+                Problems.INPUT_INCORRECT,
+<span class="nc" id="L75">                List.of(Issue.schemaViolation(&quot;body&quot;, null, null, &quot;The multipart body cannot be read.&quot;)));</span>
+<span class="nc" id="L76">    }</span>
+
+    /**
+     * A JSON body that cannot be read.
+     *
+     * @throws IOException when the response cannot be written
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public void unreadable(HttpMessageNotReadableException e, HttpServletResponse response) throws IOException {
+<span class="nc" id="L85">        writer.write(</span>
+                response,
+                RequestErrorCode.BAD_REQUEST,
+                Problems.INPUT_INCORRECT,
+<span class="nc" id="L89">                List.of(Issue.schemaViolation(&quot;body&quot;, null, null, &quot;The request body cannot be read.&quot;)));</span>
+<span class="nc" id="L90">    }</span>
+
+    /**
+     * Content-Type not supported (decision D15).
+     *
+     * @throws IOException when the response cannot be written
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public void unsupported(HttpMediaTypeNotSupportedException e, HttpServletResponse response) throws IOException {
+<span class="fc" id="L99">        writer.write(</span>
+<span class="fc" id="L100">                response, RequestErrorCode.UNSUPPORTED_MEDIA_TYPE, &quot;Request content type is not supported.&quot;, List.of());</span>
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * Accept header that cannot be served.
+     *
+     * @throws IOException when the response cannot be written
+     */
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public void notAcceptable(HttpMediaTypeNotAcceptableException e, HttpServletResponse response) throws IOException {
+<span class="fc" id="L110">        writer.write(response, RequestErrorCode.NOT_ACCEPTABLE, &quot;Requested media type cannot be served.&quot;, List.of());</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Method not supported on the path.
+     *
+     * @throws IOException when the response cannot be written
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public void methodNotAllowed(HttpRequestMethodNotSupportedException e, HttpServletResponse response)
+            throws IOException {
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">        if (e.getSupportedHttpMethods() != null) {</span>
+<span class="fc" id="L122">            response.setHeader(</span>
+                    &quot;Allow&quot;,
+<span class="fc" id="L124">                    String.join(</span>
+                            &quot;, &quot;,
+<span class="fc" id="L126">                            e.getSupportedHttpMethods().stream()</span>
+<span class="fc" id="L127">                                    .map(Object::toString)</span>
+<span class="fc" id="L128">                                    .toList()));</span>
+        }
+<span class="fc" id="L130">        writer.write(</span>
+                response,
+                RequestErrorCode.METHOD_NOT_ALLOWED,
+<span class="fc" id="L133">                &quot;Method &quot; + e.getMethod() + &quot; is not allowed on this resource.&quot;,</span>
+<span class="fc" id="L134">                List.of());</span>
+<span class="fc" id="L135">    }</span>
+
+    /**
+     * Unknown path.
+     *
+     * @throws IOException when the response cannot be written
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public void noResource(NoResourceFoundException e, HttpServletResponse response) throws IOException {
+<span class="fc" id="L144">        writer.write(response, ResourceErrorCode.NOT_FOUND, &quot;The requested resource was not found.&quot;, List.of());</span>
+<span class="fc" id="L145">    }</span>
+
+    /**
+     * Anything else: 500 with a generic detail.
+     *
+     * @throws IOException when the response cannot be written
+     */
+    @ExceptionHandler(Exception.class)
+    public void unexpected(Exception e, HttpServletResponse response) throws IOException {
+<span class="fc" id="L154">        LOG.error(&quot;Unexpected error&quot;, e);</span>
+<span class="fc" id="L155">        writer.write(response, TechnicalErrorCode.INTERNAL, &quot;Internal Server Error&quot;, List.of());</span>
+<span class="fc" id="L156">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

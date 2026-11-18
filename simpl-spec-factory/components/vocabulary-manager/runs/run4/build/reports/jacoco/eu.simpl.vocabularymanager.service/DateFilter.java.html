@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DateFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">DateFilter.java</span></div><h1>DateFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
+/**
+ * A creationDate or lastUpdated filter (decision D20): a date matches every value on that UTC day; a date-time matches
+ * values equal to it, to the second.
+ */
+public final class DateFilter {
+
+<span class="fc" id="L19">    private static final Pattern DATE = Pattern.compile(&quot;^\\d{4}-\\d{2}-\\d{2}$&quot;);</span>
+<span class="fc" id="L20">    private static final Pattern DATE_TIME = Pattern.compile(&quot;^\\d{4}-\\d{2}-\\d{2}T.*$&quot;);</span>
+
+    private final LocalDate day;
+    private final Instant second;
+
+<span class="fc" id="L25">    private DateFilter(LocalDate day, Instant second) {</span>
+<span class="fc" id="L26">        this.day = day;</span>
+<span class="fc" id="L27">        this.second = second;</span>
+<span class="fc" id="L28">    }</span>
+
+    /** Parses the query value; empty when it is not a valid date or date-time. */
+    public static Optional&lt;DateFilter&gt; parse(String value) {
+        try {
+<span class="fc bfc" id="L33" title="All 2 branches covered.">            if (DATE.matcher(value).matches()) {</span>
+<span class="fc" id="L34">                return Optional.of(new DateFilter(LocalDate.parse(value), null));</span>
+            }
+<span class="fc bfc" id="L36" title="All 2 branches covered.">            if (DATE_TIME.matcher(value).matches()) {</span>
+<span class="fc" id="L37">                return Optional.of(new DateFilter(null, parseDateTime(value).truncatedTo(ChronoUnit.SECONDS)));</span>
+            }
+<span class="fc" id="L39">        } catch (DateTimeParseException e) {</span>
+<span class="fc" id="L40">            return Optional.empty();</span>
+<span class="fc" id="L41">        }</span>
+<span class="fc" id="L42">        return Optional.empty();</span>
+    }
+
+    private static Instant parseDateTime(String value) {
+        // A '+' in an unencoded query string arrives as a space.
+<span class="fc" id="L47">        String text = value.replace(' ', '+');</span>
+        try {
+<span class="fc" id="L49">            return OffsetDateTime.parse(text).toInstant();</span>
+<span class="fc" id="L50">        } catch (DateTimeParseException e) {</span>
+<span class="fc" id="L51">            return LocalDateTime.parse(text).toInstant(ZoneOffset.UTC);</span>
+        }
+    }
+
+    public boolean matches(Instant value) {
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L57">            return false;</span>
+        }
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (day != null) {</span>
+<span class="fc" id="L60">            return value.atZone(ZoneOffset.UTC).toLocalDate().equals(day);</span>
+        }
+<span class="fc" id="L62">        return value.truncatedTo(ChronoUnit.SECONDS).equals(second);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

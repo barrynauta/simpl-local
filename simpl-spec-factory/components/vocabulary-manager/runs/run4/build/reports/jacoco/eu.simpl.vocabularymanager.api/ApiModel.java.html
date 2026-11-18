@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">ApiModel.java</span></div><h1>ApiModel.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import eu.simpl.vocabularymanager.domain.ValidationWarning;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import java.time.Instant;
+import java.util.List;
+
+/** Wire schemas of the OpenAPI (names kept, decisions D25, D26, D39). */
+public final class ApiModel {
+
+    private ApiModel() {}
+
+    /** VocabularyCategory: the vocabulary (decision D25). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonPropertyOrder({
+        &quot;href&quot;,
+        &quot;contentHref&quot;,
+        &quot;name&quot;,
+        &quot;version&quot;,
+        &quot;description&quot;,
+        &quot;status&quot;,
+        &quot;createdBy&quot;,
+        &quot;creationDate&quot;,
+        &quot;lastUpdateDate&quot;
+    })
+<span class="fc" id="L28">    public record VocabularyCategory(</span>
+            String href,
+            String contentHref,
+            String name,
+            int version,
+            String description,
+            VocabularyStatus status,
+            String createdBy,
+            Instant creationDate,
+            Instant lastUpdateDate) {}
+
+    /** VocabularyMetadata: the vocabulary version (decisions D5, D26, D27). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonPropertyOrder({
+        &quot;href&quot;,
+        &quot;contentHref&quot;,
+        &quot;latestVersionHref&quot;,
+        &quot;name&quot;,
+        &quot;version&quot;,
+        &quot;description&quot;,
+        &quot;changelog&quot;,
+        &quot;status&quot;,
+        &quot;createdBy&quot;,
+        &quot;creationDate&quot;,
+        &quot;lastUpdateDate&quot;
+    })
+<span class="fc" id="L54">    public record VocabularyMetadata(</span>
+            String href,
+            String contentHref,
+            String latestVersionHref,
+            String name,
+            int version,
+            String description,
+            String changelog,
+            VocabularyStatus status,
+            String createdBy,
+            Instant creationDate,
+            Instant lastUpdateDate) {}
+
+    /** VocabularyVersionMetadataResponse: the created version plus validationWarnings (decision D10). */
+    @JsonPropertyOrder({
+        &quot;href&quot;,
+        &quot;contentHref&quot;,
+        &quot;latestVersionHref&quot;,
+        &quot;name&quot;,
+        &quot;version&quot;,
+        &quot;description&quot;,
+        &quot;changelog&quot;,
+        &quot;status&quot;,
+        &quot;createdBy&quot;,
+        &quot;creationDate&quot;,
+        &quot;lastUpdateDate&quot;,
+        &quot;validationWarnings&quot;
+    })
+<span class="fc" id="L82">    public record VocabularyVersionMetadataResponse(</span>
+            String href,
+            String contentHref,
+            String latestVersionHref,
+            String name,
+            int version,
+            String description,
+            String changelog,
+            VocabularyStatus status,
+            String createdBy,
+            Instant creationDate,
+            Instant lastUpdateDate,
+            List&lt;ValidationWarning&gt; validationWarnings) {}
+
+    /** VocabularySearchItem (decision D38). */
+    @JsonPropertyOrder({&quot;href&quot;, &quot;contentHref&quot;, &quot;name&quot;, &quot;version&quot;, &quot;status&quot;, &quot;latest&quot;})
+<span class="fc" id="L98">    public record VocabularySearchItem(</span>
+            String href, String contentHref, String name, int version, VocabularyStatus status, boolean latest) {}
+
+    /** ExternalVocabulary (decision D41). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonPropertyOrder({
+        &quot;href&quot;,
+        &quot;name&quot;,
+        &quot;namespaceUri&quot;,
+        &quot;aliasUris&quot;,
+        &quot;sourceUri&quot;,
+        &quot;description&quot;,
+        &quot;createdBy&quot;,
+        &quot;creationDate&quot;
+    })
+<span class="fc" id="L113">    public record ExternalVocabularyResponse(</span>
+            String href,
+            String name,
+            String namespaceUri,
+            List&lt;String&gt; aliasUris,
+            String sourceUri,
+            String description,
+            String createdBy,
+            Instant creationDate) {}
+
+    /** CollectionPage with items; absent links are left out (decision D22). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonPropertyOrder({&quot;page&quot;, &quot;totalPages&quot;, &quot;total&quot;, &quot;pageSize&quot;, &quot;self&quot;, &quot;first&quot;, &quot;prev&quot;, &quot;next&quot;, &quot;last&quot;, &quot;items&quot;})
+<span class="fc" id="L126">    public record CollectionPage&lt;T&gt;(</span>
+            int page,
+            int totalPages,
+            long total,
+            int pageSize,
+            String self,
+            String first,
+            String prev,
+            String next,
+            String last,
+            List&lt;T&gt; items) {}
+
+    /** HealthResponse. */
+<span class="fc" id="L139">    public record HealthResponse(String status) {}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

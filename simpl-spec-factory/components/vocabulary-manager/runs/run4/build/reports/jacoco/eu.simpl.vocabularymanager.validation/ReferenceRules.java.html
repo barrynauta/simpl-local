@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReferenceRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">ReferenceRules.java</span></div><h1>ReferenceRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import eu.simpl.vocabularymanager.config.VocabularyManagerProperties;
+import eu.simpl.vocabularymanager.domain.Namespaces;
+import eu.simpl.vocabularymanager.domain.ValidationWarning;
+import eu.simpl.vocabularymanager.domain.WarningCode;
+import eu.simpl.vocabularymanager.error.Issue;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
+import org.springframework.stereotype.Component;
+
+/**
+ * Checks the vocabulary references of uploaded content (decisions D11, D12): rule S7 (missing internal vocabulary or
+ * version) and the warnings deprecatedVocabularyReference and externalReferenceSkipped.
+ */
+@Component
+public class ReferenceRules {
+
+    private final Pattern internalPattern;
+
+<span class="fc" id="L31">    public ReferenceRules(VocabularyManagerProperties properties) {</span>
+<span class="fc" id="L32">        this.internalPattern = Pattern.compile(&quot;^&quot; + Pattern.quote(properties.contentBaseUrl())</span>
+                + &quot;/content/([A-Za-z0-9]+)(?:/versions/([0-9]+))?[#/]?$&quot;);
+<span class="fc" id="L34">    }</span>
+
+    /** Result of the reference check. */
+<span class="fc" id="L37">    public record Result(List&lt;Issue&gt; errors, List&lt;ValidationWarning&gt; warnings) {}</span>
+
+    /**
+     * Checks every prefix declaration.
+     *
+     * @param prefixes the references in file order
+     * @param graph the parsed content, to find the vocabulary's own namespace
+     * @param ownName the vocabulary being created or versioned; references to it are ignored
+     * @param lookup read access to stored vocabularies
+     */
+    public Result check(List&lt;PrefixDeclaration&gt; prefixes, Graph graph, String ownName, ReferenceLookup lookup) {
+<span class="fc" id="L48">        List&lt;Issue&gt; errors = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L49">        List&lt;ValidationWarning&gt; warnings = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L50">        Map&lt;String, Optional&lt;InternalVocabularyState&gt;&gt; cache = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L51">        Set&lt;String&gt; subjects = subjectIris(graph);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        for (PrefixDeclaration declaration : prefixes) {</span>
+<span class="fc" id="L53">            Matcher matcher = internalPattern.matcher(declaration.namespace());</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">            if (matcher.matches()) {</span>
+<span class="fc" id="L55">                checkInternal(declaration, matcher, ownName, lookup, cache, errors, warnings);</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">            } else if (isUnresolvedExternal(declaration.namespace(), subjects, lookup)) {</span>
+<span class="fc" id="L57">                warnings.add(new ValidationWarning(</span>
+                        WarningCode.EXTERNAL_REFERENCE_SKIPPED,
+<span class="fc" id="L59">                        &quot;Cannot resolve external namespace '&quot; + declaration.namespace()</span>
+                                + &quot;' because no cached external vocabulary is registered.&quot;,
+<span class="fc" id="L61">                        declaration.location()));</span>
+            }
+<span class="fc" id="L63">        }</span>
+<span class="fc" id="L64">        return new Result(errors, warnings);</span>
+    }
+
+    private static void checkInternal(
+            PrefixDeclaration declaration,
+            Matcher matcher,
+            String ownName,
+            ReferenceLookup lookup,
+            Map&lt;String, Optional&lt;InternalVocabularyState&gt;&gt; cache,
+            List&lt;Issue&gt; errors,
+            List&lt;ValidationWarning&gt; warnings) {
+<span class="fc" id="L75">        String name = matcher.group(1);</span>
+<span class="pc bpc" id="L76" title="1 of 4 branches missed.">        if (ownName != null &amp;&amp; name.toLowerCase(Locale.ROOT).equals(ownName.toLowerCase(Locale.ROOT))) {</span>
+<span class="fc" id="L77">            return;</span>
+        }
+<span class="fc" id="L79">        String versionText = matcher.group(2);</span>
+<span class="fc" id="L80">        Optional&lt;InternalVocabularyState&gt; state = cache.computeIfAbsent(name, lookup::internalVocabulary);</span>
+<span class="fc" id="L81">        Integer requested = parseVersion(versionText);</span>
+<span class="fc bfc" id="L82" title="All 4 branches covered.">        if (state.isEmpty()</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">                || (versionText != null &amp;&amp; !state.get().versionStatuses().containsKey(requested))) {</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            String detail = versionText == null</span>
+<span class="fc" id="L85">                    ? &quot;Referenced internal vocabulary '&quot; + name + &quot;' does not exist.&quot;</span>
+<span class="fc" id="L86">                    : &quot;Referenced internal vocabulary '&quot; + name + &quot;' version &quot; + versionText + &quot; does not exist.&quot;;</span>
+<span class="fc" id="L87">            errors.add(Issue.invalidInput(TurtleSyntaxValidator.FIELD, detail, declaration.location()));</span>
+<span class="fc" id="L88">            return;</span>
+        }
+<span class="fc" id="L90">        InternalVocabularyState vocabulary = state.get();</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        int version = requested == null ? vocabulary.latestVersion() : requested;</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        if (vocabulary.isEffectivelyDeprecated(version)) {</span>
+<span class="fc" id="L93">            warnings.add(new ValidationWarning(</span>
+                    WarningCode.DEPRECATED_VOCABULARY_REFERENCE,
+<span class="fc" id="L95">                    deprecatedDescription(name, version, vocabulary.latestActiveVersion()),</span>
+<span class="fc" id="L96">                    declaration.location()));</span>
+        }
+<span class="fc" id="L98">    }</span>
+
+    static String deprecatedDescription(String name, int version, OptionalInt latestActive) {
+<span class="fc" id="L101">        String text = &quot;Referenced internal vocabulary '&quot; + name + &quot;' version &quot; + version + &quot; is deprecated.&quot;;</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        if (latestActive.isPresent()) {</span>
+<span class="fc" id="L103">            text += &quot; Use version &quot; + latestActive.getAsInt() + &quot;, the latest ACTIVE version.&quot;;</span>
+        }
+<span class="fc" id="L105">        return text;</span>
+    }
+
+    private static Integer parseVersion(String text) {
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (text == null) {</span>
+<span class="fc" id="L110">            return null;</span>
+        }
+        try {
+<span class="fc" id="L113">            return Integer.valueOf(text);</span>
+<span class="nc" id="L114">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L115">            return -1;</span>
+        }
+    }
+
+    private static boolean isUnresolvedExternal(String namespace, Set&lt;String&gt; subjects, ReferenceLookup lookup) {
+<span class="fc" id="L120">        String normalised = Namespaces.normalise(namespace);</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        if (Namespaces.W3C.contains(normalised)) {</span>
+<span class="fc" id="L122">            return false;</span>
+        }
+<span class="pc bpc" id="L124" title="1 of 4 branches missed.">        if (!namespace.isEmpty() &amp;&amp; subjects.stream().anyMatch(subject -&gt; subject.startsWith(namespace))) {</span>
+<span class="fc" id="L125">            return false;</span>
+        }
+<span class="fc bfc" id="L127" title="All 2 branches covered.">        return !lookup.isRegisteredExternal(namespace);</span>
+    }
+
+    private static Set&lt;String&gt; subjectIris(Graph graph) {
+<span class="fc" id="L131">        return graph.find(Node.ANY, Node.ANY, Node.ANY)</span>
+<span class="fc" id="L132">                .mapWith(triple -&gt; triple.getSubject())</span>
+<span class="fc" id="L133">                .filterKeep(Node::isURI)</span>
+<span class="fc" id="L134">                .mapWith(Node::getURI)</span>
+<span class="fc" id="L135">                .toSet();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

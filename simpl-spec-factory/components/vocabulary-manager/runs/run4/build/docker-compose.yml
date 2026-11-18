@@ -1,0 +1,69 @@
+# Vocabulary Manager, factory run 4. Start: docker compose -p vm-factory-run4 up -d --build --wait
+# Host ports (build profile): API 8196, UI 4433, Keycloak 8193. Fuseki is not exposed (internal only).
+name: vm-factory-run4
+
+services:
+  fuseki:
+    build: ./fuseki
+    image: vm-factory-run4-fuseki:latest
+    volumes:
+      - fuseki-data:/fuseki/databases
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:?set in .env}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?set in .env}
+      KC_HTTP_PORT: "8080"
+      KC_HOSTNAME: http://localhost:8193
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./keycloak/realm-simpl.json:/opt/keycloak/data/import/realm-simpl.json:ro
+    ports:
+      - "8193:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
+      interval: 5s
+      timeout: 5s
+      start_period: 20s
+      retries: 40
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    image: vm-factory-run4-backend:latest
+    environment:
+      VOCABULARY_STORE_URL: http://fuseki:3030/vocabulary
+      VOCABULARY_CONTENT_BASE_URL: https://authority.example/vocabulary-manager
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/simpl/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER: http://localhost:8193/realms/simpl
+      KEYCLOAK_AUDIENCE: vocabulary-manager-be
+    ports:
+      - "8196:8080"
+    depends_on:
+      fuseki:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ui:
+    build: ./ui
+    image: vm-factory-run4-ui:latest
+    environment:
+      API_UPSTREAM: http://backend:8080
+      KEYCLOAK_URL: http://localhost:8193
+      KEYCLOAK_REALM: simpl
+      KEYCLOAK_CLIENT_ID: vocabulary-manager-ui
+    ports:
+      - "4433:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  fuseki-data:

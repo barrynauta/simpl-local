@@ -1,0 +1,139 @@
+{
+  "realm": "simpl",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 900,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 60,
+  "failureFactor": 10,
+  "roles": {
+    "realm": [
+      {
+        "name": "GA_VOCABULARY_ADMIN",
+        "description": "Governance Authority: read and write vocabularies"
+      },
+      {
+        "name": "GA_VOCABULARY_VIEWER",
+        "description": "Governance Authority: read vocabularies"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "vocabulary-manager-be",
+      "name": "Vocabulary Manager backend",
+      "enabled": true,
+      "bearerOnly": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    },
+    {
+      "clientId": "vocabulary-manager-ui",
+      "name": "Vocabulary Manager UI",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:4433/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4433"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:4433/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-vocabulary-manager-be",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "vocabulary-manager-be",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "vocabulary-tests",
+      "name": "Vocabulary Manager test client (password grant, local only)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "audience-vocabulary-manager-be",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "vocabulary-manager-be",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "ga-admin",
+      "email": "ga-admin@example.com",
+      "emailVerified": true,
+      "firstName": "Governance",
+      "lastName": "Admin",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GA_VOCABULARY_ADMIN"
+      ]
+    },
+    {
+      "username": "ga-viewer",
+      "email": "ga-viewer@example.com",
+      "emailVerified": true,
+      "firstName": "Governance",
+      "lastName": "Viewer",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GA_VOCABULARY_VIEWER"
+      ]
+    },
+    {
+      "username": "ga-norole",
+      "email": "ga-norole@example.com",
+      "emailVerified": true,
+      "firstName": "Governance",
+      "lastName": "Norole",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

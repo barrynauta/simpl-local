@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FusekiVocabularyRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">FusekiVocabularyRepository.java</span></div><h1>FusekiVocabularyRepository.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import static eu.simpl.vocabularymanager.store.StoreModel.command;
+
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import java.time.Instant;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.QuerySolution;
+import org.springframework.stereotype.Repository;
+
+/** Stores vocabularies and versions as RDF in the internal graph of the Fuseki dataset 'vocabulary'. */
+@Repository
+public class FusekiVocabularyRepository implements VocabularyRepository {
+
+    private static final String VOCABULARY_PATTERN = &quot;&quot;&quot;
+            GRAPH ?internalGraph {
+              ?v a vm:Vocabulary ; vm:name ?name ; vm:status ?status ; vm:createdBy ?createdBy ;
+                 vm:creationDate ?creationDate ; vm:lastUpdateDate ?lastUpdateDate ; vm:latestVersion ?latest .
+              ?latestVersion vm:ofVocabulary ?v ; vm:version ?latest ; vm:description ?description .
+            }
+            &quot;&quot;&quot;;
+    private static final String VERSION_PATTERN = &quot;&quot;&quot;
+            GRAPH ?internalGraph {
+              ?ver a vm:VocabularyVersion ; vm:ofVocabulary ?v ; vm:version ?version ; vm:description ?description ;
+                   vm:changelog ?changelog ; vm:status ?status ; vm:createdBy ?createdBy ;
+                   vm:creationDate ?creationDate ; vm:lastUpdateDate ?lastUpdateDate .
+              ?v vm:name ?name .
+            }
+            &quot;&quot;&quot;;
+    private static final String VOCABULARY_SELECT =
+            &quot;SELECT ?name ?status ?createdBy ?creationDate ?lastUpdateDate ?latest ?description WHERE {\n&quot;;
+    private static final String VERSION_SELECT = &quot;SELECT ?name ?version ?description ?changelog ?status ?createdBy&quot;
+            + &quot; ?creationDate ?lastUpdateDate WHERE {\n&quot;;
+
+    private final SparqlClient sparql;
+
+<span class="fc" id="L42">    public FusekiVocabularyRepository(SparqlClient sparql) {</span>
+<span class="fc" id="L43">        this.sparql = sparql;</span>
+<span class="fc" id="L44">    }</span>
+
+    @Override
+    public List&lt;Vocabulary&gt; findAll() {
+<span class="fc" id="L48">        ParameterizedSparqlString query = command(VOCABULARY_SELECT + VOCABULARY_PATTERN + &quot;}&quot;);</span>
+<span class="fc" id="L49">        return sparql.select(query.toString()).stream()</span>
+<span class="fc" id="L50">                .map(FusekiVocabularyRepository::toVocabulary)</span>
+<span class="fc" id="L51">                .toList();</span>
+    }
+
+    @Override
+    public Optional&lt;Vocabulary&gt; findByName(String name) {
+<span class="fc" id="L56">        ParameterizedSparqlString query = command(VOCABULARY_SELECT + VOCABULARY_PATTERN + &quot;}&quot;);</span>
+<span class="fc" id="L57">        query.setIri(&quot;v&quot;, StoreModel.vocabularyIri(name));</span>
+<span class="fc" id="L58">        return sparql.select(query.toString()).stream()</span>
+<span class="fc" id="L59">                .map(FusekiVocabularyRepository::toVocabulary)</span>
+<span class="fc" id="L60">                .findFirst();</span>
+    }
+
+    @Override
+    public Optional&lt;String&gt; findNameIgnoringCase(String name) {
+<span class="fc" id="L65">        ParameterizedSparqlString query =</span>
+<span class="fc" id="L66">                command(&quot;SELECT ?name WHERE { GRAPH ?internalGraph { ?v vm:nameKey ?key ; vm:name ?name } }&quot;);</span>
+<span class="fc" id="L67">        query.setLiteral(&quot;key&quot;, name.toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L68">        return sparql.select(query.toString()).stream()</span>
+<span class="fc" id="L69">                .map(row -&gt; StoreModel.text(row, &quot;name&quot;))</span>
+<span class="fc" id="L70">                .findFirst();</span>
+    }
+
+    @Override
+    public List&lt;VocabularyVersion&gt; findVersions(String name) {
+<span class="fc" id="L75">        ParameterizedSparqlString query = command(VERSION_SELECT + VERSION_PATTERN + &quot;}&quot;);</span>
+<span class="fc" id="L76">        query.setIri(&quot;v&quot;, StoreModel.vocabularyIri(name));</span>
+<span class="fc" id="L77">        return sparql.select(query.toString()).stream()</span>
+<span class="fc" id="L78">                .map(FusekiVocabularyRepository::toVersion)</span>
+<span class="fc" id="L79">                .toList();</span>
+    }
+
+    @Override
+    public Optional&lt;VocabularyVersion&gt; findVersion(String name, int version) {
+<span class="fc" id="L84">        ParameterizedSparqlString query = command(VERSION_SELECT + VERSION_PATTERN + &quot;}&quot;);</span>
+<span class="fc" id="L85">        query.setIri(&quot;ver&quot;, StoreModel.versionIri(name, version));</span>
+<span class="fc" id="L86">        return sparql.select(query.toString()).stream()</span>
+<span class="fc" id="L87">                .map(FusekiVocabularyRepository::toVersion)</span>
+<span class="fc" id="L88">                .findFirst();</span>
+    }
+
+    @Override
+    public Optional&lt;byte[]&gt; findContent(String name, int version) {
+<span class="fc" id="L93">        ParameterizedSparqlString query =</span>
+<span class="fc" id="L94">                command(&quot;SELECT ?content WHERE { GRAPH ?internalGraph { ?ver vm:content ?content } }&quot;);</span>
+<span class="fc" id="L95">        query.setIri(&quot;ver&quot;, StoreModel.versionIri(name, version));</span>
+<span class="fc" id="L96">        return sparql.select(query.toString()).stream()</span>
+<span class="fc" id="L97">                .map(row -&gt; StoreModel.bytes(row, &quot;content&quot;))</span>
+<span class="fc" id="L98">                .findFirst();</span>
+    }
+
+    @Override
+    public void create(Vocabulary vocabulary, VocabularyVersion firstVersion, byte[] content) {
+<span class="fc" id="L103">        ParameterizedSparqlString update = command(&quot;&quot;&quot;</span>
+                INSERT DATA { GRAPH ?internalGraph {
+                  ?v a vm:Vocabulary ; vm:name ?name ; vm:nameKey ?key ; vm:status ?status ; vm:createdBy ?createdBy ;
+                     vm:creationDate ?creationDate ; vm:lastUpdateDate ?lastUpdateDate ; vm:latestVersion ?latest .
+                } } ;
+<span class="fc" id="L108">                &quot;&quot;&quot; + insertVersion());</span>
+<span class="fc" id="L109">        update.setIri(&quot;v&quot;, StoreModel.vocabularyIri(vocabulary.name()));</span>
+<span class="fc" id="L110">        update.setLiteral(&quot;name&quot;, vocabulary.name());</span>
+<span class="fc" id="L111">        update.setLiteral(&quot;key&quot;, vocabulary.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L112">        update.setLiteral(&quot;status&quot;, vocabulary.status().name());</span>
+<span class="fc" id="L113">        update.setLiteral(&quot;createdBy&quot;, vocabulary.createdBy());</span>
+<span class="fc" id="L114">        update.setLiteral(&quot;creationDate&quot;, StoreModel.dateTime(vocabulary.creationDate()));</span>
+<span class="fc" id="L115">        update.setLiteral(&quot;lastUpdateDate&quot;, StoreModel.dateTime(vocabulary.lastUpdateDate()));</span>
+<span class="fc" id="L116">        update.setLiteral(&quot;latest&quot;, StoreModel.integer(vocabulary.latestVersion()));</span>
+<span class="fc" id="L117">        bindVersion(update, firstVersion);</span>
+<span class="fc" id="L118">        sparql.update(StoreModel.withContent(update, content));</span>
+<span class="fc" id="L119">    }</span>
+
+    @Override
+    public void addVersion(VocabularyVersion version, byte[] content) {
+<span class="fc" id="L123">        ParameterizedSparqlString update = command(&quot;&quot;&quot;</span>
+                WITH ?internalGraph
+                DELETE { ?old vm:status &quot;ACTIVE&quot; ; vm:lastUpdateDate ?oldDate }
+                INSERT { ?old vm:status &quot;DEPRECATED&quot; ; vm:lastUpdateDate ?now }
+                WHERE { ?old vm:ofVocabulary ?v ; vm:status &quot;ACTIVE&quot; ; vm:lastUpdateDate ?oldDate } ;
+                WITH ?internalGraph
+                DELETE { ?v vm:latestVersion ?previousLatest ; vm:lastUpdateDate ?previousDate }
+                INSERT { ?v vm:latestVersion ?newLatest ; vm:lastUpdateDate ?now }
+                WHERE { ?v vm:latestVersion ?previousLatest ; vm:lastUpdateDate ?previousDate } ;
+<span class="fc" id="L132">                &quot;&quot;&quot; + insertVersion());</span>
+<span class="fc" id="L133">        update.setIri(&quot;v&quot;, StoreModel.vocabularyIri(version.name()));</span>
+<span class="fc" id="L134">        update.setLiteral(&quot;now&quot;, StoreModel.dateTime(version.creationDate()));</span>
+<span class="fc" id="L135">        update.setLiteral(&quot;newLatest&quot;, StoreModel.integer(version.version()));</span>
+<span class="fc" id="L136">        bindVersion(update, version);</span>
+<span class="fc" id="L137">        sparql.update(StoreModel.withContent(update, content));</span>
+<span class="fc" id="L138">    }</span>
+
+    @Override
+    public void updateVocabularyStatus(String name, VocabularyStatus status, Instant now) {
+<span class="fc" id="L142">        ParameterizedSparqlString update = command(&quot;&quot;&quot;</span>
+                WITH ?internalGraph
+                DELETE { ?v vm:status ?oldStatus ; vm:lastUpdateDate ?oldDate }
+                INSERT { ?v vm:status ?newStatus ; vm:lastUpdateDate ?now }
+                WHERE { ?v vm:status ?oldStatus ; vm:lastUpdateDate ?oldDate }
+                &quot;&quot;&quot;);
+<span class="fc" id="L148">        update.setIri(&quot;v&quot;, StoreModel.vocabularyIri(name));</span>
+<span class="fc" id="L149">        update.setLiteral(&quot;newStatus&quot;, status.name());</span>
+<span class="fc" id="L150">        update.setLiteral(&quot;now&quot;, StoreModel.dateTime(now));</span>
+<span class="fc" id="L151">        sparql.update(update.toString());</span>
+<span class="fc" id="L152">    }</span>
+
+    @Override
+    public void updateVersionStatus(String name, int version, VocabularyStatus status, Instant now) {
+<span class="fc" id="L156">        ParameterizedSparqlString update = command(&quot;&quot;&quot;</span>
+                WITH ?internalGraph
+                DELETE { ?ver vm:status ?oldStatus ; vm:lastUpdateDate ?oldDate }
+                INSERT { ?ver vm:status ?newStatus ; vm:lastUpdateDate ?now }
+                WHERE { ?ver vm:status ?oldStatus ; vm:lastUpdateDate ?oldDate } ;
+                WITH ?internalGraph
+                DELETE { ?v vm:lastUpdateDate ?vocabularyDate }
+                INSERT { ?v vm:lastUpdateDate ?now }
+                WHERE { ?v vm:lastUpdateDate ?vocabularyDate }
+                &quot;&quot;&quot;);
+<span class="fc" id="L166">        update.setIri(&quot;ver&quot;, StoreModel.versionIri(name, version));</span>
+<span class="fc" id="L167">        update.setIri(&quot;v&quot;, StoreModel.vocabularyIri(name));</span>
+<span class="fc" id="L168">        update.setLiteral(&quot;newStatus&quot;, status.name());</span>
+<span class="fc" id="L169">        update.setLiteral(&quot;now&quot;, StoreModel.dateTime(now));</span>
+<span class="fc" id="L170">        sparql.update(update.toString());</span>
+<span class="fc" id="L171">    }</span>
+
+    private static String insertVersion() {
+<span class="fc" id="L174">        return &quot;&quot;&quot;</span>
+                INSERT DATA { GRAPH ?internalGraph {
+                  ?ver a vm:VocabularyVersion ; vm:ofVocabulary ?v ; vm:version ?versionNumber ;
+                       vm:description ?versionDescription ; vm:changelog ?versionChangelog ;
+                       vm:status ?versionStatus ; vm:createdBy ?versionCreatedBy ;
+                       vm:creationDate ?versionCreationDate ; vm:lastUpdateDate ?versionLastUpdateDate ;
+                       vm:content ?versionContent .
+                } }
+                &quot;&quot;&quot;;
+    }
+
+    private static void bindVersion(ParameterizedSparqlString update, VocabularyVersion version) {
+<span class="fc" id="L186">        update.setIri(&quot;ver&quot;, StoreModel.versionIri(version.name(), version.version()));</span>
+<span class="fc" id="L187">        update.setLiteral(&quot;versionNumber&quot;, StoreModel.integer(version.version()));</span>
+<span class="fc" id="L188">        update.setLiteral(&quot;versionDescription&quot;, version.description());</span>
+<span class="fc" id="L189">        update.setLiteral(&quot;versionChangelog&quot;, version.changelog());</span>
+<span class="fc" id="L190">        update.setLiteral(&quot;versionStatus&quot;, version.status().name());</span>
+<span class="fc" id="L191">        update.setLiteral(&quot;versionCreatedBy&quot;, version.createdBy());</span>
+<span class="fc" id="L192">        update.setLiteral(&quot;versionCreationDate&quot;, StoreModel.dateTime(version.creationDate()));</span>
+<span class="fc" id="L193">        update.setLiteral(&quot;versionLastUpdateDate&quot;, StoreModel.dateTime(version.lastUpdateDate()));</span>
+<span class="fc" id="L194">        update.setLiteral(&quot;versionContent&quot;, StoreModel.CONTENT_MARKER);</span>
+<span class="fc" id="L195">    }</span>
+
+    private static Vocabulary toVocabulary(QuerySolution row) {
+<span class="fc" id="L198">        return new Vocabulary(</span>
+<span class="fc" id="L199">                StoreModel.text(row, &quot;name&quot;),</span>
+<span class="fc" id="L200">                VocabularyStatus.valueOf(StoreModel.text(row, &quot;status&quot;)),</span>
+<span class="fc" id="L201">                StoreModel.text(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L202">                StoreModel.instant(row, &quot;creationDate&quot;),</span>
+<span class="fc" id="L203">                StoreModel.instant(row, &quot;lastUpdateDate&quot;),</span>
+<span class="fc" id="L204">                StoreModel.number(row, &quot;latest&quot;),</span>
+<span class="fc" id="L205">                StoreModel.text(row, &quot;description&quot;));</span>
+    }
+
+    private static VocabularyVersion toVersion(QuerySolution row) {
+<span class="fc" id="L209">        return new VocabularyVersion(</span>
+<span class="fc" id="L210">                StoreModel.text(row, &quot;name&quot;),</span>
+<span class="fc" id="L211">                StoreModel.number(row, &quot;version&quot;),</span>
+<span class="fc" id="L212">                StoreModel.text(row, &quot;description&quot;),</span>
+<span class="fc" id="L213">                StoreModel.text(row, &quot;changelog&quot;),</span>
+<span class="fc" id="L214">                VocabularyStatus.valueOf(StoreModel.text(row, &quot;status&quot;)),</span>
+<span class="fc" id="L215">                StoreModel.text(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L216">                StoreModel.instant(row, &quot;creationDate&quot;),</span>
+<span class="fc" id="L217">                StoreModel.instant(row, &quot;lastUpdateDate&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

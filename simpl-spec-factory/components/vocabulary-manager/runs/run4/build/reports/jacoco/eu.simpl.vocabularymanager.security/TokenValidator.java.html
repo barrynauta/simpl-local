@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TokenValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">TokenValidator.java</span></div><h1>TokenValidator.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import eu.simpl.vocabularymanager.config.VocabularyManagerProperties;
+import eu.simpl.vocabularymanager.error.AccessErrorCode;
+import eu.simpl.vocabularymanager.error.VocabularyManagerException;
+import java.text.ParseException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
+
+/**
+ * Validates Keycloak access tokens locally (decisions D17, D44, OWT-A07): signature with the realm keys, issuer,
+ * audience, expiry. Fails closed.
+ */
+@Component
+public class TokenValidator {
+
+<span class="fc" id="L36">    private static final Duration CLOCK_SKEW = Duration.ofSeconds(30);</span>
+<span class="fc" id="L37">    private static final Set&lt;JWSAlgorithm&gt; ALLOWED = Set.of(</span>
+            JWSAlgorithm.RS256,
+            JWSAlgorithm.RS384,
+            JWSAlgorithm.RS512,
+            JWSAlgorithm.PS256,
+            JWSAlgorithm.PS384,
+            JWSAlgorithm.PS512,
+            JWSAlgorithm.ES256,
+            JWSAlgorithm.ES384,
+            JWSAlgorithm.ES512);
+
+    private final RealmKeys realmKeys;
+    private final String issuer;
+    private final String audience;
+    private final Clock clock;
+
+<span class="fc" id="L53">    public TokenValidator(RealmKeys realmKeys, VocabularyManagerProperties properties, Clock clock) {</span>
+<span class="fc" id="L54">        this.realmKeys = realmKeys;</span>
+<span class="fc" id="L55">        this.issuer = properties.security().issuer();</span>
+<span class="fc" id="L56">        this.audience = properties.security().audience();</span>
+<span class="fc" id="L57">        this.clock = clock;</span>
+<span class="fc" id="L58">    }</span>
+
+    /**
+     * Validates the token.
+     *
+     * @throws VocabularyManagerException 401 for an invalid token, 503 when the keys cannot be fetched
+     */
+    public AuthenticatedUser validate(String token) {
+<span class="fc" id="L66">        SignedJWT jwt = parse(token);</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (!ALLOWED.contains(jwt.getHeader().getAlgorithm())) {</span>
+<span class="fc" id="L68">            throw invalid(&quot;Token algorithm is not accepted.&quot;);</span>
+        }
+<span class="fc" id="L70">        String keyId = jwt.getHeader().getKeyID();</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        if (keyId == null) {</span>
+<span class="nc" id="L72">            throw invalid(&quot;Token has no key id.&quot;);</span>
+        }
+<span class="fc" id="L74">        JWK key = realmKeys.key(keyId);</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (key == null) {</span>
+<span class="fc" id="L76">            throw invalid(&quot;Token is signed with an unknown key.&quot;);</span>
+        }
+<span class="fc" id="L78">        verifySignature(jwt, key);</span>
+<span class="fc" id="L79">        JWTClaimsSet claims = claims(jwt);</span>
+<span class="fc" id="L80">        checkClaims(claims);</span>
+<span class="fc" id="L81">        return new AuthenticatedUser(userId(claims), claims.getSubject(), authorities(claims));</span>
+    }
+
+    private static SignedJWT parse(String token) {
+        try {
+<span class="fc" id="L86">            return SignedJWT.parse(token);</span>
+<span class="fc" id="L87">        } catch (ParseException e) {</span>
+<span class="fc" id="L88">            throw invalid(&quot;Token is not a signed JWT.&quot;);</span>
+        }
+    }
+
+    private static void verifySignature(SignedJWT jwt, JWK key) {
+        try {
+            JWSVerifier verifier;
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">            if (key instanceof RSAKey rsaKey) {</span>
+<span class="fc" id="L96">                verifier = new RSASSAVerifier(rsaKey);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            } else if (key instanceof ECKey ecKey) {</span>
+<span class="nc" id="L98">                verifier = new ECDSAVerifier(ecKey);</span>
+            } else {
+<span class="nc" id="L100">                throw invalid(&quot;Token key type is not supported.&quot;);</span>
+            }
+<span class="fc bfc" id="L102" title="All 2 branches covered.">            if (!jwt.verify(verifier)) {</span>
+<span class="fc" id="L103">                throw invalid(&quot;Token signature is not valid.&quot;);</span>
+            }
+<span class="nc" id="L105">        } catch (JOSEException e) {</span>
+<span class="nc" id="L106">            throw invalid(&quot;Token signature could not be verified.&quot;);</span>
+<span class="fc" id="L107">        }</span>
+<span class="fc" id="L108">    }</span>
+
+    private static JWTClaimsSet claims(SignedJWT jwt) {
+        try {
+<span class="fc" id="L112">            return jwt.getJWTClaimsSet();</span>
+<span class="nc" id="L113">        } catch (ParseException e) {</span>
+<span class="nc" id="L114">            throw invalid(&quot;Token claims are not valid.&quot;);</span>
+        }
+    }
+
+    private void checkClaims(JWTClaimsSet claims) {
+<span class="fc" id="L119">        Instant now = clock.instant();</span>
+<span class="fc" id="L120">        Date expiry = claims.getExpirationTime();</span>
+<span class="pc bpc" id="L121" title="1 of 4 branches missed.">        if (expiry == null || expiry.toInstant().plus(CLOCK_SKEW).isBefore(now)) {</span>
+<span class="fc" id="L122">            throw invalid(&quot;Token has expired.&quot;);</span>
+        }
+<span class="fc" id="L124">        Date notBefore = claims.getNotBeforeTime();</span>
+<span class="pc bpc" id="L125" title="1 of 4 branches missed.">        if (notBefore != null &amp;&amp; notBefore.toInstant().minus(CLOCK_SKEW).isAfter(now)) {</span>
+<span class="fc" id="L126">            throw invalid(&quot;Token is not yet valid.&quot;);</span>
+        }
+<span class="fc bfc" id="L128" title="All 2 branches covered.">        if (!issuer.equals(claims.getIssuer())) {</span>
+<span class="fc" id="L129">            throw invalid(&quot;Token issuer is not accepted.&quot;);</span>
+        }
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        if (!audience.isEmpty()</span>
+<span class="pc bpc" id="L132" title="1 of 4 branches missed.">                &amp;&amp; (claims.getAudience() == null || !claims.getAudience().contains(audience))) {</span>
+<span class="fc" id="L133">            throw invalid(&quot;Token audience is not accepted.&quot;);</span>
+        }
+<span class="fc" id="L135">    }</span>
+
+    private static String userId(JWTClaimsSet claims) {
+<span class="fc" id="L138">        Object email = claims.getClaim(&quot;email&quot;);</span>
+<span class="pc bpc" id="L139" title="1 of 4 branches missed.">        if (email instanceof String text &amp;&amp; !text.isBlank()) {</span>
+<span class="fc" id="L140">            return text;</span>
+        }
+<span class="fc" id="L142">        Object username = claims.getClaim(&quot;preferred_username&quot;);</span>
+<span class="pc bpc" id="L143" title="2 of 4 branches missed.">        if (username instanceof String text &amp;&amp; !text.isBlank()) {</span>
+<span class="fc" id="L144">            return text;</span>
+        }
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        return claims.getSubject() == null ? &quot;unknown&quot; : claims.getSubject();</span>
+    }
+
+    private static Collection&lt;SimpleGrantedAuthority&gt; authorities(JWTClaimsSet claims) {
+<span class="fc" id="L150">        List&lt;SimpleGrantedAuthority&gt; authorities = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L151">        Object realmAccess = claims.getClaim(&quot;realm_access&quot;);</span>
+<span class="pc bpc" id="L152" title="2 of 4 branches missed.">        if (realmAccess instanceof Map&lt;?, ?&gt; map &amp;&amp; map.get(&quot;roles&quot;) instanceof List&lt;?&gt; roles) {</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">            for (Object role : roles) {</span>
+<span class="fc bfc" id="L154" title="All 4 branches covered.">                if (Roles.ADMIN.equals(role) || Roles.VIEWER.equals(role)) {</span>
+<span class="fc" id="L155">                    authorities.add(new SimpleGrantedAuthority(&quot;ROLE_&quot; + role));</span>
+                }
+<span class="fc" id="L157">            }</span>
+        }
+<span class="fc" id="L159">        return authorities;</span>
+    }
+
+    private static VocabularyManagerException invalid(String detail) {
+<span class="fc" id="L163">        return new VocabularyManagerException(AccessErrorCode.UNAUTHORIZED, detail);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

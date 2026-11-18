@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PathParameters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">PathParameters.java</span></div><h1>PathParameters.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.Problems;
+import java.util.regex.Pattern;
+
+/** Checks of path parameters against the OpenAPI schemas. */
+public final class PathParameters {
+
+<span class="fc" id="L10">    public static final Pattern NAME = Pattern.compile(&quot;^[A-Z][a-zA-Z0-9]*$&quot;);</span>
+<span class="fc" id="L11">    private static final Pattern DIGITS = Pattern.compile(&quot;^\\d{1,9}$&quot;);</span>
+
+    private PathParameters() {}
+
+    /** True when the value is a valid vocabulary name: 3 to 64 characters, ^[A-Z][a-zA-Z0-9]*$ (decision D37). */
+    public static boolean isValidName(String value) {
+<span class="pc bpc" id="L17" title="1 of 2 branches missed.">        return value != null</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">                &amp;&amp; value.length() &gt;= 3</span>
+<span class="pc bpc" id="L19" title="1 of 2 branches missed.">                &amp;&amp; value.length() &lt;= 64</span>
+<span class="fc bfc" id="L20" title="All 2 branches covered.">                &amp;&amp; NAME.matcher(value).matches();</span>
+    }
+
+    /**
+     * Checks a name in the path.
+     *
+     * @throws eu.simpl.vocabularymanager.error.VocabularyManagerException 400
+     */
+    public static String name(String parameter, String value) {
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (!isValidName(value)) {</span>
+<span class="fc" id="L30">            throw Problems.badRequest(Issue.schemaViolation(</span>
+                    &quot;path&quot;,
+                    parameter,
+                    value,
+                    &quot;Path parameter '&quot; + parameter + &quot;' must have 3 to 64 characters and match ^[A-Z][a-zA-Z0-9]*$.&quot;));
+        }
+<span class="fc" id="L36">        return value;</span>
+    }
+
+    /**
+     * Checks a version number in the path: an integer of at least 1.
+     *
+     * @throws eu.simpl.vocabularymanager.error.VocabularyManagerException 400
+     */
+    public static int version(String value) {
+<span class="pc bpc" id="L45" title="2 of 6 branches missed.">        if (value == null || !DIGITS.matcher(value).matches() || Integer.parseInt(value) &lt; 1) {</span>
+<span class="fc" id="L46">            throw Problems.badRequest(Issue.schemaViolation(</span>
+                    &quot;path&quot;, &quot;version&quot;, value, &quot;Path parameter 'version' must be an integer of at least 1.&quot;));
+        }
+<span class="fc" id="L49">        return Integer.parseInt(value);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>
