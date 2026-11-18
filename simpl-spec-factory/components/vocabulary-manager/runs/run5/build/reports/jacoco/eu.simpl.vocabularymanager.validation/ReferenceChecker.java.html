@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReferenceChecker.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">ReferenceChecker.java</span></div><h1>ReferenceChecker.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import eu.simpl.vocabularymanager.config.VocabularyProperties;
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.Status;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
+import org.springframework.stereotype.Component;
+
+/**
+ * Checks vocabulary references (D11, D12, D47): rule S7 (missing internal vocabulary or version) and the warnings
+ * deprecatedVocabularyReference and externalReferenceSkipped.
+ */
+@Component
+public class ReferenceChecker {
+
+<span class="fc" id="L23">    private static final Pattern INTERNAL_REST = Pattern.compile(&quot;^([^/#]+)(?:/versions/([0-9]{1,9}))?(?:[#/].*)?$&quot;);</span>
+<span class="fc" id="L24">    private static final Set&lt;String&gt; W3C_NAMESPACES = Set.of(</span>
+            &quot;http://www.w3.org/1999/02/22-rdf-syntax-ns&quot;,
+            &quot;http://www.w3.org/2000/01/rdf-schema&quot;,
+            &quot;http://www.w3.org/2002/07/owl&quot;,
+            &quot;http://www.w3.org/2001/XMLSchema&quot;,
+            &quot;http://www.w3.org/2004/02/skos/core&quot;);
+
+    private final String internalPrefix;
+
+<span class="fc" id="L33">    public ReferenceChecker(VocabularyProperties properties) {</span>
+<span class="fc" id="L34">        this.internalPrefix = properties.contentBase() + &quot;/content/&quot;;</span>
+<span class="fc" id="L35">    }</span>
+
+    /**
+     * Checks each prefix declaration.
+     *
+     * @param content parsed content
+     * @param context lookups and the name of the vocabulary itself
+     * @param errors receives S7 errors
+     * @param warnings receives warnings
+     */
+    public void check(
+            ParsedContent content,
+            ReferenceContext context,
+            List&lt;ValidationError&gt; errors,
+            List&lt;ValidationWarning&gt; warnings) {
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        for (PrefixDeclaration declaration : content.prefixes()) {</span>
+<span class="fc" id="L51">            String namespace = declaration.namespace();</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            Matcher internal = namespace.startsWith(internalPrefix)</span>
+<span class="fc" id="L53">                    ? INTERNAL_REST.matcher(namespace.substring(internalPrefix.length()))</span>
+<span class="fc" id="L54">                    : null;</span>
+<span class="pc bpc" id="L55" title="1 of 4 branches missed.">            if (internal != null &amp;&amp; internal.matches()) {</span>
+<span class="fc" id="L56">                checkInternal(declaration, internal, context, errors, warnings);</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">            } else if (!isKnownExternal(namespace, content.graph(), context.externalKeys())) {</span>
+<span class="fc" id="L58">                warnings.add(new ValidationWarning(</span>
+                        ValidationWarning.EXTERNAL_REFERENCE_SKIPPED,
+                        &quot;Cannot resolve external namespace '&quot; + namespace
+                                + &quot;' because no cached external vocabulary is registered.&quot;,
+<span class="fc" id="L62">                        declaration.location()));</span>
+            }
+<span class="fc" id="L64">        }</span>
+<span class="fc" id="L65">    }</span>
+
+    private static void checkInternal(
+            PrefixDeclaration declaration,
+            Matcher internal,
+            ReferenceContext context,
+            List&lt;ValidationError&gt; errors,
+            List&lt;ValidationWarning&gt; warnings) {
+<span class="fc" id="L73">        String name = internal.group(1);</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        Integer requested = internal.group(2) == null ? null : Integer.valueOf(internal.group(2));</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (name.equals(context.selfName())) {</span>
+<span class="fc" id="L76">            return;</span>
+        }
+<span class="fc" id="L78">        Optional&lt;InternalVocabularyState&gt; state = context.internalLookup().apply(name);</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (state.isEmpty()) {</span>
+<span class="fc" id="L80">            errors.add(new ValidationError(missingText(name, requested), declaration.location()));</span>
+<span class="fc" id="L81">            return;</span>
+        }
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        int number = requested == null ? state.get().vocabulary().latestVersion() : requested;</span>
+<span class="fc" id="L84">        Optional&lt;VocabularyVersion&gt; version = state.get().version(number);</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        if (version.isEmpty()) {</span>
+<span class="fc" id="L86">            errors.add(new ValidationError(missingText(name, number), declaration.location()));</span>
+<span class="fc" id="L87">            return;</span>
+        }
+<span class="fc" id="L89">        Status vocabularyStatus = state.get().vocabulary().status();</span>
+<span class="fc bfc" id="L90" title="All 4 branches covered.">        if (version.get().status() == Status.DEPRECATED || vocabularyStatus == Status.DEPRECATED) {</span>
+<span class="fc" id="L91">            warnings.add(new ValidationWarning(</span>
+                    ValidationWarning.DEPRECATED_VOCABULARY_REFERENCE,
+<span class="fc" id="L93">                    deprecatedText(name, number, state.get()),</span>
+<span class="fc" id="L94">                    declaration.location()));</span>
+        }
+<span class="fc" id="L96">    }</span>
+
+    static String missingText(String name, Integer version) {
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        return version == null</span>
+<span class="fc" id="L100">                ? &quot;Referenced internal vocabulary '&quot; + name + &quot;' does not exist.&quot;</span>
+<span class="fc" id="L101">                : &quot;Referenced internal vocabulary '&quot; + name + &quot;' version &quot; + version + &quot; does not exist.&quot;;</span>
+    }
+
+    static String deprecatedText(String name, int version, InternalVocabularyState state) {
+<span class="fc" id="L105">        String text = &quot;Referenced internal vocabulary '&quot; + name + &quot;' version &quot; + version + &quot; is deprecated.&quot;;</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (state.vocabulary().status() == Status.DEPRECATED) {</span>
+<span class="fc" id="L107">            return text + &quot; The vocabulary '&quot; + name + &quot;' is deprecated.&quot;;</span>
+        }
+<span class="fc" id="L109">        Optional&lt;Integer&gt; active = state.latestActiveVersion();</span>
+<span class="pc bpc" id="L110" title="1 of 4 branches missed.">        if (active.isPresent() &amp;&amp; active.get() != version) {</span>
+<span class="fc" id="L111">            return text + &quot; Use version &quot; + active.get() + &quot;, the latest ACTIVE version.&quot;;</span>
+        }
+<span class="fc" id="L113">        return text;</span>
+    }
+
+    private static boolean isKnownExternal(String namespace, Graph graph, Set&lt;String&gt; externalKeys) {
+<span class="fc" id="L117">        String normalised = ExternalVocabulary.normalise(namespace);</span>
+<span class="fc bfc" id="L118" title="All 4 branches covered.">        if (externalKeys.contains(normalised) || W3C_NAMESPACES.contains(normalised)) {</span>
+<span class="fc" id="L119">            return true;</span>
+        }
+<span class="fc" id="L121">        return isOwnNamespace(namespace, graph);</span>
+    }
+
+    private static boolean isOwnNamespace(String namespace, Graph graph) {
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        if (namespace.isEmpty()) {</span>
+<span class="nc" id="L126">            return false;</span>
+        }
+<span class="fc" id="L128">        return graph.find()</span>
+<span class="fc" id="L129">                .filterKeep(t -&gt; {</span>
+<span class="fc" id="L130">                    Node s = t.getSubject();</span>
+<span class="pc bpc" id="L131" title="1 of 4 branches missed.">                    return s.isURI() &amp;&amp; s.getURI().startsWith(namespace);</span>
+                })
+<span class="fc" id="L133">                .hasNext();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

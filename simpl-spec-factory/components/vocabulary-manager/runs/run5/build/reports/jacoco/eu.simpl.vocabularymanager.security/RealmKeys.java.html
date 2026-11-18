@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RealmKeys.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">RealmKeys.java</span></div><h1>RealmKeys.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import eu.simpl.vocabularymanager.config.VocabularyProperties;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
+/**
+ * Cache of the realm signing keys (D44). Keys are fetched at start and again when a token names an unknown key id.
+ * Cached keys keep working while the identity provider is down. A refetch after a successful fetch happens at most
+ * once per configured interval, so random key ids cannot flood the identity provider.
+ */
+@Component
+public class RealmKeys {
+
+<span class="fc" id="L26">    private static final Logger LOG = LoggerFactory.getLogger(RealmKeys.class);</span>
+
+    private final KeySource source;
+    private final Clock clock;
+    private final Duration minRefetchInterval;
+<span class="fc" id="L31">    private final Map&lt;String, JWK&gt; keys = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L32">    private volatile Instant lastSuccessfulFetch = Instant.EPOCH;</span>
+
+<span class="fc" id="L34">    public RealmKeys(KeySource source, Clock clock, VocabularyProperties properties) {</span>
+<span class="fc" id="L35">        this.source = source;</span>
+<span class="fc" id="L36">        this.clock = clock;</span>
+<span class="fc" id="L37">        this.minRefetchInterval = properties.identity().minRefetchInterval();</span>
+<span class="fc" id="L38">    }</span>
+
+    /** Loads the keys at start; a failure is logged and retried on the first token. */
+    @EventListener(ApplicationReadyEvent.class)
+    public void loadAtStart() {
+        try {
+<span class="fc" id="L44">            refresh();</span>
+<span class="fc" id="L45">        } catch (IdentityProviderUnavailableException e) {</span>
+<span class="fc" id="L46">            LOG.warn(&quot;Realm keys could not be loaded at start; they will be fetched on the first token&quot;, e);</span>
+<span class="fc" id="L47">        }</span>
+<span class="fc" id="L48">    }</span>
+
+    /** True when at least one key is cached. */
+    public boolean hasKeys() {
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        return !keys.isEmpty();</span>
+    }
+
+    /**
+     * Finds the key for a key id, fetching the key set when the id is not cached.
+     *
+     * @param keyId key id from the token header
+     * @return the key, or empty when the identity provider does not know it
+     * @throws IdentityProviderUnavailableException when the key is unknown and the keys cannot be fetched
+     */
+    public Optional&lt;JWK&gt; find(String keyId) {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (keyId == null) {</span>
+<span class="fc" id="L64">            return Optional.empty();</span>
+        }
+<span class="fc" id="L66">        JWK cached = keys.get(keyId);</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (cached != null) {</span>
+<span class="fc" id="L68">            return Optional.of(cached);</span>
+        }
+<span class="fc" id="L70">        synchronized (this) {</span>
+<span class="fc" id="L71">            cached = keys.get(keyId);</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">            if (cached != null) {</span>
+<span class="nc" id="L73">                return Optional.of(cached);</span>
+            }
+<span class="fc bfc" id="L75" title="All 2 branches covered.">            boolean recentlyFetched = hasKeys()</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">                    &amp;&amp; Duration.between(lastSuccessfulFetch, clock.instant()).compareTo(minRefetchInterval) &lt; 0;</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">            if (!recentlyFetched) {</span>
+<span class="fc" id="L78">                refresh();</span>
+            }
+<span class="fc" id="L80">            return Optional.ofNullable(keys.get(keyId));</span>
+        }
+    }
+
+    /**
+     * Fetches the key set and replaces the cache.
+     *
+     * @throws IdentityProviderUnavailableException when the identity provider does not answer
+     */
+    public synchronized void refresh() {
+<span class="fc" id="L90">        JWKSet set = source.fetch();</span>
+<span class="fc" id="L91">        Map&lt;String, JWK&gt; fresh = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        for (JWK key : set.getKeys()) {</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">            if (key.getKeyID() != null) {</span>
+<span class="fc" id="L94">                fresh.put(key.getKeyID(), key);</span>
+            }
+<span class="fc" id="L96">        }</span>
+<span class="fc" id="L97">        keys.clear();</span>
+<span class="fc" id="L98">        keys.putAll(fresh);</span>
+<span class="fc" id="L99">        lastSuccessfulFetch = clock.instant();</span>
+<span class="fc" id="L100">        LOG.info(&quot;Loaded {} realm key(s)&quot;, fresh.size());</span>
+<span class="fc" id="L101">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

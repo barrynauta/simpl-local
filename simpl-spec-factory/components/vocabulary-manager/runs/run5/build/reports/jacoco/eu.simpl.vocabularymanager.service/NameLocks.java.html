@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NameLocks.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">NameLocks.java</span></div><h1>NameLocks.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.config.VocabularyProperties;
+import eu.simpl.vocabularymanager.web.ApiException;
+import java.time.Duration;
+import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
+import org.springframework.stereotype.Component;
+
+/**
+ * One lock per vocabulary name in lower case (D43): changes to one vocabulary run one after another; changes to
+ * different vocabularies do not wait for each other. Waiting counts towards the request timeout; when it runs out
+ * the request gets 503 and stores nothing (D44).
+ */
+@Component
+public class NameLocks {
+
+<span class="fc" id="L21">    private final ConcurrentHashMap&lt;String, ReentrantLock&gt; locks = new ConcurrentHashMap&lt;&gt;();</span>
+    private final Duration timeout;
+
+<span class="fc" id="L24">    public NameLocks(VocabularyProperties properties) {</span>
+<span class="fc" id="L25">        this.timeout = properties.lockTimeout();</span>
+<span class="fc" id="L26">    }</span>
+
+    /**
+     * Runs the action while holding the lock of the key.
+     *
+     * @param key lock key, compared case-insensitively
+     * @param action the change
+     * @param &lt;T&gt; result type
+     * @return the result of the action
+     * @throws ApiException 503 when the lock is not obtained within the timeout
+     */
+    public &lt;T&gt; T withLock(String key, Supplier&lt;T&gt; action) {
+<span class="fc" id="L38">        ReentrantLock lock = locks.computeIfAbsent(key.toLowerCase(Locale.ROOT), k -&gt; new ReentrantLock(true));</span>
+        boolean locked;
+        try {
+<span class="fc" id="L41">            locked = lock.tryLock(timeout.toMillis(), TimeUnit.MILLISECONDS);</span>
+<span class="nc" id="L42">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L43">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L44">            throw ApiException.serviceUnavailable(VocabularyService.STORE_UNAVAILABLE);</span>
+<span class="fc" id="L45">        }</span>
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">        if (!locked) {</span>
+<span class="nc" id="L47">            throw ApiException.serviceUnavailable(VocabularyService.STORE_UNAVAILABLE);</span>
+        }
+        try {
+<span class="fc" id="L50">            return action.get();</span>
+        } finally {
+<span class="fc" id="L52">            lock.unlock();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

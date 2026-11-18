@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Representations.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">Representations.java</span></div><h1>Representations.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.service.CreationResult;
+import eu.simpl.vocabularymanager.service.SearchResult;
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import eu.simpl.vocabularymanager.validation.ValidationWarning;
+import java.util.List;
+import org.springframework.stereotype.Component;
+
+/** Maps domain objects to the wire schemas of the OpenAPI, with the additions of D5, D10 and D27 (D39). */
+@Component
+public class Representations {
+
+    private final VocabularyService vocabularies;
+
+<span class="fc" id="L20">    public Representations(VocabularyService vocabularies) {</span>
+<span class="fc" id="L21">        this.vocabularies = vocabularies;</span>
+<span class="fc" id="L22">    }</span>
+
+    /** VocabularyCategory: the vocabulary (D25). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L26">    public record VocabularyBody(</span>
+            String href,
+            String contentHref,
+            String name,
+            int version,
+            String description,
+            String status,
+            String createdBy,
+            String creationDate,
+            String lastUpdateDate) {}
+
+    /** VocabularyMetadata: the vocabulary version (D26), with createdBy (D27) and latestVersionHref (D5). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L39">    public record VersionBody(</span>
+            String href,
+            String contentHref,
+            String latestVersionHref,
+            String name,
+            int version,
+            String description,
+            String changelog,
+            String status,
+            String createdBy,
+            String creationDate,
+            String lastUpdateDate) {}
+
+    /** VocabularyVersionMetadataResponse: the created version plus validationWarnings, always present (D10). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L54">    public record CreatedVersionBody(</span>
+            String href,
+            String contentHref,
+            String latestVersionHref,
+            String name,
+            int version,
+            String description,
+            String changelog,
+            String status,
+            String createdBy,
+            String creationDate,
+            String lastUpdateDate,
+            @JsonInclude(JsonInclude.Include.ALWAYS) List&lt;ValidationWarning&gt; validationWarnings) {}
+
+    /** VocabularySearchItem. */
+<span class="fc" id="L69">    public record SearchItemBody(</span>
+            String href, String contentHref, String name, int version, String status, boolean latest) {}
+
+    /** ExternalVocabulary. */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L74">    public record ExternalBody(</span>
+            String href,
+            String name,
+            String namespaceUri,
+            @JsonInclude(JsonInclude.Include.ALWAYS) List&lt;String&gt; aliasUris,
+            String sourceUri,
+            String description,
+            String createdBy,
+            String creationDate) {}
+
+    /** Path of a vocabulary relative to the API base. */
+    public static String vocabularyHref(String name) {
+<span class="fc" id="L86">        return &quot;/vocabularies/&quot; + name;</span>
+    }
+
+    /** Path of a version relative to the API base. */
+    public static String versionHref(String name, int version) {
+<span class="fc" id="L91">        return &quot;/vocabularies/&quot; + name + &quot;/versions/&quot; + version;</span>
+    }
+
+    /** Path of an external vocabulary relative to the API base. */
+    public static String externalHref(String name) {
+<span class="fc" id="L96">        return &quot;/external-vocabularies/&quot; + name;</span>
+    }
+
+    public VocabularyBody vocabulary(Vocabulary v) {
+<span class="fc" id="L100">        return new VocabularyBody(</span>
+<span class="fc" id="L101">                vocabularyHref(v.name()),</span>
+<span class="fc" id="L102">                vocabularies.vocabularyContentUrl(v.name()),</span>
+<span class="fc" id="L103">                v.name(),</span>
+<span class="fc" id="L104">                v.latestVersion(),</span>
+<span class="fc" id="L105">                v.latestDescription(),</span>
+<span class="fc" id="L106">                v.status().name(),</span>
+<span class="fc" id="L107">                v.createdBy(),</span>
+<span class="fc" id="L108">                v.creationDate(),</span>
+<span class="fc" id="L109">                v.lastUpdateDate());</span>
+    }
+
+    public VersionBody version(VocabularyVersion v, int latestVersion) {
+<span class="fc" id="L113">        return new VersionBody(</span>
+<span class="fc" id="L114">                versionHref(v.name(), v.version()),</span>
+<span class="fc" id="L115">                vocabularies.versionContentUrl(v.name(), v.version()),</span>
+<span class="fc" id="L116">                versionHref(v.name(), latestVersion),</span>
+<span class="fc" id="L117">                v.name(),</span>
+<span class="fc" id="L118">                v.version(),</span>
+<span class="fc" id="L119">                v.description(),</span>
+<span class="fc" id="L120">                v.changelog(),</span>
+<span class="fc" id="L121">                v.status().name(),</span>
+<span class="fc" id="L122">                v.createdBy(),</span>
+<span class="fc" id="L123">                v.creationDate(),</span>
+<span class="fc" id="L124">                v.lastUpdateDate());</span>
+    }
+
+    public CreatedVersionBody created(CreationResult result) {
+<span class="fc" id="L128">        VocabularyVersion v = result.version();</span>
+<span class="fc" id="L129">        return new CreatedVersionBody(</span>
+<span class="fc" id="L130">                versionHref(v.name(), v.version()),</span>
+<span class="fc" id="L131">                vocabularies.versionContentUrl(v.name(), v.version()),</span>
+<span class="fc" id="L132">                versionHref(v.name(), result.latestVersion()),</span>
+<span class="fc" id="L133">                v.name(),</span>
+<span class="fc" id="L134">                v.version(),</span>
+<span class="fc" id="L135">                v.description(),</span>
+<span class="fc" id="L136">                v.changelog(),</span>
+<span class="fc" id="L137">                v.status().name(),</span>
+<span class="fc" id="L138">                v.createdBy(),</span>
+<span class="fc" id="L139">                v.creationDate(),</span>
+<span class="fc" id="L140">                v.lastUpdateDate(),</span>
+<span class="fc" id="L141">                result.warnings());</span>
+    }
+
+    public SearchItemBody searchItem(SearchResult r) {
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        String href = r.latest() ? vocabularyHref(r.name()) : versionHref(r.name(), r.version());</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        String contentHref = r.latest()</span>
+<span class="fc" id="L147">                ? vocabularies.vocabularyContentUrl(r.name())</span>
+<span class="fc" id="L148">                : vocabularies.versionContentUrl(r.name(), r.version());</span>
+<span class="fc" id="L149">        return new SearchItemBody(</span>
+<span class="fc" id="L150">                href, contentHref, r.name(), r.version(), r.status().name(), r.latest());</span>
+    }
+
+    public ExternalBody external(ExternalVocabulary e) {
+<span class="fc" id="L154">        return new ExternalBody(</span>
+<span class="fc" id="L155">                externalHref(e.name()),</span>
+<span class="fc" id="L156">                e.name(),</span>
+<span class="fc" id="L157">                e.namespaceUri(),</span>
+<span class="fc" id="L158">                e.aliasUris(),</span>
+<span class="fc" id="L159">                e.sourceUri(),</span>
+<span class="fc" id="L160">                e.description(),</span>
+<span class="fc" id="L161">                e.createdBy(),</span>
+<span class="fc" id="L162">                e.creationDate());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

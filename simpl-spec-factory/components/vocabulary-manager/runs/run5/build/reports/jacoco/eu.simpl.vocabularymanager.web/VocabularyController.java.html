@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">VocabularyController.java</span></div><h1>VocabularyController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.config.VocabularyProperties;
+import eu.simpl.vocabularymanager.domain.Status;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyNames;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.security.AuthenticatedUser;
+import eu.simpl.vocabularymanager.service.CreationResult;
+import eu.simpl.vocabularymanager.service.SearchReference;
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+
+/** Vocabulary and vocabulary version operations of the OpenAPI, with the decisions that extend it (D39). */
+@RestController
+@RequestMapping(&quot;/v1/vocabularies&quot;)
+public class VocabularyController {
+
+<span class="fc" id="L40">    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(VocabularyController.class);</span>
+
+<span class="fc" id="L42">    private static final Set&lt;String&gt; LIST_PARAMS =</span>
+<span class="fc" id="L43">            Set.of(&quot;name&quot;, &quot;status&quot;, &quot;creationDate&quot;, &quot;lastUpdated&quot;, &quot;sort&quot;, &quot;page&quot;, &quot;pageSize&quot;);</span>
+<span class="fc" id="L44">    private static final Set&lt;String&gt; VERSION_LIST_PARAMS = Set.of(&quot;sort&quot;, &quot;page&quot;, &quot;pageSize&quot;);</span>
+<span class="fc" id="L45">    private static final List&lt;String&gt; LIST_SORTS = List.of(</span>
+            &quot;name&quot;, &quot;-name&quot;, &quot;status&quot;, &quot;-status&quot;, &quot;creationDate&quot;, &quot;-creationDate&quot;, &quot;lastUpdated&quot;, &quot;-lastUpdated&quot;);
+<span class="fc" id="L47">    private static final List&lt;String&gt; VERSION_SORTS =</span>
+<span class="fc" id="L48">            List.of(&quot;name&quot;, &quot;-name&quot;, &quot;status&quot;, &quot;-status&quot;, &quot;creationDate&quot;, &quot;-creationDate&quot;);</span>
+<span class="fc" id="L49">    private static final Pattern NAME_FILTER = Pattern.compile(&quot;^[A-Za-z0-9]{1,64}$&quot;);</span>
+<span class="fc" id="L50">    private static final Set&lt;String&gt; CREATE_FIELDS = Set.of(&quot;vocabularyFile&quot;, &quot;name&quot;, &quot;description&quot;, &quot;changelog&quot;);</span>
+<span class="fc" id="L51">    private static final Set&lt;String&gt; VERSION_FIELDS = Set.of(&quot;vocabularyFile&quot;, &quot;description&quot;, &quot;changelog&quot;);</span>
+    private static final String FILE = &quot;vocabularyFile&quot;;
+    private static final int MAX_SEARCH_ITEMS = 100;
+
+    private final VocabularyService service;
+    private final RequestInspector inspector;
+    private final Representations representations;
+    private final long uploadLimit;
+
+    public VocabularyController(
+            VocabularyService service,
+            RequestInspector inspector,
+            Representations representations,
+<span class="fc" id="L64">            VocabularyProperties properties) {</span>
+<span class="fc" id="L65">        this.service = service;</span>
+<span class="fc" id="L66">        this.inspector = inspector;</span>
+<span class="fc" id="L67">        this.representations = representations;</span>
+<span class="fc" id="L68">        this.uploadLimit = properties.uploadLimitBytes();</span>
+<span class="fc" id="L69">    }</span>
+
+    /** GET /vocabularies (SIMPL-18162, SIMPL-18164; D19 to D23). */
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public CollectionPage&lt;Representations.VocabularyBody&gt; list(HttpServletRequest request) {
+<span class="fc" id="L74">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L75">        Map&lt;String, List&lt;String&gt;&gt; params = inspector.query(request);</span>
+<span class="fc" id="L76">        List&lt;Issue&gt; issues = inspector.queryIssues(params, LIST_PARAMS);</span>
+<span class="fc" id="L77">        String nameFilter = single(params, &quot;name&quot;);</span>
+<span class="fc bfc" id="L78" title="All 4 branches covered.">        if (nameFilter != null &amp;&amp; !NAME_FILTER.matcher(nameFilter).matches()) {</span>
+<span class="fc" id="L79">            issues.add(Issue.schemaViolation(</span>
+                    &quot;query&quot;, &quot;name&quot;, &quot;Query parameter 'name' must have 1 to 64 letters or digits.&quot;, nameFilter));
+        }
+<span class="fc" id="L82">        String statusValue = single(params, &quot;status&quot;);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        Status status = statusValue == null ? null : Status.fromWire(statusValue);</span>
+<span class="fc bfc" id="L84" title="All 4 branches covered.">        if (statusValue != null &amp;&amp; status == null) {</span>
+<span class="fc" id="L85">            issues.add(Issue.schemaViolation(</span>
+                    &quot;query&quot;, &quot;status&quot;, &quot;Query parameter 'status' must be one of [ACTIVE, DEPRECATED].&quot;, statusValue));
+        }
+<span class="fc" id="L88">        DateFilter created = dateFilter(params, &quot;creationDate&quot;, issues);</span>
+<span class="fc" id="L89">        DateFilter updated = dateFilter(params, &quot;lastUpdated&quot;, issues);</span>
+<span class="fc" id="L90">        String sort = sortValue(params, LIST_SORTS, issues);</span>
+<span class="fc" id="L91">        Paging paging = Paging.read(params, issues);</span>
+<span class="fc" id="L92">        PathValues.failOn(issues);</span>
+
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        String needle = nameFilter == null ? null : nameFilter.toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L95">        List&lt;Vocabulary&gt; matching = service.listVocabularies().stream()</span>
+<span class="fc bfc" id="L96" title="All 4 branches covered.">                .filter(v -&gt; needle == null || v.name().toLowerCase(Locale.ROOT).contains(needle))</span>
+<span class="pc bpc" id="L97" title="1 of 4 branches missed.">                .filter(v -&gt; status == null || v.status() == status)</span>
+<span class="pc bpc" id="L98" title="3 of 4 branches missed.">                .filter(v -&gt; created == null || created.matches(v.creationDate()))</span>
+<span class="pc bpc" id="L99" title="1 of 4 branches missed.">                .filter(v -&gt; updated == null || updated.matches(v.lastUpdateDate()))</span>
+<span class="fc" id="L100">                .sorted(vocabularyOrder(sort))</span>
+<span class="fc" id="L101">                .toList();</span>
+<span class="fc" id="L102">        List&lt;Representations.VocabularyBody&gt; bodies =</span>
+<span class="fc" id="L103">                matching.stream().map(representations::vocabulary).toList();</span>
+<span class="fc" id="L104">        String extra = linkQuery(params, List.of(&quot;name&quot;, &quot;status&quot;, &quot;creationDate&quot;, &quot;lastUpdated&quot;, &quot;sort&quot;));</span>
+<span class="fc" id="L105">        return CollectionPage.of(bodies, paging.page(), paging.pageSize(), &quot;/vocabularies&quot;, extra);</span>
+    }
+
+    /** POST /vocabularies (SIMPL-18170, SIMPL-18187; D6 to D15, D37, D51). */
+    @PostMapping
+    public ResponseEntity&lt;Representations.CreatedVersionBody&gt; create(HttpServletRequest request) {
+<span class="fc" id="L111">        AuthenticatedUser user = Callers.of(request);</span>
+<span class="fc" id="L112">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L113">        inspector.requireMultipart(request);</span>
+<span class="fc" id="L114">        List&lt;FormPart&gt; parts = inspector.multipart(request, FILE, uploadLimit);</span>
+<span class="fc" id="L115">        List&lt;Issue&gt; issues = noQueryAllowed(request);</span>
+<span class="fc" id="L116">        FormFields fields = new FormFields(parts, CREATE_FIELDS, Set.of());</span>
+<span class="fc" id="L117">        byte[] content = fields.requiredFile(FILE);</span>
+<span class="fc" id="L118">        String name = fields.requiredName(&quot;name&quot;);</span>
+<span class="fc" id="L119">        String description = fields.requiredText(&quot;description&quot;);</span>
+<span class="fc" id="L120">        String changelog = fields.requiredText(&quot;changelog&quot;);</span>
+<span class="fc" id="L121">        issues.addAll(fields.issues());</span>
+<span class="fc" id="L122">        PathValues.failOn(issues);</span>
+
+<span class="fc" id="L124">        CreationResult result = service.createVocabulary(name, description, changelog, content, user.creator());</span>
+<span class="fc" id="L125">        LOG.info(&quot;Administrative change: vocabulary {} created by user {}&quot;, name, user.subject());</span>
+<span class="fc" id="L126">        return created(result);</span>
+    }
+
+    /** POST /vocabularies/searches (D38). */
+    @PostMapping(&quot;/searches&quot;)
+    public CollectionPage&lt;Representations.SearchItemBody&gt; search(HttpServletRequest request) {
+<span class="fc" id="L132">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L133">        inspector.requireJson(request);</span>
+<span class="fc" id="L134">        List&lt;Issue&gt; issues = noQueryAllowed(request);</span>
+<span class="fc" id="L135">        JsonNode body = inspector.jsonObject(request);</span>
+<span class="fc" id="L136">        List&lt;SearchReference&gt; references = searchReferences(body, issues);</span>
+<span class="fc" id="L137">        PathValues.failOn(issues);</span>
+<span class="fc" id="L138">        return CollectionPage.unpaged(service.search(references).stream()</span>
+<span class="fc" id="L139">                .map(representations::searchItem)</span>
+<span class="fc" id="L140">                .toList());</span>
+    }
+
+    /** GET /vocabularies/{vocabularyName} (D25). */
+    @GetMapping(path = &quot;/{vocabularyName}&quot;, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Representations.VocabularyBody get(@PathVariable String vocabularyName, HttpServletRequest request) {
+<span class="fc" id="L146">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L147">        List&lt;Issue&gt; issues = inspector.queryIssues(inspector.query(request), Set.of());</span>
+<span class="fc" id="L148">        PathValues.checkName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc" id="L149">        PathValues.failOn(issues);</span>
+<span class="fc" id="L150">        return representations.vocabulary(service.getVocabulary(vocabularyName));</span>
+    }
+
+    /** PATCH /vocabularies/{vocabularyName} (SIMPL-18175; D3, D4). */
+    @PatchMapping(path = &quot;/{vocabularyName}&quot;, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Representations.VocabularyBody updateStatus(
+            @PathVariable String vocabularyName, HttpServletRequest request) {
+<span class="fc" id="L157">        AuthenticatedUser user = Callers.of(request);</span>
+<span class="fc" id="L158">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L159">        inspector.requireJson(request);</span>
+<span class="fc" id="L160">        List&lt;Issue&gt; issues = noQueryAllowed(request);</span>
+<span class="fc" id="L161">        PathValues.checkName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc" id="L162">        Status status = statusFromBody(inspector.jsonObject(request), issues);</span>
+<span class="fc" id="L163">        PathValues.failOn(issues);</span>
+<span class="fc" id="L164">        return representations.vocabulary(service.updateVocabularyStatus(vocabularyName, status, user.subject()));</span>
+    }
+
+    /** GET /vocabularies/{vocabularyName}/versions (SIMPL-18168; D22, D23). */
+    @GetMapping(path = &quot;/{vocabularyName}/versions&quot;, produces = MediaType.APPLICATION_JSON_VALUE)
+    public CollectionPage&lt;Representations.VersionBody&gt; versions(
+            @PathVariable String vocabularyName, HttpServletRequest request) {
+<span class="fc" id="L171">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L172">        Map&lt;String, List&lt;String&gt;&gt; params = inspector.query(request);</span>
+<span class="fc" id="L173">        List&lt;Issue&gt; issues = inspector.queryIssues(params, VERSION_LIST_PARAMS);</span>
+<span class="fc" id="L174">        PathValues.checkName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc" id="L175">        String sort = sortValue(params, VERSION_SORTS, issues);</span>
+<span class="fc" id="L176">        Paging paging = Paging.read(params, issues);</span>
+<span class="fc" id="L177">        PathValues.failOn(issues);</span>
+
+<span class="fc" id="L179">        List&lt;VocabularyVersion&gt; versions = new ArrayList&lt;&gt;(service.listVersions(vocabularyName));</span>
+<span class="fc" id="L180">        int latest =</span>
+<span class="fc" id="L181">                versions.stream().mapToInt(VocabularyVersion::version).max().orElse(1);</span>
+<span class="fc" id="L182">        versions.sort(versionOrder(sort));</span>
+<span class="fc" id="L183">        List&lt;Representations.VersionBody&gt; bodies =</span>
+<span class="fc" id="L184">                versions.stream().map(v -&gt; representations.version(v, latest)).toList();</span>
+<span class="fc" id="L185">        return CollectionPage.of(</span>
+                bodies,
+<span class="fc" id="L187">                paging.page(),</span>
+<span class="fc" id="L188">                paging.pageSize(),</span>
+                &quot;/vocabularies/&quot; + vocabularyName + &quot;/versions&quot;,
+<span class="fc" id="L190">                linkQuery(params, List.of(&quot;sort&quot;)));</span>
+    }
+
+    /** POST /vocabularies/{vocabularyName}/versions (SIMPL-18173, SIMPL-18190; D4, D7, D43, D46, D51). */
+    @PostMapping(&quot;/{vocabularyName}/versions&quot;)
+    public ResponseEntity&lt;Representations.CreatedVersionBody&gt; createVersion(
+            @PathVariable String vocabularyName, HttpServletRequest request) {
+<span class="fc" id="L197">        AuthenticatedUser user = Callers.of(request);</span>
+<span class="fc" id="L198">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L199">        inspector.requireMultipart(request);</span>
+<span class="fc" id="L200">        List&lt;FormPart&gt; parts = inspector.multipart(request, FILE, uploadLimit);</span>
+<span class="fc" id="L201">        List&lt;Issue&gt; issues = noQueryAllowed(request);</span>
+<span class="fc" id="L202">        PathValues.checkName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc" id="L203">        FormFields fields = new FormFields(parts, VERSION_FIELDS, Set.of());</span>
+<span class="fc" id="L204">        byte[] content = fields.requiredFile(FILE);</span>
+<span class="fc" id="L205">        String description = fields.requiredText(&quot;description&quot;);</span>
+<span class="fc" id="L206">        String changelog = fields.requiredText(&quot;changelog&quot;);</span>
+<span class="fc" id="L207">        issues.addAll(fields.issues());</span>
+<span class="fc" id="L208">        PathValues.failOn(issues);</span>
+
+<span class="fc" id="L210">        CreationResult result = service.createVersion(vocabularyName, description, changelog, content, user.creator());</span>
+<span class="fc" id="L211">        return created(result);</span>
+    }
+
+    /** GET /vocabularies/{vocabularyName}/versions/{version} (SIMPL-18166). */
+    @GetMapping(path = &quot;/{vocabularyName}/versions/{version}&quot;, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Representations.VersionBody version(
+            @PathVariable String vocabularyName, @PathVariable String version, HttpServletRequest request) {
+<span class="fc" id="L218">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L219">        List&lt;Issue&gt; issues = inspector.queryIssues(inspector.query(request), Set.of());</span>
+<span class="fc" id="L220">        PathValues.checkName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc" id="L221">        int number = PathValues.checkVersion(version, issues);</span>
+<span class="nc" id="L222">        PathValues.failOn(issues);</span>
+<span class="nc" id="L223">        VocabularyVersion found = service.getVersion(vocabularyName, number);</span>
+<span class="nc" id="L224">        return representations.version(</span>
+<span class="nc" id="L225">                found, service.getVocabulary(vocabularyName).latestVersion());</span>
+    }
+
+    /** PATCH /vocabularies/{vocabularyName}/versions/{version} (D4, D41). */
+    @PatchMapping(path = &quot;/{vocabularyName}/versions/{version}&quot;, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Representations.VersionBody updateVersionStatus(
+            @PathVariable String vocabularyName, @PathVariable String version, HttpServletRequest request) {
+<span class="fc" id="L232">        AuthenticatedUser user = Callers.of(request);</span>
+<span class="fc" id="L233">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L234">        inspector.requireJson(request);</span>
+<span class="fc" id="L235">        List&lt;Issue&gt; issues = noQueryAllowed(request);</span>
+<span class="fc" id="L236">        PathValues.checkName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc" id="L237">        int number = PathValues.checkVersion(version, issues);</span>
+<span class="fc" id="L238">        Status status = statusFromBody(inspector.jsonObject(request), issues);</span>
+<span class="fc" id="L239">        PathValues.failOn(issues);</span>
+<span class="fc" id="L240">        VocabularyVersion updated = service.updateVersionStatus(vocabularyName, number, status, user.subject());</span>
+<span class="fc" id="L241">        return representations.version(</span>
+<span class="fc" id="L242">                updated, service.getVocabulary(vocabularyName).latestVersion());</span>
+    }
+
+    private ResponseEntity&lt;Representations.CreatedVersionBody&gt; created(CreationResult result) {
+<span class="fc" id="L246">        Representations.CreatedVersionBody body = representations.created(result);</span>
+<span class="fc" id="L247">        return ResponseEntity.created(URI.create(body.href()))</span>
+<span class="fc" id="L248">                .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L249">                .body(body);</span>
+    }
+
+    private List&lt;Issue&gt; noQueryAllowed(HttpServletRequest request) {
+<span class="fc" id="L253">        return new ArrayList&lt;&gt;(inspector.queryIssues(inspector.query(request), Set.of()));</span>
+    }
+
+    private static Status statusFromBody(JsonNode body, List&lt;Issue&gt; issues) {
+<span class="fc" id="L257">        Iterator&lt;String&gt; names = body.propertyNames().iterator();</span>
+<span class="fc bfc" id="L258" title="All 2 branches covered.">        while (names.hasNext()) {</span>
+<span class="fc" id="L259">            String field = names.next();</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">            if (!&quot;status&quot;.equals(field)) {</span>
+<span class="fc" id="L261">                issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;Property '&quot; + field + &quot;' is not supported.&quot;, null));</span>
+            }
+<span class="fc" id="L263">        }</span>
+<span class="fc" id="L264">        JsonNode value = body.get(&quot;status&quot;);</span>
+<span class="pc bpc" id="L265" title="2 of 4 branches missed.">        if (value == null || value.isNull()) {</span>
+<span class="nc" id="L266">            issues.add(Issue.schemaViolation(&quot;body&quot;, &quot;status&quot;, &quot;Property 'status' is required.&quot;, null));</span>
+<span class="nc" id="L267">            return null;</span>
+        }
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">        Status status = value.isString() ? Status.fromWire(value.asString()) : null;</span>
+<span class="fc bfc" id="L270" title="All 2 branches covered.">        if (status == null) {</span>
+<span class="fc" id="L271">            issues.add(Issue.schemaViolation(</span>
+<span class="fc" id="L272">                    &quot;body&quot;, &quot;status&quot;, &quot;Property 'status' must be one of [ACTIVE, DEPRECATED].&quot;, value.toString()));</span>
+        }
+<span class="fc" id="L274">        return status;</span>
+    }
+
+    private static List&lt;SearchReference&gt; searchReferences(JsonNode body, List&lt;Issue&gt; issues) {
+<span class="fc" id="L278">        Iterator&lt;String&gt; names = body.propertyNames().iterator();</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">        while (names.hasNext()) {</span>
+<span class="fc" id="L280">            String field = names.next();</span>
+<span class="fc bfc" id="L281" title="All 2 branches covered.">            if (!&quot;items&quot;.equals(field)) {</span>
+<span class="fc" id="L282">                issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;Property '&quot; + field + &quot;' is not supported.&quot;, null));</span>
+            }
+<span class="fc" id="L284">        }</span>
+<span class="fc" id="L285">        JsonNode items = body.get(&quot;items&quot;);</span>
+<span class="pc bpc" id="L286" title="2 of 4 branches missed.">        if (items == null || !items.isArray()) {</span>
+<span class="nc" id="L287">            issues.add(</span>
+<span class="nc" id="L288">                    Issue.schemaViolation(&quot;body&quot;, &quot;items&quot;, &quot;Property 'items' is required and must be an array.&quot;, null));</span>
+<span class="nc" id="L289">            return List.of();</span>
+        }
+<span class="fc bfc" id="L291" title="All 4 branches covered.">        if (items.isEmpty() || items.size() &gt; MAX_SEARCH_ITEMS) {</span>
+<span class="fc" id="L292">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;, &quot;items&quot;, &quot;Property 'items' must have 1 to &quot; + MAX_SEARCH_ITEMS + &quot; entries.&quot;, null));
+<span class="fc" id="L294">            return List.of();</span>
+        }
+<span class="fc" id="L296">        List&lt;SearchReference&gt; references = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L297" title="All 2 branches covered.">        for (int i = 0; i &lt; items.size(); i++) {</span>
+<span class="fc" id="L298">            searchReference(items.get(i), &quot;items[&quot; + i + &quot;]&quot;, issues).ifPresent(references::add);</span>
+        }
+<span class="fc" id="L300">        return references;</span>
+    }
+
+    private static java.util.Optional&lt;SearchReference&gt; searchReference(JsonNode item, String path, List&lt;Issue&gt; issues) {
+<span class="pc bpc" id="L304" title="1 of 2 branches missed.">        if (!item.isObject()) {</span>
+<span class="nc" id="L305">            issues.add(Issue.schemaViolation(&quot;body&quot;, path, &quot;Each item must be an object.&quot;, null));</span>
+<span class="nc" id="L306">            return java.util.Optional.empty();</span>
+        }
+<span class="fc" id="L308">        Iterator&lt;String&gt; names = item.propertyNames().iterator();</span>
+<span class="fc bfc" id="L309" title="All 2 branches covered.">        while (names.hasNext()) {</span>
+<span class="fc" id="L310">            String field = names.next();</span>
+<span class="fc bfc" id="L311" title="All 4 branches covered.">            if (!&quot;name&quot;.equals(field) &amp;&amp; !&quot;version&quot;.equals(field)) {</span>
+<span class="fc" id="L312">                issues.add(Issue.schemaViolation(</span>
+                        &quot;body&quot;, path + &quot;.&quot; + field, &quot;Property '&quot; + field + &quot;' is not supported.&quot;, null));
+            }
+<span class="fc" id="L315">        }</span>
+<span class="fc" id="L316">        JsonNode name = item.get(&quot;name&quot;);</span>
+<span class="fc" id="L317">        boolean valid = true;</span>
+<span class="pc bpc" id="L318" title="3 of 6 branches missed.">        if (name == null || !name.isString() || !VocabularyNames.isValidName(name.asString())) {</span>
+<span class="nc" id="L319">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;, path + &quot;.name&quot;, &quot;Property 'name' is required and must be a valid vocabulary name.&quot;, null));
+<span class="nc" id="L321">            valid = false;</span>
+        }
+<span class="fc" id="L323">        Integer version = null;</span>
+<span class="fc" id="L324">        JsonNode versionNode = item.get(&quot;version&quot;);</span>
+<span class="fc bfc" id="L325" title="All 2 branches covered.">        if (versionNode != null) {</span>
+<span class="pc bpc" id="L326" title="2 of 6 branches missed.">            if (versionNode.isIntegralNumber() &amp;&amp; versionNode.canConvertToInt() &amp;&amp; versionNode.asInt() &gt;= 1) {</span>
+<span class="fc" id="L327">                version = versionNode.asInt();</span>
+            } else {
+<span class="fc" id="L329">                issues.add(Issue.schemaViolation(</span>
+                        &quot;body&quot;, path + &quot;.version&quot;, &quot;Property 'version' must be a positive integer.&quot;, null));
+<span class="fc" id="L331">                valid = false;</span>
+            }
+        }
+<span class="fc bfc" id="L334" title="All 2 branches covered.">        return valid</span>
+<span class="fc" id="L335">                ? java.util.Optional.of(new SearchReference(name.asString(), version))</span>
+<span class="fc" id="L336">                : java.util.Optional.empty();</span>
+    }
+
+    private static String single(Map&lt;String, List&lt;String&gt;&gt; params, String name) {
+<span class="fc" id="L340">        List&lt;String&gt; values = params.get(name);</span>
+<span class="pc bpc" id="L341" title="1 of 4 branches missed.">        return values == null || values.isEmpty() ? null : values.get(0);</span>
+    }
+
+    private static DateFilter dateFilter(Map&lt;String, List&lt;String&gt;&gt; params, String name, List&lt;Issue&gt; issues) {
+<span class="fc" id="L345">        String value = single(params, name);</span>
+<span class="fc bfc" id="L346" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L347">            return null;</span>
+        }
+<span class="fc" id="L349">        DateFilter filter = DateFilter.parse(value);</span>
+<span class="fc bfc" id="L350" title="All 2 branches covered.">        if (filter == null) {</span>
+<span class="fc" id="L351">            issues.add(Issue.schemaViolation(</span>
+                    &quot;query&quot;,
+                    name,
+                    &quot;Query parameter '&quot; + name + &quot;' must be a valid ISO 8601 date or date-time.&quot;,
+                    value));
+        }
+<span class="fc" id="L357">        return filter;</span>
+    }
+
+    private static String sortValue(Map&lt;String, List&lt;String&gt;&gt; params, List&lt;String&gt; allowed, List&lt;Issue&gt; issues) {
+<span class="fc" id="L361">        String value = single(params, &quot;sort&quot;);</span>
+<span class="fc bfc" id="L362" title="All 4 branches covered.">        if (value != null &amp;&amp; !allowed.contains(value)) {</span>
+<span class="fc" id="L363">            issues.add(Issue.schemaViolation(</span>
+                    &quot;query&quot;, &quot;sort&quot;, &quot;Query parameter 'sort' must be one of &quot; + allowed + &quot;.&quot;, value));
+<span class="fc" id="L365">            return null;</span>
+        }
+<span class="fc" id="L367">        return value;</span>
+    }
+
+    static Comparator&lt;Vocabulary&gt; vocabularyOrder(String sort) {
+<span class="fc" id="L371">        Comparator&lt;Vocabulary&gt; byName = Comparator.comparing(Vocabulary::name);</span>
+<span class="fc bfc" id="L372" title="All 2 branches covered.">        if (sort == null) {</span>
+<span class="fc" id="L373">            return byName;</span>
+        }
+<span class="fc" id="L375">        boolean descending = sort.startsWith(&quot;-&quot;);</span>
+<span class="fc bfc" id="L376" title="All 2 branches covered.">        String field = descending ? sort.substring(1) : sort;</span>
+<span class="fc bfc" id="L377" title="All 4 branches covered.">        Function&lt;Vocabulary, String&gt; key = switch (field) {</span>
+<span class="fc" id="L378">            case &quot;status&quot; -&gt; v -&gt; v.status().name();</span>
+<span class="fc" id="L379">            case &quot;creationDate&quot; -&gt; Vocabulary::creationDate;</span>
+<span class="fc" id="L380">            case &quot;lastUpdated&quot; -&gt; Vocabulary::lastUpdateDate;</span>
+<span class="fc" id="L381">            default -&gt; Vocabulary::name;</span>
+        };
+<span class="fc" id="L383">        Comparator&lt;Vocabulary&gt; primary = Comparator.comparing(key);</span>
+<span class="fc bfc" id="L384" title="All 2 branches covered.">        if (descending) {</span>
+<span class="fc" id="L385">            primary = primary.reversed();</span>
+        }
+<span class="fc" id="L387">        return primary.thenComparing(byName);</span>
+    }
+
+    static Comparator&lt;VocabularyVersion&gt; versionOrder(String sort) {
+<span class="fc" id="L391">        Comparator&lt;VocabularyVersion&gt; newestFirst =</span>
+<span class="fc" id="L392">                Comparator.comparingInt(VocabularyVersion::version).reversed();</span>
+<span class="fc bfc" id="L393" title="All 2 branches covered.">        if (sort == null) {</span>
+<span class="fc" id="L394">            return newestFirst;</span>
+        }
+<span class="fc" id="L396">        boolean descending = sort.startsWith(&quot;-&quot;);</span>
+<span class="fc bfc" id="L397" title="All 2 branches covered.">        String field = descending ? sort.substring(1) : sort;</span>
+<span class="fc bfc" id="L398" title="All 3 branches covered.">        Function&lt;VocabularyVersion, String&gt; key = switch (field) {</span>
+<span class="fc" id="L399">            case &quot;status&quot; -&gt; v -&gt; v.status().name();</span>
+<span class="fc" id="L400">            case &quot;creationDate&quot; -&gt; VocabularyVersion::creationDate;</span>
+<span class="fc" id="L401">            default -&gt; VocabularyVersion::name;</span>
+        };
+<span class="fc" id="L403">        Comparator&lt;VocabularyVersion&gt; primary = Comparator.comparing(key);</span>
+<span class="fc bfc" id="L404" title="All 2 branches covered.">        if (descending) {</span>
+<span class="fc" id="L405">            primary = primary.reversed();</span>
+        }
+<span class="fc" id="L407">        return primary.thenComparing(newestFirst);</span>
+    }
+
+    private static String linkQuery(Map&lt;String, List&lt;String&gt;&gt; params, List&lt;String&gt; names) {
+<span class="fc" id="L411">        List&lt;String&gt; pairs = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L412" title="All 2 branches covered.">        for (String name : names) {</span>
+<span class="fc" id="L413">            String value = single(params, name);</span>
+<span class="fc bfc" id="L414" title="All 2 branches covered.">            if (value != null) {</span>
+<span class="fc" id="L415">                pairs.add(name + &quot;=&quot; + URLEncoder.encode(value, StandardCharsets.UTF_8));</span>
+            }
+<span class="fc" id="L417">        }</span>
+<span class="fc" id="L418">        return String.join(&quot;&amp;&quot;, pairs);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SparqlClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">SparqlClient.java</span></div><h1>SparqlClient.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.config.VocabularyProperties;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpConnectTimeoutException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
+/**
+ * SPARQL 1.1 protocol client for the Fuseki dataset (E3). Applies the timeouts and retries of D44: connect 2 s,
+ * response 10 s, read-only queries retried twice after 200 ms and 400 ms on a connection failure or timeout,
+ * updates never retried.
+ */
+@Component
+public class SparqlClient {
+
+<span class="fc" id="L32">    private static final Logger LOG = LoggerFactory.getLogger(SparqlClient.class);</span>
+<span class="fc" id="L33">    private static final long[] RETRY_DELAYS_MS = {200, 400};</span>
+
+    private final HttpClient http;
+    private final ObjectMapper mapper;
+    private final URI queryUri;
+    private final URI updateUri;
+    private final Duration responseTimeout;
+
+<span class="fc" id="L41">    public SparqlClient(VocabularyProperties properties, ObjectMapper mapper) {</span>
+<span class="fc" id="L42">        VocabularyProperties.Store store = properties.store();</span>
+<span class="fc" id="L43">        this.http = HttpClient.newBuilder()</span>
+<span class="fc" id="L44">                .connectTimeout(store.connectTimeout())</span>
+<span class="fc" id="L45">                .version(HttpClient.Version.HTTP_1_1)</span>
+<span class="fc" id="L46">                .build();</span>
+<span class="fc" id="L47">        this.mapper = mapper;</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        String base = store.url().endsWith(&quot;/&quot;) ? store.url() : store.url() + &quot;/&quot;;</span>
+<span class="fc" id="L49">        this.queryUri = URI.create(base + &quot;query&quot;);</span>
+<span class="fc" id="L50">        this.updateUri = URI.create(base + &quot;update&quot;);</span>
+<span class="fc" id="L51">        this.responseTimeout = store.responseTimeout();</span>
+<span class="fc" id="L52">    }</span>
+
+    /** Runs a SELECT query and returns the bindings as maps of variable to lexical value. */
+    public List&lt;Map&lt;String, String&gt;&gt; select(String query) {
+<span class="fc" id="L56">        JsonNode json = runQuery(query, responseTimeout, true);</span>
+<span class="fc" id="L57">        List&lt;Map&lt;String, String&gt;&gt; rows = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        for (JsonNode binding : json.path(&quot;results&quot;).path(&quot;bindings&quot;)) {</span>
+<span class="fc" id="L59">            Map&lt;String, String&gt; row = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L60">            binding.forEachEntry(</span>
+<span class="fc" id="L61">                    (name, value) -&gt; row.put(name, value.path(&quot;value&quot;).asString()));</span>
+<span class="fc" id="L62">            rows.add(row);</span>
+<span class="fc" id="L63">        }</span>
+<span class="fc" id="L64">        return rows;</span>
+    }
+
+    /** Runs an ASK query with the given timeout and no retry; used by the health check. */
+    public boolean ask(String query, Duration timeout) {
+<span class="fc" id="L69">        return runQuery(query, timeout, false).path(&quot;boolean&quot;).asBoolean(false);</span>
+    }
+
+    /** Runs one SPARQL update request; Fuseki runs it in one transaction. Never retried (D44). */
+    public void update(String update) {
+<span class="fc" id="L74">        HttpRequest request = HttpRequest.newBuilder(updateUri)</span>
+<span class="fc" id="L75">                .timeout(responseTimeout)</span>
+<span class="fc" id="L76">                .header(&quot;Content-Type&quot;, &quot;application/sparql-update; charset=utf-8&quot;)</span>
+<span class="fc" id="L77">                .POST(HttpRequest.BodyPublishers.ofString(update, StandardCharsets.UTF_8))</span>
+<span class="fc" id="L78">                .build();</span>
+<span class="fc" id="L79">        HttpResponse&lt;String&gt; response = send(request);</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (response.statusCode() / 100 != 2) {</span>
+<span class="nc" id="L81">            throw new StoreException(&quot;Store update failed with status &quot; + response.statusCode());</span>
+        }
+<span class="fc" id="L83">    }</span>
+
+    private JsonNode runQuery(String query, Duration timeout, boolean retry) {
+<span class="fc" id="L86">        HttpRequest request = HttpRequest.newBuilder(queryUri)</span>
+<span class="fc" id="L87">                .timeout(timeout)</span>
+<span class="fc" id="L88">                .header(&quot;Content-Type&quot;, &quot;application/sparql-query; charset=utf-8&quot;)</span>
+<span class="fc" id="L89">                .header(&quot;Accept&quot;, &quot;application/sparql-results+json&quot;)</span>
+<span class="fc" id="L90">                .POST(HttpRequest.BodyPublishers.ofString(query, StandardCharsets.UTF_8))</span>
+<span class="fc" id="L91">                .build();</span>
+<span class="fc" id="L92">        int attempt = 0;</span>
+        while (true) {
+            try {
+<span class="fc" id="L95">                HttpResponse&lt;String&gt; response = send(request);</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">                if (response.statusCode() / 100 != 2) {</span>
+<span class="nc" id="L97">                    throw new StoreException(&quot;Store query failed with status &quot; + response.statusCode());</span>
+                }
+<span class="fc" id="L99">                return mapper.readTree(response.body());</span>
+<span class="fc" id="L100">            } catch (StoreUnavailableException e) {</span>
+<span class="fc bfc" id="L101" title="All 4 branches covered.">                if (!retry || attempt &gt;= RETRY_DELAYS_MS.length) {</span>
+<span class="fc" id="L102">                    throw e;</span>
+                }
+<span class="fc" id="L104">                LOG.warn(&quot;Store query failed, retry {} after {} ms&quot;, attempt + 1, RETRY_DELAYS_MS[attempt]);</span>
+<span class="fc" id="L105">                sleep(RETRY_DELAYS_MS[attempt]);</span>
+<span class="fc" id="L106">                attempt++;</span>
+<span class="nc" id="L107">            } catch (tools.jackson.core.JacksonException e) {</span>
+<span class="nc" id="L108">                throw new StoreException(&quot;Store answer could not be read&quot;, e);</span>
+<span class="fc" id="L109">            }</span>
+        }
+    }
+
+    private HttpResponse&lt;String&gt; send(HttpRequest original) {
+<span class="fc" id="L114">        String correlationId = org.slf4j.MDC.get(&quot;correlationId&quot;);</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">        HttpRequest request = correlationId == null</span>
+<span class="nc" id="L116">                ? original</span>
+<span class="fc" id="L117">                : HttpRequest.newBuilder(original, (name, value) -&gt; true)</span>
+<span class="fc" id="L118">                        .header(&quot;X-Correlation-Id&quot;, correlationId)</span>
+<span class="fc" id="L119">                        .build();</span>
+        try {
+<span class="fc" id="L121">            return http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));</span>
+<span class="fc" id="L122">        } catch (HttpConnectTimeoutException | ConnectException e) {</span>
+<span class="fc" id="L123">            throw new StoreUnavailableException(&quot;Store connection failed&quot;, e);</span>
+<span class="nc" id="L124">        } catch (HttpTimeoutException e) {</span>
+<span class="nc" id="L125">            throw new StoreUnavailableException(&quot;Store did not answer in time&quot;, e);</span>
+<span class="nc" id="L126">        } catch (IOException e) {</span>
+<span class="nc" id="L127">            throw new StoreUnavailableException(&quot;Store connection failed&quot;, e);</span>
+<span class="nc" id="L128">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L129">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L130">            throw new StoreUnavailableException(&quot;Interrupted while calling the store&quot;, e);</span>
+        }
+    }
+
+    private static void sleep(long millis) {
+        try {
+<span class="fc" id="L136">            Thread.sleep(millis);</span>
+<span class="nc" id="L137">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L138">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L139">            throw new StoreUnavailableException(&quot;Interrupted while waiting to retry&quot;, e);</span>
+<span class="fc" id="L140">        }</span>
+<span class="fc" id="L141">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

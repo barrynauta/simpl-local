@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalVocabularyController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">ExternalVocabularyController.java</span></div><h1>ExternalVocabularyController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.config.VocabularyProperties;
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.security.AuthenticatedUser;
+import eu.simpl.vocabularymanager.service.ExternalVocabularyService;
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+
+/** External vocabulary operations (D30, D38, D41, D42, D56). */
+@RestController
+@RequestMapping(&quot;/v1&quot;)
+public class ExternalVocabularyController {
+
+<span class="fc" id="L30">    private static final Set&lt;String&gt; REGISTER_FIELDS =</span>
+<span class="fc" id="L31">            Set.of(&quot;vocabularyFile&quot;, &quot;name&quot;, &quot;namespaceUri&quot;, &quot;aliasUris&quot;, &quot;description&quot;, &quot;sourceUri&quot;);</span>
+<span class="fc" id="L32">    private static final Set&lt;String&gt; SEARCH_PROPERTIES =</span>
+<span class="fc" id="L33">            Set.of(&quot;namespaceUri&quot;, &quot;aliasUri&quot;, &quot;namespaceUris&quot;, &quot;aliasUris&quot;);</span>
+    private static final String FILE = &quot;vocabularyFile&quot;;
+    private static final int MAX_ALIASES = 20;
+    private static final int MAX_SEARCH_URIS = 100;
+
+    private final ExternalVocabularyService service;
+    private final RequestInspector inspector;
+    private final Representations representations;
+    private final long uploadLimit;
+
+    public ExternalVocabularyController(
+            ExternalVocabularyService service,
+            RequestInspector inspector,
+            Representations representations,
+<span class="fc" id="L47">            VocabularyProperties properties) {</span>
+<span class="fc" id="L48">        this.service = service;</span>
+<span class="fc" id="L49">        this.inspector = inspector;</span>
+<span class="fc" id="L50">        this.representations = representations;</span>
+<span class="fc" id="L51">        this.uploadLimit = properties.uploadLimitBytes();</span>
+<span class="fc" id="L52">    }</span>
+
+    /** GET /external-vocabularies: paged, name ascending, no filters (D41). */
+    @GetMapping(path = &quot;/external-vocabularies&quot;, produces = MediaType.APPLICATION_JSON_VALUE)
+    public CollectionPage&lt;Representations.ExternalBody&gt; list(HttpServletRequest request) {
+<span class="fc" id="L57">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L58">        Map&lt;String, List&lt;String&gt;&gt; params = inspector.query(request);</span>
+<span class="fc" id="L59">        List&lt;Issue&gt; issues = inspector.queryIssues(params, Set.of(&quot;page&quot;, &quot;pageSize&quot;));</span>
+<span class="fc" id="L60">        Paging paging = Paging.read(params, issues);</span>
+<span class="fc" id="L61">        PathValues.failOn(issues);</span>
+<span class="fc" id="L62">        List&lt;Representations.ExternalBody&gt; all =</span>
+<span class="fc" id="L63">                service.list().stream().map(representations::external).toList();</span>
+<span class="fc" id="L64">        return CollectionPage.of(all, paging.page(), paging.pageSize(), &quot;/external-vocabularies&quot;, &quot;&quot;);</span>
+    }
+
+    /** POST /external-vocabularies: register (D30, D41, D56). */
+    @PostMapping(&quot;/external-vocabularies&quot;)
+    public ResponseEntity&lt;Representations.ExternalBody&gt; register(HttpServletRequest request) {
+<span class="fc" id="L70">        AuthenticatedUser user = Callers.of(request);</span>
+<span class="fc" id="L71">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L72">        inspector.requireMultipart(request);</span>
+<span class="fc" id="L73">        List&lt;FormPart&gt; parts = inspector.multipart(request, FILE, uploadLimit);</span>
+<span class="fc" id="L74">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;(inspector.queryIssues(inspector.query(request), Set.of()));</span>
+<span class="fc" id="L75">        FormFields fields = new FormFields(parts, REGISTER_FIELDS, Set.of(&quot;aliasUris&quot;));</span>
+<span class="fc" id="L76">        byte[] content = fields.requiredFile(FILE);</span>
+<span class="fc" id="L77">        String name = fields.requiredName(&quot;name&quot;);</span>
+<span class="fc" id="L78">        String namespaceUri = requiredUri(fields, &quot;namespaceUri&quot;);</span>
+<span class="fc" id="L79">        List&lt;String&gt; aliases = aliases(fields, namespaceUri);</span>
+<span class="fc" id="L80">        String description = fields.optionalText(&quot;description&quot;);</span>
+<span class="fc" id="L81">        String sourceUri = optionalUri(fields, &quot;sourceUri&quot;);</span>
+<span class="fc" id="L82">        issues.addAll(fields.issues());</span>
+<span class="fc" id="L83">        PathValues.failOn(issues);</span>
+
+<span class="fc" id="L85">        ExternalVocabulary stored = service.register(</span>
+<span class="fc" id="L86">                new ExternalVocabulary(name, namespaceUri, aliases, sourceUri, description, user.creator(), null),</span>
+                content);
+<span class="fc" id="L88">        Representations.ExternalBody body = representations.external(stored);</span>
+<span class="fc" id="L89">        return ResponseEntity.created(URI.create(body.href()))</span>
+<span class="fc" id="L90">                .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L91">                .body(body);</span>
+    }
+
+    /** POST /external-vocabulary/searches (D38). */
+    @PostMapping(&quot;/external-vocabulary/searches&quot;)
+    public CollectionPage&lt;Representations.ExternalBody&gt; search(HttpServletRequest request) {
+<span class="fc" id="L97">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L98">        inspector.requireJson(request);</span>
+<span class="fc" id="L99">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;(inspector.queryIssues(inspector.query(request), Set.of()));</span>
+<span class="fc" id="L100">        JsonNode body = inspector.jsonObject(request);</span>
+<span class="fc" id="L101">        List&lt;String&gt; namespaceUris = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L102">        List&lt;String&gt; aliasUris = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L103">        readSearch(body, namespaceUris, aliasUris, issues);</span>
+<span class="fc" id="L104">        PathValues.failOn(issues);</span>
+<span class="fc" id="L105">        return CollectionPage.unpaged(service.search(namespaceUris, aliasUris).stream()</span>
+<span class="fc" id="L106">                .map(representations::external)</span>
+<span class="fc" id="L107">                .toList());</span>
+    }
+
+    /** POST /external-vocabularies/content: content by namespace or alias URI. */
+    @PostMapping(&quot;/external-vocabularies/content&quot;)
+    public ResponseEntity&lt;byte[]&gt; contentByUri(HttpServletRequest request) {
+<span class="fc" id="L113">        inspector.requireAcceptable(request, TurtleResponses.TURTLE);</span>
+<span class="fc" id="L114">        inspector.requireJson(request);</span>
+<span class="fc" id="L115">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;(inspector.queryIssues(inspector.query(request), Set.of()));</span>
+<span class="fc" id="L116">        JsonNode body = inspector.jsonObject(request);</span>
+<span class="fc" id="L117">        Iterator&lt;String&gt; names = body.propertyNames().iterator();</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        while (names.hasNext()) {</span>
+<span class="fc" id="L119">            String field = names.next();</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">            if (!&quot;namespaceUri&quot;.equals(field)) {</span>
+<span class="nc" id="L121">                issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;Property '&quot; + field + &quot;' is not supported.&quot;, null));</span>
+            }
+<span class="fc" id="L123">        }</span>
+<span class="fc" id="L124">        JsonNode uri = body.get(&quot;namespaceUri&quot;);</span>
+<span class="pc bpc" id="L125" title="3 of 6 branches missed.">        if (uri == null || !uri.isString() || !Uris.isAbsoluteUri(uri.asString())) {</span>
+<span class="nc" id="L126">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;, &quot;namespaceUri&quot;, &quot;Property 'namespaceUri' is required and must be an absolute URI.&quot;, null));
+        }
+<span class="fc" id="L129">        PathValues.failOn(issues);</span>
+<span class="fc" id="L130">        String namespace = uri.asString();</span>
+<span class="fc" id="L131">        ExternalVocabulary found = service.findByUri(namespace)</span>
+<span class="fc" id="L132">                .orElseThrow(() -&gt; ApiException.notFound(</span>
+                        &quot;External vocabulary with namespaceUri '&quot; + namespace + &quot;' was not found.&quot;, null));
+<span class="fc" id="L134">        return TurtleResponses.attachment(service.content(found.name()), found.name() + &quot;.ttl&quot;);</span>
+    }
+
+    /** GET /external-vocabularies/{name}/content. */
+    @GetMapping(&quot;/external-vocabularies/{name}/content&quot;)
+    public ResponseEntity&lt;byte[]&gt; content(@PathVariable String name, HttpServletRequest request) {
+<span class="fc" id="L140">        inspector.requireAcceptable(request, TurtleResponses.TURTLE);</span>
+<span class="fc" id="L141">        checkNameAndQuery(name, request);</span>
+<span class="fc" id="L142">        return TurtleResponses.attachment(service.content(name), name + &quot;.ttl&quot;);</span>
+    }
+
+    /** GET /external-vocabularies/{name}. */
+    @GetMapping(path = &quot;/external-vocabularies/{name}&quot;, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Representations.ExternalBody get(@PathVariable String name, HttpServletRequest request) {
+<span class="fc" id="L148">        inspector.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L149">        checkNameAndQuery(name, request);</span>
+<span class="fc" id="L150">        return representations.external(service.get(name));</span>
+    }
+
+    /** DELETE /external-vocabularies/{name} (D41, D42). */
+    @DeleteMapping(&quot;/external-vocabularies/{name}&quot;)
+    public ResponseEntity&lt;Void&gt; delete(@PathVariable String name, HttpServletRequest request) {
+<span class="fc" id="L156">        AuthenticatedUser user = Callers.of(request);</span>
+<span class="fc" id="L157">        checkNameAndQuery(name, request);</span>
+<span class="fc" id="L158">        service.delete(name, user.subject());</span>
+<span class="fc" id="L159">        return ResponseEntity.noContent().build();</span>
+    }
+
+    private void checkNameAndQuery(String name, HttpServletRequest request) {
+<span class="fc" id="L163">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;(inspector.queryIssues(inspector.query(request), Set.of()));</span>
+<span class="fc" id="L164">        PathValues.checkName(&quot;name&quot;, name, issues);</span>
+<span class="fc" id="L165">        PathValues.failOn(issues);</span>
+<span class="fc" id="L166">    }</span>
+
+    private static String requiredUri(FormFields fields, String field) {
+<span class="fc" id="L169">        FormPart part = fields.part(field);</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">        if (part == null) {</span>
+<span class="nc" id="L171">            fields.addIssue(Issue.schemaViolation(&quot;body&quot;, field, &quot;Form field '&quot; + field + &quot;' is required.&quot;, null));</span>
+<span class="nc" id="L172">            return null;</span>
+        }
+<span class="fc" id="L174">        String value = part.text().trim();</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">        if (!Uris.isAbsoluteUri(value)) {</span>
+<span class="nc" id="L176">            fields.addIssue(</span>
+<span class="nc" id="L177">                    Issue.schemaViolation(&quot;body&quot;, field, &quot;Form field '&quot; + field + &quot;' must be an absolute URI.&quot;, value));</span>
+<span class="nc" id="L178">            return null;</span>
+        }
+<span class="fc" id="L180">        return value;</span>
+    }
+
+    private static String optionalUri(FormFields fields, String field) {
+<span class="fc" id="L184">        FormPart part = fields.part(field);</span>
+<span class="pc bpc" id="L185" title="1 of 4 branches missed.">        if (part == null || part.text().isBlank()) {</span>
+<span class="fc" id="L186">            return null;</span>
+        }
+<span class="fc" id="L188">        String value = part.text().trim();</span>
+<span class="pc bpc" id="L189" title="1 of 2 branches missed.">        if (!Uris.isAbsoluteUri(value)) {</span>
+<span class="nc" id="L190">            fields.addIssue(</span>
+<span class="nc" id="L191">                    Issue.schemaViolation(&quot;body&quot;, field, &quot;Form field '&quot; + field + &quot;' must be an absolute URI.&quot;, value));</span>
+<span class="nc" id="L192">            return null;</span>
+        }
+<span class="fc" id="L194">        return value;</span>
+    }
+
+    private static List&lt;String&gt; aliases(FormFields fields, String namespaceUri) {
+<span class="fc" id="L198">        List&lt;FormPart&gt; parts = fields.parts(&quot;aliasUris&quot;);</span>
+<span class="fc" id="L199">        List&lt;String&gt; aliases = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">        if (parts.size() &gt; MAX_ALIASES) {</span>
+<span class="nc" id="L201">            fields.addIssue(Issue.schemaViolation(</span>
+                    &quot;body&quot;, &quot;aliasUris&quot;, &quot;At most &quot; + MAX_ALIASES + &quot; alias URIs are allowed.&quot;, null));
+<span class="nc" id="L203">            return aliases;</span>
+        }
+<span class="fc" id="L205">        Set&lt;String&gt; seen = new HashSet&lt;&gt;();</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        if (namespaceUri != null) {</span>
+<span class="fc" id="L207">            seen.add(ExternalVocabulary.normalise(namespaceUri));</span>
+        }
+<span class="fc bfc" id="L209" title="All 2 branches covered.">        for (FormPart part : parts) {</span>
+<span class="fc" id="L210">            String value = part.text().trim();</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">            if (!Uris.isAbsoluteUri(value)) {</span>
+<span class="nc" id="L212">                fields.addIssue(</span>
+<span class="nc" id="L213">                        Issue.schemaViolation(&quot;body&quot;, &quot;aliasUris&quot;, &quot;Each alias URI must be an absolute URI.&quot;, value));</span>
+<span class="fc bfc" id="L214" title="All 2 branches covered.">            } else if (!seen.add(ExternalVocabulary.normalise(value))) {</span>
+<span class="fc" id="L215">                fields.addIssue(Issue.schemaViolation(</span>
+                        &quot;body&quot;,
+                        &quot;aliasUris&quot;,
+                        &quot;An alias URI must differ from the namespace URI and from the other aliases.&quot;,
+                        value));
+            } else {
+<span class="fc" id="L221">                aliases.add(value);</span>
+            }
+<span class="fc" id="L223">        }</span>
+<span class="fc" id="L224">        return aliases;</span>
+    }
+
+    private static void readSearch(
+            JsonNode body, List&lt;String&gt; namespaceUris, List&lt;String&gt; aliasUris, List&lt;Issue&gt; issues) {
+<span class="fc" id="L229">        Iterator&lt;String&gt; names = body.propertyNames().iterator();</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">        while (names.hasNext()) {</span>
+<span class="fc" id="L231">            String field = names.next();</span>
+<span class="pc bpc" id="L232" title="1 of 2 branches missed.">            if (!SEARCH_PROPERTIES.contains(field)) {</span>
+<span class="nc" id="L233">                issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;Property '&quot; + field + &quot;' is not supported.&quot;, null));</span>
+            }
+<span class="fc" id="L235">        }</span>
+<span class="fc" id="L236">        boolean single = body.has(&quot;namespaceUri&quot;);</span>
+<span class="fc" id="L237">        boolean alias = body.has(&quot;aliasUri&quot;);</span>
+<span class="pc bpc" id="L238" title="1 of 4 branches missed.">        boolean batch = body.has(&quot;namespaceUris&quot;) || body.has(&quot;aliasUris&quot;);</span>
+<span class="fc bfc" id="L239" title="All 6 branches covered.">        int branches = (single ? 1 : 0) + (alias ? 1 : 0) + (batch ? 1 : 0);</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">        if (branches != 1) {</span>
+<span class="fc" id="L241">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;,
+                    &quot;body&quot;,
+                    &quot;Give exactly one of: namespaceUri, aliasUri, or namespaceUris and/or aliasUris.&quot;,
+                    null));
+<span class="fc" id="L246">            return;</span>
+        }
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">        if (single) {</span>
+<span class="nc" id="L249">            singleUri(body, &quot;namespaceUri&quot;, namespaceUris, issues);</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">        } else if (alias) {</span>
+<span class="fc" id="L251">            singleUri(body, &quot;aliasUri&quot;, aliasUris, issues);</span>
+        } else {
+<span class="fc" id="L253">            uriArray(body, &quot;namespaceUris&quot;, namespaceUris, issues);</span>
+<span class="fc" id="L254">            uriArray(body, &quot;aliasUris&quot;, aliasUris, issues);</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">            if (namespaceUris.size() + aliasUris.size() &gt; MAX_SEARCH_URIS) {</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">                String name = body.has(&quot;aliasUris&quot;) ? &quot;aliasUris&quot; : &quot;namespaceUris&quot;;</span>
+<span class="nc" id="L257">                issues.add(Issue.schemaViolation(</span>
+                        &quot;body&quot;, name, &quot;At most &quot; + MAX_SEARCH_URIS + &quot; URIs are allowed in total.&quot;, null));
+            }
+        }
+<span class="fc" id="L261">    }</span>
+
+    private static void singleUri(JsonNode body, String field, List&lt;String&gt; target, List&lt;Issue&gt; issues) {
+<span class="fc" id="L264">        JsonNode value = body.get(field);</span>
+<span class="pc bpc" id="L265" title="3 of 6 branches missed.">        if (value == null || !value.isString() || !Uris.isAbsoluteUri(value.asString())) {</span>
+<span class="nc" id="L266">            issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;Property '&quot; + field + &quot;' must be an absolute URI.&quot;, null));</span>
+<span class="nc" id="L267">            return;</span>
+        }
+<span class="fc" id="L269">        target.add(value.asString());</span>
+<span class="fc" id="L270">    }</span>
+
+    private static void uriArray(JsonNode body, String field, List&lt;String&gt; target, List&lt;Issue&gt; issues) {
+<span class="fc" id="L273">        JsonNode array = body.get(field);</span>
+<span class="fc bfc" id="L274" title="All 2 branches covered.">        if (array == null) {</span>
+<span class="fc" id="L275">            return;</span>
+        }
+<span class="pc bpc" id="L277" title="1 of 4 branches missed.">        if (!array.isArray() || array.isEmpty()) {</span>
+<span class="fc" id="L278">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;, field, &quot;Property '&quot; + field + &quot;' must be an array with at least one URI.&quot;, null));
+<span class="fc" id="L280">            return;</span>
+        }
+<span class="fc bfc" id="L282" title="All 2 branches covered.">        for (JsonNode value : array) {</span>
+<span class="pc bpc" id="L283" title="2 of 4 branches missed.">            if (!value.isString() || !Uris.isAbsoluteUri(value.asString())) {</span>
+<span class="nc" id="L284">                issues.add(Issue.schemaViolation(</span>
+                        &quot;body&quot;, field, &quot;Every entry of '&quot; + field + &quot;' must be an absolute URI.&quot;, null));
+<span class="nc" id="L286">                return;</span>
+            }
+<span class="fc" id="L288">            target.add(value.asString());</span>
+<span class="fc" id="L289">        }</span>
+<span class="fc" id="L290">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

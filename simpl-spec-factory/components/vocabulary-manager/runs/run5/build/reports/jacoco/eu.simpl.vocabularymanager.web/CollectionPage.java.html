@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CollectionPage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">CollectionPage.java</span></div><h1>CollectionPage.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
+
+/**
+ * Paged collection (OpenAPI CollectionPage). Links are omitted when absent (D22, D38, D59).
+ *
+ * @param page page number
+ * @param totalPages number of pages
+ * @param total number of items
+ * @param pageSize page size
+ * @param self link to this page
+ * @param first link to page 1
+ * @param prev link to the previous page
+ * @param next link to the next page
+ * @param last link to the last page
+ * @param items the items of this page
+ * @param &lt;T&gt; item type
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L22">public record CollectionPage&lt;T&gt;(</span>
+        int page,
+        int totalPages,
+        long total,
+        int pageSize,
+        String self,
+        String first,
+        String prev,
+        String next,
+        String last,
+        @JsonInclude(JsonInclude.Include.ALWAYS) List&lt;T&gt; items) {
+
+    /**
+     * Builds a page of a sorted list (D22, D59).
+     *
+     * @param all all items in order
+     * @param page requested page, at least 1
+     * @param pageSize requested page size
+     * @param path collection path relative to the API base
+     * @param extraQuery further query parameters for the links, already encoded, may be empty
+     * @param &lt;T&gt; item type
+     * @return the page
+     */
+    public static &lt;T&gt; CollectionPage&lt;T&gt; of(List&lt;T&gt; all, int page, int pageSize, String path, String extraQuery) {
+<span class="fc" id="L46">        int total = all.size();</span>
+<span class="fc" id="L47">        int totalPages = (total + pageSize - 1) / pageSize;</span>
+<span class="fc" id="L48">        int from = (int) Math.min((long) (page - 1) * pageSize, total);</span>
+<span class="fc" id="L49">        int to = (int) Math.min((long) from + pageSize, total);</span>
+<span class="fc" id="L50">        List&lt;T&gt; items = all.subList(from, to);</span>
+<span class="fc" id="L51">        String prev = null;</span>
+<span class="fc bfc" id="L52" title="All 4 branches covered.">        if (total &gt; 0 &amp;&amp; page &gt; 1) {</span>
+<span class="fc" id="L53">            prev = link(path, Math.min(page - 1, totalPages), pageSize, extraQuery);</span>
+        }
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        String next = page &lt; totalPages ? link(path, page + 1, pageSize, extraQuery) : null;</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        String last = total &gt; 0 ? link(path, totalPages, pageSize, extraQuery) : null;</span>
+<span class="fc" id="L57">        return new CollectionPage&lt;&gt;(</span>
+                page,
+                totalPages,
+                total,
+                pageSize,
+<span class="fc" id="L62">                link(path, page, pageSize, extraQuery),</span>
+<span class="fc" id="L63">                link(path, 1, pageSize, extraQuery),</span>
+                prev,
+                next,
+                last,
+<span class="fc" id="L67">                List.copyOf(items));</span>
+    }
+
+    /** An unpaged search result (D38): page 1, pageSize 100, no links. */
+    public static &lt;T&gt; CollectionPage&lt;T&gt; unpaged(List&lt;T&gt; items) {
+<span class="fc" id="L72">        int total = items.size();</span>
+<span class="fc" id="L73">        return new CollectionPage&lt;&gt;(</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">                1, total == 0 ? 0 : 1, total, 100, null, null, null, null, null, List.copyOf(items));</span>
+    }
+
+    private static String link(String path, int page, int pageSize, String extraQuery) {
+<span class="fc" id="L78">        String link = path + &quot;?page=&quot; + page + &quot;&amp;pageSize=&quot; + pageSize;</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        return extraQuery.isEmpty() ? link : link + &quot;&amp;&quot; + extraQuery;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

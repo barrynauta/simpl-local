@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DateFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">DateFilter.java</span></div><h1>DateFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAccessor;
+import java.util.regex.Pattern;
+
+/**
+ * creationDate and lastUpdated filter (D20): a date matches every value on that UTC day; a date-time matches values
+ * equal to it, to the second.
+ */
+public final class DateFilter {
+
+<span class="fc" id="L21">    private static final Pattern SHAPE = Pattern.compile(&quot;^\\d{4}-\\d{2}-\\d{2}(T.*)?$&quot;);</span>
+<span class="fc" id="L22">    private static final DateTimeFormatter DATE_TIME =</span>
+<span class="fc" id="L23">            DateTimeFormatter.ISO_DATE_TIME.withResolverStyle(ResolverStyle.STRICT);</span>
+
+    private final LocalDate day;
+    private final Instant moment;
+
+<span class="fc" id="L28">    private DateFilter(LocalDate day, Instant moment) {</span>
+<span class="fc" id="L29">        this.day = day;</span>
+<span class="fc" id="L30">        this.moment = moment;</span>
+<span class="fc" id="L31">    }</span>
+
+    /**
+     * Parses a filter value.
+     *
+     * @param value the query value
+     * @return the filter, or null when the value is not a valid date or date-time
+     */
+    public static DateFilter parse(String value) {
+<span class="pc bpc" id="L40" title="1 of 4 branches missed.">        if (value == null || !SHAPE.matcher(value).matches()) {</span>
+<span class="fc" id="L41">            return null;</span>
+        }
+        try {
+<span class="fc bfc" id="L44" title="All 2 branches covered.">            if (value.length() == 10) {</span>
+<span class="fc" id="L45">                return new DateFilter(</span>
+<span class="fc" id="L46">                        LocalDate.parse(</span>
+<span class="fc" id="L47">                                value, DateTimeFormatter.ISO_LOCAL_DATE.withResolverStyle(ResolverStyle.STRICT)),</span>
+                        null);
+            }
+<span class="fc" id="L50">            TemporalAccessor parsed = DATE_TIME.parse(value);</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">            Instant instant = parsed.isSupported(ChronoField.OFFSET_SECONDS)</span>
+<span class="fc" id="L52">                    ? OffsetDateTime.from(parsed).toInstant()</span>
+<span class="fc" id="L53">                    : LocalDateTime.from(parsed).toInstant(ZoneOffset.UTC);</span>
+<span class="fc" id="L54">            return new DateFilter(null, instant.truncatedTo(ChronoUnit.SECONDS));</span>
+<span class="fc" id="L55">        } catch (java.time.DateTimeException e) {</span>
+<span class="fc" id="L56">            return null;</span>
+        }
+    }
+
+    /** True when the stored time (ISO 8601, UTC) matches. */
+    public boolean matches(String stored) {
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        if (stored == null) {</span>
+<span class="fc" id="L63">            return false;</span>
+        }
+<span class="fc" id="L65">        Instant value = Instant.parse(stored).truncatedTo(ChronoUnit.SECONDS);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (day != null) {</span>
+<span class="fc" id="L67">            return value.atZone(ZoneOffset.UTC).toLocalDate().equals(day);</span>
+        }
+<span class="fc" id="L69">        return value.equals(moment);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

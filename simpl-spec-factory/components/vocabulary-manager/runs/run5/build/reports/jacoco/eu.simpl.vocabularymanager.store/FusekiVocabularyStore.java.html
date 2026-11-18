@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FusekiVocabularyStore.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">FusekiVocabularyStore.java</span></div><h1>FusekiVocabularyStore.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.Status;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.springframework.stereotype.Repository;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+
+/**
+ * Fuseki implementation of the store (E3). All values reach SPARQL through parameterised strings (OWT-A05). Content
+ * is kept as base64, so the bytes come back exactly as uploaded (D29).
+ */
+@Repository
+public class FusekiVocabularyStore implements VocabularyStore {
+
+    private static final String NS = &quot;urn:simpl:vocabulary-manager:&quot;;
+    private static final String PREFIX = &quot;PREFIX vm: &lt;&quot; + NS + &quot;&gt;\n&quot;;
+    private static final String ACTIVE = &quot;ACTIVE&quot;;
+
+    private static final String VOCABULARY_SELECT = PREFIX
+            + &quot;SELECT ?name ?status ?createdBy ?creationDate ?lastUpdateDate ?latest ?description WHERE {\n&quot;
+            + &quot;  ?v a vm:Vocabulary ; vm:name ?name ; vm:status ?status ; vm:createdBy ?createdBy ;\n&quot;
+            + &quot;     vm:creationDate ?creationDate ; vm:lastUpdateDate ?lastUpdateDate ; vm:latestVersion ?latest .\n&quot;
+            + &quot;  OPTIONAL { ?lv vm:ofVocabulary ?v ; vm:version ?latest ; vm:description ?description }\n&quot;
+            + &quot;}&quot;;
+
+    private static final String VERSION_SELECT = PREFIX
+            + &quot;SELECT ?version ?status ?description ?changelog ?createdBy ?creationDate ?lastUpdateDate WHERE {\n&quot;
+            + &quot;  ?ver vm:ofVocabulary ?v ; vm:version ?version ; vm:status ?status ; vm:description ?description ;\n&quot;
+            + &quot;       vm:changelog ?changelog ; vm:createdBy ?createdBy ; vm:creationDate ?creationDate ;\n&quot;
+            + &quot;       vm:lastUpdateDate ?lastUpdateDate .\n&quot;
+            + &quot;}&quot;;
+
+    private static final String EXTERNAL_SELECT = PREFIX
+            + &quot;SELECT ?name ?namespaceUri ?aliasUris ?sourceUri ?description ?createdBy ?creationDate WHERE {\n&quot;
+            + &quot;  ?e a vm:ExternalVocabulary ; vm:name ?name ; vm:namespaceUri ?namespaceUri ; vm:aliasUris ?aliasUris ;\n&quot;
+            + &quot;     vm:createdBy ?createdBy ; vm:creationDate ?creationDate .\n&quot;
+            + &quot;  OPTIONAL { ?e vm:sourceUri ?sourceUri }\n&quot;
+            + &quot;  OPTIONAL { ?e vm:description ?description }\n&quot;
+            + &quot;}&quot;;
+
+    private final SparqlClient client;
+    private final ObjectMapper mapper;
+
+<span class="fc" id="L56">    public FusekiVocabularyStore(SparqlClient client, ObjectMapper mapper) {</span>
+<span class="fc" id="L57">        this.client = client;</span>
+<span class="fc" id="L58">        this.mapper = mapper;</span>
+<span class="fc" id="L59">    }</span>
+
+    static String vocabularyIri(String name) {
+<span class="fc" id="L62">        return NS + &quot;vocabulary:&quot; + name;</span>
+    }
+
+    static String versionIri(String name, int version) {
+<span class="fc" id="L66">        return NS + &quot;vocabulary:&quot; + name + &quot;:version:&quot; + version;</span>
+    }
+
+    static String externalIri(String name) {
+<span class="fc" id="L70">        return NS + &quot;external:&quot; + name;</span>
+    }
+
+    @Override
+    public Optional&lt;Vocabulary&gt; findVocabulary(String name) {
+<span class="fc" id="L75">        ParameterizedSparqlString q = new ParameterizedSparqlString(VOCABULARY_SELECT);</span>
+<span class="fc" id="L76">        q.setIri(&quot;v&quot;, vocabularyIri(name));</span>
+<span class="fc" id="L77">        return client.select(q.toString()).stream().findFirst().map(FusekiVocabularyStore::toVocabulary);</span>
+    }
+
+    @Override
+    public boolean vocabularyNameTaken(String name) {
+<span class="fc" id="L82">        ParameterizedSparqlString q = new ParameterizedSparqlString(</span>
+                PREFIX + &quot;SELECT ?v WHERE { ?v a vm:Vocabulary ; vm:nameKey ?key } LIMIT 1&quot;);
+<span class="fc" id="L84">        q.setLiteral(&quot;key&quot;, name.toLowerCase(Locale.ROOT));</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        return !client.select(q.toString()).isEmpty();</span>
+    }
+
+    @Override
+    public List&lt;Vocabulary&gt; listVocabularies() {
+<span class="fc" id="L90">        return client.select(VOCABULARY_SELECT).stream()</span>
+<span class="fc" id="L91">                .map(FusekiVocabularyStore::toVocabulary)</span>
+<span class="fc" id="L92">                .toList();</span>
+    }
+
+    @Override
+    public List&lt;VocabularyVersion&gt; listVersions(String name) {
+<span class="fc" id="L97">        ParameterizedSparqlString q = new ParameterizedSparqlString(VERSION_SELECT);</span>
+<span class="fc" id="L98">        q.setIri(&quot;v&quot;, vocabularyIri(name));</span>
+<span class="fc" id="L99">        return client.select(q.toString()).stream()</span>
+<span class="fc" id="L100">                .map(row -&gt; toVersion(name, row))</span>
+<span class="fc" id="L101">                .toList();</span>
+    }
+
+    @Override
+    public Optional&lt;VocabularyVersion&gt; findVersion(String name, int version) {
+<span class="fc" id="L106">        ParameterizedSparqlString q = new ParameterizedSparqlString(VERSION_SELECT);</span>
+<span class="fc" id="L107">        q.setIri(&quot;ver&quot;, versionIri(name, version));</span>
+<span class="fc" id="L108">        q.setIri(&quot;v&quot;, vocabularyIri(name));</span>
+<span class="fc" id="L109">        return client.select(q.toString()).stream().findFirst().map(row -&gt; toVersion(name, row));</span>
+    }
+
+    @Override
+    public Optional&lt;byte[]&gt; findContent(String name, int version) {
+<span class="fc" id="L114">        ParameterizedSparqlString q =</span>
+                new ParameterizedSparqlString(PREFIX + &quot;SELECT ?content WHERE { ?ver vm:content ?content }&quot;);
+<span class="fc" id="L116">        q.setIri(&quot;ver&quot;, versionIri(name, version));</span>
+<span class="fc" id="L117">        return client.select(q.toString()).stream()</span>
+<span class="fc" id="L118">                .findFirst()</span>
+<span class="fc" id="L119">                .map(row -&gt; Base64.getDecoder().decode(row.get(&quot;content&quot;)));</span>
+    }
+
+    @Override
+    public void createVocabulary(Vocabulary vocabulary, VocabularyVersion first, byte[] content) {
+<span class="fc" id="L124">        ParameterizedSparqlString u = new ParameterizedSparqlString(PREFIX</span>
+                + &quot;INSERT DATA {\n&quot;
+                + &quot;  ?v a vm:Vocabulary ; vm:name ?name ; vm:nameKey ?key ; vm:status ?status ; vm:createdBy ?by ;\n&quot;
+                + &quot;     vm:creationDate ?created ; vm:lastUpdateDate ?updated ; vm:latestVersion ?latest .\n&quot;
+<span class="fc" id="L128">                + versionInsert()</span>
+                + &quot;}&quot;);
+<span class="fc" id="L130">        u.setIri(&quot;v&quot;, vocabularyIri(vocabulary.name()));</span>
+<span class="fc" id="L131">        u.setLiteral(&quot;name&quot;, vocabulary.name());</span>
+<span class="fc" id="L132">        u.setLiteral(&quot;key&quot;, vocabulary.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L133">        u.setLiteral(&quot;status&quot;, vocabulary.status().name());</span>
+<span class="fc" id="L134">        u.setLiteral(&quot;by&quot;, vocabulary.createdBy());</span>
+<span class="fc" id="L135">        u.setLiteral(&quot;created&quot;, vocabulary.creationDate());</span>
+<span class="fc" id="L136">        u.setLiteral(&quot;updated&quot;, vocabulary.lastUpdateDate());</span>
+<span class="fc" id="L137">        u.setLiteral(&quot;latest&quot;, vocabulary.latestVersion());</span>
+<span class="fc" id="L138">        bindVersion(u, first, content);</span>
+<span class="fc" id="L139">        client.update(u.toString());</span>
+<span class="fc" id="L140">    }</span>
+
+    @Override
+    public void createVersion(VocabularyVersion version, byte[] content, String now) {
+<span class="fc" id="L144">        ParameterizedSparqlString u = new ParameterizedSparqlString(PREFIX</span>
+                + &quot;DELETE { ?old vm:status \&quot;ACTIVE\&quot; . ?old vm:lastUpdateDate ?oldDate }\n&quot;
+                + &quot;INSERT { ?old vm:status \&quot;DEPRECATED\&quot; . ?old vm:lastUpdateDate ?now }\n&quot;
+                + &quot;WHERE { ?old vm:ofVocabulary ?v ; vm:status \&quot;ACTIVE\&quot; ; vm:lastUpdateDate ?oldDate } ;\n&quot;
+                + &quot;DELETE { ?v vm:latestVersion ?oldLatest . ?v vm:lastUpdateDate ?oldUpdated }\n&quot;
+                + &quot;WHERE { ?v vm:latestVersion ?oldLatest ; vm:lastUpdateDate ?oldUpdated } ;\n&quot;
+                + &quot;INSERT DATA {\n&quot;
+                + &quot;  ?v vm:latestVersion ?latest ; vm:lastUpdateDate ?now .\n&quot;
+<span class="fc" id="L152">                + versionInsert()</span>
+                + &quot;}&quot;);
+<span class="fc" id="L154">        u.setIri(&quot;v&quot;, vocabularyIri(version.name()));</span>
+<span class="fc" id="L155">        u.setLiteral(&quot;now&quot;, now);</span>
+<span class="fc" id="L156">        u.setLiteral(&quot;latest&quot;, version.version());</span>
+<span class="fc" id="L157">        bindVersion(u, version, content);</span>
+<span class="fc" id="L158">        client.update(u.toString());</span>
+<span class="fc" id="L159">    }</span>
+
+    @Override
+    public void updateVocabularyStatus(String name, Status status, String now) {
+<span class="fc" id="L163">        ParameterizedSparqlString u = new ParameterizedSparqlString(PREFIX</span>
+                + &quot;DELETE { ?v vm:status ?oldStatus . ?v vm:lastUpdateDate ?oldDate }\n&quot;
+                + &quot;INSERT { ?v vm:status ?status . ?v vm:lastUpdateDate ?now }\n&quot;
+                + &quot;WHERE { ?v vm:status ?oldStatus ; vm:lastUpdateDate ?oldDate }&quot;);
+<span class="fc" id="L167">        u.setIri(&quot;v&quot;, vocabularyIri(name));</span>
+<span class="fc" id="L168">        u.setLiteral(&quot;status&quot;, status.name());</span>
+<span class="fc" id="L169">        u.setLiteral(&quot;now&quot;, now);</span>
+<span class="fc" id="L170">        client.update(u.toString());</span>
+<span class="fc" id="L171">    }</span>
+
+    @Override
+    public void updateVersionStatus(String name, int version, Status status, String now) {
+<span class="fc" id="L175">        ParameterizedSparqlString u = new ParameterizedSparqlString(PREFIX</span>
+                + &quot;DELETE { ?ver vm:status ?oldStatus . ?ver vm:lastUpdateDate ?oldDate }\n&quot;
+                + &quot;INSERT { ?ver vm:status ?status . ?ver vm:lastUpdateDate ?now }\n&quot;
+                + &quot;WHERE { ?ver vm:status ?oldStatus ; vm:lastUpdateDate ?oldDate } ;\n&quot;
+                + &quot;DELETE { ?v vm:lastUpdateDate ?oldUpdated } INSERT { ?v vm:lastUpdateDate ?now }\n&quot;
+                + &quot;WHERE { ?v vm:lastUpdateDate ?oldUpdated }&quot;);
+<span class="fc" id="L181">        u.setIri(&quot;v&quot;, vocabularyIri(name));</span>
+<span class="fc" id="L182">        u.setIri(&quot;ver&quot;, versionIri(name, version));</span>
+<span class="fc" id="L183">        u.setLiteral(&quot;status&quot;, status.name());</span>
+<span class="fc" id="L184">        u.setLiteral(&quot;now&quot;, now);</span>
+<span class="fc" id="L185">        client.update(u.toString());</span>
+<span class="fc" id="L186">    }</span>
+
+    @Override
+    public List&lt;ExternalVocabulary&gt; listExternalVocabularies() {
+<span class="fc" id="L190">        return client.select(EXTERNAL_SELECT).stream().map(this::toExternal).toList();</span>
+    }
+
+    @Override
+    public Optional&lt;ExternalVocabulary&gt; findExternalVocabulary(String name) {
+<span class="fc" id="L195">        ParameterizedSparqlString q = new ParameterizedSparqlString(EXTERNAL_SELECT);</span>
+<span class="fc" id="L196">        q.setIri(&quot;e&quot;, externalIri(name));</span>
+<span class="fc" id="L197">        return client.select(q.toString()).stream().findFirst().map(this::toExternal);</span>
+    }
+
+    @Override
+    public Optional&lt;byte[]&gt; findExternalContent(String name) {
+<span class="fc" id="L202">        ParameterizedSparqlString q =</span>
+                new ParameterizedSparqlString(PREFIX + &quot;SELECT ?content WHERE { ?e vm:content ?content }&quot;);
+<span class="fc" id="L204">        q.setIri(&quot;e&quot;, externalIri(name));</span>
+<span class="fc" id="L205">        return client.select(q.toString()).stream()</span>
+<span class="fc" id="L206">                .findFirst()</span>
+<span class="fc" id="L207">                .map(row -&gt; Base64.getDecoder().decode(row.get(&quot;content&quot;)));</span>
+    }
+
+    @Override
+    public void createExternalVocabulary(ExternalVocabulary vocabulary, byte[] content) {
+<span class="fc" id="L212">        StringBuilder optional = new StringBuilder();</span>
+<span class="pc bpc" id="L213" title="1 of 2 branches missed.">        if (vocabulary.sourceUri() != null) {</span>
+<span class="fc" id="L214">            optional.append(&quot;  ?e vm:sourceUri ?source .\n&quot;);</span>
+        }
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">        if (vocabulary.description() != null) {</span>
+<span class="fc" id="L217">            optional.append(&quot;  ?e vm:description ?description .\n&quot;);</span>
+        }
+<span class="fc" id="L219">        ParameterizedSparqlString u = new ParameterizedSparqlString(PREFIX</span>
+                + &quot;INSERT DATA {\n&quot;
+                + &quot;  ?e a vm:ExternalVocabulary ; vm:name ?name ; vm:nameKey ?key ; vm:namespaceUri ?namespace ;\n&quot;
+                + &quot;     vm:aliasUris ?aliases ; vm:createdBy ?by ; vm:creationDate ?created ; vm:content ?content .\n&quot;
+                + optional
+                + &quot;}&quot;);
+<span class="fc" id="L225">        u.setIri(&quot;e&quot;, externalIri(vocabulary.name()));</span>
+<span class="fc" id="L226">        u.setLiteral(&quot;name&quot;, vocabulary.name());</span>
+<span class="fc" id="L227">        u.setLiteral(&quot;key&quot;, vocabulary.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L228">        u.setLiteral(&quot;namespace&quot;, vocabulary.namespaceUri());</span>
+<span class="fc" id="L229">        u.setLiteral(&quot;aliases&quot;, toJson(vocabulary.aliasUris()));</span>
+<span class="fc" id="L230">        u.setLiteral(&quot;by&quot;, vocabulary.createdBy());</span>
+<span class="fc" id="L231">        u.setLiteral(&quot;created&quot;, vocabulary.creationDate());</span>
+<span class="fc" id="L232">        u.setLiteral(&quot;content&quot;, Base64.getEncoder().encodeToString(content));</span>
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">        if (vocabulary.sourceUri() != null) {</span>
+<span class="fc" id="L234">            u.setLiteral(&quot;source&quot;, vocabulary.sourceUri());</span>
+        }
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">        if (vocabulary.description() != null) {</span>
+<span class="fc" id="L237">            u.setLiteral(&quot;description&quot;, vocabulary.description());</span>
+        }
+<span class="fc" id="L239">        client.update(u.toString());</span>
+<span class="fc" id="L240">    }</span>
+
+    @Override
+    public void deleteExternalVocabulary(String name) {
+<span class="fc" id="L244">        ParameterizedSparqlString u = new ParameterizedSparqlString(PREFIX + &quot;DELETE WHERE { ?e ?p ?o }&quot;);</span>
+<span class="fc" id="L245">        u.setIri(&quot;e&quot;, externalIri(name));</span>
+<span class="fc" id="L246">        client.update(u.toString());</span>
+<span class="fc" id="L247">    }</span>
+
+    @Override
+    public boolean isAvailable(Duration timeout) {
+        try {
+<span class="fc" id="L252">            client.ask(&quot;ASK { }&quot;, timeout);</span>
+<span class="fc" id="L253">            return true;</span>
+<span class="fc" id="L254">        } catch (StoreUnavailableException | StoreException e) {</span>
+<span class="fc" id="L255">            return false;</span>
+        }
+    }
+
+    private static String versionInsert() {
+<span class="fc" id="L260">        return &quot;  ?ver a vm:VocabularyVersion ; vm:ofVocabulary ?v ; vm:version ?number ; vm:status ?verStatus ;\n&quot;</span>
+                + &quot;       vm:description ?verDescription ; vm:changelog ?verChangelog ; vm:createdBy ?verBy ;\n&quot;
+                + &quot;       vm:creationDate ?verCreated ; vm:lastUpdateDate ?verUpdated ; vm:content ?content .\n&quot;;
+    }
+
+    private static void bindVersion(ParameterizedSparqlString u, VocabularyVersion version, byte[] content) {
+<span class="fc" id="L266">        u.setIri(&quot;ver&quot;, versionIri(version.name(), version.version()));</span>
+<span class="fc" id="L267">        u.setLiteral(&quot;number&quot;, version.version());</span>
+<span class="fc" id="L268">        u.setLiteral(&quot;verStatus&quot;, version.status().name());</span>
+<span class="fc" id="L269">        u.setLiteral(&quot;verDescription&quot;, version.description());</span>
+<span class="fc" id="L270">        u.setLiteral(&quot;verChangelog&quot;, version.changelog());</span>
+<span class="fc" id="L271">        u.setLiteral(&quot;verBy&quot;, version.createdBy());</span>
+<span class="fc" id="L272">        u.setLiteral(&quot;verCreated&quot;, version.creationDate());</span>
+<span class="fc" id="L273">        u.setLiteral(&quot;verUpdated&quot;, version.lastUpdateDate());</span>
+<span class="fc" id="L274">        u.setLiteral(&quot;content&quot;, Base64.getEncoder().encodeToString(content));</span>
+<span class="fc" id="L275">    }</span>
+
+    private static Vocabulary toVocabulary(Map&lt;String, String&gt; row) {
+<span class="fc" id="L278">        return new Vocabulary(</span>
+<span class="fc" id="L279">                row.get(&quot;name&quot;),</span>
+<span class="fc" id="L280">                Status.valueOf(row.getOrDefault(&quot;status&quot;, ACTIVE)),</span>
+<span class="fc" id="L281">                row.get(&quot;createdBy&quot;),</span>
+<span class="fc" id="L282">                row.get(&quot;creationDate&quot;),</span>
+<span class="fc" id="L283">                row.get(&quot;lastUpdateDate&quot;),</span>
+<span class="fc" id="L284">                Integer.parseInt(row.get(&quot;latest&quot;)),</span>
+<span class="fc" id="L285">                row.get(&quot;description&quot;));</span>
+    }
+
+    private static VocabularyVersion toVersion(String name, Map&lt;String, String&gt; row) {
+<span class="fc" id="L289">        return new VocabularyVersion(</span>
+                name,
+<span class="fc" id="L291">                Integer.parseInt(row.get(&quot;version&quot;)),</span>
+<span class="fc" id="L292">                Status.valueOf(row.get(&quot;status&quot;)),</span>
+<span class="fc" id="L293">                row.get(&quot;description&quot;),</span>
+<span class="fc" id="L294">                row.get(&quot;changelog&quot;),</span>
+<span class="fc" id="L295">                row.get(&quot;createdBy&quot;),</span>
+<span class="fc" id="L296">                row.get(&quot;creationDate&quot;),</span>
+<span class="fc" id="L297">                row.get(&quot;lastUpdateDate&quot;));</span>
+    }
+
+    private ExternalVocabulary toExternal(Map&lt;String, String&gt; row) {
+<span class="fc" id="L301">        return new ExternalVocabulary(</span>
+<span class="fc" id="L302">                row.get(&quot;name&quot;),</span>
+<span class="fc" id="L303">                row.get(&quot;namespaceUri&quot;),</span>
+<span class="fc" id="L304">                fromJson(row.get(&quot;aliasUris&quot;)),</span>
+<span class="fc" id="L305">                row.get(&quot;sourceUri&quot;),</span>
+<span class="fc" id="L306">                row.get(&quot;description&quot;),</span>
+<span class="fc" id="L307">                row.get(&quot;createdBy&quot;),</span>
+<span class="fc" id="L308">                row.get(&quot;creationDate&quot;));</span>
+    }
+
+    private String toJson(List&lt;String&gt; values) {
+        try {
+<span class="fc" id="L313">            return mapper.writeValueAsString(values);</span>
+<span class="nc" id="L314">        } catch (JacksonException e) {</span>
+<span class="nc" id="L315">            throw new StoreException(&quot;Alias list could not be written&quot;, e);</span>
+        }
+    }
+
+    private List&lt;String&gt; fromJson(String json) {
+        try {
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">            return json == null</span>
+<span class="nc" id="L322">                    ? List.of()</span>
+<span class="fc" id="L323">                    : new ArrayList&lt;&gt;(mapper.readValue(json, new TypeReference&lt;List&lt;String&gt;&gt;() {}));</span>
+<span class="nc" id="L324">        } catch (JacksonException e) {</span>
+<span class="nc" id="L325">            throw new StoreException(&quot;Alias list could not be read&quot;, e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

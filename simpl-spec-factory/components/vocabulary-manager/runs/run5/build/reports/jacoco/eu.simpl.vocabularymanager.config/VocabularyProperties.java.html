@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">VocabularyProperties.java</span></div><h1>VocabularyProperties.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import java.time.Duration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * Configuration of the Vocabulary Manager, read from the environment (decision E4, rule MACH-07).
+ *
+ * @param contentBaseUrl base of contentHref values and of internal vocabulary references (E2, D12)
+ * @param uploadLimitBytes largest accepted vocabulary file (D15)
+ * @param lockTimeout longest wait for the per-vocabulary lock (D43)
+ * @param store store settings (D44)
+ * @param identity identity provider settings (D17, D44)
+ */
+@ConfigurationProperties(prefix = &quot;vocabulary&quot;)
+<span class="fc" id="L16">public record VocabularyProperties(</span>
+        String contentBaseUrl, long uploadLimitBytes, Duration lockTimeout, Store store, Identity identity) {
+
+    /** Fuseki store settings. */
+<span class="fc" id="L20">    public record Store(String url, Duration connectTimeout, Duration responseTimeout, Duration healthTimeout) {}</span>
+
+    /** Keycloak settings. */
+<span class="fc" id="L23">    public record Identity(</span>
+            String issuer,
+            String jwksUrl,
+            String audience,
+            Duration fetchTimeout,
+            Duration minRefetchInterval,
+            Duration clockSkew) {}
+
+    /** Content base without a trailing slash. */
+    public String contentBase() {
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">        return contentBaseUrl.endsWith(&quot;/&quot;) ? contentBaseUrl.substring(0, contentBaseUrl.length() - 1) : contentBaseUrl;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

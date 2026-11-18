@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TurtleParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">TurtleParser.java</span></div><h1>TurtleParser.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RiotException;
+import org.apache.jena.riot.RiotParseException;
+import org.apache.jena.riot.system.ErrorHandler;
+import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFLib;
+import org.apache.jena.riot.system.StreamRDFWrapper;
+import org.apache.jena.sparql.graph.GraphFactory;
+import org.springframework.stereotype.Component;
+
+/** Syntax validation (D9): the content must parse as Turtle (RDF 1.1). Reports the first parse error only. */
+@Component
+<span class="fc" id="L22">public class TurtleParser {</span>
+
+    static final String SYNTAX_DETAIL = &quot;Encountered invalid Turtle syntax&quot;;
+
+    /**
+     * Parses Turtle content.
+     *
+     * @param content the uploaded bytes
+     * @param baseIri base for relative IRIs (D57)
+     * @return the triples and prefix declarations
+     * @throws ContentValidationException with one error when the content is not valid Turtle
+     */
+    public ParsedContent parse(byte[] content, String baseIri) {
+<span class="fc" id="L35">        Graph graph = GraphFactory.createDefaultGraph();</span>
+<span class="fc" id="L36">        Set&lt;PrefixDeclaration&gt; prefixes = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L37">        StreamRDF sink = new StreamRDFWrapper(StreamRDFLib.graph(graph)) {</span>
+            @Override
+            public void prefix(String prefix, String iri) {
+<span class="fc" id="L40">                prefixes.add(new PrefixDeclaration(prefix, iri));</span>
+<span class="fc" id="L41">                super.prefix(prefix, iri);</span>
+<span class="fc" id="L42">            }</span>
+        };
+        try {
+<span class="fc" id="L45">            RDFParser.create()</span>
+<span class="fc" id="L46">                    .source(new ByteArrayInputStream(content))</span>
+<span class="fc" id="L47">                    .lang(Lang.TURTLE)</span>
+<span class="fc" id="L48">                    .base(baseIri)</span>
+<span class="fc" id="L49">                    .errorHandler(new FailOnError())</span>
+<span class="fc" id="L50">                    .parse(sink);</span>
+<span class="fc" id="L51">        } catch (SyntaxFailure e) {</span>
+<span class="fc" id="L52">            throw syntaxError(e.getMessage(), e.line, e.column);</span>
+<span class="nc" id="L53">        } catch (RiotParseException e) {</span>
+<span class="nc" id="L54">            throw syntaxError(e.getOriginalMessage(), e.getLine(), e.getCol());</span>
+<span class="nc" id="L55">        } catch (RiotException e) {</span>
+<span class="nc" id="L56">            throw syntaxError(e.getMessage(), -1, -1);</span>
+<span class="fc" id="L57">        }</span>
+<span class="fc" id="L58">        return new ParsedContent(graph, new ArrayList&lt;&gt;(prefixes));</span>
+    }
+
+    private static ContentValidationException syntaxError(String message, long line, long column) {
+<span class="pc bpc" id="L62" title="2 of 4 branches missed.">        String detail = SYNTAX_DETAIL + (message == null || message.isBlank() ? &quot;.&quot; : &quot;: &quot; + message);</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        String location = line &gt; 0 ? &quot;line &quot; + line + &quot;, column &quot; + Math.max(column, 1) : &quot;document&quot;;</span>
+<span class="fc" id="L64">        return new ContentValidationException(List.of(new ValidationError(detail, location)));</span>
+    }
+
+    /** Stops parsing at the first error; warnings (for example unusual IRIs) do not block. */
+    private static final class FailOnError implements ErrorHandler {
+        @Override
+        public void warning(String message, long line, long col) {
+            // Warnings of the parser are not validation errors (D9 names only parse errors).
+<span class="nc" id="L72">        }</span>
+
+        @Override
+        public void error(String message, long line, long col) {
+<span class="nc" id="L76">            throw new SyntaxFailure(message, line, col);</span>
+        }
+
+        @Override
+        public void fatal(String message, long line, long col) {
+<span class="fc" id="L81">            throw new SyntaxFailure(message, line, col);</span>
+        }
+    }
+
+    /** Internal carrier of the first parse error. */
+    private static final class SyntaxFailure extends RuntimeException {
+        private final long line;
+        private final long column;
+
+        SyntaxFailure(String message, long line, long column) {
+<span class="fc" id="L91">            super(message);</span>
+<span class="fc" id="L92">            this.line = line;</span>
+<span class="fc" id="L93">            this.column = column;</span>
+<span class="fc" id="L94">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

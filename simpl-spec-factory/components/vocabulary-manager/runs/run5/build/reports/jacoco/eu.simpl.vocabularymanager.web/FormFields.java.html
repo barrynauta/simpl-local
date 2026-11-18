@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FormFields.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">FormFields.java</span></div><h1>FormFields.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.domain.VocabularyNames;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/** Checks of multipart form fields (D7, D37, D52, D56). Collects every issue before the caller fails. */
+public final class FormFields {
+
+    /** Longest description and changelog after trimming (D37). */
+    public static final int MAX_TEXT = 1000;
+
+<span class="fc" id="L17">    private final Map&lt;String, List&lt;FormPart&gt;&gt; byName = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L18">    private final List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+
+    /**
+     * Groups the parts and reports unknown fields and repeated single-value fields.
+     *
+     * @param parts the parts
+     * @param allowed allowed field names
+     * @param repeatable fields that may appear more than once
+     */
+<span class="fc" id="L27">    public FormFields(List&lt;FormPart&gt; parts, Set&lt;String&gt; allowed, Set&lt;String&gt; repeatable) {</span>
+<span class="fc" id="L28">        Set&lt;String&gt; unknown = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        for (FormPart part : parts) {</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">            if (!allowed.contains(part.name())) {</span>
+<span class="fc" id="L31">                unknown.add(part.name());</span>
+            } else {
+<span class="fc" id="L33">                byName.computeIfAbsent(part.name(), k -&gt; new ArrayList&lt;&gt;()).add(part);</span>
+            }
+<span class="fc" id="L35">        }</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        for (String name : unknown) {</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            String detail = &quot;version&quot;.equals(name)</span>
+<span class="fc" id="L38">                    ? &quot;The version number is assigned automatically; do not send a 'version' field.&quot;</span>
+<span class="fc" id="L39">                    : &quot;Form field '&quot; + name + &quot;' is not supported.&quot;;</span>
+<span class="fc" id="L40">            issues.add(Issue.schemaViolation(&quot;body&quot;, name, detail, null));</span>
+<span class="fc" id="L41">        }</span>
+<span class="fc" id="L42">        byName.forEach((name, list) -&gt; {</span>
+<span class="pc bpc" id="L43" title="1 of 4 branches missed.">            if (list.size() &gt; 1 &amp;&amp; !repeatable.contains(name)) {</span>
+<span class="fc" id="L44">                issues.add(Issue.schemaViolation(</span>
+                        &quot;body&quot;, name, &quot;Form field '&quot; + name + &quot;' must be given only once.&quot;, null));
+            }
+<span class="fc" id="L47">        });</span>
+<span class="fc" id="L48">    }</span>
+
+    public List&lt;Issue&gt; issues() {
+<span class="fc" id="L51">        return issues;</span>
+    }
+
+    /** Adds an issue found by the caller. */
+    public void addIssue(Issue issue) {
+<span class="fc" id="L56">        issues.add(issue);</span>
+<span class="fc" id="L57">    }</span>
+
+    /** The first part of a field, or null. */
+    public FormPart part(String name) {
+<span class="fc" id="L61">        List&lt;FormPart&gt; list = byName.get(name);</span>
+<span class="pc bpc" id="L62" title="1 of 4 branches missed.">        return list == null || list.isEmpty() ? null : list.get(0);</span>
+    }
+
+    /** All parts of a field. */
+    public List&lt;FormPart&gt; parts(String name) {
+<span class="fc" id="L67">        return byName.getOrDefault(name, List.of());</span>
+    }
+
+    /** The file content of a required file field, or null with an issue. */
+    public byte[] requiredFile(String name) {
+<span class="fc" id="L72">        FormPart part = part(name);</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        if (part == null) {</span>
+<span class="fc" id="L74">            issues.add(Issue.schemaViolation(&quot;body&quot;, name, &quot;Form field '&quot; + name + &quot;' is required.&quot;, null));</span>
+<span class="fc" id="L75">            return null;</span>
+        }
+<span class="fc" id="L77">        return part.bytes();</span>
+    }
+
+    /** A required vocabulary name (D37), or null with an issue. */
+    public String requiredName(String field) {
+<span class="fc" id="L82">        FormPart part = part(field);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (part == null) {</span>
+<span class="fc" id="L84">            issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;Form field '&quot; + field + &quot;' is required.&quot;, null));</span>
+<span class="fc" id="L85">            return null;</span>
+        }
+<span class="fc" id="L87">        String value = part.text();</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (!VocabularyNames.isValidName(value)) {</span>
+<span class="fc" id="L89">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;,
+                    field,
+                    &quot;Name must have 3 to 64 characters, start with an upper-case letter and contain only letters and&quot;
+                            + &quot; digits.&quot;,
+                    value));
+<span class="fc" id="L95">            return null;</span>
+        }
+<span class="fc" id="L97">        return value;</span>
+    }
+
+    /** A required text of 1 to 1000 characters after trimming (D37), trimmed, or null with an issue. */
+    public String requiredText(String field) {
+<span class="fc" id="L102">        FormPart part = part(field);</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        if (part == null) {</span>
+<span class="fc" id="L104">            issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;Form field '&quot; + field + &quot;' is required.&quot;, null));</span>
+<span class="fc" id="L105">            return null;</span>
+        }
+<span class="fc" id="L107">        return checkedText(field, part.text().trim(), true);</span>
+    }
+
+    /** An optional text of at most 1000 characters after trimming (D56), trimmed; null when absent or blank. */
+    public String optionalText(String field) {
+<span class="fc" id="L112">        FormPart part = part(field);</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        if (part == null) {</span>
+<span class="fc" id="L114">            return null;</span>
+        }
+<span class="fc" id="L116">        return checkedText(field, part.text().trim(), false);</span>
+    }
+
+    private String checkedText(String field, String trimmed, boolean required) {
+<span class="fc bfc" id="L120" title="All 2 branches covered.">        if (trimmed.isEmpty()) {</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">            if (required) {</span>
+<span class="fc" id="L122">                issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;Form field '&quot; + field + &quot;' must not be empty.&quot;, null));</span>
+            }
+<span class="fc" id="L124">            return null;</span>
+        }
+<span class="fc bfc" id="L126" title="All 2 branches covered.">        if (trimmed.length() &gt; MAX_TEXT) {</span>
+<span class="fc" id="L127">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;, field, &quot;Form field '&quot; + field + &quot;' must have at most &quot; + MAX_TEXT + &quot; characters.&quot;, null));
+<span class="fc" id="L129">            return null;</span>
+        }
+<span class="fc" id="L131">        return trimmed;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SemanticRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">SemanticRules.java</span></div><h1>SemanticRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.SKOS;
+import org.springframework.stereotype.Component;
+
+/**
+ * Semantic rules S1 to S6 of D9. All rules run and every error is returned. Within a rule, errors are ordered by
+ * location so the report is stable.
+ */
+@Component
+<span class="fc" id="L24">public class SemanticRules {</span>
+
+    static final String S1 = &quot;Literal value for object property&quot;;
+    static final String S2 = &quot;Resource value for datatype property&quot;;
+    static final String S3 = &quot;Property declared as both object and datatype property&quot;;
+    static final String S4 = &quot;Duplicate preferred label for the same language&quot;;
+    static final String S5 = &quot;Resource is an instance of disjoint classes&quot;;
+    static final String S6 = &quot;Vocabulary contains no statements&quot;;
+
+<span class="fc" id="L33">    private static final Node OBJECT_PROPERTY = OWL.ObjectProperty.asNode();</span>
+<span class="fc" id="L34">    private static final Node DATATYPE_PROPERTY = OWL.DatatypeProperty.asNode();</span>
+<span class="fc" id="L35">    private static final Node DISJOINT_WITH = OWL.disjointWith.asNode();</span>
+<span class="fc" id="L36">    private static final Node PREF_LABEL = SKOS.prefLabel.asNode();</span>
+<span class="fc" id="L37">    private static final Node TYPE = RDF.type.asNode();</span>
+
+    /** Runs S1 to S6 on the parsed triples. */
+    public List&lt;ValidationError&gt; check(Graph graph) {
+<span class="fc" id="L41">        List&lt;ValidationError&gt; errors = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (graph.isEmpty()) {</span>
+<span class="fc" id="L43">            errors.add(new ValidationError(S6, &quot;document&quot;));</span>
+<span class="fc" id="L44">            return errors;</span>
+        }
+<span class="fc" id="L46">        Set&lt;Node&gt; objectProperties = subjectsTyped(graph, OBJECT_PROPERTY);</span>
+<span class="fc" id="L47">        Set&lt;Node&gt; datatypeProperties = subjectsTyped(graph, DATATYPE_PROPERTY);</span>
+<span class="fc" id="L48">        errors.addAll(literalForObjectProperty(graph, objectProperties));</span>
+<span class="fc" id="L49">        errors.addAll(resourceForDatatypeProperty(graph, datatypeProperties));</span>
+<span class="fc" id="L50">        errors.addAll(declaredBoth(objectProperties, datatypeProperties));</span>
+<span class="fc" id="L51">        errors.addAll(duplicatePrefLabels(graph));</span>
+<span class="fc" id="L52">        errors.addAll(disjointInstances(graph));</span>
+<span class="fc" id="L53">        return errors;</span>
+    }
+
+    private static Set&lt;Node&gt; subjectsTyped(Graph graph, Node type) {
+<span class="fc" id="L57">        Set&lt;Node&gt; result = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L58">        graph.find(Node.ANY, TYPE, type).forEachRemaining(t -&gt; result.add(t.getSubject()));</span>
+<span class="fc" id="L59">        return result;</span>
+    }
+
+    private static List&lt;ValidationError&gt; literalForObjectProperty(Graph graph, Set&lt;Node&gt; objectProperties) {
+<span class="fc" id="L63">        List&lt;ValidationError&gt; errors = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        for (Node property : objectProperties) {</span>
+<span class="fc" id="L65">            graph.find(Node.ANY, property, Node.ANY).forEachRemaining(t -&gt; {</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">                if (t.getObject().isLiteral()) {</span>
+<span class="fc" id="L67">                    errors.add(new ValidationError(S1, statement(t)));</span>
+                }
+<span class="fc" id="L69">            });</span>
+<span class="fc" id="L70">        }</span>
+<span class="fc" id="L71">        return sorted(errors);</span>
+    }
+
+    private static List&lt;ValidationError&gt; resourceForDatatypeProperty(Graph graph, Set&lt;Node&gt; datatypeProperties) {
+<span class="fc" id="L75">        List&lt;ValidationError&gt; errors = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        for (Node property : datatypeProperties) {</span>
+<span class="fc" id="L77">            graph.find(Node.ANY, property, Node.ANY).forEachRemaining(t -&gt; {</span>
+<span class="fc" id="L78">                Node o = t.getObject();</span>
+<span class="pc bpc" id="L79" title="1 of 4 branches missed.">                if (o.isURI() || o.isBlank()) {</span>
+<span class="fc" id="L80">                    errors.add(new ValidationError(S2, statement(t)));</span>
+                }
+<span class="fc" id="L82">            });</span>
+<span class="fc" id="L83">        }</span>
+<span class="fc" id="L84">        return sorted(errors);</span>
+    }
+
+    private static List&lt;ValidationError&gt; declaredBoth(Set&lt;Node&gt; objectProperties, Set&lt;Node&gt; datatypeProperties) {
+<span class="fc" id="L88">        List&lt;ValidationError&gt; errors = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        for (Node property : objectProperties) {</span>
+<span class="pc bpc" id="L90" title="1 of 4 branches missed.">            if (property.isURI() &amp;&amp; datatypeProperties.contains(property)) {</span>
+<span class="fc" id="L91">                errors.add(new ValidationError(S3, resource(property)));</span>
+            }
+<span class="fc" id="L93">        }</span>
+<span class="fc" id="L94">        return sorted(errors);</span>
+    }
+
+    private static List&lt;ValidationError&gt; duplicatePrefLabels(Graph graph) {
+<span class="fc" id="L98">        Map&lt;Node, Map&lt;String, Integer&gt;&gt; counts = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L99">        graph.find(Node.ANY, PREF_LABEL, Node.ANY).forEachRemaining(t -&gt; {</span>
+<span class="fc" id="L100">            Node o = t.getObject();</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">            if (o.isLiteral()) {</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">                String language = o.getLiteralLanguage() == null</span>
+<span class="nc" id="L103">                        ? &quot;&quot;</span>
+<span class="fc" id="L104">                        : o.getLiteralLanguage().toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L105">                counts.computeIfAbsent(t.getSubject(), k -&gt; new HashMap&lt;&gt;()).merge(language, 1, Integer::sum);</span>
+            }
+<span class="fc" id="L107">        });</span>
+<span class="fc" id="L108">        List&lt;ValidationError&gt; errors = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L109">        counts.forEach((subject, byLanguage) -&gt; byLanguage.forEach((language, count) -&gt; {</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">            if (count &gt; 1) {</span>
+<span class="fc" id="L111">                errors.add(new ValidationError(S4, resource(subject)));</span>
+            }
+<span class="fc" id="L113">        }));</span>
+<span class="fc" id="L114">        return sorted(errors);</span>
+    }
+
+    private static List&lt;ValidationError&gt; disjointInstances(Graph graph) {
+<span class="fc" id="L118">        Set&lt;List&lt;Node&gt;&gt; disjointPairs = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L119">        graph.find(Node.ANY, DISJOINT_WITH, Node.ANY).forEachRemaining(t -&gt; {</span>
+<span class="fc" id="L120">            disjointPairs.add(List.of(t.getSubject(), t.getObject()));</span>
+<span class="fc" id="L121">            disjointPairs.add(List.of(t.getObject(), t.getSubject()));</span>
+<span class="fc" id="L122">        });</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        if (disjointPairs.isEmpty()) {</span>
+<span class="fc" id="L124">            return List.of();</span>
+        }
+<span class="fc" id="L126">        Map&lt;Node, Set&lt;Node&gt;&gt; types = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L127">        graph.find(Node.ANY, TYPE, Node.ANY)</span>
+<span class="fc" id="L128">                .forEachRemaining(t -&gt; types.computeIfAbsent(t.getSubject(), k -&gt; new HashSet&lt;&gt;())</span>
+<span class="fc" id="L129">                        .add(t.getObject()));</span>
+<span class="fc" id="L130">        List&lt;ValidationError&gt; errors = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L131">        types.forEach((resource, classes) -&gt; {</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">            if (hasDisjointPair(classes, disjointPairs)) {</span>
+<span class="fc" id="L133">                errors.add(new ValidationError(S5, resource(resource)));</span>
+            }
+<span class="fc" id="L135">        });</span>
+<span class="fc" id="L136">        return sorted(errors);</span>
+    }
+
+    private static boolean hasDisjointPair(Set&lt;Node&gt; classes, Set&lt;List&lt;Node&gt;&gt; disjointPairs) {
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        for (Node a : classes) {</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">            for (Node b : classes) {</span>
+<span class="fc bfc" id="L142" title="All 4 branches covered.">                if (!a.equals(b) &amp;&amp; disjointPairs.contains(List.of(a, b))) {</span>
+<span class="fc" id="L143">                    return true;</span>
+                }
+<span class="fc" id="L145">            }</span>
+<span class="fc" id="L146">        }</span>
+<span class="fc" id="L147">        return false;</span>
+    }
+
+    private static List&lt;ValidationError&gt; sorted(List&lt;ValidationError&gt; errors) {
+<span class="fc" id="L151">        errors.sort(Comparator.comparing(ValidationError::location));</span>
+<span class="fc" id="L152">        return errors;</span>
+    }
+
+    static String statement(Triple t) {
+<span class="fc" id="L156">        return &quot;statement '&quot; + text(t.getSubject()) + &quot; &quot; + text(t.getPredicate()) + &quot; &quot; + text(t.getObject()) + &quot;'&quot;;</span>
+    }
+
+    static String resource(Node node) {
+<span class="fc" id="L160">        return &quot;resource '&quot; + text(node) + &quot;'&quot;;</span>
+    }
+
+    static String text(Node node) {
+<span class="fc bfc" id="L164" title="All 2 branches covered.">        if (node.isURI()) {</span>
+<span class="fc" id="L165">            return node.getURI();</span>
+        }
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        if (node.isBlank()) {</span>
+<span class="fc" id="L168">            return &quot;_:&quot; + node.getBlankNodeLabel();</span>
+        }
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">        if (node.isLiteral()) {</span>
+<span class="fc" id="L171">            return node.getLiteralLexicalForm();</span>
+        }
+<span class="nc" id="L173">        return node.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">AuthenticationFilter.java</span></div><h1>AuthenticationFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import eu.simpl.vocabularymanager.web.ApiException;
+import eu.simpl.vocabularymanager.web.ProblemWriter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Checks the bearer token and the role before anything else (D17, D51): no or invalid token gives 401, a missing
+ * role 403, an unreachable identity provider for an unknown key 503 (D44). Fails closed.
+ */
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE + 10)
+public class AuthenticationFilter extends OncePerRequestFilter {
+
+    /** Request attribute that holds the {@link AuthenticatedUser}. */
+<span class="fc" id="L27">    public static final String USER_ATTRIBUTE = AuthenticationFilter.class.getName() + &quot;.user&quot;;</span>
+
+<span class="fc" id="L29">    private static final Logger LOG = LoggerFactory.getLogger(AuthenticationFilter.class);</span>
+    private static final String BEARER = &quot;bearer &quot;;
+
+    private final TokenValidator validator;
+    private final ProblemWriter problems;
+
+<span class="fc" id="L35">    public AuthenticationFilter(TokenValidator validator, ProblemWriter problems) {</span>
+<span class="fc" id="L36">        this.validator = validator;</span>
+<span class="fc" id="L37">        this.problems = problems;</span>
+<span class="fc" id="L38">    }</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L43">        Set&lt;Role&gt; required = AccessRules.required(request.getMethod(), request.getRequestURI());</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        if (required == null) {</span>
+<span class="fc" id="L45">            chain.doFilter(request, response);</span>
+<span class="fc" id="L46">            return;</span>
+        }
+<span class="fc" id="L48">        String header = request.getHeader(&quot;Authorization&quot;);</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (header == null</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">                || header.length() &lt;= BEARER.length()</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">                || !header.regionMatches(true, 0, BEARER, 0, BEARER.length())) {</span>
+<span class="fc" id="L52">            LOG.warn(&quot;Access denied: no bearer token for {} {}&quot;, request.getMethod(), request.getRequestURI());</span>
+<span class="fc" id="L53">            problems.write(response, ApiException.unauthorized(&quot;A valid bearer token is required.&quot;));</span>
+<span class="fc" id="L54">            return;</span>
+        }
+        AuthenticatedUser user;
+        try {
+<span class="fc" id="L58">            user = validator.validate(header.substring(BEARER.length()).trim());</span>
+<span class="fc" id="L59">        } catch (InvalidTokenException e) {</span>
+<span class="fc" id="L60">            LOG.warn(&quot;Access denied: {} for {} {}&quot;, e.getMessage(), request.getMethod(), request.getRequestURI());</span>
+<span class="fc" id="L61">            problems.write(response, ApiException.unauthorized(&quot;A valid bearer token is required.&quot;));</span>
+<span class="fc" id="L62">            return;</span>
+<span class="nc" id="L63">        } catch (IdentityProviderUnavailableException e) {</span>
+<span class="nc" id="L64">            LOG.error(&quot;Identity provider not available while checking a token&quot;, e);</span>
+<span class="nc" id="L65">            problems.write(</span>
+<span class="nc" id="L66">                    response, ApiException.serviceUnavailable(&quot;The identity provider is not available. Retry later.&quot;));</span>
+<span class="nc" id="L67">            return;</span>
+<span class="fc" id="L68">        }</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (!user.hasAnyRole(required)) {</span>
+<span class="fc" id="L70">            LOG.warn(</span>
+                    &quot;Access denied: user {} lacks role {} for {} {}&quot;,
+<span class="fc" id="L72">                    user.subject(),</span>
+                    required,
+<span class="fc" id="L74">                    request.getMethod(),</span>
+<span class="fc" id="L75">                    request.getRequestURI());</span>
+<span class="fc" id="L76">            problems.write(response, ApiException.forbidden());</span>
+<span class="fc" id="L77">            return;</span>
+        }
+<span class="fc" id="L79">        request.setAttribute(USER_ATTRIBUTE, user);</span>
+<span class="fc" id="L80">        chain.doFilter(request, response);</span>
+<span class="fc" id="L81">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

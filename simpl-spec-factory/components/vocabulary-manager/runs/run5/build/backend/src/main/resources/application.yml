@@ -1,0 +1,56 @@
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: never
+    include-message: never
+  tomcat:
+    max-swallow-size: -1
+    max-http-form-post-size: 64MB
+  shutdown: graceful
+
+spring:
+  application:
+    name: vocabulary-manager-be
+  main:
+    banner-mode: off
+  servlet:
+    multipart:
+      enabled: true
+      resolve-lazily: true
+      max-file-size: 50MB
+      max-request-size: 52MB
+      file-size-threshold: 1MB
+  web:
+    resources:
+      add-mappings: false
+  jackson:
+    default-property-inclusion: non_null
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+logging:
+  structured:
+    format:
+      console: ${LOG_FORMAT:ecs}
+  level:
+    root: INFO
+    eu.simpl.vocabularymanager: INFO
+
+vocabulary:
+  content-base-url: ${VOCABULARY_CONTENT_BASE_URL:https://authority.example/vocabulary-manager}
+  upload-limit-bytes: 5242880
+  lock-timeout: 10s
+  store:
+    url: ${STORE_URL:http://localhost:3030/vocabulary}
+    connect-timeout: 2s
+    response-timeout: 10s
+    health-timeout: 2s
+  identity:
+    issuer: ${OIDC_ISSUER:http://localhost:8193/realms/simpl}
+    jwks-url: ${OIDC_JWKS_URL:http://localhost:8193/realms/simpl/protocol/openid-connect/certs}
+    audience: ${OIDC_AUDIENCE:vocabulary-manager-be}
+    fetch-timeout: 2s
+    min-refetch-interval: 10s
+    clock-skew: 30s
