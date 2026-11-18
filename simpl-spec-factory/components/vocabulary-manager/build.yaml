@@ -13,6 +13,7 @@ ports:            # host ports; only these may be exposed
   ui: 4433
   keycloak: 8193  # token endpoint http://localhost:8193/realms/simpl/protocol/openid-connect/token
   fuseki: 3141    # only if needed for debugging
+  api_store_down: 8199   # second backend with an unreachable store (stack.sh store-down-up, decision D44)
 tests:
   harness: Python 3, behave, requests; Playwright for Python for the UI steps of step 60
   environment:
@@ -20,6 +21,7 @@ tests:
     TOKEN_URL: http://localhost:8193/realms/simpl/protocol/openid-connect/token
     TOKEN_CLIENT: vocabulary-tests
     UI_URL: http://localhost:4433
+    STORE_DOWN_API_URL: http://localhost:8199/v1
   users: from decision E1 (ga-admin, ga-viewer, ga-norole, password 'Password1!')
   reset: tests may not reset the store; every scenario creates its own data with a unique run id
 finish_line:
