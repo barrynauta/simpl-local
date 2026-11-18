@@ -1,14 +1,15 @@
 {
  "summary": {
   "component": "vocabulary-manager",
-  "findings": 5,
-  "places": 18,
+  "findings": 6,
+  "places": 20,
   "rules_hit": [
    "API-06",
    "API-21",
    "API-45",
    "API-52",
-   "API-63"
+   "API-63",
+   "SOA-09"
   ],
   "rules_checked": [
    "API-04",
@@ -117,6 +118,18 @@
     "/content/{vocabularyName} (vocabularyName)",
     "/external-vocabularies/{name}/content (name)",
     "/external-vocabularies/{name} (name)"
+   ]
+  },
+  {
+   "id": "A-006",
+   "api": "vocabulary-manager-be",
+   "rule": "SOA-09",
+   "level": "SHOULD",
+   "rule_text": "No two paths of a contract can match the same URL: a fixed segment does not sit where another path on the same level has a path parameter (for example /items/search next to /items/{name}).",
+   "count": 2,
+   "examples": [
+    "/vocabularies/searches and /vocabularies/{vocabularyName}",
+    "/external-vocabularies/content and /external-vocabularies/{name}"
    ]
   }
  ]
