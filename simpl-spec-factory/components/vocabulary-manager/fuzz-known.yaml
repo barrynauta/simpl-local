@@ -1,0 +1,18 @@
+# Fuzz failures that the decisions explain (step 70, pipeline/fuzz_api.py). Everything not listed here is a finding.
+# The decisions make the contract stricter on purpose in these places (D39 lists them).
+# Match: operation ("*" for all), Schemathesis check code, and a text in the server's answer.
+known:
+  - {operation: "*", check: ST202, detail_contains: "Encountered invalid Turtle syntax", decision: D9,
+     reason: "the OpenAPI types the file as binary; the decisions require valid Turtle"}
+  - {operation: "*", check: ST202, detail_contains: "Property '", decision: D52,
+     reason: "unknown JSON properties are rejected, also where the schema allows additional properties; D38 limits on search bodies"}
+  - {operation: "*", check: ST202, detail_contains: "Form field '", decision: D37,
+     reason: "description and changelog 1 to 1000 characters after trimming; the version form field is refused (D7)"}
+  - {operation: "*", check: ST202, detail_contains: "Path parameter 'vers", decision: D49,
+     reason: "a version in the path must be a positive integer"}
+  - {operation: "*", check: ST202, detail_contains: "Query parameter 'pag", decision: D22,
+     reason: "page at least 1, pageSize 1 to 100"}
+  - {operation: "*", check: ST202, detail_contains: "Query parameter 'cre", decision: D20,
+     reason: "a creationDate that matches the pattern but is not a real date is refused"}
+  - {operation: "GET /vocabularies", check: ST201, detail_contains: "", decision: D19,
+     reason: "the name filter pattern is relaxed to ^[A-Za-z0-9]+$"}
