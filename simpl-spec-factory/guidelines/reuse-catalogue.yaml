@@ -1,0 +1,100 @@
+# Reuse catalogue: what Simpl-Open already offers, per capability (engine rules REUSE-03 and REUSE-05).
+# Step 30 records reuse choices from it; step 50 reuses it before building anything it covers and
+# says why not in REUSE.md; step 70c checks that.
+#
+# Source: the Simpl-Open architecture repository (foundations/architecture on code.europa.eu), read on
+# 18 Nov 2026. Paths below are relative to that repository. Status words follow the repository:
+# "in use" = deployed in the agents today; "planned" = in the capability map, no solution yet.
+# A component build in the factory runs on its own, so it may run a product locally (for example
+# Keycloak in a container) as long as it is the product named here.
+
+capabilities:
+  identity-provider:
+    product: Keycloak (OpenID Connect), with the Simpl-Open custom authenticator plugin
+    status: in use
+    use_for: user login, tokens and roles for Tier 1 (user-facing) access
+    source: security/access-control-and-trust/authentication-provider-federation/tier-1-authentication-provider
+
+  api-gateway-authorisation:
+    product: Spring Cloud Gateway (Tier 1 gateway)
+    status: in use
+    use_for: authorisation of Tier 1 calls in front of the components (project rules SEC-12, SEC-13)
+    source: security/access-control-and-trust/authorisation/spring-cloud-gateway
+
+  secrets-and-keys:
+    product: OpenBao (HashiCorp Vault compatible)
+    status: in use
+    use_for: secrets, keys and certificates material; never keep secrets in configuration files
+    source: security/access-control-and-trust/encryption
+
+  certificate-authority:
+    product: EJBCA
+    status: in use
+    use_for: issuing and revoking the X.509 certificates of Tier 2 (mutual TLS between participants)
+    source: foundations/data-architecture/open-source-components.md
+
+  relational-store:
+    product: PostgreSQL (shared Helm chart in common-components)
+    status: in use
+    use_for: relational data of a component
+    source: cross-cutting/agents/common-components
+
+  messaging:
+    product: Apache Kafka (shared Helm chart in common-components)
+    status: in use
+    use_for: events and asynchronous communication between components
+    source: cross-cutting/agents/common-components
+
+  rdf-store:
+    product: Apache Jena Fuseki
+    status: in use
+    use_for: RDF data such as vocabularies and schemas (SPARQL)
+    source: foundations/data-architecture/open-source-components.md
+
+  graph-index:
+    product: Neo4j
+    status: in use
+    use_for: the semantic query index of the federated catalogue
+    source: foundations/data-architecture/open-source-components.md
+
+  object-storage:
+    product: MinIO (S3 compatible)
+    status: in use
+    use_for: files exchanged through the connector
+    source: cross-cutting/agents/data-provider-agent (deployment guide, MinIO secrets for the EDC connector)
+
+  dataspace-connector:
+    product: Eclipse EDC (Simpl-Open fork, Dataspace Protocol), behind the EDC Connector Adapter
+    status: in use
+    use_for: contract negotiation and data transfer between participants; call it through the adapter, not directly
+    source: integration/resource-sharing/resource-sharing-runtime/connector and .../edc-connector-adapter
+
+  http-client:
+    product: simpl-http-client (Java library)
+    status: in use
+    use_for: outgoing HTTPS calls with the Simpl TLS and certificate revocation checks
+    source: cross-cutting/libs/simpl-http-client
+
+  participant-shared-code:
+    product: participant-common, participant-common-adapter, participant-common-tier2 (Java libraries)
+    status: in use
+    use_for: shared utilities of participant-side services
+    source: cross-cutting/libs
+
+  ui-components:
+    product: participant-fe-components (Vue.js, PrimeVue unstyled, TailwindCSS, Simpl Figma design system)
+    status: in use
+    use_for: user interface components and styling of any Simpl-Open screen
+    source: cross-cutting/libs/participant-fe-components
+
+  architectural-patterns:
+    product: the Simpl-Open architectural patterns (microservices, event-driven, asynchronous communication, stateless design, least privilege, defence in depth, zero trust, retries, circuit breakers, graceful degradation)
+    status: in use
+    use_for: name the pattern you apply; do not invent a new one for these problems
+    source: foundations/architectural-patterns.md
+
+  ticketing:
+    product: UVdesk
+    status: planned
+    use_for: support tickets (administration/support)
+    source: administration/support/ticketing-system
