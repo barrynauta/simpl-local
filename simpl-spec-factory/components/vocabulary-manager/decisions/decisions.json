@@ -24,7 +24,9 @@
    "ui",
    "tests",
    "data"
-  ]
+  ],
+  "refined_by": "D61",
+  "later_change": "SIMPL-28680 out of the inventory (D61)"
  },
  {
   "id": "D2",
@@ -193,7 +195,9 @@
    "api",
    "ui",
    "tests"
-  ]
+  ],
+  "refined_by": "D53",
+  "later_change": "untagged labels count as one language in S4 (D53)"
  },
  {
   "id": "D10",
@@ -236,7 +240,9 @@
    "api",
    "ui",
    "tests"
-  ]
+  ],
+  "refined_by": "D47",
+  "later_change": "no recommendation of a version of a DEPRECATED vocabulary (D47)"
  },
  {
   "id": "D12",
@@ -256,7 +262,9 @@
   "affects": [
    "api",
    "tests"
-  ]
+  ],
+  "refined_by": "D47",
+  "later_change": "S7 text for a reference without a version (D47)"
  },
  {
   "id": "D13",
@@ -276,7 +284,9 @@
   "affects": [
    "ui",
    "tests"
-  ]
+  ],
+  "refined_by": "D60",
+  "later_change": "column shown only when the parser gives one (D60)"
  },
  {
   "id": "D14",
@@ -442,7 +452,9 @@
   "affects": [
    "api",
    "tests"
-  ]
+  ],
+  "refined_by": "D52",
+  "later_change": "also POST, PATCH and DELETE, and repeated parameters (D52)"
  },
  {
   "id": "D22",
@@ -461,7 +473,9 @@
   "affects": [
    "api",
    "tests"
-  ]
+  ],
+  "refined_by": "D59",
+  "later_change": "prev link beyond the last page (D59)"
  },
  {
   "id": "D23",
@@ -482,7 +496,9 @@
    "api",
    "ui",
    "tests"
-  ]
+  ],
+  "refined_by": "D50",
+  "later_change": "a click on the active sort column reverses it (D50)"
  },
  {
   "id": "D24",
@@ -502,7 +518,9 @@
    "api",
    "ui",
    "tests"
-  ]
+  ],
+  "refined_by": "D49",
+  "later_change": "an invalid path value gives 400, not 404 (D49)"
  },
  {
   "id": "D25",
@@ -629,7 +647,9 @@
    "api",
    "tests",
    "data"
-  ]
+  ],
+  "refined_by": "D56",
+  "later_change": "registration details: names, aliases, description (D56)"
  },
  {
   "id": "D31",
@@ -953,6 +973,300 @@
    "api",
    "ui",
    "tests"
+  ],
+  "refined_by": "D51",
+  "later_change": "full order of checks on writes (D51)"
+ },
+ {
+  "id": "D47",
+  "topic": "Deprecated and missing reference texts",
+  "closes": [
+   "R-003",
+   "R-004"
+  ],
+  "decision": "Deprecated reference (D11): the description is \"Referenced internal vocabulary '<Name>' version <n> is deprecated.\". The sentence \" Use version <m>, the latest ACTIVE version.\" is added only when the vocabulary status is ACTIVE and a version <m> other than <n> has version status ACTIVE. When the vocabulary status is DEPRECATED the description is followed by \" The vocabulary '<Name>' is deprecated.\" and no version is recommended. Missing reference (D12, S7): with a version \"Referenced internal vocabulary '<Name>' version <n> does not exist.\"; without a version (name unknown) \"Referenced internal vocabulary '<Name>' does not exist.\".",
+  "options": [
+   "Recommend only a different, really ACTIVE version",
+   "Always recommend the highest ACTIVE version"
+  ],
+  "basis": "D3 makes every version of a DEPRECATED vocabulary effectively deprecated, so recommending one of them contradicts the warning. The S7 text without a version is what run 4's build returned.",
+  "status": "provisional",
+  "owner_question": "Confirm both texts.",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D48",
+  "topic": "Problem types: belgif and simpl",
+  "closes": [
+   "R-005"
+  ],
+  "decision": "Keep the types the OpenAPI and D44 fix: urn:problem-type:belgif:... for 400, 404, 500 and 503. Use urn:problem-type:simpl:... for 401, 403, 409, 413 and 415 (D17, D4, D15). This is a recorded deviation from API-46 for the four belgif codes; the code writer lists it in DEVIATIONS.md and the suite checks API-46 only on the simpl codes.",
+  "options": [
+   "OpenAPI belgif types stay (deviation from API-46)",
+   "All types simpl (OpenAPI changed)"
+  ],
+  "basis": "Source hierarchy: the OpenAPI is the exact source for the wire format; API-46 is a SHOULD. Changing the published types is the API owner's call.",
+  "status": "provisional",
+  "owner_question": "API owner: move the four belgif types to simpl URNs (API-46), or record the exception.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D49",
+  "topic": "Invalid name in a path",
+  "closes": [
+   "R-006"
+  ],
+  "decision": "A GET, PATCH or DELETE whose path name or version breaks its pattern (D37 for names, a positive integer for versions) returns 400 InputValidationProblem with one issue (type urn:problem-type:belgif:input-validation:schemaViolation, in: path, name: the parameter). A valid name that is not stored returns 404 (D24, D41). Tests prove 'nothing stored' through the list with a name filter, not through a GET on the rejected name.",
+  "options": [
+   "400 for an invalid path value",
+   "404 for any name that is not stored"
+  ],
+  "basis": "BLG-req-valid and D21 (invalid values of known parameters give 400); run 4's build did this. Run 4 section 3.1.",
+  "status": "provisional",
+  "owner_question": "Confirm 400 for a path value that breaks the pattern.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D50",
+  "topic": "Click on the active sort column",
+  "closes": [
+   "R-007"
+  ],
+  "decision": "UI list: a click on a sortable column that is not the active sort sorts it ascending. A click on the active sort column reverses its order. So on the default list (Name ascending) the first click on Name sorts descending.",
+  "options": [
+   "Reverse the active column",
+   "Always start ascending"
+  ],
+  "basis": "Common table behaviour; run 4's build did this, and with 'always ascending' the first click on the default column would change nothing visible. Run 4 section 3.2.",
+  "status": "provisional",
+  "owner_question": "Confirm the toggle.",
+  "affects": [
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D51",
+  "topic": "Order of checks on write operations",
+  "closes": [
+   "R-008",
+   "R-009"
+  ],
+  "decision": "Every write runs its checks in this order and stops at the first failure: 401, 403 (D17); 415 media type; 413 size; 400 request shape (path values D49, unknown fields and parameters D52, field rules D37, the version field D7); 404 vocabulary or version not found; 409 conflicts (duplicate name D15 and D37, same status D4, identical version D46); then validation of the content (syntax, then semantic, D9). So a duplicate name with invalid content gives 409, and a malformed request to an unknown name gives 400.",
+  "options": [
+   "Request shape before store lookups",
+   "Store lookups first"
+  ],
+  "basis": "Checks that need no store run first: cheaper and they reveal nothing about stored names (OWT-A01). Run 4's build used this order.",
+  "status": "provisional",
+  "owner_question": "Confirm the order.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D52",
+  "topic": "Unknown fields and parameters",
+  "closes": [
+   "R-010",
+   "R-011"
+  ],
+  "decision": "Any form field or JSON property the OpenAPI schema does not define returns 400 InputValidationProblem with one issue per unknown name (in: body), also where the schema does not say additionalProperties: false. Any query parameter on a POST, PATCH or DELETE returns 400 (in: query), as D21 does for GET. A query parameter given twice returns 400.",
+  "options": [
+   "Reject unknown input everywhere",
+   "Ignore unknown input"
+  ],
+  "basis": "OWA-API3 (no mass assignment) and D21; run 4's build did this.",
+  "status": "provisional",
+  "owner_question": "None.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D53",
+  "topic": "Labels without a language tag (S4)",
+  "closes": [
+   "R-012"
+  ],
+  "decision": "For S4, a literal without a language tag counts as one language ('no language'). Two untagged skos:prefLabel values on one subject are an S4 error. One untagged and one tagged value are not.",
+  "options": [
+   "Untagged counts as one language",
+   "Untagged values are never compared"
+  ],
+  "basis": "SKOS integrity condition S14 (at most one prefLabel per language tag), reading 'no tag' as one value.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D54",
+  "topic": "Case of names in paths",
+  "closes": [
+   "R-013"
+  ],
+  "decision": "Paths match the stored name exactly. /vocabularies/HEALTH for a stored 'Health' returns 404. The case-insensitive rule of D37 applies only to uniqueness on create and registration. Search by name (D38) is exact too; the list name filter stays case-insensitive (D19).",
+  "options": [
+   "Exact match",
+   "Case-insensitive match"
+  ],
+  "basis": "A path names one resource; exact match is simplest and gives one canonical URL. Run 4's build did this.",
+  "status": "provisional",
+  "owner_question": "Confirm exact match.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D55",
+  "topic": "Problem texts the decisions do not give",
+  "closes": [
+   "R-014"
+  ],
+  "decision": "Fixed: version not found \"Version <n> of vocabulary '<Name>' was not found.\"; external namespace conflict \"An external vocabulary with namespace or alias '<uri>' is already registered.\". 405 and an unknown path return application/problem+json with status 405 and 404; their type and detail are free. Field messages (400 issues) are free text. Tests check status, type, issue 'in' and 'name', and only the detail texts a decision fixes.",
+  "options": [
+   "Fix every text",
+   "Fix only what users act on"
+  ],
+  "basis": "Texts a user or client acts on are fixed; the rest would only make tests brittle.",
+  "status": "provisional",
+  "owner_question": "Confirm the two texts.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D56",
+  "topic": "External vocabulary registration details",
+  "closes": [
+   "R-015"
+  ],
+  "decision": "Name: the D37 rules, unique case-insensitively among external vocabularies (409). Internal and external names are separate: an external vocabulary may share a name with an internal one. aliasUris: one multipart part 'aliasUris' per URI, optional, at most 20; an alias that equals the namespace URI or repeats another alias (compared as D30) returns 400 (in: body, name: aliasUris). description: optional, at most 1000 characters after trimming.",
+  "options": [
+   "Separate name spaces",
+   "One name space for internal and external"
+  ],
+  "basis": "Paths are separate (/vocabularies, /external-vocabularies), so separate names are simplest; D30 and D37 for the rest.",
+  "status": "provisional",
+  "owner_question": "Confirm separate names and the alias limit of 20.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D57",
+  "topic": "Base IRI of uploaded content",
+  "closes": [
+   "R-016"
+  ],
+  "decision": "Relative IRIs in uploaded Turtle resolve against the content URL of the new version: <contentBase>/content/<Name>/versions/<n> (D26). The stored bytes stay as uploaded (D29); the base is used only for validation.",
+  "options": [
+   "Content URL of the version",
+   "Reject relative IRIs"
+  ],
+  "basis": "Run 4's build did this; it keeps uploads with relative IRIs valid.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D58",
+  "topic": "Times and name order",
+  "closes": [
+   "R-017",
+   "R-018"
+  ],
+  "decision": "Times are stored and returned in UTC to the second, ISO 8601 with 'Z' (2026-11-18T09:27:00Z). Sort, ties and filters (D20, D23) use this value. The name sort compares by code point, so 'AZ' comes before 'Ab'.",
+  "options": [
+   "Seconds, code point",
+   "Milliseconds, case-insensitive order"
+  ],
+  "basis": "Clients see what is sorted and filtered. Names always start with a capital (D37), so code point order differs only inside names. Run 4's build did both.",
+  "status": "provisional",
+  "owner_question": "Confirm code point order.",
+  "affects": [
+   "api",
+   "ui",
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D59",
+  "topic": "prev link beyond the last page",
+  "closes": [
+   "R-019"
+  ],
+  "decision": "On a page beyond the last page the prev link points to the last page. No prev link when total is 0.",
+  "options": [
+   "prev to the last page",
+   "No prev link"
+  ],
+  "basis": "Gives the client a way back; run 4's build did this. Extends D22.",
+  "status": "provisional",
+  "owner_question": "None.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D60",
+  "topic": "UI texts and steps",
+  "closes": [
+   "R-020",
+   "R-021"
+  ],
+  "decision": "Menu item 'Vocabularies'. Status change: action label 'Deprecate' on an ACTIVE vocabulary and 'Activate' on a DEPRECATED one, no confirmation dialog, success message 'Status of <Name> changed to <Active|Deprecated>.'. Dates shown in UTC as 'YYYY-MM-DD HH:mm UTC'. Link back on the details page: 'Back to vocabulary list'. A 500 or 503 shows 'Something went wrong. Retry later or contact support.' with the problem detail (D24, D44). Form labels: 'Name', 'Description', 'Change log', 'Vocabulary file'; buttons 'Submit' and 'Cancel'. Syntax errors in the browser (D13) show the line; the column is shown when the parser gives one, and tests check the line only.",
+  "options": [
+   "Fix the labels",
+   "Leave labels to the builder"
+  ],
+  "basis": "Run 4: the test writer had to accept several labels for the same action. Fixed labels make UI tests exact.",
+  "status": "provisional",
+  "owner_question": "UX owner: confirm the labels and the date format.",
+  "affects": [
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D61",
+  "topic": "SIMPL-28680 leaves the live set",
+  "closes": [
+   "R-022"
+  ],
+  "decision": "SIMPL-28680 is listed under stories.out_of_scope in sources.yaml: its spec stays collected, but its six criteria leave the inventory, the live set and the reports. It stays out of scope as in D1.",
+  "options": [
+   "Remove from the story list",
+   "Keep and mark as out of scope"
+  ],
+  "basis": "D1 already puts it in Schema Manager; counting its criteria here lowers the coverage figures for no reason.",
+  "status": "provisional",
+  "owner_question": "None.",
+  "affects": [
+   "tests"
   ]
  },
  {
@@ -983,7 +1297,9 @@
    "api",
    "ui",
    "tests"
-  ]
+  ],
+  "refined_by": "E4",
+  "later_change": "ports and URLs are defaults; the build profile fixes them (E4)"
  },
  {
   "id": "E3",
@@ -994,6 +1310,28 @@
   "basis": "SIMPL-18170 technical note; SIMPL-18183 note 'it wouldn't be safe to fetch external vocabularies'.",
   "status": "provisional",
   "owner_question": "None.",
+  "affects": [
+   "tests",
+   "data"
+  ],
+  "refined_by": "E4",
+  "later_change": "tests no longer reset the store; unique data per scenario (E4)"
+ },
+ {
+  "id": "E4",
+  "topic": "Run environment from the build profile",
+  "closes": [
+   "R-001",
+   "R-002"
+  ],
+  "decision": "The build profile of the run (build.yaml) fixes ports, URLs, issuer and the test users' access; E2's ports and URLs are defaults only and every value is read from environment variables, so code and suite run unchanged on any ports. The store is never reset by the tests: every scenario creates its own data with a unique run id and does not depend on an empty store (counts and lists are checked through filters on its own names). E3's reset sentence is withdrawn; the rest of E3 stands.",
+  "options": [
+   "Profile wins, no reset",
+   "E2 and E3 win, profile follows"
+  ],
+  "basis": "Run 4: both writers found the clash independently. Unique data per scenario lets several runs share one stack and needs no test-only endpoint.",
+  "status": "provisional",
+  "owner_question": "None (environment).",
   "affects": [
    "tests",
    "data"

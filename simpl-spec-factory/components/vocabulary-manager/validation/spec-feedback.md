@@ -1,15 +1,15 @@
 # Spec feedback: Vocabulary Manager
 
-Step 29 of the spec factory, assembled on 17 Nov 2026 by `spec-factory/pipeline/build_feedback.py` (engine 608dc73). For the owners of the stories, the API definitions, the CDMs and the business process. Every point cites the ids it is about and the question that needs an answer; the full evidence is in the linked files.
+Step 29 of the spec factory, assembled on 18 Nov 2026 by `spec-factory/pipeline/build_feedback.py` (engine 18b54b8). For the owners of the stories, the API definitions, the CDMs and the business process. Every point cites the ids it is about and the question that needs an answer; the full evidence is in the linked files.
 
 **What this is.** An automated reading of the published specifications, as a builder would read them, before anything is built. A finding says where two careful readers would build different things, or where a builder would have to guess. It is not a judgement on the people who wrote the specs: most points are normal for specifications written by several teams over time.
 
 ## In short
 
-- **Input:** 35 stories with 91 live acceptance criteria, 19 API operations, 25 business process requirements, and the CDMs of each API.
+- **Input:** 34 stories with 85 live acceptance criteria, 19 API operations, 25 business process requirements, and the CDMs of each API.
 - **Findings:** 94: **14 to decide before building**, 48 to confirm, 32 small.
 - **Mechanical checks:** 26 hits on the acceptance criteria and 34 on the API and CDM names; the agents triaged them, and the real ones are part of the findings above.
-- **Coverage:** 9 of 91 criteria link to no operation and no process requirement; 1 of 19 operations and 25 of 25 process requirements have no criterion.
+- **Coverage:** 3 of 85 criteria link to no operation and no process requirement; 1 of 19 operations and 25 of 25 process requirements have no criterion.
 
 ## Decide first
 
@@ -201,7 +201,7 @@ From the links between criteria, operations and process requirements (step 12b, 
 
 - Operations with no criterion (1): `vocabulary_openapi-tier1:GET /health`
 - Process requirements with no criterion (25): `BP02B.01`, `BP02B.02`, `BP02B.03`, `BP02B.04`, `BP02B.05`, `BP02B.06`, `BP2B.1`, `BP2B.2`, `BP2B.3`, `BP2B.4`, `BP2B.5`, `BP2B.6`, `BP2B.1.1`, `BP2B.1.2`, `BP2B.1.3`, `BP2B.2.1`, `BP2B.3.1`, `BP2B.4.1`, `BP2B.4.2`, `BP2B.4.3`, `BP2B.4.4`, `BP2B.5.1`, `BP2B.5.2`, `BP2B.5.3`, `BP2B.6.1`
-- Criteria with no operation and no process requirement: 9, listed in the review.
+- Criteria with no operation and no process requirement: 3, listed in the review.
 
 ## The data models (CDMs)
 

@@ -1,12 +1,12 @@
 {
  "summary": {
   "component": "vocabulary-manager",
-  "stories": 35,
+  "stories": 34,
   "stories_replaced": 0,
   "stories_without_ac": 2,
-  "acs_live": 91,
+  "acs_live": 85,
   "acs_struck": 0,
-  "acs_label_derived": 58,
+  "acs_label_derived": 57,
   "acs_incomplete": 3,
   "apis": 1,
   "operations": 19,
@@ -14,7 +14,7 @@
   "bp_requirements": 25,
   "stories_naming_an_operation": 1,
   "processes_naming_a_story": 1,
-  "extraction_issues": 6
+  "extraction_issues": 7
  },
  "stories": [
   {
@@ -3939,214 +3939,6 @@
     "api_method_paths": [],
     "operations": []
    }
-  },
-  {
-   "key": "SIMPL-28680",
-   "title": "[API] Governance Authority update metadata quality governance rules by publishing an updated Metadata Quality Profile",
-   "kind": "API",
-   "replaced": false,
-   "status": "DevTeam PBI is ready for Implementation check",
-   "type": "Story",
-   "source": "https://jira.simplprogramme.eu/browse/SIMPL-28680 (collected 2026-10-27)",
-   "file": "components/vocabulary-manager/specs/stories/SIMPL-28680.md",
-   "user_story": {
-    "as a": "Governance Authority End User,",
-    "i want": "to update metadata quality governance rules via API by submitting an updated Metadata Quality Profile RDF document in Schema Manager,",
-    "so that": "governance changes are applied consistently from a controlled semantic source."
-   },
-   "acs": [
-    {
-     "label": "AC1",
-     "explicit": true,
-     "struck": false,
-     "heading": "AC1",
-     "group": "",
-     "clauses": [
-      {
-       "kw": "Given",
-       "text": "I am authenticated and authorized to manage metadata quality governance",
-       "struck": false
-      },
-      {
-       "kw": "When",
-       "text": "I submit a `POST` request to `/metadataQualityProfiles/{metadataQualityProfileName}/versions` with a valid RDF document in the payload,",
-       "struck": false
-      },
-      {
-       "kw": "Then",
-       "text": "the API accepts the RDF document, creates a new version of the profile, and returns a `201 Created` with a `Location` header pointing to the new version.",
-       "struck": false
-      }
-     ],
-     "other_text": [],
-     "id": "SIMPL-28680/AC1"
-    },
-    {
-     "label": "AC2",
-     "explicit": false,
-     "struck": false,
-     "heading": "",
-     "group": "",
-     "clauses": [
-      {
-       "kw": "Given",
-       "text": "I upload a syntactically valid RDF document conforming to the Metadata Quality Profile vocabulary",
-       "struck": false
-      },
-      {
-       "kw": "When",
-       "text": "Schema Manager processes the update",
-       "struck": false
-      },
-      {
-       "kw": "Then",
-       "text": "updated governance definitions are persisted in the new active profile version",
-       "struck": false
-      },
-      {
-       "kw": "And",
-       "text": "previous profile versions remain available for traceability.",
-       "struck": false
-      }
-     ],
-     "other_text": [],
-     "id": "SIMPL-28680/AC2"
-    },
-    {
-     "label": "AC3",
-     "explicit": true,
-     "struck": false,
-     "heading": "AC3",
-     "group": "",
-     "clauses": [
-      {
-       "kw": "Given",
-       "text": "I upload a document that is not valid RDF syntax",
-       "struck": false
-      },
-      {
-       "kw": "When",
-       "text": "Schema Manager validates the document",
-       "struck": false
-      },
-      {
-       "kw": "Then",
-       "text": "the update is rejected",
-       "struck": false
-      },
-      {
-       "kw": "And",
-       "text": "an error is returned with a non-sensitive code and syntax-focused description.",
-       "struck": false
-      }
-     ],
-     "other_text": [],
-     "id": "SIMPL-28680/AC3"
-    },
-    {
-     "label": "AC4",
-     "explicit": true,
-     "struck": false,
-     "heading": "AC4",
-     "group": "",
-     "clauses": [
-      {
-       "kw": "Given",
-       "text": "I upload a document that is not valid RDF semantic",
-       "struck": false
-      },
-      {
-       "kw": "When",
-       "text": "Schema Manager validates the document",
-       "struck": false
-      },
-      {
-       "kw": "Then",
-       "text": "the update is rejected",
-       "struck": false
-      },
-      {
-       "kw": "And",
-       "text": "an error is returned with a non-sensitive code and semantic-focused description.",
-       "struck": false
-      }
-     ],
-     "other_text": [],
-     "id": "SIMPL-28680/AC4"
-    },
-    {
-     "label": "AC5",
-     "explicit": true,
-     "struck": false,
-     "heading": "AC5",
-     "group": "",
-     "clauses": [
-      {
-       "kw": "Given",
-       "text": "I am not authorized to manage metadata quality governance",
-       "struck": false
-      },
-      {
-       "kw": "When",
-       "text": "I attempt to update the Metadata Quality Profile via API",
-       "struck": false
-      },
-      {
-       "kw": "Then",
-       "text": "Simpl-Open returns an authorization error.",
-       "struck": false
-      }
-     ],
-     "other_text": [],
-     "id": "SIMPL-28680/AC5"
-    },
-    {
-     "label": "AC6",
-     "explicit": true,
-     "struck": false,
-     "heading": "AC6",
-     "group": "",
-     "clauses": [
-      {
-       "kw": "Given",
-       "text": "I upload a new version for a non existing MQP",
-       "struck": false
-      },
-      {
-       "kw": "When",
-       "text": "Schema Manager processes the update",
-       "struck": false
-      },
-      {
-       "kw": "Then",
-       "text": "the update is rejected",
-       "struck": false
-      },
-      {
-       "kw": "And",
-       "text": "an error is returned with a non-sensitive code and syntax-focused description.",
-       "struck": false
-      }
-     ],
-     "other_text": [
-      "*Link to OpenAPI*: [https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/develop/openapi/schema_openapi.yaml?ref_type=heads](https://code.europa.eu/simpl/simpl-open/development/gaia-x-edc/simpl-schema-manager/-/blob/5ff38a50c87ba4424804b7e7ed1c116d4a8b6ed0/openapi/tier1-gateway/t1-schema-openapi.yaml)",
-      "Note:",
-      "- Validation is done using same functionality as Schema Manager",
-      "- For semantic validation Schema Manager resolves vocabularies against Vocabulary Manager - the Metadata Quality Profile vocabulary needs to be present there (out of scope)"
-     ],
-     "id": "SIMPL-28680/AC6"
-    }
-   ],
-   "refs": {
-    "stories": [],
-    "paths": [
-     "/metadataQualityProfiles/{metadataQualityProfileName}/versions"
-    ],
-    "method_paths": [],
-    "bp_steps": [],
-    "api_method_paths": [],
-    "operations": []
-   }
   }
  ],
  "apis": [
@@ -4962,6 +4754,7 @@
   "SIMPL-18162/AC2: no When clause",
   "SIMPL-18162/AC3: no When clause",
   "SIMPL-18162/AC4: no When clause",
+  "SIMPL-28680: out of scope in sources.yaml, left out of the inventory",
   "SIMPL-18166: names /vocabularies/{vocabularyName}/versions/{version} without a method; 2 operations have that path, all linked"
  ]
 }
