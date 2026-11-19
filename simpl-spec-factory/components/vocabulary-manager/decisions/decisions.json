@@ -45,8 +45,8 @@
   "affects": [
    "data"
   ],
-  "refined_by": "D87",
-  "later_change": "LDM traced to the CDM (D87)"
+  "refined_by": "D87, D97",
+  "later_change": "LDM traced to the CDM (D87); CDM part of the build input (D97)"
  },
  {
   "id": "D3",
@@ -959,8 +959,8 @@
    "ui",
    "tests"
   ],
-  "refined_by": "D71",
-  "later_change": "store update timeout 45 s (D71)"
+  "refined_by": "D71, D88",
+  "later_change": "store update timeout 45 s (D71); key refetch at most once per 10 s; unknown key id inside the window is 401 (D88)"
  },
  {
   "id": "D45",
@@ -1062,7 +1062,9 @@
   "affects": [
    "api",
    "tests"
-  ]
+  ],
+  "refined_by": "D91",
+  "later_change": "range 1 to 2147483647 (D91)"
  },
  {
   "id": "D50",
@@ -1495,8 +1497,8 @@
    "api",
    "tests"
   ],
-  "refined_by": "D86",
-  "later_change": "metrics content and trace forwarding fixed (D86)"
+  "refined_by": "D86, D98",
+  "later_change": "metrics content and trace forwarding fixed (D86); management port on an internal network only (D98)"
  },
  {
   "id": "D68",
@@ -1658,7 +1660,9 @@
   "affects": [
    "ui",
    "tests"
-  ]
+  ],
+  "refined_by": "D90",
+  "later_change": "report is a region with an alert line inside (D90)"
  },
  {
   "id": "D76",
@@ -1735,8 +1739,8 @@
    "api",
    "tests"
   ],
-  "refined_by": "D87",
-  "later_change": "build delivers openapi-decided.yaml (D87)"
+  "refined_by": "D87, D91",
+  "later_change": "build delivers openapi-decided.yaml (D87); format int32 and maximum on every integer (D91)"
  },
  {
   "id": "D80",
@@ -1788,7 +1792,9 @@
   "affects": [
    "tests",
    "data"
-  ]
+  ],
+  "refined_by": "D99",
+  "later_change": "throughput as offered rate, 5 MB writes measured apart (D99)"
  },
  {
   "id": "Q2",
@@ -1802,7 +1808,9 @@
   "affects": [
    "tests",
    "data"
-  ]
+  ],
+  "refined_by": "D92",
+  "later_change": "at most 4 uploads in parallel per instance (D92)"
  },
  {
   "id": "Q3",
@@ -1819,7 +1827,9 @@
   "affects": [
    "tests",
    "data"
-  ]
+  ],
+  "refined_by": "D89",
+  "later_change": "writes after the backup are lost within the RPO; backend stopped during a restore; schedule and copy target delivered as examples (D89)"
  },
  {
   "id": "Q4",
@@ -1834,8 +1844,8 @@
    "tests",
    "data"
   ],
-  "refined_by": "D82",
-  "later_change": "scale out allowed (D82)"
+  "refined_by": "D82, D99",
+  "later_change": "scale out allowed (D82); seed 1000 by 20 versions (D99)"
  },
  {
   "id": "Q5",
@@ -1852,8 +1862,8 @@
    "tests",
    "data"
   ],
-  "refined_by": "D85",
-  "later_change": "no store query without LIMIT (D85)"
+  "refined_by": "D85, D95",
+  "later_change": "no store query without LIMIT (D85); format, lint and UI tests on the finish line (D95)"
  },
  {
   "id": "Q6",
@@ -1899,7 +1909,9 @@
   "affects": [
    "tests",
    "data"
-  ]
+  ],
+  "refined_by": "D93, D94",
+  "later_change": "REUSE.md row per own infrastructure component (D93); named libraries for SPARQL, keys and tracing (D94)"
  },
  {
   "id": "E7",
@@ -1937,7 +1949,9 @@
    "api",
    "data",
    "tests"
-  ]
+  ],
+  "refined_by": "D92",
+  "later_change": "validation outside the retry loop (D92)"
  },
  {
   "id": "D83",
@@ -1956,7 +1970,9 @@
   "affects": [
    "data",
    "tests"
-  ]
+  ],
+  "refined_by": "D98",
+  "later_change": "Keycloak port on 127.0.0.1 only (D98)"
  },
  {
   "id": "D84",
@@ -2012,7 +2028,9 @@
   "affects": [
    "api",
    "data"
-  ]
+  ],
+  "refined_by": "D96",
+  "later_change": "JSON log lines with operationId, vocabularyName and version (D96)"
  },
  {
   "id": "D87",
@@ -2031,6 +2049,235 @@
   "affects": [
    "data",
    "api"
+  ],
+  "refined_by": "D93, D97",
+  "later_change": "request validation tied to openapi-decided.yaml (D93); LDM uses the CDM in input/cdm (D97)"
+ },
+ {
+  "id": "D88",
+  "topic": "Realm key refetch",
+  "closes": [
+   "R-094"
+  ],
+  "decision": "The service fetches the realm keys again at most once per 10 s. A token whose key id is not cached gets one fetch when the last fetch is older than 10 s. Inside the 10 s window, or when the fetched keys still lack the key id, the token gets 401 (invalid token, D17). 503 stays for the case where the keys cannot be fetched at all (D44).",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "Cooldown protects the identity provider from tokens with made-up key ids (OWT-A10); the build of run 8 already did this.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D89",
+  "topic": "Restore and later writes",
+  "closes": [
+   "R-095"
+  ],
+  "decision": "A restore brings the store back to the backup; writes made after that backup are lost, which is within the recovery point of Q3 (24 h). Before a restore the backend is stopped (or scaled to 0), so no write lands during it; it is started again after the count check. The build delivers the backup script, an example schedule (cron line or Kubernetes CronJob) and a configurable copy target outside the host; installing the schedule is an operations task, documented in docs/.",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "Simplest procedure that meets Q3; merging later changes is not worth its cost at this load.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "data",
+   "tests"
+  ]
+ },
+ {
+  "id": "D90",
+  "topic": "Validation report semantics",
+  "closes": [
+   "R-096"
+  ],
+  "decision": "The validation report is a region (section with aria-label) named 'Validation report' that holds the list of issues. The region has no role of its own beyond region. Inside it, a first line with role alert says how many errors were found ('<n> errors found'), so screen readers announce it. Warnings use a region named 'Validation warnings' with a status line (role status). Other error messages keep role alert (D75).",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "A region can contain an alert; both parts of D75 then hold. Came from the one failing scenario of run 8.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D91",
+  "topic": "Integer range",
+  "closes": [
+   "R-097"
+  ],
+  "decision": "Every integer in a path, query or JSON body is a 32-bit signed integer: version numbers, page and pageSize from 1 to 2147483647 unless a decision sets a lower maximum (pageSize 100, D22). A value outside the range, or one that is not a whole number, gives 400 with the same problem body as other invalid values (D49, D22). The decided contract states format int32 and the maximum.",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "No project NFR needs more; int32 is the common default of the stack; one rule for path, query and body.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D92",
+  "topic": "Concurrent uploads",
+  "closes": [
+   "R-098"
+  ],
+  "decision": "One backend instance handles at most 4 create or new-version requests at the same time. A fifth gets 503 as D44 with Retry-After 5 and detail 'Too many uploads in progress. Retry later.'. Content validation (D9) and the reference check (D12) run once per request, before the conditional write; a retry of D82 only reads the latest state again and repeats the condition and the update. The heap must hold 4 uploads at the 6 MB request limit (D76) with their parsed form.",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "Bounds memory at the design load of Q4 (NFR-05); 4 is well above 1 write per second (Q1).",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "api",
+   "data",
+   "tests"
+  ]
+ },
+ {
+  "id": "D93",
+  "topic": "Request validation against the contract",
+  "closes": [
+   "R-099"
+  ],
+  "decision": "The build validates requests either with a maintained OpenAPI request validator that loads openapi-decided.yaml, or with its own code plus an own test that compares that code with openapi-decided.yaml (every operation, parameter, limit and pattern). The build chooses and says which in REUSE.md. Every own component of more than about 100 lines that does infrastructure work (validation, parsing, caching, query building, HTTP plumbing) has a row in REUSE.md with the product it could have reused and why it did not.",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "MACH-03 (contract matches behaviour), REUSE-02 and REUSE-07; leaves the build a free but checked choice.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D94",
+  "topic": "Library choices",
+  "closes": [
+   "R-100"
+  ],
+  "decision": "Unless REUSE.md says why not: SPARQL queries and updates are built with Jena (ParameterizedSparqlString, or the query and update builders), never by joining strings with values; realm keys are fetched and cached with Nimbus JWKSourceBuilder or the Spring Security resource server; W3C trace context and the correlation id run through Micrometer Tracing (D86).",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "REUSE-01 and REUSE-02; the run 8 design review found all three built by hand.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "api",
+   "data"
+  ]
+ },
+ {
+  "id": "D95",
+  "topic": "Lint, format and UI tests",
+  "closes": [
+   "R-101"
+  ],
+  "decision": "The finish line includes: mvn verify runs a configured formatter check (Spotless with a fixed style); the UI build runs ESLint and a Prettier check and fails on errors; each UI view has at least one component test (Vitest or similar) in ui/tests that runs in the UI build. A pipeline file is not required (no CI in the factory).",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "OPS-37 (MUST), CODE-10, CODE-54, CODE-55; cheap gates that a disposable build can still meet.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "tests"
+  ]
+ },
+ {
+  "id": "D96",
+  "topic": "Structured log fields",
+  "closes": [
+   "R-102"
+  ],
+  "decision": "Logs are JSON lines. Every line carries traceId and correlationId (D86) and operationId from the MDC; a line about a vocabulary also carries vocabularyName and, when known, version, as separate fields. No email or token in logs (D80).",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "CODE-20, CODE-30; fields make the logs searchable without parsing text.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "api",
+   "data"
+  ]
+ },
+ {
+  "id": "D97",
+  "topic": "CDM, licence and glossary in the build",
+  "closes": [
+   "R-103"
+  ],
+  "decision": "The CDM files named in sources.yaml are part of the build input (input/cdm/, from run 9 on). The logical model of D87 uses their class names where the glossary does not decide otherwise and lists each difference. The build ships a LICENSE file with the EUPL 1.2 text and a docs/glossary.md that copies or links the decided glossary.",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "DATA rules and API-01 need the CDM to be judged; ARCH-08 and DDD-03; the engine now copies the CDM into the run input.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "data"
+  ]
+ },
+ {
+  "id": "D98",
+  "topic": "Local stack hardening",
+  "closes": [
+   "R-104"
+  ],
+  "decision": "The local stack may run Keycloak in dev mode, but publishes its port on 127.0.0.1 only. The management port of the backend (D67) is on an internal network of the stack and is not on the front network; step 70 reads metrics through the stack's own scripts. Container CPU and memory limits are variables in the compose file with the current values as defaults.",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "OWT-A02 and ARCH-14; keeps the stack easy to run on a laptop.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "tests",
+   "data"
+  ]
+ },
+ {
+  "id": "D99",
+  "topic": "Load test shape",
+  "closes": [
+   "R-105"
+  ],
+  "decision": "The seed of Q4 is 1000 vocabularies with 20 versions each (20 000 versions), files of about 10 KB. Q1 throughput is an offered rate: the load test sends 20 reads per second and 1 write per second (files up to 1 MB) for 5 minutes; met when the achieved rate is at least 95 % of the offered rate with no errors and the p95 targets hold. The 5 MB writes of D71 run as a separate test, not in the throughput mix.",
+  "options": [
+   "As above",
+   "Leave to the build"
+  ],
+  "basis": "Makes Q1 and Q4 measurable the same way in every run; run 7 and run 8 used different seeds and mixes.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "tests",
+   "data"
   ]
  }
 ]

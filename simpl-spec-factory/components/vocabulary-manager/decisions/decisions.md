@@ -243,6 +243,46 @@ Earlier decisions changed by these:
 - D79: refined by D87, build delivers openapi-decided.yaml.
 - D2: refined by D87, LDM traced to the CDM.
 
+## Feedback from run 8 (added 19 Nov 2026)
+
+Run 8 raised 12 owner questions (R-094 to R-105, report section 6). All 12 are decided here. The run 7 questions that are still open (R-066 to R-086) keep the build's own choice as default, except R-083, which D99 settles.
+
+| Id | Topic | Decision | Status | Closes |
+|---|---|---|---|---|
+| D88 | Realm key refetch | The service fetches the realm keys again at most once per 10 s. A token whose key id is not cached gets one fetch when the last fetch is older than 10 s. Inside the 10 s window, or when the fetched keys still lack the key id, the token gets 401 (invalid token, D17). 503 stays for the case where the keys cannot be fetched at all (D44). | provisional | R-094 |
+| D89 | Restore and later writes | A restore brings the store back to the backup; writes made after that backup are lost, which is within the recovery point of Q3 (24 h). Before a restore the backend is stopped (or scaled to 0), so no write lands during it; it is started again after the count check. The build delivers the backup script, an example schedule (cron line or Kubernetes CronJob) and a configurable copy target outside the host; installing the schedule is an operations task, documented in docs/. | provisional | R-095 |
+| D90 | Validation report semantics | The validation report is a region (section with aria-label) named 'Validation report' that holds the list of issues. The region has no role of its own beyond region. Inside it, a first line with role alert says how many errors were found ('<n> errors found'), so screen readers announce it. Warnings use a region named 'Validation warnings' with a status line (role status). Other error messages keep role alert (D75). | provisional | R-096 |
+| D91 | Integer range | Every integer in a path, query or JSON body is a 32-bit signed integer: version numbers, page and pageSize from 1 to 2147483647 unless a decision sets a lower maximum (pageSize 100, D22). A value outside the range, or one that is not a whole number, gives 400 with the same problem body as other invalid values (D49, D22). The decided contract states format int32 and the maximum. | provisional | R-097 |
+| D92 | Concurrent uploads | One backend instance handles at most 4 create or new-version requests at the same time. A fifth gets 503 as D44 with Retry-After 5 and detail 'Too many uploads in progress. Retry later.'. Content validation (D9) and the reference check (D12) run once per request, before the conditional write; a retry of D82 only reads the latest state again and repeats the condition and the update. The heap must hold 4 uploads at the 6 MB request limit (D76) with their parsed form. | provisional | R-098 |
+| D93 | Request validation against the contract | The build validates requests either with a maintained OpenAPI request validator that loads openapi-decided.yaml, or with its own code plus an own test that compares that code with openapi-decided.yaml (every operation, parameter, limit and pattern). The build chooses and says which in REUSE.md. Every own component of more than about 100 lines that does infrastructure work (validation, parsing, caching, query building, HTTP plumbing) has a row in REUSE.md with the product it could have reused and why it did not. | provisional | R-099 |
+| D94 | Library choices | Unless REUSE.md says why not: SPARQL queries and updates are built with Jena (ParameterizedSparqlString, or the query and update builders), never by joining strings with values; realm keys are fetched and cached with Nimbus JWKSourceBuilder or the Spring Security resource server; W3C trace context and the correlation id run through Micrometer Tracing (D86). | provisional | R-100 |
+| D95 | Lint, format and UI tests | The finish line includes: mvn verify runs a configured formatter check (Spotless with a fixed style); the UI build runs ESLint and a Prettier check and fails on errors; each UI view has at least one component test (Vitest or similar) in ui/tests that runs in the UI build. A pipeline file is not required (no CI in the factory). | provisional | R-101 |
+| D96 | Structured log fields | Logs are JSON lines. Every line carries traceId and correlationId (D86) and operationId from the MDC; a line about a vocabulary also carries vocabularyName and, when known, version, as separate fields. No email or token in logs (D80). | provisional | R-102 |
+| D97 | CDM, licence and glossary in the build | The CDM files named in sources.yaml are part of the build input (input/cdm/, from run 9 on). The logical model of D87 uses their class names where the glossary does not decide otherwise and lists each difference. The build ships a LICENSE file with the EUPL 1.2 text and a docs/glossary.md that copies or links the decided glossary. | provisional | R-103 |
+| D98 | Local stack hardening | The local stack may run Keycloak in dev mode, but publishes its port on 127.0.0.1 only. The management port of the backend (D67) is on an internal network of the stack and is not on the front network; step 70 reads metrics through the stack's own scripts. Container CPU and memory limits are variables in the compose file with the current values as defaults. | provisional | R-104 |
+| D99 | Load test shape | The seed of Q4 is 1000 vocabularies with 20 versions each (20 000 versions), files of about 10 KB. Q1 throughput is an offered rate: the load test sends 20 reads per second and 1 write per second (files up to 1 MB) for 5 minutes; met when the achieved rate is at least 95 % of the offered rate with no errors and the p95 targets hold. The 5 MB writes of D71 run as a separate test, not in the throughput mix. | provisional | R-105 |
+
+Earlier decisions changed by these:
+
+- D44: refined by D88, key refetch at most once per 10 s; unknown key id inside the window is 401.
+- Q3: refined by D89, writes after the backup are lost within the RPO; backend stopped during a restore; schedule and copy target delivered as examples.
+- D75: refined by D90, report is a region with an alert line inside.
+- D79: refined by D91, format int32 and maximum on every integer.
+- D49: refined by D91, range 1 to 2147483647.
+- D82: refined by D92, validation outside the retry loop.
+- Q2: refined by D92, at most 4 uploads in parallel per instance.
+- D87: refined by D93, request validation tied to openapi-decided.yaml.
+- E6: refined by D93, REUSE.md row per own infrastructure component.
+- E6: refined by D94, named libraries for SPARQL, keys and tracing.
+- Q5: refined by D95, format, lint and UI tests on the finish line.
+- D86: refined by D96, JSON log lines with operationId, vocabularyName and version.
+- D87: refined by D97, LDM uses the CDM in input/cdm.
+- D2: refined by D97, CDM part of the build input.
+- D67: refined by D98, management port on an internal network only.
+- D83: refined by D98, Keycloak port on 127.0.0.1 only.
+- Q1: refined by D99, throughput as offered rate, 5 MB writes measured apart.
+- Q4: refined by D99, seed 1000 by 20 versions.
+
 ## Environment choices
 
 | Id | Topic | Choice |
