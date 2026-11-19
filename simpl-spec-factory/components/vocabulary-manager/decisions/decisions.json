@@ -44,7 +44,9 @@
   "owner_question": "Approve the CDM with the changes in D3, D10, D25 to D28, or say which ones to drop.",
   "affects": [
    "data"
-  ]
+  ],
+  "refined_by": "D87",
+  "later_change": "LDM traced to the CDM (D87)"
  },
  {
   "id": "D3",
@@ -357,7 +359,9 @@
    "api",
    "ui",
    "tests"
-  ]
+  ],
+  "refined_by": "D84",
+  "later_change": "default deny, rule per operation (D84)"
  },
  {
   "id": "D17",
@@ -378,8 +382,8 @@
    "api",
    "tests"
   ],
-  "refined_by": "D67",
-  "later_change": "405 and firewall 400 come before 401 (D67)"
+  "refined_by": "D67, D84",
+  "later_change": "405 and firewall 400 come before 401 (D67); no handler without a rule (D84)"
  },
  {
   "id": "D18",
@@ -932,8 +936,8 @@
    "tests",
    "data"
   ],
-  "refined_by": "D71, D81",
-  "later_change": "lock wait at most 30 s (D71); one replica only (D81)"
+  "refined_by": "D71, D81, D82",
+  "later_change": "lock wait at most 30 s (D71); one replica only (D81); conditional store update instead of the in-process lock (D82)"
  },
  {
   "id": "D44",
@@ -1317,8 +1321,8 @@
    "ui",
    "api"
   ],
-  "refined_by": "E5",
-  "later_change": "audience mapper and one configured issuer (E5)"
+  "refined_by": "E5, E7",
+  "later_change": "audience mapper and one configured issuer (E5); second client and second realm for negative token tests (E7)"
  },
  {
   "id": "E2",
@@ -1350,8 +1354,8 @@
    "tests",
    "data"
   ],
-  "refined_by": "E4",
-  "later_change": "tests no longer reset the store; unique data per scenario (E4)"
+  "refined_by": "E4, D83",
+  "later_change": "tests no longer reset the store; unique data per scenario (E4); store with read and update users, internal network only (D83)"
  },
  {
   "id": "E4",
@@ -1490,7 +1494,9 @@
   "affects": [
    "api",
    "tests"
-  ]
+  ],
+  "refined_by": "D86",
+  "later_change": "metrics content and trace forwarding fixed (D86)"
  },
  {
   "id": "D68",
@@ -1728,7 +1734,9 @@
   "affects": [
    "api",
    "tests"
-  ]
+  ],
+  "refined_by": "D87",
+  "later_change": "build delivers openapi-decided.yaml (D87)"
  },
  {
   "id": "D80",
@@ -1760,11 +1768,13 @@
    "Store-side check now"
   ],
   "basis": "The design load (Q4) fits one instance.",
-  "status": "accepted risk",
+  "status": "withdrawn",
   "owner_question": "Confirm.",
   "affects": [
    "data"
-  ]
+  ],
+  "refined_by": "D82",
+  "later_change": "withdrawn by D82 (D82)"
  },
  {
   "id": "Q1",
@@ -1823,7 +1833,9 @@
   "affects": [
    "tests",
    "data"
-  ]
+  ],
+  "refined_by": "D82",
+  "later_change": "scale out allowed (D82)"
  },
  {
   "id": "Q5",
@@ -1839,7 +1851,9 @@
   "affects": [
    "tests",
    "data"
-  ]
+  ],
+  "refined_by": "D85",
+  "later_change": "no store query without LIMIT (D85)"
  },
  {
   "id": "Q6",
@@ -1869,7 +1883,9 @@
   "affects": [
    "tests",
    "data"
-  ]
+  ],
+  "refined_by": "E7",
+  "later_change": "tested through E7 (E7)"
  },
  {
   "id": "E6",
@@ -1883,6 +1899,138 @@
   "affects": [
    "tests",
    "data"
+  ]
+ },
+ {
+  "id": "E7",
+  "topic": "Test clients for token checks",
+  "closes": [
+   "R-087"
+  ],
+  "decision": "The realm 'simpl' has a second public client 'vocabulary-tests-noaud' without the audience mapper, and a second realm 'simpl-other' with client 'vocabulary-tests' (with the mapper) and the same three test users of E1. Both allow the password grant. A token from 'vocabulary-tests-noaud' gets 401 (wrong audience); a token from realm 'simpl-other' gets 401 (wrong issuer). The build profile gives their token URLs to the suite.",
+  "options": [
+   "Extra client and realm",
+   "Unit tests only"
+  ],
+  "basis": "E5 is security behaviour at the boundary, so the independent suite must be able to prove it.",
+  "status": "provisional",
+  "owner_question": "None (environment).",
+  "affects": [
+   "tests"
+  ]
+ },
+ {
+  "id": "D82",
+  "topic": "Concurrency through the store",
+  "closes": [
+   "R-088"
+  ],
+  "decision": "D43's outcomes stay, but the service holds no lock state. Each write to a vocabulary is a conditional store update: it succeeds only when the latest version number (or, for a status change, the status) is still the one the request read. When the condition fails the service reads again and retries, at most 5 times within the budget of D71; then 503 as D44. A create checks the case-insensitive name in the same update. So several backend instances may run on one store. D81 is withdrawn. The build proves it with its own test of two service instances on one store; the suite's D43 test stays.",
+  "options": [
+   "Store-side condition",
+   "Keep one instance"
+  ],
+  "basis": "ARCH-07 (MUST) asks for stateless instances; the store already runs one write at a time, so the condition costs little.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "api",
+   "data",
+   "tests"
+  ]
+ },
+ {
+  "id": "D83",
+  "topic": "Store access",
+  "closes": [
+   "R-089"
+  ],
+  "decision": "The store accepts no anonymous access. It has two users: a read user and an update user, with passwords from the environment (OpenBao in production, E6). The backend uses the read user for queries and the update user for writes. Admin endpoints are off, or need a third admin user that only the backup and restore scripts use. The store sits on an internal network of the deployment and publishes no port to the host; backup and restore reach it from inside that network.",
+  "options": [
+   "As above",
+   "Network isolation only"
+  ],
+  "basis": "Zero trust and defence in depth (reuse catalogue patterns, OWT-A02, OWT-A07); REUSE.md of run 7 claimed both and the store link had neither.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "data",
+   "tests"
+  ]
+ },
+ {
+  "id": "D84",
+  "topic": "Authorisation by default deny",
+  "closes": [
+   "R-090"
+  ],
+  "decision": "Every operation of the OpenAPI has an explicit role rule (D16). A request that matches no declared operation never reaches a handler: 401 without a token, 404 with one (D67), and it is never served by a handler that has no rule. The build fails at start, or in its own test, when a handler exists without a role rule. Nothing is allowed unless a rule allows it.",
+  "options": [
+   "Default deny",
+   "Rule per handler, fail open"
+  ],
+  "basis": "OWASP A01 (deny by default); the run 7 role gate let unlisted routes through.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "api",
+   "tests"
+  ]
+ },
+ {
+  "id": "D85",
+  "topic": "Bounded store queries",
+  "closes": [
+   "R-091"
+  ],
+  "decision": "Filtering, sorting and paging run in the store: every list query has ORDER BY, LIMIT and OFFSET, and the total comes from a COUNT query. No store query runs without a LIMIT; the highest LIMIT is 100 rows plus one, except where a decision fixes a bound (search: at most 100 references, D38; reference check: one query per upload, Q5). The version list of the details page uses the same paging (D35).",
+  "options": [
+   "In the store",
+   "In memory with a cap"
+  ],
+  "basis": "NFR-05 and the design load of Q4 (1000 vocabularies, 20 000 versions).",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "data"
+  ]
+ },
+ {
+  "id": "D86",
+  "topic": "Metrics and trace context",
+  "closes": [
+   "R-092"
+  ],
+  "decision": "Metrics in Prometheus format on the management port (D67) at /actuator/prometheus: per operation the request count, the error count by status and the duration. The service reads the W3C traceparent header and X-Correlation-Id (creating them when absent), returns X-Correlation-Id, writes both in every log line, and forwards both on its calls to the store and to the identity provider. No tracing backend is part of the build.",
+  "options": [
+   "As above",
+   "Logs only"
+  ],
+  "basis": "NFR-08, MSV-09 (MUST) and MSV-10; D67 already put metrics on the management port.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "api",
+   "data"
+  ]
+ },
+ {
+  "id": "D87",
+  "topic": "Model and contract deliverables",
+  "closes": [
+   "R-093"
+  ],
+  "decision": "The build delivers in docs/: a logical data model (entities, attributes, identifiers and relations, as tables and one diagram) traced to the CDM of D2; a physical model for the RDF store as SHACL shapes of each named graph, which the build's own tests run against stored data; and openapi-decided.yaml, the published OpenAPI with every change of D79 applied. The files in specs/api stay unchanged (D39). Step 70 keeps fuzzing the published contract.",
+  "options": [
+   "As above",
+   "Prose only"
+  ],
+  "basis": "DATA-02, DATA-03 and DATA-22 to DATA-25 ask for models of persisted data; MACH-03 and DATA-27 for a contract that matches the behaviour.",
+  "status": "provisional",
+  "owner_question": "Confirm.",
+  "affects": [
+   "data",
+   "api"
   ]
  }
 ]

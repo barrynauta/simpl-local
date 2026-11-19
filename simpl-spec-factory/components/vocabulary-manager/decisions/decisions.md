@@ -215,6 +215,34 @@ Earlier decisions changed by these:
 - D39: refined by D79, full list of contract changes in D79.
 - D27: refined by D80, logs use the token subject.
 
+## Feedback from run 7 (added 19 Nov 2026)
+
+Run 7 raised 28 owner questions (R-066 to R-093, report section 6). The seven with weight, from the design review, are findings R-087 to R-093 and are decided here. The other 21 are small wire details; until they are decided the build's own choice, as written in run 7's report, is the default. D81 is withdrawn by D82.
+
+| Id | Topic | Decision | Status | Closes |
+|---|---|---|---|---|
+| D82 | Concurrency through the store | D43's outcomes stay, but the service holds no lock state. Each write to a vocabulary is a conditional store update: it succeeds only when the latest version number (or, for a status change, the status) is still the one the request read. When the condition fails the service reads again and retries, at most 5 times within the budget of D71; then 503 as D44. A create checks the case-insensitive name in the same update. So several backend instances may run on one store. D81 is withdrawn. The build proves it with its own test of two service instances on one store; the suite's D43 test stays. | provisional | R-088 |
+| D83 | Store access | The store accepts no anonymous access. It has two users: a read user and an update user, with passwords from the environment (OpenBao in production, E6). The backend uses the read user for queries and the update user for writes. Admin endpoints are off, or need a third admin user that only the backup and restore scripts use. The store sits on an internal network of the deployment and publishes no port to the host; backup and restore reach it from inside that network. | provisional | R-089 |
+| D84 | Authorisation by default deny | Every operation of the OpenAPI has an explicit role rule (D16). A request that matches no declared operation never reaches a handler: 401 without a token, 404 with one (D67), and it is never served by a handler that has no rule. The build fails at start, or in its own test, when a handler exists without a role rule. Nothing is allowed unless a rule allows it. | provisional | R-090 |
+| D85 | Bounded store queries | Filtering, sorting and paging run in the store: every list query has ORDER BY, LIMIT and OFFSET, and the total comes from a COUNT query. No store query runs without a LIMIT; the highest LIMIT is 100 rows plus one, except where a decision fixes a bound (search: at most 100 references, D38; reference check: one query per upload, Q5). The version list of the details page uses the same paging (D35). | provisional | R-091 |
+| D86 | Metrics and trace context | Metrics in Prometheus format on the management port (D67) at /actuator/prometheus: per operation the request count, the error count by status and the duration. The service reads the W3C traceparent header and X-Correlation-Id (creating them when absent), returns X-Correlation-Id, writes both in every log line, and forwards both on its calls to the store and to the identity provider. No tracing backend is part of the build. | provisional | R-092 |
+| D87 | Model and contract deliverables | The build delivers in docs/: a logical data model (entities, attributes, identifiers and relations, as tables and one diagram) traced to the CDM of D2; a physical model for the RDF store as SHACL shapes of each named graph, which the build's own tests run against stored data; and openapi-decided.yaml, the published OpenAPI with every change of D79 applied. The files in specs/api stay unchanged (D39). Step 70 keeps fuzzing the published contract. | provisional | R-093 |
+
+Earlier decisions changed by these:
+
+- E1: refined by E7, second client and second realm for negative token tests.
+- E5: refined by E7, tested through E7.
+- D43: refined by D82, conditional store update instead of the in-process lock.
+- D81: refined by D82, withdrawn by D82.
+- Q4: refined by D82, scale out allowed.
+- E3: refined by D83, store with read and update users, internal network only.
+- D16: refined by D84, default deny, rule per operation.
+- D17: refined by D84, no handler without a rule.
+- Q5: refined by D85, no store query without LIMIT.
+- D67: refined by D86, metrics content and trace forwarding fixed.
+- D79: refined by D87, build delivers openapi-decided.yaml.
+- D2: refined by D87, LDM traced to the CDM.
+
 ## Environment choices
 
 | Id | Topic | Choice |
@@ -224,6 +252,7 @@ Earlier decisions changed by these:
 | E3 | Store and stubs | Apache Jena Fuseki, dataset 'vocabulary', as the store (SIMPL-18170 note 'same persistence layer as Schema Management - Fuseki DB'). Tests reset the dataset before each test. No external services are called: external vocabularies are never fetched from the internet, only registered copies are used. UI tests may stub the API for error cases (D24). |
 | E5 | Tokens: audience and issuer | Tokens must carry the audience 'vocabulary-manager-be'; Keycloak adds it with an audience mapper on the clients that call the API (vocabulary-manager-ui and the test client). Tokens without it get 401. The accepted issuer is one configured URL (ISSUER_URI, default http://localhost:<KEYCLOAK_PORT>/realms/simpl); other issuers get 401. |
 | E6 | Reuse choices | From guidelines/reuse-catalogue.yaml: identity provider Keycloak (E1); RDF store Apache Jena Fuseki (E3); in production the Tier 1 gateway (Spring Cloud Gateway) does authorisation first, the build checks tokens itself (D17); secrets from environment variables locally, OpenBao in production; UI on the stack of participant-fe-components (Vue 3, PrimeVue unstyled, TailwindCSS), built here because the library is not available to the factory. Not needed: relational store, messaging (pull only, D45), object storage, connector, http-client (no outgoing calls except the realm keys). |
+| E7 | Test clients for token checks | The realm 'simpl' has a second public client 'vocabulary-tests-noaud' without the audience mapper, and a second realm 'simpl-other' with client 'vocabulary-tests' (with the mapper) and the same three test users of E1. Both allow the password grant. A token from 'vocabulary-tests-noaud' gets 401 (wrong audience); a token from realm 'simpl-other' gets 401 (wrong issuer). The build profile gives their token URLs to the suite. |
 
 ## Questions for the spec owners, by impact
 
