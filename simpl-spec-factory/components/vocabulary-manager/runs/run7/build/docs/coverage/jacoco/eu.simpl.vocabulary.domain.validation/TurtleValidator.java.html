@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TurtleValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.domain.validation</a> &gt; <span class="el_source">TurtleValidator.java</span></div><h1>TurtleValidator.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.domain.validation;
+
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RiotException;
+import org.apache.jena.riot.RiotParseException;
+import org.apache.jena.riot.system.ErrorHandler;
+import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFLib;
+import org.apache.jena.riot.system.StreamRDFWrapper;
+import org.apache.jena.sparql.graph.GraphFactory;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.SKOS;
+
+/**
+ * Syntax and semantic validation of uploaded Turtle (D9, D53, D57, D65). Parsing uses Apache Jena RIOT
+ * (REUSE-02); the semantic rules S1 to S6 run over the parsed graph. Rule S7 needs the store and is in
+ * {@link ReferenceAnalyzer}.
+ */
+<span class="fc" id="L34">public final class TurtleValidator {</span>
+
+    public static final String SYNTAX_DETAIL = &quot;Encountered invalid Turtle syntax&quot;;
+    public static final String S1_DETAIL = &quot;Literal value for object property&quot;;
+    public static final String S2_DETAIL = &quot;Resource value for datatype property&quot;;
+    public static final String S3_DETAIL = &quot;Property declared as both object and datatype property&quot;;
+    public static final String S4_DETAIL = &quot;Duplicate preferred label for the same language&quot;;
+    public static final String S5_DETAIL = &quot;Resource is an instance of disjoint classes&quot;;
+    public static final String S6_DETAIL = &quot;Vocabulary contains no statements&quot;;
+
+    /**
+     * Syntax step: parses the bytes as Turtle (RDF 1.1).
+     *
+     * @param bytes the uploaded content
+     * @param baseIri the base for relative IRIs (D57)
+     * @return the parsed content
+     * @throws SyntaxError with the first parse error
+     */
+    public ParsedContent parse(byte[] bytes, String baseIri) throws SyntaxError {
+<span class="fc" id="L53">        Graph graph = GraphFactory.createDefaultGraph();</span>
+<span class="fc" id="L54">        List&lt;PrefixDeclaration&gt; prefixes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L55">        StreamRDF sink = new StreamRDFWrapper(StreamRDFLib.graph(graph)) {</span>
+            @Override
+            public void prefix(String prefix, String iri) {
+<span class="fc" id="L58">                prefixes.add(new PrefixDeclaration(prefix, iri));</span>
+<span class="fc" id="L59">                super.prefix(prefix, iri);</span>
+<span class="fc" id="L60">            }</span>
+        };
+        try {
+<span class="fc" id="L63">            RDFParser.create()</span>
+<span class="fc" id="L64">                    .source(new ByteArrayInputStream(bytes))</span>
+<span class="fc" id="L65">                    .lang(Lang.TURTLE)</span>
+<span class="fc" id="L66">                    .base(baseIri)</span>
+<span class="fc" id="L67">                    .strict(true)</span>
+<span class="fc" id="L68">                    .errorHandler(new FirstErrorHandler())</span>
+<span class="fc" id="L69">                    .parse(sink);</span>
+<span class="fc" id="L70">        } catch (RiotParseException e) {</span>
+<span class="fc" id="L71">            throw new SyntaxError(</span>
+<span class="fc" id="L72">                    new ValidationError(syntaxDetail(e.getOriginalMessage()), location(e.getLine(), e.getCol())));</span>
+<span class="nc" id="L73">        } catch (RiotException e) {</span>
+<span class="nc" id="L74">            throw new SyntaxError(new ValidationError(syntaxDetail(e.getMessage()), &quot;document&quot;));</span>
+<span class="fc" id="L75">        }</span>
+<span class="fc" id="L76">        return new ParsedContent(graph, List.copyOf(distinct(prefixes)));</span>
+    }
+
+    private static List&lt;PrefixDeclaration&gt; distinct(List&lt;PrefixDeclaration&gt; prefixes) {
+<span class="fc" id="L80">        return new ArrayList&lt;&gt;(new java.util.LinkedHashSet&lt;&gt;(prefixes));</span>
+    }
+
+    private static String syntaxDetail(String message) {
+<span class="pc bpc" id="L84" title="2 of 4 branches missed.">        if (message == null || message.isBlank()) {</span>
+<span class="nc" id="L85">            return SYNTAX_DETAIL + &quot;.&quot;;</span>
+        }
+<span class="fc" id="L87">        String clean = message.replaceAll(&quot;[\\r\\n\\t]+&quot;, &quot; &quot;)</span>
+<span class="fc" id="L88">                .replaceAll(&quot;[^\\x20-\\x7E]&quot;, &quot;?&quot;)</span>
+<span class="fc" id="L89">                .strip();</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (clean.length() &gt; 300) {</span>
+<span class="nc" id="L91">            clean = clean.substring(0, 300);</span>
+        }
+<span class="fc" id="L93">        return SYNTAX_DETAIL + &quot;: &quot; + clean;</span>
+    }
+
+    /**
+     * Location text of a parse error (D65): column only when the parser gives one (D60).
+     *
+     * @param line line number, negative when unknown
+     * @param column column number, negative when unknown
+     * @return the location
+     */
+    static String location(long line, long column) {
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (line &lt; 0) {</span>
+<span class="fc" id="L105">            return &quot;document&quot;;</span>
+        }
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        if (column &lt; 0) {</span>
+<span class="fc" id="L108">            return &quot;line &quot; + line;</span>
+        }
+<span class="fc" id="L110">        return &quot;line &quot; + line + &quot;, column &quot; + column;</span>
+    }
+
+    /**
+     * Semantic step: rules S1 to S6, all run, all errors returned (D9).
+     *
+     * @param content parsed content
+     * @return the errors, in rule order
+     */
+    public List&lt;ValidationError&gt; semanticErrors(ParsedContent content) {
+<span class="fc" id="L120">        Graph graph = content.graph();</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        if (graph.isEmpty()) {</span>
+<span class="fc" id="L122">            return List.of(new ValidationError(S6_DETAIL, &quot;document&quot;));</span>
+        }
+<span class="fc" id="L124">        Set&lt;Node&gt; objectProperties = declared(graph, OWL.ObjectProperty.asNode());</span>
+<span class="fc" id="L125">        Set&lt;Node&gt; datatypeProperties = declared(graph, OWL.DatatypeProperty.asNode());</span>
+<span class="fc" id="L126">        List&lt;ValidationError&gt; errors = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L127">        errors.addAll(statementErrors(graph, objectProperties, S1_DETAIL, true));</span>
+<span class="fc" id="L128">        errors.addAll(statementErrors(graph, datatypeProperties, S2_DETAIL, false));</span>
+<span class="fc" id="L129">        errors.addAll(doubleDeclarations(objectProperties, datatypeProperties));</span>
+<span class="fc" id="L130">        errors.addAll(duplicatePreferredLabels(graph));</span>
+<span class="fc" id="L131">        errors.addAll(disjointInstances(graph));</span>
+<span class="fc" id="L132">        return errors;</span>
+    }
+
+    private static Set&lt;Node&gt; declared(Graph graph, Node type) {
+<span class="fc" id="L136">        Set&lt;Node&gt; result = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L137">        graph.find(Node.ANY, RDF.Nodes.type, type).forEachRemaining(t -&gt; {</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">            if (t.getSubject().isURI()) {</span>
+<span class="fc" id="L139">                result.add(t.getSubject());</span>
+            }
+<span class="fc" id="L141">        });</span>
+<span class="fc" id="L142">        return result;</span>
+    }
+
+    /** S1 (literal objects of object properties) and S2 (resource objects of datatype properties). */
+    private static List&lt;ValidationError&gt; statementErrors(
+            Graph graph, Set&lt;Node&gt; properties, String detail, boolean literalIsError) {
+<span class="fc" id="L148">        Set&lt;String&gt; locations = new TreeSet&lt;&gt;();</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">        for (Node property : properties) {</span>
+<span class="fc" id="L150">            graph.find(Node.ANY, property, Node.ANY).forEachRemaining(t -&gt; {</span>
+<span class="fc" id="L151">                Node object = t.getObject();</span>
+<span class="pc bpc" id="L152" title="1 of 6 branches missed.">                boolean offending = literalIsError ? object.isLiteral() : (object.isURI() || object.isBlank());</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">                if (offending) {</span>
+<span class="fc" id="L154">                    locations.add(statement(t));</span>
+                }
+<span class="fc" id="L156">            });</span>
+<span class="fc" id="L157">        }</span>
+<span class="fc" id="L158">        return locations.stream().map(l -&gt; new ValidationError(detail, l)).toList();</span>
+    }
+
+    private static List&lt;ValidationError&gt; doubleDeclarations(Set&lt;Node&gt; objectProperties, Set&lt;Node&gt; datatypeProperties) {
+<span class="fc" id="L162">        Set&lt;String&gt; both = new TreeSet&lt;&gt;();</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        for (Node property : objectProperties) {</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">            if (datatypeProperties.contains(property)) {</span>
+<span class="fc" id="L165">                both.add(property.getURI());</span>
+            }
+<span class="fc" id="L167">        }</span>
+<span class="fc" id="L168">        return both.stream()</span>
+<span class="fc" id="L169">                .map(iri -&gt; new ValidationError(S3_DETAIL, &quot;resource '&quot; + iri + &quot;'&quot;))</span>
+<span class="fc" id="L170">                .toList();</span>
+    }
+
+    /** S4 with D53: an untagged label counts as the language 'none'. */
+    private static List&lt;ValidationError&gt; duplicatePreferredLabels(Graph graph) {
+<span class="fc" id="L175">        Map&lt;Node, Map&lt;String, List&lt;String&gt;&gt;&gt; bySubject = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L176">        graph.find(Node.ANY, SKOS.prefLabel.asNode(), Node.ANY).forEachRemaining(t -&gt; {</span>
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">            if (!t.getObject().isLiteral()) {</span>
+<span class="nc" id="L178">                return;</span>
+            }
+<span class="fc" id="L180">            String tag = t.getObject().getLiteralLanguage();</span>
+<span class="pc bpc" id="L181" title="1 of 4 branches missed.">            String key = tag == null || tag.isEmpty() ? &quot;&quot; : tag.toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L182">            bySubject</span>
+<span class="fc" id="L183">                    .computeIfAbsent(t.getSubject(), s -&gt; new HashMap&lt;&gt;())</span>
+<span class="fc" id="L184">                    .computeIfAbsent(key, k -&gt; new ArrayList&lt;&gt;())</span>
+<span class="pc bpc" id="L185" title="1 of 4 branches missed.">                    .add(tag == null || tag.isEmpty() ? &quot;none&quot; : tag);</span>
+<span class="fc" id="L186">        });</span>
+<span class="fc" id="L187">        Set&lt;String&gt; locations = new TreeSet&lt;&gt;();</span>
+<span class="fc" id="L188">        bySubject.forEach((subject, byLanguage) -&gt; byLanguage.forEach((key, tags) -&gt; {</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">            if (tags.size() &gt; 1) {</span>
+<span class="fc" id="L190">                locations.add(&quot;resource '&quot; + text(subject) + &quot;', language '&quot; + tags.get(0) + &quot;'&quot;);</span>
+            }
+<span class="fc" id="L192">        }));</span>
+<span class="fc" id="L193">        return locations.stream().map(l -&gt; new ValidationError(S4_DETAIL, l)).toList();</span>
+    }
+
+    private static List&lt;ValidationError&gt; disjointInstances(Graph graph) {
+<span class="fc" id="L197">        Map&lt;Node, Set&lt;Node&gt;&gt; disjoint = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L198">        graph.find(Node.ANY, OWL.disjointWith.asNode(), Node.ANY).forEachRemaining(t -&gt; {</span>
+<span class="fc" id="L199">            disjoint.computeIfAbsent(t.getSubject(), k -&gt; new HashSet&lt;&gt;()).add(t.getObject());</span>
+<span class="fc" id="L200">            disjoint.computeIfAbsent(t.getObject(), k -&gt; new HashSet&lt;&gt;()).add(t.getSubject());</span>
+<span class="fc" id="L201">        });</span>
+<span class="fc bfc" id="L202" title="All 2 branches covered.">        if (disjoint.isEmpty()) {</span>
+<span class="fc" id="L203">            return List.of();</span>
+        }
+<span class="fc" id="L205">        Map&lt;Node, Set&lt;Node&gt;&gt; typesBySubject = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L206">        graph.find(Node.ANY, RDF.Nodes.type, Node.ANY).forEachRemaining(t -&gt; {</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">            if (disjoint.containsKey(t.getObject())) {</span>
+<span class="fc" id="L208">                typesBySubject</span>
+<span class="fc" id="L209">                        .computeIfAbsent(t.getSubject(), k -&gt; new HashSet&lt;&gt;())</span>
+<span class="fc" id="L210">                        .add(t.getObject());</span>
+            }
+<span class="fc" id="L212">        });</span>
+<span class="fc" id="L213">        Set&lt;String&gt; locations = new TreeSet&lt;&gt;();</span>
+<span class="fc" id="L214">        typesBySubject.forEach((subject, types) -&gt; {</span>
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">            for (Node type : types) {</span>
+<span class="fc" id="L216">                Set&lt;Node&gt; others = disjoint.getOrDefault(type, Set.of());</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">                if (types.stream().anyMatch(others::contains)) {</span>
+<span class="fc" id="L218">                    locations.add(&quot;resource '&quot; + text(subject) + &quot;'&quot;);</span>
+<span class="fc" id="L219">                    return;</span>
+                }
+<span class="nc" id="L221">            }</span>
+<span class="nc" id="L222">        });</span>
+<span class="fc" id="L223">        return locations.stream().map(l -&gt; new ValidationError(S5_DETAIL, l)).toList();</span>
+    }
+
+    /**
+     * Subject IRIs of the graph, for the own-namespace rule of D12.
+     *
+     * @param graph the graph
+     * @return the distinct subject IRIs
+     */
+    public static Set&lt;String&gt; subjectIris(Graph graph) {
+<span class="fc" id="L233">        Set&lt;String&gt; subjects = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L234">        graph.find().forEachRemaining(t -&gt; {</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">            if (t.getSubject().isURI()) {</span>
+<span class="fc" id="L236">                subjects.add(t.getSubject().getURI());</span>
+            }
+<span class="fc" id="L238">        });</span>
+<span class="fc" id="L239">        return subjects;</span>
+    }
+
+    private static String statement(Triple t) {
+<span class="fc" id="L243">        return &quot;statement '&quot; + text(t.getSubject()) + &quot; &quot; + text(t.getPredicate()) + &quot; &quot; + text(t.getObject()) + &quot;'&quot;;</span>
+    }
+
+    private static String text(Node node) {
+<span class="fc bfc" id="L247" title="All 2 branches covered.">        if (node.isURI()) {</span>
+<span class="fc" id="L248">            return node.getURI();</span>
+        }
+<span class="fc bfc" id="L250" title="All 2 branches covered.">        if (node.isBlank()) {</span>
+<span class="fc" id="L251">            return &quot;_:&quot; + node.getBlankNodeLabel();</span>
+        }
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">        if (node.isLiteral()) {</span>
+<span class="fc" id="L254">            return node.getLiteralLexicalForm();</span>
+        }
+<span class="nc" id="L256">        return node.toString();</span>
+    }
+
+    /** Throws on the first error; ignores warnings (for example ill-formed literals). */
+    private static final class FirstErrorHandler implements ErrorHandler {
+
+        @Override
+        public void warning(String message, long line, long col) {
+            // Warnings never block (D9 checks syntax only).
+<span class="fc" id="L265">        }</span>
+
+        @Override
+        public void error(String message, long line, long col) {
+<span class="nc" id="L269">            throw new RiotParseException(message, line, col);</span>
+        }
+
+        @Override
+        public void fatal(String message, long line, long col) {
+<span class="fc" id="L274">            throw new RiotParseException(message, line, col);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

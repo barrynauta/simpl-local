@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestGateFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.api.filter</a> &gt; <span class="el_source">RequestGateFilter.java</span></div><h1>RequestGateFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.api.filter;
+
+import eu.simpl.vocabulary.api.RouteTable;
+import eu.simpl.vocabulary.api.RouteTable.Operation;
+import eu.simpl.vocabulary.api.problem.ApiException;
+import eu.simpl.vocabulary.api.problem.ProblemWriter;
+import eu.simpl.vocabulary.api.problem.Problems;
+import eu.simpl.vocabulary.config.AppProperties;
+import eu.simpl.vocabulary.security.Roles;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Checks that run after authentication and before the operation, in the decided order (D51, D63):
+ * 403 role, 406 Accept, 415 Content-Type, 413 declared size.
+ */
+public class RequestGateFilter extends OncePerRequestFilter {
+
+<span class="fc" id="L32">    private static final Logger LOG = LoggerFactory.getLogger(RequestGateFilter.class);</span>
+<span class="fc" id="L33">    private static final MediaType TURTLE = MediaType.parseMediaType(&quot;text/turtle&quot;);</span>
+
+    private final ProblemWriter problemWriter;
+    private final AppProperties.Limits limits;
+
+<span class="fc" id="L38">    public RequestGateFilter(ProblemWriter problemWriter, AppProperties.Limits limits) {</span>
+<span class="fc" id="L39">        this.problemWriter = problemWriter;</span>
+<span class="fc" id="L40">        this.limits = limits;</span>
+<span class="fc" id="L41">    }</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L46">        Object attribute = request.getAttribute(EntryFilter.OPERATION_ATTRIBUTE);</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (attribute instanceof Operation operation) {</span>
+<span class="fc" id="L48">            Optional&lt;ApiException&gt; rejection = check(request, operation);</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">            if (rejection.isPresent()) {</span>
+<span class="fc" id="L50">                problemWriter.write(response, rejection.get());</span>
+<span class="fc" id="L51">                return;</span>
+            }
+        }
+<span class="fc" id="L54">        chain.doFilter(request, response);</span>
+<span class="fc" id="L55">    }</span>
+
+    /**
+     * Applies the gate checks in order.
+     *
+     * @param request the request
+     * @param operation the matched operation
+     * @return the first failure, if any
+     */
+    Optional&lt;ApiException&gt; check(HttpServletRequest request, Operation operation) {
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (!hasAccess(operation.access())) {</span>
+<span class="fc" id="L66">            LOG.warn(&quot;Access denied: {} {} for user {}&quot;, request.getMethod(), request.getRequestURI(), Roles.userId());</span>
+<span class="fc" id="L67">            return Optional.of(Problems.forbidden());</span>
+        }
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (!acceptable(Collections.list(request.getHeaders(&quot;Accept&quot;)), operation.response())) {</span>
+<span class="fc" id="L70">            return Optional.of(Problems.notAcceptable());</span>
+        }
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if (!supportedContentType(request.getContentType(), operation.body())) {</span>
+<span class="fc" id="L73">            return Optional.of(Problems.unsupportedMediaType());</span>
+        }
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (tooLarge(request.getContentLengthLong(), operation.body())) {</span>
+<span class="fc" id="L76">            return Optional.of(Problems.payloadTooLarge());</span>
+        }
+<span class="fc" id="L78">        return Optional.empty();</span>
+    }
+
+    private static boolean hasAccess(RouteTable.Access access) {
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (access == RouteTable.Access.PUBLIC) {</span>
+<span class="fc" id="L83">            return true;</span>
+        }
+<span class="fc" id="L85">        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();</span>
+<span class="pc bpc" id="L86" title="2 of 4 branches missed.">        if (authentication == null || !authentication.isAuthenticated()) {</span>
+<span class="nc" id="L87">            return false;</span>
+        }
+<span class="fc" id="L89">        boolean admin = Roles.has(authentication, Roles.ADMIN);</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (access == RouteTable.Access.ADMIN) {</span>
+<span class="fc" id="L91">            return admin;</span>
+        }
+<span class="pc bpc" id="L93" title="1 of 4 branches missed.">        return admin || Roles.has(authentication, Roles.VIEWER);</span>
+    }
+
+    /**
+     * Applies the Accept rule of D63.
+     *
+     * @param acceptHeaders all Accept header values
+     * @param kind response kind of the operation
+     * @return true when the response can be served
+     */
+    static boolean acceptable(List&lt;String&gt; acceptHeaders, RouteTable.ResponseKind kind) {
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (acceptHeaders.isEmpty()) {</span>
+<span class="fc" id="L105">            return true;</span>
+        }
+        List&lt;MediaType&gt; ranges;
+        try {
+<span class="fc" id="L109">            ranges = MediaType.parseMediaTypes(acceptHeaders);</span>
+<span class="fc" id="L110">        } catch (InvalidMediaTypeException e) {</span>
+<span class="fc" id="L111">            return false;</span>
+<span class="fc" id="L112">        }</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        if (ranges.isEmpty()) {</span>
+<span class="fc" id="L114">            return true;</span>
+        }
+<span class="fc bfc" id="L116" title="All 2 branches covered.">        for (MediaType range : ranges) {</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">            if (range.getQualityValue() &lt;= 0.0) {</span>
+<span class="fc" id="L118">                continue;</span>
+            }
+<span class="pc bpc" id="L120" title="1 of 4 branches missed.">            if (range.isWildcardType() &amp;&amp; range.isWildcardSubtype()) {</span>
+<span class="fc" id="L121">                return true;</span>
+            }
+<span class="fc bfc" id="L123" title="All 2 branches covered.">            if (matchesKind(range, kind)) {</span>
+<span class="fc" id="L124">                return true;</span>
+            }
+<span class="fc" id="L126">        }</span>
+<span class="fc" id="L127">        return false;</span>
+    }
+
+    private static boolean matchesKind(MediaType range, RouteTable.ResponseKind kind) {
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        return switch (kind) {</span>
+<span class="fc" id="L132">            case TURTLE -&gt; sameType(range, TURTLE);</span>
+            case JSON, NONE -&gt;
+<span class="fc bfc" id="L134" title="All 4 branches covered.">                sameType(range, MediaType.APPLICATION_JSON) || sameType(range, MediaType.APPLICATION_PROBLEM_JSON);</span>
+        };
+    }
+
+    private static boolean sameType(MediaType a, MediaType b) {
+<span class="fc bfc" id="L139" title="All 4 branches covered.">        return a.getType().equalsIgnoreCase(b.getType()) &amp;&amp; a.getSubtype().equalsIgnoreCase(b.getSubtype());</span>
+    }
+
+    /**
+     * Applies the Content-Type rule of D15.
+     *
+     * @param contentType the Content-Type header
+     * @param kind body kind of the operation
+     * @return true when supported
+     */
+    static boolean supportedContentType(String contentType, RouteTable.BodyKind kind) {
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        if (kind == RouteTable.BodyKind.NONE) {</span>
+<span class="fc" id="L151">            return true;</span>
+        }
+<span class="pc bpc" id="L153" title="1 of 4 branches missed.">        if (contentType == null || contentType.isBlank()) {</span>
+<span class="fc" id="L154">            return false;</span>
+        }
+        MediaType type;
+        try {
+<span class="fc" id="L158">            type = MediaType.parseMediaType(contentType);</span>
+<span class="fc" id="L159">        } catch (InvalidMediaTypeException e) {</span>
+<span class="fc" id="L160">            return false;</span>
+<span class="fc" id="L161">        }</span>
+        MediaType expected =
+<span class="fc bfc" id="L163" title="All 2 branches covered.">                kind == RouteTable.BodyKind.JSON ? MediaType.APPLICATION_JSON : MediaType.MULTIPART_FORM_DATA;</span>
+<span class="fc" id="L164">        return sameType(type, expected);</span>
+    }
+
+    private boolean tooLarge(long contentLength, RouteTable.BodyKind kind) {
+<span class="fc bfc" id="L168" title="All 3 branches covered.">        return switch (kind) {</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">            case MULTIPART -&gt; contentLength &gt; limits.maxRequestBytes();</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">            case JSON -&gt; contentLength &gt; limits.maxJsonBytes();</span>
+<span class="fc" id="L171">            case NONE -&gt; false;</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

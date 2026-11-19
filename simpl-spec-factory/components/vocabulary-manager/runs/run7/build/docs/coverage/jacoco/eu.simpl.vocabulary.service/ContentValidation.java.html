@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContentValidation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.service</a> &gt; <span class="el_source">ContentValidation.java</span></div><h1>ContentValidation.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.service;
+
+import eu.simpl.vocabulary.api.problem.Issue;
+import eu.simpl.vocabulary.api.problem.Problems;
+import eu.simpl.vocabulary.api.request.MultipartForm;
+import eu.simpl.vocabulary.domain.validation.ParsedContent;
+import eu.simpl.vocabulary.domain.validation.ReferenceAnalyzer;
+import eu.simpl.vocabulary.domain.validation.SyntaxError;
+import eu.simpl.vocabulary.domain.validation.TurtleValidator;
+import eu.simpl.vocabulary.domain.validation.ValidationError;
+import eu.simpl.vocabulary.domain.validation.ValidationWarning;
+import eu.simpl.vocabulary.store.VocabularyStore;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * The two validation steps of D9 on vocabulary content: syntax, then semantic (S1 to S7), with the warnings
+ * of D10 to D12. Errors become one 400 validation report (D14); warnings are returned to the caller.
+ */
+public class ContentValidation {
+
+    private final TurtleValidator turtle;
+    private final ReferenceAnalyzer references;
+    private final VocabularyStore store;
+    private final String contentBaseUrl;
+
+<span class="fc" id="L27">    public ContentValidation(TurtleValidator turtle, VocabularyStore store, String contentBaseUrl) {</span>
+<span class="fc" id="L28">        this.turtle = turtle;</span>
+<span class="fc" id="L29">        this.store = store;</span>
+<span class="fc" id="L30">        this.contentBaseUrl = contentBaseUrl;</span>
+<span class="fc" id="L31">        this.references = new ReferenceAnalyzer(contentBaseUrl);</span>
+<span class="fc" id="L32">    }</span>
+
+    /**
+     * Validates internal vocabulary content.
+     *
+     * @param name vocabulary name
+     * @param version number the new version will get (base IRI, D57)
+     * @param bytes the content
+     * @return the warnings
+     * @throws eu.simpl.vocabulary.api.problem.ApiException 400 validation report when errors are found
+     */
+    public List&lt;ValidationWarning&gt; validateInternal(String name, long version, byte[] bytes) {
+<span class="fc" id="L44">        ParsedContent parsed = parseOrReject(bytes, baseIri(name, version));</span>
+<span class="fc" id="L45">        List&lt;ValidationError&gt; errors = new ArrayList&lt;&gt;(turtle.semanticErrors(parsed));</span>
+<span class="fc" id="L46">        List&lt;ReferenceAnalyzer.Reference&gt; classified =</span>
+<span class="fc" id="L47">                references.classify(parsed.prefixes(), name, TurtleValidator.subjectIris(parsed.graph()));</span>
+<span class="fc" id="L48">        List&lt;ValidationWarning&gt; warnings = List.of();</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (!classified.isEmpty()) {</span>
+<span class="fc" id="L50">            boolean needExternal = classified.stream().anyMatch(ReferenceAnalyzer.External.class::isInstance);</span>
+<span class="fc" id="L51">            ReferenceAnalyzer.ReferenceFacts facts =</span>
+<span class="fc" id="L52">                    store.referenceFacts(ReferenceAnalyzer.internalNames(classified), needExternal);</span>
+<span class="fc" id="L53">            ReferenceAnalyzer.Outcome outcome = references.check(classified, facts);</span>
+<span class="fc" id="L54">            errors.addAll(outcome.errors());</span>
+<span class="fc" id="L55">            warnings = outcome.warnings();</span>
+        }
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        if (!errors.isEmpty()) {</span>
+<span class="fc" id="L58">            throw report(errors);</span>
+        }
+<span class="fc" id="L60">        return warnings;</span>
+    }
+
+    /**
+     * Validates external vocabulary content: syntax only, and it must hold statements (D30, D70).
+     *
+     * @param name external vocabulary name
+     * @param bytes the content
+     */
+    public void validateExternal(String name, byte[] bytes) {
+<span class="fc" id="L70">        ParsedContent parsed = parseOrReject(bytes, contentBaseUrl + &quot;/external-vocabularies/&quot; + name);</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (parsed.graph().isEmpty()) {</span>
+<span class="fc" id="L72">            throw report(List.of(new ValidationError(TurtleValidator.S6_DETAIL, &quot;document&quot;)));</span>
+        }
+<span class="fc" id="L74">    }</span>
+
+    private ParsedContent parseOrReject(byte[] bytes, String baseIri) {
+        try {
+<span class="fc" id="L78">            return turtle.parse(bytes, baseIri);</span>
+<span class="fc" id="L79">        } catch (SyntaxError e) {</span>
+<span class="fc" id="L80">            throw report(List.of(e.error()));</span>
+        }
+    }
+
+    private String baseIri(String name, long version) {
+<span class="fc" id="L85">        return contentBaseUrl + &quot;/content/&quot; + name + &quot;/versions/&quot; + version;</span>
+    }
+
+    private static eu.simpl.vocabulary.api.problem.ApiException report(List&lt;ValidationError&gt; errors) {
+<span class="fc" id="L89">        return Problems.badRequest(errors.stream()</span>
+<span class="fc" id="L90">                .map(e -&gt; Issue.invalidInput(MultipartForm.FILE_FIELD, e.detail(), e.location()))</span>
+<span class="fc" id="L91">                .toList());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

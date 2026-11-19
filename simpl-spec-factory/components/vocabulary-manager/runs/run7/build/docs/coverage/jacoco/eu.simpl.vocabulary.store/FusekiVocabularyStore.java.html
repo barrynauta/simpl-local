@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FusekiVocabularyStore.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.store</a> &gt; <span class="el_source">FusekiVocabularyStore.java</span></div><h1>FusekiVocabularyStore.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.store;
+
+import eu.simpl.vocabulary.domain.model.ExternalVocabulary;
+import eu.simpl.vocabulary.domain.model.StoredContent;
+import eu.simpl.vocabulary.domain.model.Vocabulary;
+import eu.simpl.vocabulary.domain.model.VocabularyStatus;
+import eu.simpl.vocabulary.domain.model.VocabularyVersion;
+import eu.simpl.vocabulary.domain.validation.ReferenceAnalyzer.InternalFacts;
+import eu.simpl.vocabulary.domain.validation.ReferenceAnalyzer.ReferenceFacts;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.regex.Pattern;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.riot.out.NodeFmtLib;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
+
+/**
+ * {@link VocabularyStore} on Apache Jena Fuseki (E3), dataset 'vocabulary'. Metadata lives in one named
+ * graph; the bytes of each version and external vocabulary live base64-encoded in a named graph of their
+ * own, so they are returned exactly as uploaded (D29). Every value is written as an RDF term formatted by
+ * Jena (no string concatenation of input into SPARQL, OWT-A05).
+ */
+public class FusekiVocabularyStore implements VocabularyStore {
+
+    static final String MODEL = &quot;urn:simpl:vocabulary-manager:model#&quot;;
+    static final String META = &quot;&lt;urn:simpl:vocabulary-manager:graph:metadata&gt;&quot;;
+    private static final String PREFIX = &quot;PREFIX vm: &lt;&quot; + MODEL + &quot;&gt;\n&quot;;
+<span class="fc" id="L43">    private static final Pattern SAFE_NAME = Pattern.compile(&quot;^[A-Za-z0-9]{1,64}$&quot;);</span>
+<span class="fc" id="L44">    private static final JsonMapper JSON = JsonMapper.builder().build();</span>
+    static final int CHUNK_CHARS = 65536;
+
+    private final SparqlClient client;
+
+<span class="fc" id="L49">    public FusekiVocabularyStore(SparqlClient client) {</span>
+<span class="fc" id="L50">        this.client = client;</span>
+<span class="fc" id="L51">    }</span>
+
+    // ---------------------------------------------------------------- internal vocabularies
+
+    @Override
+    public Optional&lt;Vocabulary&gt; findVocabulary(String name) {
+<span class="fc" id="L57">        String query =</span>
+                PREFIX + &quot;SELECT ?name ?status ?createdBy ?creationDate ?lastUpdateDate ?latest ?description WHERE {&quot;
+<span class="fc" id="L59">                        + &quot; VALUES ?v { &quot; + vocabularyIri(name) + &quot; }&quot;</span>
+<span class="fc" id="L60">                        + vocabularyPattern() + &quot; }&quot;;</span>
+<span class="fc" id="L61">        return client.select(query).stream().findFirst().map(FusekiVocabularyStore::toVocabulary);</span>
+    }
+
+    @Override
+    public boolean vocabularyNameTaken(String name) {
+<span class="fc" id="L66">        String query = PREFIX + &quot;SELECT ?v WHERE { GRAPH &quot; + META + &quot; { ?v a vm:Vocabulary ; vm:nameKey &quot;</span>
+<span class="fc" id="L67">                + literal(name.toLowerCase(Locale.ROOT)) + &quot; } } LIMIT 1&quot;;</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        return !client.select(query).isEmpty();</span>
+    }
+
+    @Override
+    public List&lt;Vocabulary&gt; listVocabularies() {
+        String query =
+                PREFIX + &quot;SELECT ?name ?status ?createdBy ?creationDate ?lastUpdateDate ?latest ?description WHERE {&quot;
+<span class="fc" id="L75">                        + vocabularyPattern() + &quot; }&quot;;</span>
+<span class="fc" id="L76">        return client.select(query).stream()</span>
+<span class="fc" id="L77">                .map(FusekiVocabularyStore::toVocabulary)</span>
+<span class="fc" id="L78">                .toList();</span>
+    }
+
+    private static String vocabularyPattern() {
+<span class="fc" id="L82">        return &quot; GRAPH &quot; + META + &quot; { ?v a vm:Vocabulary ; vm:name ?name ; vm:status ?status ;&quot;</span>
+                + &quot; vm:createdBy ?createdBy ; vm:creationDate ?creationDate ; vm:lastUpdateDate ?lastUpdateDate ;&quot;
+                + &quot; vm:latestVersion ?latest . ?ver vm:vocabulary ?v ; vm:number ?latest ; vm:description ?description . }&quot;;
+    }
+
+    private static Vocabulary toVocabulary(QuerySolution row) {
+<span class="fc" id="L88">        return new Vocabulary(</span>
+<span class="fc" id="L89">                text(row, &quot;name&quot;),</span>
+<span class="fc" id="L90">                VocabularyStatus.valueOf(text(row, &quot;status&quot;)),</span>
+<span class="fc" id="L91">                text(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L92">                instant(row, &quot;creationDate&quot;),</span>
+<span class="fc" id="L93">                instant(row, &quot;lastUpdateDate&quot;),</span>
+<span class="fc" id="L94">                number(row, &quot;latest&quot;),</span>
+<span class="fc" id="L95">                text(row, &quot;description&quot;));</span>
+    }
+
+    @Override
+    public List&lt;VocabularyVersion&gt; listVersions(String name) {
+<span class="fc" id="L100">        String query = PREFIX</span>
+                + &quot;SELECT ?number ?description ?changelog ?status ?createdBy ?creationDate ?lastUpdateDate ?sha WHERE {&quot;
+<span class="fc" id="L102">                + &quot; VALUES ?v { &quot; + vocabularyIri(name) + &quot; }&quot; + versionPattern() + &quot; }&quot;;</span>
+<span class="fc" id="L103">        return client.select(query).stream().map(row -&gt; toVersion(name, row)).toList();</span>
+    }
+
+    @Override
+    public Optional&lt;VocabularyVersion&gt; findVersion(String name, long version) {
+<span class="fc" id="L108">        String query = PREFIX</span>
+                + &quot;SELECT ?number ?description ?changelog ?status ?createdBy ?creationDate ?lastUpdateDate ?sha WHERE {&quot;
+<span class="fc" id="L110">                + &quot; VALUES ?v { &quot; + vocabularyIri(name) + &quot; } VALUES ?number { &quot; + integer(version) + &quot; }&quot;</span>
+<span class="fc" id="L111">                + versionPattern() + &quot; }&quot;;</span>
+<span class="fc" id="L112">        return client.select(query).stream().findFirst().map(row -&gt; toVersion(name, row));</span>
+    }
+
+    private static String versionPattern() {
+<span class="fc" id="L116">        return &quot; GRAPH &quot; + META + &quot; { ?ver vm:vocabulary ?v ; vm:number ?number ; vm:description ?description ;&quot;</span>
+                + &quot; vm:changelog ?changelog ; vm:status ?status ; vm:createdBy ?createdBy ;&quot;
+                + &quot; vm:creationDate ?creationDate ; vm:lastUpdateDate ?lastUpdateDate ; vm:contentSha256 ?sha . }&quot;;
+    }
+
+    private static VocabularyVersion toVersion(String name, QuerySolution row) {
+<span class="fc" id="L122">        return new VocabularyVersion(</span>
+                name,
+<span class="fc" id="L124">                number(row, &quot;number&quot;),</span>
+<span class="fc" id="L125">                text(row, &quot;description&quot;),</span>
+<span class="fc" id="L126">                text(row, &quot;changelog&quot;),</span>
+<span class="fc" id="L127">                VocabularyStatus.valueOf(text(row, &quot;status&quot;)),</span>
+<span class="fc" id="L128">                text(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L129">                instant(row, &quot;creationDate&quot;),</span>
+<span class="fc" id="L130">                instant(row, &quot;lastUpdateDate&quot;),</span>
+<span class="fc" id="L131">                text(row, &quot;sha&quot;));</span>
+    }
+
+    @Override
+    public Optional&lt;StoredContent&gt; findContent(String name, long version) {
+<span class="fc" id="L136">        return readContent(contentIri(name, version)).map(bytes -&gt; new StoredContent(name, version, bytes));</span>
+    }
+
+    @Override
+    public Optional&lt;StoredContent&gt; findLatestContent(String name) {
+<span class="fc" id="L141">        Optional&lt;Vocabulary&gt; vocabulary = findVocabulary(name);</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">        if (vocabulary.isEmpty()) {</span>
+<span class="fc" id="L143">            return Optional.empty();</span>
+        }
+<span class="fc" id="L145">        long latest = vocabulary.get().latestVersion();</span>
+<span class="fc" id="L146">        return findContent(name, latest);</span>
+    }
+
+    @Override
+    public void createVocabulary(Vocabulary vocabulary, VocabularyVersion first, byte[] content) {
+<span class="fc" id="L151">        String v = vocabularyIri(vocabulary.name());</span>
+<span class="fc" id="L152">        StringBuilder update = new StringBuilder(PREFIX)</span>
+<span class="fc" id="L153">                .append(&quot;INSERT DATA { GRAPH &quot;)</span>
+<span class="fc" id="L154">                .append(META)</span>
+<span class="fc" id="L155">                .append(&quot; { &quot;);</span>
+<span class="fc" id="L156">        update.append(v)</span>
+<span class="fc" id="L157">                .append(&quot; a vm:Vocabulary ; vm:name &quot;)</span>
+<span class="fc" id="L158">                .append(literal(vocabulary.name()))</span>
+<span class="fc" id="L159">                .append(&quot; ; vm:nameKey &quot;)</span>
+<span class="fc" id="L160">                .append(literal(vocabulary.name().toLowerCase(Locale.ROOT)))</span>
+<span class="fc" id="L161">                .append(&quot; ; vm:status &quot;)</span>
+<span class="fc" id="L162">                .append(literal(vocabulary.status().name()))</span>
+<span class="fc" id="L163">                .append(&quot; ; vm:createdBy &quot;)</span>
+<span class="fc" id="L164">                .append(literal(vocabulary.createdBy()))</span>
+<span class="fc" id="L165">                .append(&quot; ; vm:creationDate &quot;)</span>
+<span class="fc" id="L166">                .append(dateTime(vocabulary.creationDate()))</span>
+<span class="fc" id="L167">                .append(&quot; ; vm:lastUpdateDate &quot;)</span>
+<span class="fc" id="L168">                .append(dateTime(vocabulary.lastUpdateDate()))</span>
+<span class="fc" id="L169">                .append(&quot; ; vm:latestVersion &quot;)</span>
+<span class="fc" id="L170">                .append(integer(first.version()))</span>
+<span class="fc" id="L171">                .append(&quot; . &quot;);</span>
+<span class="fc" id="L172">        appendVersionTriples(update, first);</span>
+<span class="fc" id="L173">        update.append(&quot; } &quot;);</span>
+<span class="fc" id="L174">        appendContentGraph(update, contentIri(first.name(), first.version()), content);</span>
+<span class="fc" id="L175">        update.append(&quot; }&quot;);</span>
+<span class="fc" id="L176">        client.update(update.toString());</span>
+<span class="fc" id="L177">    }</span>
+
+    @Override
+    public void createVersion(VocabularyVersion version, byte[] content) {
+<span class="fc" id="L181">        String v = vocabularyIri(version.name());</span>
+<span class="fc" id="L182">        String now = dateTime(version.creationDate());</span>
+<span class="fc" id="L183">        StringBuilder update = new StringBuilder(PREFIX);</span>
+<span class="fc" id="L184">        update.append(&quot;DELETE { GRAPH &quot;)</span>
+<span class="fc" id="L185">                .append(META)</span>
+<span class="fc" id="L186">                .append(&quot; { ?old vm:status \&quot;ACTIVE\&quot; ; vm:lastUpdateDate ?oldDate } }&quot;)</span>
+<span class="fc" id="L187">                .append(&quot; INSERT { GRAPH &quot;)</span>
+<span class="fc" id="L188">                .append(META)</span>
+<span class="fc" id="L189">                .append(&quot; { ?old vm:status \&quot;DEPRECATED\&quot; ; vm:lastUpdateDate &quot;)</span>
+<span class="fc" id="L190">                .append(now)</span>
+<span class="fc" id="L191">                .append(&quot; } } WHERE { GRAPH &quot;)</span>
+<span class="fc" id="L192">                .append(META)</span>
+<span class="fc" id="L193">                .append(&quot; { ?old vm:vocabulary &quot;)</span>
+<span class="fc" id="L194">                .append(v)</span>
+<span class="fc" id="L195">                .append(&quot; ; vm:status \&quot;ACTIVE\&quot; ; vm:lastUpdateDate ?oldDate } } ;\n&quot;);</span>
+<span class="fc" id="L196">        update.append(&quot;DELETE { GRAPH &quot;)</span>
+<span class="fc" id="L197">                .append(META)</span>
+<span class="fc" id="L198">                .append(&quot; { &quot;)</span>
+<span class="fc" id="L199">                .append(v)</span>
+<span class="fc" id="L200">                .append(&quot; vm:latestVersion ?latest ; vm:lastUpdateDate ?updated } } INSERT { GRAPH &quot;)</span>
+<span class="fc" id="L201">                .append(META)</span>
+<span class="fc" id="L202">                .append(&quot; { &quot;)</span>
+<span class="fc" id="L203">                .append(v)</span>
+<span class="fc" id="L204">                .append(&quot; vm:latestVersion &quot;)</span>
+<span class="fc" id="L205">                .append(integer(version.version()))</span>
+<span class="fc" id="L206">                .append(&quot; ; vm:lastUpdateDate &quot;)</span>
+<span class="fc" id="L207">                .append(now)</span>
+<span class="fc" id="L208">                .append(&quot; } } WHERE { GRAPH &quot;)</span>
+<span class="fc" id="L209">                .append(META)</span>
+<span class="fc" id="L210">                .append(&quot; { &quot;)</span>
+<span class="fc" id="L211">                .append(v)</span>
+<span class="fc" id="L212">                .append(&quot; vm:latestVersion ?latest ; vm:lastUpdateDate ?updated } } ;\n&quot;);</span>
+<span class="fc" id="L213">        update.append(&quot;INSERT DATA { GRAPH &quot;).append(META).append(&quot; { &quot;);</span>
+<span class="fc" id="L214">        appendVersionTriples(update, version);</span>
+<span class="fc" id="L215">        update.append(&quot; } &quot;);</span>
+<span class="fc" id="L216">        appendContentGraph(update, contentIri(version.name(), version.version()), content);</span>
+<span class="fc" id="L217">        update.append(&quot; }&quot;);</span>
+<span class="fc" id="L218">        client.update(update.toString());</span>
+<span class="fc" id="L219">    }</span>
+
+    private static void appendVersionTriples(StringBuilder update, VocabularyVersion version) {
+<span class="fc" id="L222">        update.append(versionIri(version.name(), version.version()))</span>
+<span class="fc" id="L223">                .append(&quot; a vm:VocabularyVersion ; vm:vocabulary &quot;)</span>
+<span class="fc" id="L224">                .append(vocabularyIri(version.name()))</span>
+<span class="fc" id="L225">                .append(&quot; ; vm:number &quot;)</span>
+<span class="fc" id="L226">                .append(integer(version.version()))</span>
+<span class="fc" id="L227">                .append(&quot; ; vm:description &quot;)</span>
+<span class="fc" id="L228">                .append(literal(version.description()))</span>
+<span class="fc" id="L229">                .append(&quot; ; vm:changelog &quot;)</span>
+<span class="fc" id="L230">                .append(literal(version.changelog()))</span>
+<span class="fc" id="L231">                .append(&quot; ; vm:status &quot;)</span>
+<span class="fc" id="L232">                .append(literal(version.status().name()))</span>
+<span class="fc" id="L233">                .append(&quot; ; vm:createdBy &quot;)</span>
+<span class="fc" id="L234">                .append(literal(version.createdBy()))</span>
+<span class="fc" id="L235">                .append(&quot; ; vm:creationDate &quot;)</span>
+<span class="fc" id="L236">                .append(dateTime(version.creationDate()))</span>
+<span class="fc" id="L237">                .append(&quot; ; vm:lastUpdateDate &quot;)</span>
+<span class="fc" id="L238">                .append(dateTime(version.lastUpdateDate()))</span>
+<span class="fc" id="L239">                .append(&quot; ; vm:contentSha256 &quot;)</span>
+<span class="fc" id="L240">                .append(literal(version.contentSha256()))</span>
+<span class="fc" id="L241">                .append(&quot; ; vm:content &quot;)</span>
+<span class="fc" id="L242">                .append(contentIri(version.name(), version.version()))</span>
+<span class="fc" id="L243">                .append(&quot; . &quot;);</span>
+<span class="fc" id="L244">    }</span>
+
+    /**
+     * Writes content as base64 in chunks of {@link #CHUNK_CHARS} characters: SPARQL parsers handle many
+     * short literals much faster than one literal of several megabytes (D71, Q1).
+     */
+    private static void appendContentGraph(StringBuilder update, String graph, byte[] content) {
+<span class="fc" id="L251">        String encoded = Base64.getEncoder().encodeToString(content);</span>
+<span class="fc" id="L252">        String graphIri = graph.substring(1, graph.length() - 1);</span>
+<span class="fc" id="L253">        update.append(&quot;GRAPH &quot;)</span>
+<span class="fc" id="L254">                .append(graph)</span>
+<span class="fc" id="L255">                .append(&quot; { &quot;)</span>
+<span class="fc" id="L256">                .append(graph)</span>
+<span class="fc" id="L257">                .append(&quot; vm:chunkCount &quot;)</span>
+<span class="fc" id="L258">                .append(integer((encoded.length() + CHUNK_CHARS - 1) / CHUNK_CHARS))</span>
+<span class="fc" id="L259">                .append(&quot; . &quot;);</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">        for (int start = 0, index = 0; start &lt; encoded.length(); start += CHUNK_CHARS, index++) {</span>
+<span class="fc" id="L261">            String chunk = encoded.substring(start, Math.min(encoded.length(), start + CHUNK_CHARS));</span>
+<span class="fc" id="L262">            update.append(iri(graphIri + &quot;:chunk:&quot; + index))</span>
+<span class="fc" id="L263">                    .append(&quot; vm:index &quot;)</span>
+<span class="fc" id="L264">                    .append(integer(index))</span>
+<span class="fc" id="L265">                    .append(&quot; ; vm:data &quot;)</span>
+<span class="fc" id="L266">                    .append(literal(chunk))</span>
+<span class="fc" id="L267">                    .append(&quot; . &quot;);</span>
+        }
+<span class="fc" id="L269">        update.append(&quot;} &quot;);</span>
+<span class="fc" id="L270">    }</span>
+
+    /**
+     * Reads chunked content of a graph.
+     *
+     * @param graph the content graph, formatted
+     * @return the bytes, empty when the graph holds no content
+     */
+    private Optional&lt;byte[]&gt; readContent(String graph) {
+<span class="fc" id="L279">        String query = PREFIX + &quot;SELECT ?count ?index ?data WHERE { GRAPH &quot; + graph + &quot; { &quot; + graph</span>
+                + &quot; vm:chunkCount ?count . OPTIONAL { ?chunk vm:index ?index ; vm:data ?data } } } ORDER BY ?index&quot;;
+<span class="fc" id="L281">        List&lt;QuerySolution&gt; rows = client.select(query);</span>
+<span class="fc bfc" id="L282" title="All 2 branches covered.">        if (rows.isEmpty()) {</span>
+<span class="fc" id="L283">            return Optional.empty();</span>
+        }
+<span class="fc" id="L285">        StringBuilder encoded = new StringBuilder();</span>
+<span class="fc" id="L286">        long expected = number(rows.get(0), &quot;count&quot;);</span>
+<span class="fc" id="L287">        long found = 0;</span>
+<span class="fc bfc" id="L288" title="All 2 branches covered.">        for (QuerySolution row : rows) {</span>
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">            if (row.contains(&quot;data&quot;)) {</span>
+<span class="fc" id="L290">                encoded.append(text(row, &quot;data&quot;));</span>
+<span class="fc" id="L291">                found++;</span>
+            }
+<span class="fc" id="L293">        }</span>
+<span class="pc bpc" id="L294" title="1 of 2 branches missed.">        if (found != expected) {</span>
+<span class="nc" id="L295">            throw new StoreException(&quot;Stored content is incomplete&quot;);</span>
+        }
+<span class="fc" id="L297">        return Optional.of(decode(encoded.toString()));</span>
+    }
+
+    @Override
+    public void updateVocabularyStatus(String name, VocabularyStatus status, Instant now) {
+<span class="fc" id="L302">        String v = vocabularyIri(name);</span>
+<span class="fc" id="L303">        String update =</span>
+                PREFIX + &quot;DELETE { GRAPH &quot; + META + &quot; { &quot; + v + &quot; vm:status ?status ; vm:lastUpdateDate ?updated } }&quot;
+<span class="fc" id="L305">                        + &quot; INSERT { GRAPH &quot; + META + &quot; { &quot; + v + &quot; vm:status &quot; + literal(status.name())</span>
+                        + &quot; ; vm:lastUpdateDate &quot;
+<span class="fc" id="L307">                        + dateTime(now) + &quot; } } WHERE { GRAPH &quot; + META + &quot; { &quot; + v</span>
+                        + &quot; vm:status ?status ; vm:lastUpdateDate ?updated } }&quot;;
+<span class="fc" id="L309">        client.update(update);</span>
+<span class="fc" id="L310">    }</span>
+
+    @Override
+    public void updateVersionStatus(String name, long version, VocabularyStatus status, Instant now) {
+<span class="fc" id="L314">        String v = vocabularyIri(name);</span>
+<span class="fc" id="L315">        String ver = versionIri(name, version);</span>
+<span class="fc" id="L316">        String update =</span>
+                PREFIX + &quot;DELETE { GRAPH &quot; + META + &quot; { &quot; + ver + &quot; vm:status ?status ; vm:lastUpdateDate ?updated } }&quot;
+<span class="fc" id="L318">                        + &quot; INSERT { GRAPH &quot; + META + &quot; { &quot; + ver + &quot; vm:status &quot; + literal(status.name())</span>
+                        + &quot; ; vm:lastUpdateDate &quot;
+<span class="fc" id="L320">                        + dateTime(now) + &quot; } } WHERE { GRAPH &quot; + META + &quot; { &quot; + ver</span>
+                        + &quot; vm:status ?status ; vm:lastUpdateDate ?updated } } ;\n&quot;
+                        + &quot;DELETE { GRAPH &quot; + META + &quot; { &quot; + v + &quot; vm:lastUpdateDate ?updated } } INSERT { GRAPH &quot;
+                        + META + &quot; { &quot; + v
+<span class="fc" id="L324">                        + &quot; vm:lastUpdateDate &quot; + dateTime(now) + &quot; } } WHERE { GRAPH &quot; + META + &quot; { &quot; + v</span>
+                        + &quot; vm:lastUpdateDate ?updated } }&quot;;
+<span class="fc" id="L326">        client.update(update);</span>
+<span class="fc" id="L327">    }</span>
+
+    @Override
+    public ReferenceFacts referenceFacts(Set&lt;String&gt; internalNames, boolean includeExternal) {
+<span class="fc" id="L331">        List&lt;String&gt; parts = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L332" title="1 of 2 branches missed.">        if (!internalNames.isEmpty()) {</span>
+<span class="fc" id="L333">            StringBuilder values = new StringBuilder();</span>
+<span class="fc" id="L334">            internalNames.stream()</span>
+<span class="fc" id="L335">                    .filter(n -&gt; SAFE_NAME.matcher(n).matches())</span>
+<span class="fc" id="L336">                    .forEach(n -&gt; values.append(literal(n)).append(' '));</span>
+<span class="fc" id="L337">            parts.add(&quot;{ VALUES ?name { &quot; + values + &quot;} GRAPH &quot; + META + &quot; { ?v a vm:Vocabulary ; vm:name ?name ;&quot;</span>
+                    + &quot; vm:status ?vstatus . ?ver vm:vocabulary ?v ; vm:number ?number ; vm:status ?nstatus . } }&quot;);
+        }
+<span class="fc bfc" id="L340" title="All 2 branches covered.">        if (includeExternal) {</span>
+<span class="fc" id="L341">            parts.add(&quot;{ GRAPH &quot; + META + &quot; { ?e a vm:ExternalVocabulary ; vm:lookupKey ?key } }&quot;);</span>
+        }
+<span class="fc" id="L343">        Map&lt;String, InternalFacts&gt; vocabularies = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L344">        Set&lt;String&gt; keys = new HashSet&lt;&gt;();</span>
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">        if (parts.isEmpty()) {</span>
+<span class="nc" id="L346">            return new ReferenceFacts(vocabularies, keys);</span>
+        }
+<span class="fc" id="L348">        String query =</span>
+<span class="fc" id="L349">                PREFIX + &quot;SELECT ?name ?vstatus ?number ?nstatus ?key WHERE { &quot; + String.join(&quot; UNION &quot;, parts) + &quot; }&quot;;</span>
+<span class="fc bfc" id="L350" title="All 2 branches covered.">        for (QuerySolution row : client.select(query)) {</span>
+<span class="pc bpc" id="L351" title="1 of 2 branches missed.">            if (row.contains(&quot;key&quot;)) {</span>
+<span class="nc" id="L352">                keys.add(text(row, &quot;key&quot;));</span>
+<span class="pc bpc" id="L353" title="1 of 2 branches missed.">            } else if (row.contains(&quot;name&quot;)) {</span>
+<span class="fc" id="L354">                String name = text(row, &quot;name&quot;);</span>
+<span class="fc" id="L355">                InternalFacts facts = vocabularies.computeIfAbsent(</span>
+                        name,
+<span class="fc" id="L357">                        n -&gt; new InternalFacts(n, VocabularyStatus.valueOf(text(row, &quot;vstatus&quot;)), new TreeMap&lt;&gt;()));</span>
+<span class="fc" id="L358">                facts.versions().put(number(row, &quot;number&quot;), VocabularyStatus.valueOf(text(row, &quot;nstatus&quot;)));</span>
+            }
+<span class="fc" id="L360">        }</span>
+<span class="fc" id="L361">        return new ReferenceFacts(vocabularies, keys);</span>
+    }
+
+    // ---------------------------------------------------------------- external vocabularies
+
+    @Override
+    public boolean externalNameTaken(String name) {
+<span class="fc" id="L368">        String query = PREFIX + &quot;SELECT ?e WHERE { GRAPH &quot; + META + &quot; { ?e a vm:ExternalVocabulary ; vm:nameKey &quot;</span>
+<span class="fc" id="L369">                + literal(name.toLowerCase(Locale.ROOT)) + &quot; } } LIMIT 1&quot;;</span>
+<span class="fc bfc" id="L370" title="All 2 branches covered.">        return !client.select(query).isEmpty();</span>
+    }
+
+    @Override
+    public List&lt;ExternalVocabulary&gt; listExternal() {
+        String query = PREFIX + &quot;SELECT ?name ?namespace ?aliases ?source ?description ?createdBy ?creationDate WHERE {&quot;
+<span class="fc" id="L376">                + externalPattern() + &quot; }&quot;;</span>
+<span class="fc" id="L377">        return client.select(query).stream()</span>
+<span class="fc" id="L378">                .map(FusekiVocabularyStore::toExternal)</span>
+<span class="fc" id="L379">                .toList();</span>
+    }
+
+    @Override
+    public Optional&lt;ExternalVocabulary&gt; findExternal(String name) {
+<span class="fc" id="L384">        String query = PREFIX + &quot;SELECT ?name ?namespace ?aliases ?source ?description ?createdBy ?creationDate WHERE {&quot;</span>
+<span class="fc" id="L385">                + &quot; VALUES ?e { &quot; + externalIri(name) + &quot; }&quot; + externalPattern() + &quot; }&quot;;</span>
+<span class="fc" id="L386">        return client.select(query).stream().findFirst().map(FusekiVocabularyStore::toExternal);</span>
+    }
+
+    private static String externalPattern() {
+<span class="fc" id="L390">        return &quot; GRAPH &quot; + META + &quot; { ?e a vm:ExternalVocabulary ; vm:name ?name ; vm:namespaceUri ?namespace ;&quot;</span>
+                + &quot; vm:aliasUris ?aliases ; vm:createdBy ?createdBy ; vm:creationDate ?creationDate .&quot;
+                + &quot; OPTIONAL { ?e vm:sourceUri ?source } OPTIONAL { ?e vm:description ?description } }&quot;;
+    }
+
+    private static ExternalVocabulary toExternal(QuerySolution row) {
+<span class="fc" id="L396">        List&lt;String&gt; aliases = JSON.readValue(text(row, &quot;aliases&quot;), new TypeReference&lt;List&lt;String&gt;&gt;() {});</span>
+<span class="fc" id="L397">        return new ExternalVocabulary(</span>
+<span class="fc" id="L398">                text(row, &quot;name&quot;),</span>
+<span class="fc" id="L399">                text(row, &quot;namespace&quot;),</span>
+                aliases,
+<span class="pc bpc" id="L401" title="1 of 2 branches missed.">                row.contains(&quot;source&quot;) ? text(row, &quot;source&quot;) : null,</span>
+<span class="pc bpc" id="L402" title="1 of 2 branches missed.">                row.contains(&quot;description&quot;) ? text(row, &quot;description&quot;) : null,</span>
+<span class="fc" id="L403">                text(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L404">                instant(row, &quot;creationDate&quot;));</span>
+    }
+
+    @Override
+    public Optional&lt;StoredContent&gt; findExternalContent(String name) {
+<span class="fc" id="L409">        return readContent(externalContentIri(name)).map(bytes -&gt; new StoredContent(name, 0, bytes));</span>
+    }
+
+    @Override
+    public void createExternal(ExternalVocabulary external, byte[] content) {
+<span class="fc" id="L414">        String e = externalIri(external.name());</span>
+<span class="fc" id="L415">        StringBuilder update = new StringBuilder(PREFIX)</span>
+<span class="fc" id="L416">                .append(&quot;INSERT DATA { GRAPH &quot;)</span>
+<span class="fc" id="L417">                .append(META)</span>
+<span class="fc" id="L418">                .append(&quot; { &quot;);</span>
+<span class="fc" id="L419">        update.append(e)</span>
+<span class="fc" id="L420">                .append(&quot; a vm:ExternalVocabulary ; vm:name &quot;)</span>
+<span class="fc" id="L421">                .append(literal(external.name()))</span>
+<span class="fc" id="L422">                .append(&quot; ; vm:nameKey &quot;)</span>
+<span class="fc" id="L423">                .append(literal(external.name().toLowerCase(Locale.ROOT)))</span>
+<span class="fc" id="L424">                .append(&quot; ; vm:namespaceUri &quot;)</span>
+<span class="fc" id="L425">                .append(literal(external.namespaceUri()))</span>
+<span class="fc" id="L426">                .append(&quot; ; vm:aliasUris &quot;)</span>
+<span class="fc" id="L427">                .append(literal(JSON.writeValueAsString(external.aliasUris())))</span>
+<span class="fc" id="L428">                .append(&quot; ; vm:createdBy &quot;)</span>
+<span class="fc" id="L429">                .append(literal(external.createdBy()))</span>
+<span class="fc" id="L430">                .append(&quot; ; vm:creationDate &quot;)</span>
+<span class="fc" id="L431">                .append(dateTime(external.creationDate()))</span>
+<span class="fc" id="L432">                .append(&quot; ; vm:content &quot;)</span>
+<span class="fc" id="L433">                .append(externalContentIri(external.name()));</span>
+<span class="pc bpc" id="L434" title="1 of 2 branches missed.">        if (external.sourceUri() != null) {</span>
+<span class="fc" id="L435">            update.append(&quot; ; vm:sourceUri &quot;).append(literal(external.sourceUri()));</span>
+        }
+<span class="pc bpc" id="L437" title="1 of 2 branches missed.">        if (external.description() != null) {</span>
+<span class="fc" id="L438">            update.append(&quot; ; vm:description &quot;).append(literal(external.description()));</span>
+        }
+<span class="fc" id="L440">        Set&lt;String&gt; keys = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L441">        keys.add(eu.simpl.vocabulary.api.request.FieldRules.normaliseNamespace(external.namespaceUri()));</span>
+<span class="fc" id="L442">        external.aliasUris().forEach(a -&gt; keys.add(eu.simpl.vocabulary.api.request.FieldRules.normaliseNamespace(a)));</span>
+<span class="fc bfc" id="L443" title="All 2 branches covered.">        for (String key : keys) {</span>
+<span class="fc" id="L444">            update.append(&quot; ; vm:lookupKey &quot;).append(literal(key));</span>
+<span class="fc" id="L445">        }</span>
+<span class="fc" id="L446">        update.append(&quot; . } &quot;);</span>
+<span class="fc" id="L447">        appendContentGraph(update, externalContentIri(external.name()), content);</span>
+<span class="fc" id="L448">        update.append(&quot; }&quot;);</span>
+<span class="fc" id="L449">        client.update(update.toString());</span>
+<span class="fc" id="L450">    }</span>
+
+    @Override
+    public void deleteExternal(String name) {
+<span class="fc" id="L454">        String e = externalIri(name);</span>
+<span class="fc" id="L455">        String update = PREFIX + &quot;DELETE WHERE { GRAPH &quot; + META + &quot; { &quot; + e + &quot; ?p ?o } } ;\n&quot; + &quot;DROP SILENT GRAPH &quot;</span>
+<span class="fc" id="L456">                + externalContentIri(name);</span>
+<span class="fc" id="L457">        client.update(update);</span>
+<span class="fc" id="L458">    }</span>
+
+    @Override
+    public boolean ping() {
+<span class="fc" id="L462">        return client.ping();</span>
+    }
+
+    // ---------------------------------------------------------------- formatting helpers
+
+    private static String safe(String name) {
+<span class="pc bpc" id="L468" title="2 of 4 branches missed.">        if (name == null || !SAFE_NAME.matcher(name).matches()) {</span>
+<span class="nc" id="L469">            throw new IllegalArgumentException(&quot;Unsafe resource name&quot;);</span>
+        }
+<span class="fc" id="L471">        return name;</span>
+    }
+
+    static String vocabularyIri(String name) {
+<span class="fc" id="L475">        return iri(&quot;urn:simpl:vocabulary-manager:vocabulary:&quot; + safe(name));</span>
+    }
+
+    static String versionIri(String name, long version) {
+<span class="fc" id="L479">        return iri(&quot;urn:simpl:vocabulary-manager:vocabulary:&quot; + safe(name) + &quot;:version:&quot; + version);</span>
+    }
+
+    static String contentIri(String name, long version) {
+<span class="fc" id="L483">        return iri(&quot;urn:simpl:vocabulary-manager:content:&quot; + safe(name) + &quot;:&quot; + version);</span>
+    }
+
+    static String externalIri(String name) {
+<span class="fc" id="L487">        return iri(&quot;urn:simpl:vocabulary-manager:external:&quot; + safe(name));</span>
+    }
+
+    static String externalContentIri(String name) {
+<span class="fc" id="L491">        return iri(&quot;urn:simpl:vocabulary-manager:external-content:&quot; + safe(name));</span>
+    }
+
+    private static String iri(String value) {
+<span class="fc" id="L495">        return NodeFmtLib.strNT(NodeFactory.createURI(value));</span>
+    }
+
+    static String literal(String value) {
+<span class="fc" id="L499">        return NodeFmtLib.strNT(NodeFactory.createLiteralString(value));</span>
+    }
+
+    private static String integer(long value) {
+<span class="fc" id="L503">        return NodeFmtLib.strNT(NodeFactory.createLiteralDT(Long.toString(value), XSDDatatype.XSDinteger));</span>
+    }
+
+    private static String dateTime(Instant value) {
+<span class="fc" id="L507">        return NodeFmtLib.strNT(NodeFactory.createLiteralDT(value.toString(), XSDDatatype.XSDdateTime));</span>
+    }
+
+    private static String text(QuerySolution row, String variable) {
+<span class="fc" id="L511">        RDFNode node = row.get(variable);</span>
+<span class="pc bpc" id="L512" title="1 of 2 branches missed.">        if (node == null) {</span>
+<span class="nc" id="L513">            throw new StoreException(&quot;Store row misses &quot; + variable);</span>
+        }
+<span class="pc bpc" id="L515" title="1 of 2 branches missed.">        if (node.isLiteral()) {</span>
+<span class="fc" id="L516">            return node.asLiteral().getLexicalForm();</span>
+        }
+<span class="nc" id="L518">        Node graphNode = node.asNode();</span>
+<span class="nc bnc" id="L519" title="All 2 branches missed.">        return graphNode.isURI() ? graphNode.getURI() : graphNode.toString();</span>
+    }
+
+    private static long number(QuerySolution row, String variable) {
+<span class="fc" id="L523">        Literal literal = row.getLiteral(variable);</span>
+        try {
+<span class="fc" id="L525">            return Long.parseLong(literal.getLexicalForm());</span>
+<span class="nc" id="L526">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L527">            throw new StoreException(&quot;Store value &quot; + variable + &quot; is not a number&quot;, e);</span>
+        }
+    }
+
+    private static Instant instant(QuerySolution row, String variable) {
+<span class="fc" id="L532">        return Instant.parse(text(row, variable));</span>
+    }
+
+    private static byte[] decode(String base64) {
+        try {
+<span class="fc" id="L537">            return Base64.getDecoder().decode(base64);</span>
+<span class="nc" id="L538">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L539">            throw new StoreException(&quot;Stored content is damaged&quot;, e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

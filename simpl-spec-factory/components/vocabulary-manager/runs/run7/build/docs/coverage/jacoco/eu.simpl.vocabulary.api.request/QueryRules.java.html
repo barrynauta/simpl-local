@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QueryRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.api.request</a> &gt; <span class="el_source">QueryRules.java</span></div><h1>QueryRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.api.request;
+
+import eu.simpl.vocabulary.api.problem.Issue;
+import eu.simpl.vocabulary.domain.model.VocabularyStatus;
+import eu.simpl.vocabulary.service.DateFilter;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+/** Rules for query parameter values (D19 to D23). Each method adds an issue on an invalid value. */
+public final class QueryRules {
+
+    public static final int DEFAULT_PAGE_SIZE = 20;
+    public static final int MAX_PAGE_SIZE = 100;
+
+<span class="fc" id="L18">    public static final Set&lt;String&gt; VOCABULARY_SORTS = Set.of(</span>
+            &quot;name&quot;, &quot;-name&quot;, &quot;status&quot;, &quot;-status&quot;, &quot;creationDate&quot;, &quot;-creationDate&quot;, &quot;lastUpdated&quot;, &quot;-lastUpdated&quot;);
+<span class="fc" id="L20">    public static final Set&lt;String&gt; VERSION_SORTS =</span>
+<span class="fc" id="L21">            Set.of(&quot;name&quot;, &quot;-name&quot;, &quot;status&quot;, &quot;-status&quot;, &quot;creationDate&quot;, &quot;-creationDate&quot;);</span>
+
+<span class="fc" id="L23">    private static final Pattern NAME_FILTER = Pattern.compile(&quot;^[A-Za-z0-9]{1,64}$&quot;);</span>
+<span class="fc" id="L24">    private static final Pattern DIGITS = Pattern.compile(&quot;^[0-9]{1,100}$&quot;);</span>
+
+    private QueryRules() {}
+
+    /**
+     * Page number: integer, at least 1, default 1 (D22).
+     *
+     * @param query the query
+     * @param issues issue sink
+     * @return the page
+     */
+    public static long page(QueryParameters query, List&lt;Issue&gt; issues) {
+<span class="fc" id="L36">        Optional&lt;String&gt; value = query.get(&quot;page&quot;);</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (value.isEmpty()) {</span>
+<span class="fc" id="L38">            return 1;</span>
+        }
+<span class="fc" id="L40">        Optional&lt;BigInteger&gt; number = integer(value.get());</span>
+<span class="fc bfc" id="L41" title="All 4 branches covered.">        if (number.isEmpty() || number.get().signum() &lt;= 0) {</span>
+<span class="fc" id="L42">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_QUERY, &quot;page&quot;, &quot;Query parameter 'page' must be an integer of at least 1.&quot;));
+<span class="fc" id="L44">            return 1;</span>
+        }
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        return number.get().bitLength() &gt; 62 ? Long.MAX_VALUE / 2 : number.get().longValue();</span>
+    }
+
+    /**
+     * Page size: integer from 1 to 100, default 20 (D22).
+     *
+     * @param query the query
+     * @param issues issue sink
+     * @return the page size
+     */
+    public static int pageSize(QueryParameters query, List&lt;Issue&gt; issues) {
+<span class="fc" id="L57">        Optional&lt;String&gt; value = query.get(&quot;pageSize&quot;);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (value.isEmpty()) {</span>
+<span class="fc" id="L59">            return DEFAULT_PAGE_SIZE;</span>
+        }
+<span class="fc" id="L61">        Optional&lt;BigInteger&gt; number = integer(value.get());</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        if (number.isEmpty()</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">                || number.get().signum() &lt;= 0</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">                || number.get().compareTo(BigInteger.valueOf(MAX_PAGE_SIZE)) &gt; 0) {</span>
+<span class="fc" id="L65">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_QUERY, &quot;pageSize&quot;, &quot;Query parameter 'pageSize' must be an integer from 1 to 100.&quot;));
+<span class="fc" id="L67">            return DEFAULT_PAGE_SIZE;</span>
+        }
+<span class="fc" id="L69">        return number.get().intValue();</span>
+    }
+
+    private static Optional&lt;BigInteger&gt; integer(String value) {
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        if (!DIGITS.matcher(value).matches()) {</span>
+<span class="fc" id="L74">            return Optional.empty();</span>
+        }
+<span class="fc" id="L76">        return Optional.of(new BigInteger(value));</span>
+    }
+
+    /**
+     * Sort value from a closed set (D23).
+     *
+     * @param query the query
+     * @param allowed allowed values
+     * @param issues issue sink
+     * @return the sort value or null
+     */
+    public static String sort(QueryParameters query, Set&lt;String&gt; allowed, List&lt;Issue&gt; issues) {
+<span class="fc" id="L88">        Optional&lt;String&gt; value = query.get(&quot;sort&quot;);</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if (value.isEmpty()) {</span>
+<span class="fc" id="L90">            return null;</span>
+        }
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        if (!allowed.contains(value.get())) {</span>
+<span class="fc" id="L93">            issues.add(</span>
+<span class="fc" id="L94">                    Issue.schemaViolation(Issue.IN_QUERY, &quot;sort&quot;, &quot;Query parameter 'sort' has an unsupported value.&quot;));</span>
+<span class="fc" id="L95">            return null;</span>
+        }
+<span class="fc" id="L97">        return value.get();</span>
+    }
+
+    /**
+     * Name filter: letters and digits, 1 to 64 characters (D19).
+     *
+     * @param query the query
+     * @param issues issue sink
+     * @return the filter or null
+     */
+    public static String nameFilter(QueryParameters query, List&lt;Issue&gt; issues) {
+<span class="fc" id="L108">        Optional&lt;String&gt; value = query.get(&quot;name&quot;);</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (value.isEmpty()) {</span>
+<span class="fc" id="L110">            return null;</span>
+        }
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        if (!NAME_FILTER.matcher(value.get()).matches()) {</span>
+<span class="fc" id="L113">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_QUERY, &quot;name&quot;, &quot;Query parameter 'name' must be 1 to 64 letters or digits.&quot;));
+<span class="fc" id="L115">            return null;</span>
+        }
+<span class="fc" id="L117">        return value.get();</span>
+    }
+
+    /**
+     * Status filter (D3).
+     *
+     * @param query the query
+     * @param issues issue sink
+     * @return the status or null
+     */
+    public static VocabularyStatus status(QueryParameters query, List&lt;Issue&gt; issues) {
+<span class="fc" id="L128">        Optional&lt;String&gt; value = query.get(&quot;status&quot;);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        if (value.isEmpty()) {</span>
+<span class="fc" id="L130">            return null;</span>
+        }
+<span class="fc" id="L132">        Optional&lt;VocabularyStatus&gt; status = VocabularyStatus.parse(value.get());</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        if (status.isEmpty()) {</span>
+<span class="fc" id="L134">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_QUERY, &quot;status&quot;, &quot;Query parameter 'status' must be ACTIVE or DEPRECATED.&quot;));
+<span class="fc" id="L136">            return null;</span>
+        }
+<span class="fc" id="L138">        return status.get();</span>
+    }
+
+    /**
+     * Date filter (D20).
+     *
+     * @param query the query
+     * @param name parameter name
+     * @param issues issue sink
+     * @return the filter or null
+     */
+    public static DateFilter date(QueryParameters query, String name, List&lt;Issue&gt; issues) {
+<span class="fc" id="L150">        Optional&lt;String&gt; value = query.get(name);</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">        if (value.isEmpty()) {</span>
+<span class="fc" id="L152">            return null;</span>
+        }
+<span class="fc" id="L154">        Optional&lt;DateFilter&gt; filter = DateFilter.parse(value.get());</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        if (filter.isEmpty()) {</span>
+<span class="fc" id="L156">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_QUERY, name, &quot;Query parameter '&quot; + name + &quot;' must be a valid date or date-time.&quot;));
+<span class="fc" id="L158">            return null;</span>
+        }
+<span class="fc" id="L160">        return filter.get();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

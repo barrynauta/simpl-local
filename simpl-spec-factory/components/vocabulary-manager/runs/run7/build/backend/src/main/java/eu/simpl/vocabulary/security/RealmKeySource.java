@@ -1,0 +1,105 @@
+package eu.simpl.vocabulary.security;
+
+import com.nimbusds.jose.KeySourceException;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSelector;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
+import java.io.IOException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Realm signing keys with the behaviour of D44: keys are fetched at start and again when a token names an
+ * unknown key id; cached keys keep working while the identity provider is down; an unknown key id that
+ * cannot be fetched fails closed with {@link IdpUnavailableException}. Signature checking itself is done by
+ * Nimbus JOSE + JWT through Spring Security (REUSE-01).
+ */
+public class RealmKeySource implements JWKSource<SecurityContext> {
+
+    /** Fetches the realm key set. */
+    @FunctionalInterface
+    public interface KeyFetcher {
+        /**
+         * Fetches the keys.
+         *
+         * @return the key set
+         * @throws IOException when the identity provider cannot be reached or answers badly
+         */
+        JWKSet fetch() throws IOException;
+    }
+
+    private static final Logger LOG = LoggerFactory.getLogger(RealmKeySource.class);
+
+    private final KeyFetcher fetcher;
+    private final Duration minRefreshInterval;
+    private final Clock clock;
+    private final AtomicReference<JWKSet> keys = new AtomicReference<>();
+    private volatile Instant lastSuccessfulFetch = Instant.EPOCH;
+
+    public RealmKeySource(KeyFetcher fetcher, Duration minRefreshInterval, Clock clock) {
+        this.fetcher = fetcher;
+        this.minRefreshInterval = minRefreshInterval;
+        this.clock = clock;
+    }
+
+    @Override
+    public List<JWK> get(JWKSelector selector, SecurityContext context) throws KeySourceException {
+        JWKSet cached = keys.get();
+        if (cached != null) {
+            List<JWK> matches = selector.select(cached);
+            if (!matches.isEmpty()) {
+                return matches;
+            }
+            if (Duration.between(lastSuccessfulFetch, clock.instant()).compareTo(minRefreshInterval) < 0) {
+                return List.of();
+            }
+        }
+        JWKSet fresh = refresh();
+        return selector.select(fresh);
+    }
+
+    /**
+     * Fetches the keys now.
+     *
+     * @return the fetched key set
+     * @throws IdpUnavailableException when the keys cannot be fetched
+     */
+    public synchronized JWKSet refresh() throws IdpUnavailableException {
+        try {
+            JWKSet fetched = fetcher.fetch();
+            keys.set(fetched);
+            lastSuccessfulFetch = clock.instant();
+            return fetched;
+        } catch (IOException | RuntimeException e) {
+            throw new IdpUnavailableException("Realm keys could not be fetched", e);
+        }
+    }
+
+    /** Tries to load the keys without failing; used at start and by the health check. */
+    public void tryRefresh() {
+        try {
+            refresh();
+        } catch (IdpUnavailableException e) {
+            LOG.warn(
+                    "Realm keys not loaded yet: {}",
+                    e.getCause() == null ? e.getMessage() : e.getCause().toString());
+        }
+    }
+
+    /**
+     * Tells whether realm keys are cached.
+     *
+     * @return true when at least one key is loaded
+     */
+    public boolean hasKeys() {
+        JWKSet cached = keys.get();
+        return cached != null && !cached.getKeys().isEmpty();
+    }
+}

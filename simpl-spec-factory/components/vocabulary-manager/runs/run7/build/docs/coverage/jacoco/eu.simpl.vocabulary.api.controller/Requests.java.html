@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Requests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.api.controller</a> &gt; <span class="el_source">Requests.java</span></div><h1>Requests.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.api.controller;
+
+import eu.simpl.vocabulary.api.problem.Issue;
+import eu.simpl.vocabulary.api.problem.Problems;
+import eu.simpl.vocabulary.api.request.FieldRules;
+import eu.simpl.vocabulary.api.request.MultipartForm;
+import eu.simpl.vocabulary.domain.model.VocabularyStatus;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import tools.jackson.databind.JsonNode;
+
+/** Shared request checks and response helpers of the controllers. */
+final class Requests {
+
+<span class="fc" id="L22">    static final MediaType TURTLE = new MediaType(&quot;text&quot;, &quot;turtle&quot;);</span>
+
+    private Requests() {}
+
+    /** Throws 400 when issues were found (D51: all request-shape issues in one response). */
+    static void rejectIfAny(List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L29">            throw Problems.badRequest(issues);</span>
+        }
+<span class="fc" id="L31">    }</span>
+
+    /** Checks a vocabulary name path value (D49). */
+    static void checkPathName(String parameter, String value, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (!FieldRules.isValidName(value)) {</span>
+<span class="fc" id="L36">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_PATH,
+                    parameter,
+                    &quot;Path parameter '&quot; + parameter
+                            + &quot;' must be 3 to 64 letters or digits starting with an upper-case letter.&quot;));
+        }
+<span class="fc" id="L42">    }</span>
+
+    /** Parses a version path value (D49). */
+    static long checkPathVersion(String value, List&lt;Issue&gt; issues) {
+<span class="fc" id="L46">        Optional&lt;Long&gt; version = FieldRules.parseVersion(value);</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (version.isEmpty()) {</span>
+<span class="fc" id="L48">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_PATH, &quot;version&quot;, &quot;Path parameter 'version' must be a positive integer.&quot;));
+<span class="fc" id="L50">            return -1;</span>
+        }
+<span class="fc" id="L52">        return version.get();</span>
+    }
+
+    /**
+     * Reads the status of a status PATCH body (D4, D52).
+     *
+     * @param body the JSON body
+     * @param issues issue sink
+     * @return the status, null when invalid
+     */
+    static VocabularyStatus statusBody(JsonNode body, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (body == null) {</span>
+<span class="fc" id="L64">            return null;</span>
+        }
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (!body.isObject()) {</span>
+<span class="fc" id="L67">            issues.add(Issue.schemaViolation(Issue.IN_BODY, &quot;body&quot;, &quot;The body must be a JSON object.&quot;));</span>
+<span class="fc" id="L68">            return null;</span>
+        }
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        for (Map.Entry&lt;String, JsonNode&gt; property : properties(body)) {</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (!&quot;status&quot;.equals(property.getKey())) {</span>
+<span class="fc" id="L72">                issues.add(Issue.schemaViolation(</span>
+<span class="fc" id="L73">                        Issue.IN_BODY, property.getKey(), &quot;Property '&quot; + property.getKey() + &quot;' is not supported.&quot;));</span>
+            }
+<span class="fc" id="L75">        }</span>
+<span class="fc" id="L76">        JsonNode status = body.get(&quot;status&quot;);</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (status == null) {</span>
+<span class="nc" id="L78">            issues.add(FieldRules.required(&quot;status&quot;));</span>
+<span class="nc" id="L79">            return null;</span>
+        }
+        Optional&lt;VocabularyStatus&gt; parsed =
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">                status.isString() ? VocabularyStatus.parse(status.asString()) : Optional.empty();</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (parsed.isEmpty()) {</span>
+<span class="fc" id="L84">            issues.add(Issue.schemaViolation(Issue.IN_BODY, &quot;status&quot;, &quot;'status' must be ACTIVE or DEPRECATED.&quot;));</span>
+<span class="fc" id="L85">            return null;</span>
+        }
+<span class="fc" id="L87">        return parsed.get();</span>
+    }
+
+    /**
+     * Reads a JSON body; a body that cannot be read adds its issue instead of stopping the shape checks.
+     *
+     * @param request the request
+     * @param maxBytes body limit (413 above it)
+     * @param issues issue sink
+     * @return the body, null when unreadable
+     */
+    static JsonNode readJson(jakarta.servlet.http.HttpServletRequest request, long maxBytes, List&lt;Issue&gt; issues) {
+        try {
+<span class="fc" id="L100">            return eu.simpl.vocabulary.api.request.JsonBody.read(request, maxBytes);</span>
+<span class="fc" id="L101">        } catch (eu.simpl.vocabulary.api.problem.ApiException e) {</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">            if (e.status() != 400) {</span>
+<span class="nc" id="L103">                throw e;</span>
+            }
+<span class="fc" id="L105">            issues.addAll(e.issues());</span>
+<span class="fc" id="L106">            return null;</span>
+        }
+    }
+
+    /** Properties of a JSON object in order. */
+    static List&lt;Map.Entry&lt;String, JsonNode&gt;&gt; properties(JsonNode object) {
+<span class="fc" id="L112">        List&lt;Map.Entry&lt;String, JsonNode&gt;&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L113">        Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; iterator = object.properties().iterator();</span>
+<span class="fc" id="L114">        iterator.forEachRemaining(list::add);</span>
+<span class="fc" id="L115">        return list;</span>
+    }
+
+    /** A text form field, null when missing. */
+    static String text(MultipartForm form, String name) {
+<span class="fc" id="L120">        return form.first(name).map(MultipartForm.FormPart::text).orElse(null);</span>
+    }
+
+    /** A Turtle download (D29, D70): exact Content-Type, attachment filename. */
+    static ResponseEntity&lt;byte[]&gt; turtle(byte[] bytes, String filename) {
+<span class="fc" id="L125">        HttpHeaders headers = new HttpHeaders();</span>
+<span class="fc" id="L126">        headers.setContentType(TURTLE);</span>
+<span class="fc" id="L127">        headers.setContentDisposition(</span>
+<span class="fc" id="L128">                ContentDisposition.attachment().filename(filename).build());</span>
+<span class="fc" id="L129">        headers.setContentLength(bytes.length);</span>
+<span class="fc" id="L130">        return ResponseEntity.ok().headers(headers).body(bytes);</span>
+    }
+
+    /** A JSON response with explicit Content-Type. */
+    static &lt;T&gt; ResponseEntity&lt;T&gt; json(int status, T body) {
+<span class="fc" id="L135">        return ResponseEntity.status(status)</span>
+<span class="fc" id="L136">                .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L137">                .body(body);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

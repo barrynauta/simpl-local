@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonBody.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.api.request</a> &gt; <span class="el_source">JsonBody.java</span></div><h1>JsonBody.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.api.request;
+
+import eu.simpl.vocabulary.api.problem.Issue;
+import eu.simpl.vocabulary.api.problem.Problems;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
+/** Reads a JSON request body into a tree with strict duplicate detection (OWT-A05); never into objects. */
+public final class JsonBody {
+
+<span class="fc" id="L17">    private static final JsonMapper STRICT = JsonMapper.builder()</span>
+<span class="fc" id="L18">            .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)</span>
+<span class="fc" id="L19">            .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)</span>
+<span class="fc" id="L20">            .build();</span>
+
+    private JsonBody() {}
+
+    /**
+     * Reads and parses the body.
+     *
+     * @param request the request
+     * @param maxBytes limit of the body (413 above it)
+     * @return the JSON tree
+     * @throws eu.simpl.vocabulary.api.problem.ApiException 400 when the body is missing or not JSON, 413 when
+     *     too large
+     */
+    public static JsonNode read(HttpServletRequest request, long maxBytes) {
+        byte[] bytes;
+<span class="fc" id="L35">        try (InputStream in = request.getInputStream()) {</span>
+<span class="fc" id="L36">            bytes = in.readNBytes((int) Math.min(Integer.MAX_VALUE - 8, maxBytes + 1));</span>
+<span class="nc" id="L37">        } catch (IOException e) {</span>
+<span class="nc" id="L38">            throw Problems.badRequest(</span>
+<span class="nc" id="L39">                    Issue.schemaViolation(Issue.IN_BODY, &quot;body&quot;, &quot;The request body could not be read.&quot;));</span>
+<span class="fc" id="L40">        }</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        if (bytes.length &gt; maxBytes) {</span>
+<span class="nc" id="L42">            throw Problems.payloadTooLarge();</span>
+        }
+<span class="fc" id="L44">        return parse(bytes);</span>
+    }
+
+    /**
+     * Parses bytes as one JSON value.
+     *
+     * @param bytes the body
+     * @return the tree
+     */
+    public static JsonNode parse(byte[] bytes) {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (bytes.length == 0) {</span>
+<span class="fc" id="L55">            throw Problems.badRequest(Issue.schemaViolation(Issue.IN_BODY, &quot;body&quot;, &quot;A request body is required.&quot;));</span>
+        }
+        try {
+<span class="fc" id="L58">            JsonNode node = STRICT.readTree(bytes);</span>
+<span class="pc bpc" id="L59" title="2 of 4 branches missed.">            if (node == null || node.isMissingNode()) {</span>
+<span class="nc" id="L60">                throw Problems.badRequest(Issue.schemaViolation(Issue.IN_BODY, &quot;body&quot;, &quot;A request body is required.&quot;));</span>
+            }
+<span class="fc" id="L62">            return node;</span>
+<span class="fc" id="L63">        } catch (JacksonException e) {</span>
+<span class="fc" id="L64">            throw Problems.badRequest(</span>
+<span class="fc" id="L65">                    Issue.schemaViolation(Issue.IN_BODY, &quot;body&quot;, &quot;The request body is not valid JSON.&quot;));</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

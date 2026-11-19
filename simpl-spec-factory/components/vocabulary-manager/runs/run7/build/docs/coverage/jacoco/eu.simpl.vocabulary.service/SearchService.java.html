@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.service</a> &gt; <span class="el_source">SearchService.java</span></div><h1>SearchService.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.service;
+
+import eu.simpl.vocabulary.api.request.FieldRules;
+import eu.simpl.vocabulary.domain.model.ExternalVocabulary;
+import eu.simpl.vocabulary.domain.model.VocabularyStatus;
+import eu.simpl.vocabulary.domain.validation.ReferenceAnalyzer.InternalFacts;
+import eu.simpl.vocabulary.domain.validation.ReferenceAnalyzer.ReferenceFacts;
+import eu.simpl.vocabulary.store.VocabularyStore;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/** The read-only search operations of D38: one store query each, results in request order. */
+public class SearchService {
+
+    /**
+     * One reference of an internal search.
+     *
+     * @param name exact name (D54)
+     * @param version version, null for the latest version
+     */
+<span class="fc" id="L25">    public record SearchReference(String name, Long version) {}</span>
+
+    /**
+     * One internal search result.
+     *
+     * @param name name
+     * @param version version number
+     * @param status vocabulary status when latest, else version status
+     * @param latest true for a reference without version
+     */
+<span class="fc" id="L35">    public record SearchResult(String name, long version, VocabularyStatus status, boolean latest) {}</span>
+
+    private final VocabularyStore store;
+
+<span class="fc" id="L39">    public SearchService(VocabularyStore store) {</span>
+<span class="fc" id="L40">        this.store = store;</span>
+<span class="fc" id="L41">    }</span>
+
+    /**
+     * Resolves internal references; missing ones are left out, repeated ones give one result.
+     *
+     * @param references the references in request order
+     * @return the results
+     */
+    public List&lt;SearchResult&gt; searchInternal(List&lt;SearchReference&gt; references) {
+<span class="fc" id="L50">        Set&lt;SearchReference&gt; distinct = new LinkedHashSet&lt;&gt;(references);</span>
+<span class="fc" id="L51">        Set&lt;String&gt; names = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L52">        distinct.forEach(r -&gt; names.add(r.name()));</span>
+<span class="fc" id="L53">        ReferenceFacts facts = store.referenceFacts(names, false);</span>
+<span class="fc" id="L54">        List&lt;SearchResult&gt; results = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        for (SearchReference reference : distinct) {</span>
+<span class="fc" id="L56">            InternalFacts vocabulary = facts.vocabularies().get(reference.name());</span>
+<span class="pc bpc" id="L57" title="1 of 4 branches missed.">            if (vocabulary == null || vocabulary.versions().isEmpty()) {</span>
+<span class="nc" id="L58">                continue;</span>
+            }
+<span class="fc bfc" id="L60" title="All 2 branches covered.">            if (reference.version() == null) {</span>
+<span class="fc" id="L61">                results.add(new SearchResult(</span>
+<span class="fc" id="L62">                        vocabulary.name(), vocabulary.versions().lastKey(), vocabulary.status(), true));</span>
+            } else {
+<span class="fc" id="L64">                VocabularyStatus status = vocabulary.versions().get(reference.version());</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">                if (status != null) {</span>
+<span class="fc" id="L66">                    results.add(new SearchResult(vocabulary.name(), reference.version(), status, false));</span>
+                }
+            }
+<span class="fc" id="L69">        }</span>
+<span class="fc" id="L70">        return results;</span>
+    }
+
+    /**
+     * Finds external vocabularies by namespace or alias URI, normalised (D30, D38).
+     *
+     * @param uris URIs in request order, namespaceUris before aliasUris
+     * @return each matching external vocabulary once, in order of the first matching URI
+     */
+    public List&lt;ExternalVocabulary&gt; searchExternal(List&lt;String&gt; uris) {
+<span class="fc" id="L80">        Map&lt;String, ExternalVocabulary&gt; byKey = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        for (ExternalVocabulary external : store.listExternal()) {</span>
+<span class="fc" id="L82">            byKey.put(FieldRules.normaliseNamespace(external.namespaceUri()), external);</span>
+<span class="fc" id="L83">            external.aliasUris().forEach(alias -&gt; byKey.put(FieldRules.normaliseNamespace(alias), external));</span>
+<span class="fc" id="L84">        }</span>
+<span class="fc" id="L85">        Map&lt;String, ExternalVocabulary&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        for (String uri : uris) {</span>
+<span class="fc" id="L87">            ExternalVocabulary match = byKey.get(FieldRules.normaliseNamespace(uri));</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">            if (match != null) {</span>
+<span class="fc" id="L89">                results.putIfAbsent(match.name(), match);</span>
+            }
+<span class="fc" id="L91">        }</span>
+<span class="fc" id="L92">        return List.copyOf(results.values());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

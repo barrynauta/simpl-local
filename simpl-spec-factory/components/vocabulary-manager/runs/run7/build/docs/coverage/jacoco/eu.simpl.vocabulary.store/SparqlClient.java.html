@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SparqlClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.store</a> &gt; <span class="el_source">SparqlClient.java</span></div><h1>SparqlClient.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.store;
+
+import eu.simpl.vocabulary.config.AppProperties;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.riot.ResultSetMgr;
+import org.apache.jena.riot.resultset.ResultSetLang;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * SPARQL 1.1 protocol client for the Fuseki dataset (E3) with the timeouts and retries of D44 and D71:
+ * connect 2 s; reads 10 s and at most 2 retries after 200 ms and 400 ms on a connection failure or
+ * timeout; updates 45 s and never retried. Results are parsed by Jena (REUSE-02).
+ */
+public class SparqlClient {
+
+    /** Pauses between retries; replaced in tests. */
+    @FunctionalInterface
+    public interface Sleeper {
+        void sleep(Duration duration) throws InterruptedException;
+    }
+
+<span class="fc" id="L34">    private static final Logger LOG = LoggerFactory.getLogger(SparqlClient.class);</span>
+
+    private final AppProperties.Store config;
+    private final HttpClient client;
+    private final URI queryUri;
+    private final URI updateUri;
+    private final Sleeper sleeper;
+
+<span class="fc" id="L42">    public SparqlClient(AppProperties.Store config, Sleeper sleeper) {</span>
+<span class="fc" id="L43">        this.config = config;</span>
+<span class="fc" id="L44">        this.sleeper = sleeper;</span>
+<span class="fc" id="L45">        this.client = HttpClient.newBuilder()</span>
+<span class="fc" id="L46">                .connectTimeout(config.connectTimeout())</span>
+<span class="fc" id="L47">                .followRedirects(HttpClient.Redirect.NEVER)</span>
+<span class="fc" id="L48">                .version(HttpClient.Version.HTTP_1_1)</span>
+<span class="fc" id="L49">                .build();</span>
+<span class="fc" id="L50">        this.queryUri = URI.create(config.url() + &quot;/query&quot;);</span>
+<span class="fc" id="L51">        this.updateUri = URI.create(config.url() + &quot;/update&quot;);</span>
+<span class="fc" id="L52">    }</span>
+
+    /**
+     * Runs a read-only SELECT query with retries.
+     *
+     * @param query the query
+     * @return the result rows
+     * @throws StoreUnavailableException when the store stays unreachable
+     * @throws StoreException when the store answers with an error
+     */
+    public List&lt;QuerySolution&gt; select(String query) {
+<span class="fc" id="L63">        int attempt = 0;</span>
+        while (true) {
+            try {
+<span class="fc" id="L66">                return selectOnce(query, config.readTimeout());</span>
+<span class="fc" id="L67">            } catch (IOException e) {</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">                if (attempt &gt;= config.retryDelays().size()) {</span>
+<span class="fc" id="L69">                    throw new StoreUnavailableException(&quot;Store query failed after retries&quot;, e);</span>
+                }
+<span class="fc" id="L71">                Duration delay = config.retryDelays().get(attempt);</span>
+<span class="fc" id="L72">                attempt++;</span>
+<span class="fc" id="L73">                LOG.info(</span>
+                        &quot;Store query failed ({}), retry {} after {} ms&quot;,
+<span class="fc" id="L75">                        e.getClass().getSimpleName(),</span>
+<span class="fc" id="L76">                        attempt,</span>
+<span class="fc" id="L77">                        delay.toMillis());</span>
+<span class="fc" id="L78">                pause(delay);</span>
+<span class="fc" id="L79">            }</span>
+        }
+    }
+
+    /**
+     * Health probe: one query with the health timeout and no retry.
+     *
+     * @return true when the store answered
+     */
+    public boolean ping() {
+        try {
+<span class="fc" id="L90">            selectOnce(&quot;SELECT * WHERE { } LIMIT 1&quot;, config.healthTimeout());</span>
+<span class="fc" id="L91">            return true;</span>
+<span class="fc" id="L92">        } catch (IOException | RuntimeException e) {</span>
+<span class="fc" id="L93">            LOG.debug(&quot;Store ping failed: {}&quot;, e.toString());</span>
+<span class="fc" id="L94">            return false;</span>
+        }
+    }
+
+    /**
+     * Runs one SPARQL update request. Fuseki runs the whole request in one write transaction, so a change
+     * is all or nothing (D8, D43).
+     *
+     * @param update the update request
+     * @throws StoreUnavailableException when the store is unreachable or times out
+     * @throws StoreException when the store answers with an error
+     */
+    public void update(String update) {
+<span class="fc" id="L107">        HttpRequest request = HttpRequest.newBuilder(updateUri)</span>
+<span class="fc" id="L108">                .timeout(config.writeTimeout())</span>
+<span class="fc" id="L109">                .header(&quot;Content-Type&quot;, &quot;application/sparql-update; charset=utf-8&quot;)</span>
+<span class="fc" id="L110">                .POST(HttpRequest.BodyPublishers.ofString(update, StandardCharsets.UTF_8))</span>
+<span class="fc" id="L111">                .build();</span>
+        HttpResponse&lt;byte[]&gt; response;
+        try {
+<span class="fc" id="L114">            response = send(request);</span>
+<span class="nc" id="L115">        } catch (IOException e) {</span>
+<span class="nc" id="L116">            throw new StoreUnavailableException(&quot;Store update failed&quot;, e);</span>
+<span class="fc" id="L117">        }</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        if (response.statusCode() / 100 != 2) {</span>
+<span class="nc" id="L119">            throw new StoreException(</span>
+<span class="nc" id="L120">                    &quot;Store update answered &quot; + response.statusCode() + &quot;: &quot; + abbreviate(response.body()));</span>
+        }
+<span class="fc" id="L122">    }</span>
+
+    private List&lt;QuerySolution&gt; selectOnce(String query, Duration timeout) throws IOException {
+<span class="fc" id="L125">        HttpRequest request = HttpRequest.newBuilder(queryUri)</span>
+<span class="fc" id="L126">                .timeout(timeout)</span>
+<span class="fc" id="L127">                .header(&quot;Content-Type&quot;, &quot;application/sparql-query; charset=utf-8&quot;)</span>
+<span class="fc" id="L128">                .header(&quot;Accept&quot;, &quot;application/sparql-results+json&quot;)</span>
+<span class="fc" id="L129">                .POST(HttpRequest.BodyPublishers.ofString(query, StandardCharsets.UTF_8))</span>
+<span class="fc" id="L130">                .build();</span>
+<span class="fc" id="L131">        HttpResponse&lt;byte[]&gt; response = send(request);</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">        if (response.statusCode() != 200) {</span>
+<span class="nc" id="L133">            throw new StoreException(</span>
+<span class="nc" id="L134">                    &quot;Store query answered &quot; + response.statusCode() + &quot;: &quot; + abbreviate(response.body()));</span>
+        }
+        try {
+<span class="fc" id="L137">            ResultSet results = ResultSetMgr.read(new ByteArrayInputStream(response.body()), ResultSetLang.RS_JSON);</span>
+<span class="fc" id="L138">            List&lt;QuerySolution&gt; rows = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L139">            results.forEachRemaining(rows::add);</span>
+<span class="fc" id="L140">            return rows;</span>
+<span class="nc" id="L141">        } catch (RuntimeException e) {</span>
+<span class="nc" id="L142">            throw new StoreException(&quot;Store query result could not be read&quot;, e);</span>
+        }
+    }
+
+    private HttpResponse&lt;byte[]&gt; send(HttpRequest request) throws IOException {
+        try {
+<span class="fc" id="L148">            return client.send(request, HttpResponse.BodyHandlers.ofByteArray());</span>
+<span class="nc" id="L149">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L150">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L151">            throw new IOException(&quot;Interrupted while calling the store&quot;, e);</span>
+        }
+    }
+
+    private void pause(Duration delay) {
+        try {
+<span class="fc" id="L157">            sleeper.sleep(delay);</span>
+<span class="nc" id="L158">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L159">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L160">            throw new StoreUnavailableException(&quot;Interrupted while waiting to retry&quot;, e);</span>
+<span class="fc" id="L161">        }</span>
+<span class="fc" id="L162">    }</span>
+
+    private static String abbreviate(byte[] body) {
+<span class="nc" id="L165">        String text = new String(body, StandardCharsets.UTF_8);</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        return text.length() &gt; 300 ? text.substring(0, 300) : text;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

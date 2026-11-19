@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpKeyFetcher.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.security</a> &gt; <span class="el_source">HttpKeyFetcher.java</span></div><h1>HttpKeyFetcher.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.security;
+
+import com.nimbusds.jose.jwk.JWKSet;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.text.ParseException;
+import java.time.Duration;
+
+/** Fetches the realm JWK set over HTTP with a short timeout and no retry (D44). */
+public class HttpKeyFetcher implements RealmKeySource.KeyFetcher {
+
+    private static final int MAX_BYTES = 256 * 1024;
+
+    private final HttpClient client;
+    private final URI jwksUri;
+    private final Duration timeout;
+
+<span class="fc" id="L21">    public HttpKeyFetcher(URI jwksUri, Duration timeout) {</span>
+<span class="fc" id="L22">        this.jwksUri = jwksUri;</span>
+<span class="fc" id="L23">        this.timeout = timeout;</span>
+<span class="fc" id="L24">        this.client = HttpClient.newBuilder()</span>
+<span class="fc" id="L25">                .connectTimeout(timeout)</span>
+<span class="fc" id="L26">                .followRedirects(HttpClient.Redirect.NEVER)</span>
+<span class="fc" id="L27">                .build();</span>
+<span class="fc" id="L28">    }</span>
+
+    @Override
+    public JWKSet fetch() throws IOException {
+<span class="fc" id="L32">        HttpRequest request = HttpRequest.newBuilder(jwksUri)</span>
+<span class="fc" id="L33">                .timeout(timeout)</span>
+<span class="fc" id="L34">                .header(&quot;Accept&quot;, &quot;application/json&quot;)</span>
+<span class="fc" id="L35">                .GET()</span>
+<span class="fc" id="L36">                .build();</span>
+        HttpResponse&lt;byte[]&gt; response;
+        try {
+<span class="nc" id="L39">            response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());</span>
+<span class="nc" id="L40">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L41">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L42">            throw new IOException(&quot;Interrupted while fetching realm keys&quot;, e);</span>
+<span class="nc" id="L43">        }</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        if (response.statusCode() != 200) {</span>
+<span class="nc" id="L45">            throw new IOException(&quot;Realm keys endpoint answered &quot; + response.statusCode());</span>
+        }
+<span class="nc" id="L47">        byte[] body = response.body();</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (body.length &gt; MAX_BYTES) {</span>
+<span class="nc" id="L49">            throw new IOException(&quot;Realm key set too large&quot;);</span>
+        }
+        try {
+<span class="nc" id="L52">            return JWKSet.parse(new String(body, java.nio.charset.StandardCharsets.UTF_8));</span>
+<span class="nc" id="L53">        } catch (ParseException e) {</span>
+<span class="nc" id="L54">            throw new IOException(&quot;Realm key set could not be parsed&quot;, e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

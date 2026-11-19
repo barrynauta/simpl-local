@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.api.request</a> &gt; <span class="el_source">FieldRules.java</span></div><h1>FieldRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.api.request;
+
+import eu.simpl.vocabulary.api.problem.Issue;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
+/** Field and path rules of D37, D49, D56 and D73. */
+public final class FieldRules {
+
+    /** Vocabulary and external vocabulary name pattern (D37). */
+<span class="fc" id="L14">    public static final Pattern NAME = Pattern.compile(&quot;^[A-Z][a-zA-Z0-9]*$&quot;);</span>
+
+    public static final int NAME_MIN = 3;
+    public static final int NAME_MAX = 64;
+    public static final int TEXT_MAX = 1000;
+    public static final int MAX_ALIASES = 20;
+
+<span class="fc" id="L21">    private static final Pattern POSITIVE_DIGITS = Pattern.compile(&quot;^[0-9]{1,100}$&quot;);</span>
+
+    private FieldRules() {}
+
+    /**
+     * Tells whether the value is a valid name (D37).
+     *
+     * @param value the value
+     * @return true when valid
+     */
+    public static boolean isValidName(String value) {
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        return value != null</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">                &amp;&amp; value.length() &gt;= NAME_MIN</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">                &amp;&amp; value.length() &lt;= NAME_MAX</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">                &amp;&amp; NAME.matcher(value).matches();</span>
+    }
+
+    /**
+     * Checks a name.
+     *
+     * @param in where it is
+     * @param field field name
+     * @param value the value
+     * @return an issue when invalid
+     */
+    public static Optional&lt;Issue&gt; checkName(String in, String field, String value) {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (isValidName(value)) {</span>
+<span class="fc" id="L48">            return Optional.empty();</span>
+        }
+<span class="fc" id="L50">        return Optional.of(</span>
+<span class="fc" id="L51">                Issue.schemaViolation(</span>
+                        in,
+                        field,
+                        &quot;'&quot; + field
+                                + &quot;' must be 3 to 64 characters, start with an upper-case letter and contain only letters and digits.&quot;));
+    }
+
+    /**
+     * Checks a required text of 1 to 1000 characters after trimming (D37).
+     *
+     * @param field field name
+     * @param value the value, null when missing
+     * @return an issue when invalid
+     */
+    public static Optional&lt;Issue&gt; checkRequiredText(String field, String value) {
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L67">            return Optional.of(required(field));</span>
+        }
+<span class="fc" id="L69">        int length = trimmedLength(value);</span>
+<span class="fc bfc" id="L70" title="All 4 branches covered.">        if (length &lt; 1 || length &gt; TEXT_MAX) {</span>
+<span class="fc" id="L71">            return Optional.of(Issue.schemaViolation(</span>
+                    Issue.IN_BODY, field, &quot;'&quot; + field + &quot;' must be 1 to 1000 characters after trimming.&quot;));
+        }
+<span class="fc" id="L74">        return Optional.empty();</span>
+    }
+
+    /**
+     * Checks an optional text of at most 1000 characters after trimming (D56).
+     *
+     * @param field field name
+     * @param value the value, null when missing
+     * @return an issue when invalid
+     */
+    public static Optional&lt;Issue&gt; checkOptionalText(String field, String value) {
+<span class="fc bfc" id="L85" title="All 4 branches covered.">        if (value != null &amp;&amp; trimmedLength(value) &gt; TEXT_MAX) {</span>
+<span class="fc" id="L86">            return Optional.of(Issue.schemaViolation(</span>
+                    Issue.IN_BODY, field, &quot;'&quot; + field + &quot;' must be at most 1000 characters after trimming.&quot;));
+        }
+<span class="fc" id="L89">        return Optional.empty();</span>
+    }
+
+    /**
+     * Number of characters (code points) after trimming.
+     *
+     * @param value the text
+     * @return the length
+     */
+    public static int trimmedLength(String value) {
+<span class="fc" id="L99">        String trimmed = value.strip();</span>
+<span class="fc" id="L100">        return trimmed.codePointCount(0, trimmed.length());</span>
+    }
+
+    /**
+     * Issue for a missing required field.
+     *
+     * @param field the field
+     * @return the issue
+     */
+    public static Issue required(String field) {
+<span class="fc" id="L110">        return Issue.schemaViolation(Issue.IN_BODY, field, &quot;'&quot; + field + &quot;' is required.&quot;);</span>
+    }
+
+    /**
+     * Tells whether the value is an absolute URI with a scheme (RFC 3986, D73).
+     *
+     * @param value the value
+     * @return true when absolute
+     */
+    public static boolean isAbsoluteUri(String value) {
+<span class="pc bpc" id="L120" title="1 of 6 branches missed.">        if (value == null || value.isEmpty() || value.length() &gt; 2048) {</span>
+<span class="fc" id="L121">            return false;</span>
+        }
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        for (int i = 0; i &lt; value.length(); i++) {</span>
+<span class="fc" id="L124">            char c = value.charAt(i);</span>
+<span class="pc bpc" id="L125" title="9 of 22 branches missed.">            if (c &lt;= 0x20 || c == 0x7f || c == '&lt;' || c == '&gt;' || c == '&quot;' || c == '{' || c == '}' || c == '|'</span>
+                    || c == '\\' || c == '^' || c == '`') {
+<span class="fc" id="L127">                return false;</span>
+            }
+        }
+        try {
+<span class="fc" id="L131">            URI uri = new URI(value);</span>
+<span class="pc bpc" id="L132" title="1 of 4 branches missed.">            return uri.isAbsolute() &amp;&amp; uri.getScheme() != null;</span>
+<span class="fc" id="L133">        } catch (URISyntaxException e) {</span>
+<span class="fc" id="L134">            return false;</span>
+        }
+    }
+
+    /**
+     * Normalises a namespace for comparison: removes one trailing '#' or '/' (D30).
+     *
+     * @param uri the URI
+     * @return the comparison key
+     */
+    public static String normaliseNamespace(String uri) {
+<span class="fc bfc" id="L145" title="All 4 branches covered.">        if (uri.endsWith(&quot;#&quot;) || uri.endsWith(&quot;/&quot;)) {</span>
+<span class="fc" id="L146">            return uri.substring(0, uri.length() - 1);</span>
+        }
+<span class="fc" id="L148">        return uri;</span>
+    }
+
+    /**
+     * Parses a version path value (D49): a positive integer. Values beyond the integer range are valid but
+     * cannot exist, so they are returned as {@link Long#MAX_VALUE}.
+     *
+     * @param value the raw value
+     * @return the version, empty when it is not a positive integer
+     */
+    public static Optional&lt;Long&gt; parseVersion(String value) {
+<span class="fc bfc" id="L159" title="All 4 branches covered.">        if (value == null || !POSITIVE_DIGITS.matcher(value).matches()) {</span>
+<span class="fc" id="L160">            return Optional.empty();</span>
+        }
+<span class="fc" id="L162">        BigInteger number = new BigInteger(value);</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        if (number.signum() &lt;= 0) {</span>
+<span class="fc" id="L164">            return Optional.empty();</span>
+        }
+<span class="fc bfc" id="L166" title="All 2 branches covered.">        if (number.bitLength() &gt; 62) {</span>
+<span class="fc" id="L167">            return Optional.of(Long.MAX_VALUE);</span>
+        }
+<span class="fc" id="L169">        return Optional.of(number.longValue());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

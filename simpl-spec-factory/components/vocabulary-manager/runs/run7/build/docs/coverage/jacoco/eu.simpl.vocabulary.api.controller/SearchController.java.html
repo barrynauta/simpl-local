@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.api.controller</a> &gt; <span class="el_source">SearchController.java</span></div><h1>SearchController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.api.controller;
+
+import eu.simpl.vocabulary.api.ApiMapper;
+import eu.simpl.vocabulary.api.dto.ExternalVocabularyDto;
+import eu.simpl.vocabulary.api.dto.PageDto;
+import eu.simpl.vocabulary.api.dto.SearchItemDto;
+import eu.simpl.vocabulary.api.problem.Issue;
+import eu.simpl.vocabulary.api.request.FieldRules;
+import eu.simpl.vocabulary.api.request.QueryParameters;
+import eu.simpl.vocabulary.config.AppProperties;
+import eu.simpl.vocabulary.domain.model.StoredContent;
+import eu.simpl.vocabulary.service.ExternalVocabularyService;
+import eu.simpl.vocabulary.service.SearchService;
+import eu.simpl.vocabulary.service.SearchService.SearchReference;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+
+/** The read-only POST operations: searches (D38, D68) and content by namespace (D66). */
+@RestController
+@RequestMapping(&quot;/v1&quot;)
+public class SearchController {
+
+    static final int MAX_ITEMS = 100;
+
+<span class="fc" id="L34">    private static final Set&lt;String&gt; EXTERNAL_SEARCH_PROPERTIES =</span>
+<span class="fc" id="L35">            Set.of(&quot;namespaceUri&quot;, &quot;aliasUri&quot;, &quot;namespaceUris&quot;, &quot;aliasUris&quot;);</span>
+
+    private final SearchService searchService;
+    private final ExternalVocabularyService externalService;
+    private final ApiMapper mapper;
+    private final AppProperties.Limits limits;
+
+    public SearchController(
+            SearchService searchService,
+            ExternalVocabularyService externalService,
+            ApiMapper mapper,
+<span class="fc" id="L46">            AppProperties properties) {</span>
+<span class="fc" id="L47">        this.searchService = searchService;</span>
+<span class="fc" id="L48">        this.externalService = externalService;</span>
+<span class="fc" id="L49">        this.mapper = mapper;</span>
+<span class="fc" id="L50">        this.limits = properties.limits();</span>
+<span class="fc" id="L51">    }</span>
+
+    @PostMapping(&quot;/vocabularies/searches&quot;)
+    public ResponseEntity&lt;PageDto&lt;SearchItemDto&gt;&gt; searchVocabularies(HttpServletRequest request) {
+<span class="fc" id="L55">        List&lt;Issue&gt; issues =</span>
+<span class="fc" id="L56">                new ArrayList&lt;&gt;(QueryParameters.parse(request.getQueryString()).requireNone());</span>
+<span class="fc" id="L57">        JsonNode body = Requests.readJson(request, limits.maxJsonBytes(), issues);</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">        List&lt;SearchReference&gt; references = body == null ? List.of() : internalReferences(body, issues);</span>
+<span class="fc" id="L59">        Requests.rejectIfAny(issues);</span>
+<span class="fc" id="L60">        List&lt;SearchItemDto&gt; items = searchService.searchInternal(references).stream()</span>
+<span class="fc" id="L61">                .map(mapper::searchItem)</span>
+<span class="fc" id="L62">                .toList();</span>
+<span class="fc" id="L63">        return Requests.json(200, ApiMapper.unpaged(items));</span>
+    }
+
+    /**
+     * Validates the body of an internal search (VocabularySearchRequest, D38, D52, D68).
+     *
+     * @param body the body
+     * @param issues issue sink
+     * @return the references
+     */
+    static List&lt;SearchReference&gt; internalReferences(JsonNode body, List&lt;Issue&gt; issues) {
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">        if (!body.isObject()) {</span>
+<span class="nc" id="L75">            issues.add(Issue.schemaViolation(Issue.IN_BODY, &quot;body&quot;, &quot;The body must be a JSON object.&quot;));</span>
+<span class="nc" id="L76">            return List.of();</span>
+        }
+<span class="fc" id="L78">        unknownProperties(body, Set.of(&quot;items&quot;), &quot;&quot;, issues);</span>
+<span class="fc" id="L79">        JsonNode items = body.get(&quot;items&quot;);</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (items == null) {</span>
+<span class="fc" id="L81">            issues.add(FieldRules.required(&quot;items&quot;));</span>
+<span class="fc" id="L82">            return List.of();</span>
+        }
+<span class="pc bpc" id="L84" title="2 of 6 branches missed.">        if (!items.isArray() || items.size() &lt; 1 || items.size() &gt; MAX_ITEMS) {</span>
+<span class="fc" id="L85">            issues.add(</span>
+<span class="fc" id="L86">                    Issue.schemaViolation(Issue.IN_BODY, &quot;items&quot;, &quot;'items' must be an array of 1 to 100 references.&quot;));</span>
+<span class="fc" id="L87">            return List.of();</span>
+        }
+<span class="fc" id="L89">        List&lt;SearchReference&gt; references = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        for (int i = 0; i &lt; items.size(); i++) {</span>
+<span class="fc" id="L91">            JsonNode item = items.get(i);</span>
+<span class="fc" id="L92">            String prefix = &quot;items[&quot; + i + &quot;]&quot;;</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">            if (!item.isObject()) {</span>
+<span class="nc" id="L94">                issues.add(Issue.schemaViolation(Issue.IN_BODY, prefix, &quot;Each item must be a JSON object.&quot;));</span>
+<span class="nc" id="L95">                continue;</span>
+            }
+<span class="fc" id="L97">            unknownProperties(item, Set.of(&quot;name&quot;, &quot;version&quot;), prefix + &quot;.&quot;, issues);</span>
+<span class="fc" id="L98">            JsonNode name = item.get(&quot;name&quot;);</span>
+<span class="fc" id="L99">            boolean valid = true;</span>
+<span class="pc bpc" id="L100" title="2 of 6 branches missed.">            if (name == null || !name.isString() || !FieldRules.isValidName(name.asString())) {</span>
+<span class="fc" id="L101">                issues.add(</span>
+<span class="fc" id="L102">                        Issue.schemaViolation(</span>
+                                Issue.IN_BODY,
+                                prefix + &quot;.name&quot;,
+                                &quot;'name' is required and must be 3 to 64 letters or digits starting with an upper-case letter.&quot;));
+<span class="fc" id="L106">                valid = false;</span>
+            }
+<span class="fc" id="L108">            Long version = null;</span>
+<span class="fc" id="L109">            JsonNode versionNode = item.get(&quot;version&quot;);</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">            if (versionNode != null) {</span>
+<span class="fc" id="L111">                version = positiveInteger(versionNode);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">                if (version == null) {</span>
+<span class="fc" id="L113">                    issues.add(Issue.schemaViolation(</span>
+                            Issue.IN_BODY, prefix + &quot;.version&quot;, &quot;'version' must be an integer of at least 1.&quot;));
+<span class="fc" id="L115">                    valid = false;</span>
+                }
+            }
+<span class="fc bfc" id="L118" title="All 2 branches covered.">            if (valid) {</span>
+<span class="fc" id="L119">                references.add(new SearchReference(name.asString(), version));</span>
+            }
+        }
+<span class="fc" id="L122">        return references;</span>
+    }
+
+    private static Long positiveInteger(JsonNode node) {
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (!node.isNumber()) {</span>
+<span class="nc" id="L127">            return null;</span>
+        }
+<span class="fc" id="L129">        java.math.BigDecimal value = node.decimalValue();</span>
+<span class="pc bpc" id="L130" title="1 of 4 branches missed.">        if (value.signum() &lt;= 0 || value.stripTrailingZeros().scale() &gt; 0) {</span>
+<span class="fc" id="L131">            return null;</span>
+        }
+<span class="fc" id="L133">        java.math.BigInteger integer = value.toBigIntegerExact();</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        return integer.bitLength() &gt; 62 ? Long.MAX_VALUE : integer.longValue();</span>
+    }
+
+    @PostMapping(&quot;/external-vocabulary/searches&quot;)
+    public ResponseEntity&lt;PageDto&lt;ExternalVocabularyDto&gt;&gt; searchExternal(HttpServletRequest request) {
+<span class="fc" id="L139">        List&lt;Issue&gt; issues =</span>
+<span class="fc" id="L140">                new ArrayList&lt;&gt;(QueryParameters.parse(request.getQueryString()).requireNone());</span>
+<span class="fc" id="L141">        JsonNode body = Requests.readJson(request, limits.maxJsonBytes(), issues);</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">        List&lt;String&gt; uris = body == null ? List.of() : externalUris(body, issues);</span>
+<span class="fc" id="L143">        Requests.rejectIfAny(issues);</span>
+<span class="fc" id="L144">        List&lt;ExternalVocabularyDto&gt; items = searchService.searchExternal(uris).stream()</span>
+<span class="fc" id="L145">                .map(mapper::external)</span>
+<span class="fc" id="L146">                .toList();</span>
+<span class="fc" id="L147">        return Requests.json(200, ApiMapper.unpaged(items));</span>
+    }
+
+    /**
+     * Validates the body of an external search (ExternalVocabularySearchRequest oneOf, D38, D68, D73).
+     *
+     * @param body the body
+     * @param issues issue sink
+     * @return the URIs, namespaceUris before aliasUris
+     */
+    static List&lt;String&gt; externalUris(JsonNode body, List&lt;Issue&gt; issues) {
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">        if (!body.isObject()) {</span>
+<span class="nc" id="L159">            issues.add(Issue.schemaViolation(Issue.IN_BODY, &quot;body&quot;, &quot;The body must be a JSON object.&quot;));</span>
+<span class="nc" id="L160">            return List.of();</span>
+        }
+<span class="fc" id="L162">        int before = issues.size();</span>
+<span class="fc" id="L163">        unknownProperties(body, EXTERNAL_SEARCH_PROPERTIES, &quot;&quot;, issues);</span>
+<span class="fc" id="L164">        boolean single = body.has(&quot;namespaceUri&quot;);</span>
+<span class="fc" id="L165">        boolean alias = body.has(&quot;aliasUri&quot;);</span>
+<span class="pc bpc" id="L166" title="1 of 4 branches missed.">        boolean batch = body.has(&quot;namespaceUris&quot;) || body.has(&quot;aliasUris&quot;);</span>
+<span class="fc bfc" id="L167" title="All 6 branches covered.">        int branches = (single ? 1 : 0) + (alias ? 1 : 0) + (batch ? 1 : 0);</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">        if (branches != 1) {</span>
+<span class="fc" id="L169">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_BODY,
+                    &quot;body&quot;,
+                    &quot;Send exactly one of: namespaceUri, aliasUri, or namespaceUris and/or aliasUris.&quot;));
+<span class="fc" id="L173">            return List.of();</span>
+        }
+<span class="fc" id="L175">        List&lt;String&gt; uris = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">        if (single) {</span>
+<span class="nc" id="L177">            uri(body, &quot;namespaceUri&quot;, issues).ifPresent(uris::add);</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        } else if (alias) {</span>
+<span class="fc" id="L179">            uri(body, &quot;aliasUri&quot;, issues).ifPresent(uris::add);</span>
+        } else {
+<span class="fc" id="L181">            int total = 0;</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">            for (String field : List.of(&quot;namespaceUris&quot;, &quot;aliasUris&quot;)) {</span>
+<span class="fc" id="L183">                JsonNode array = body.get(field);</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">                if (array == null) {</span>
+<span class="fc" id="L185">                    continue;</span>
+                }
+<span class="pc bpc" id="L187" title="1 of 4 branches missed.">                if (!array.isArray() || array.size() &lt; 1) {</span>
+<span class="fc" id="L188">                    issues.add(Issue.schemaViolation(</span>
+                            Issue.IN_BODY, field, &quot;'&quot; + field + &quot;' must be an array of at least 1 URI.&quot;));
+<span class="fc" id="L190">                    continue;</span>
+                }
+<span class="fc" id="L192">                total += array.size();</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">                for (JsonNode element : array) {</span>
+<span class="pc bpc" id="L194" title="1 of 4 branches missed.">                    if (element.isString() &amp;&amp; FieldRules.isAbsoluteUri(element.asString())) {</span>
+<span class="fc" id="L195">                        uris.add(element.asString());</span>
+                    } else {
+<span class="fc" id="L197">                        issues.add(Issue.schemaViolation(</span>
+                                Issue.IN_BODY, field, &quot;'&quot; + field + &quot;' must hold absolute URIs.&quot;));
+<span class="fc" id="L199">                        break;</span>
+                    }
+<span class="fc" id="L201">                }</span>
+<span class="fc" id="L202">            }</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">            if (total &gt; MAX_ITEMS) {</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">                String name = body.has(&quot;aliasUris&quot;) ? &quot;aliasUris&quot; : &quot;namespaceUris&quot;;</span>
+<span class="fc" id="L205">                issues.add(Issue.schemaViolation(Issue.IN_BODY, name, &quot;At most 100 URIs may be searched at once.&quot;));</span>
+            }
+        }
+<span class="fc bfc" id="L208" title="All 2 branches covered.">        return issues.size() &gt; before ? List.of() : uris;</span>
+    }
+
+    @PostMapping(value = &quot;/external-vocabularies/content&quot;, produces = MediaType.ALL_VALUE)
+    public ResponseEntity&lt;byte[]&gt; contentByNamespace(HttpServletRequest request) {
+<span class="fc" id="L213">        List&lt;Issue&gt; issues =</span>
+<span class="fc" id="L214">                new ArrayList&lt;&gt;(QueryParameters.parse(request.getQueryString()).requireNone());</span>
+<span class="fc" id="L215">        JsonNode body = Requests.readJson(request, limits.maxJsonBytes(), issues);</span>
+<span class="fc" id="L216">        String namespaceUri = null;</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">        if (body != null) {</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">            if (!body.isObject()) {</span>
+<span class="nc" id="L219">                issues.add(Issue.schemaViolation(Issue.IN_BODY, &quot;body&quot;, &quot;The body must be a JSON object.&quot;));</span>
+            } else {
+<span class="fc" id="L221">                unknownProperties(body, Set.of(&quot;namespaceUri&quot;), &quot;&quot;, issues);</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">                if (!body.has(&quot;namespaceUri&quot;)) {</span>
+<span class="fc" id="L223">                    issues.add(FieldRules.required(&quot;namespaceUri&quot;));</span>
+                } else {
+<span class="fc" id="L225">                    namespaceUri = uri(body, &quot;namespaceUri&quot;, issues).orElse(null);</span>
+                }
+            }
+        }
+<span class="fc" id="L229">        Requests.rejectIfAny(issues);</span>
+<span class="fc" id="L230">        StoredContent content = externalService.contentByNamespace(namespaceUri, searchService);</span>
+<span class="fc" id="L231">        return Requests.turtle(content.bytes(), content.name() + &quot;.ttl&quot;);</span>
+    }
+
+    private static java.util.Optional&lt;String&gt; uri(JsonNode body, String field, List&lt;Issue&gt; issues) {
+<span class="fc" id="L235">        JsonNode value = body.get(field);</span>
+<span class="pc bpc" id="L236" title="2 of 6 branches missed.">        if (value != null &amp;&amp; value.isString() &amp;&amp; FieldRules.isAbsoluteUri(value.asString())) {</span>
+<span class="fc" id="L237">            return java.util.Optional.of(value.asString());</span>
+        }
+<span class="fc" id="L239">        issues.add(Issue.schemaViolation(Issue.IN_BODY, field, &quot;'&quot; + field + &quot;' must be an absolute URI.&quot;));</span>
+<span class="fc" id="L240">        return java.util.Optional.empty();</span>
+    }
+
+    private static void unknownProperties(JsonNode object, Set&lt;String&gt; known, String prefix, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L244" title="All 2 branches covered.">        for (Map.Entry&lt;String, JsonNode&gt; property : Requests.properties(object)) {</span>
+<span class="fc bfc" id="L245" title="All 2 branches covered.">            if (!known.contains(property.getKey())) {</span>
+<span class="fc" id="L246">                issues.add(Issue.schemaViolation(</span>
+                        Issue.IN_BODY,
+<span class="fc" id="L248">                        prefix + property.getKey(),</span>
+<span class="fc" id="L249">                        &quot;Property '&quot; + property.getKey() + &quot;' is not supported.&quot;));</span>
+            }
+<span class="fc" id="L251">        }</span>
+<span class="fc" id="L252">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

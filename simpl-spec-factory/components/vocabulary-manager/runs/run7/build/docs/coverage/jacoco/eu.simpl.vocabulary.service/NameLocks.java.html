@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NameLocks.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.service</a> &gt; <span class="el_source">NameLocks.java</span></div><h1>NameLocks.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.service;
+
+import eu.simpl.vocabulary.api.problem.Problems;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
+
+/**
+ * One fair lock per vocabulary name, compared in lower case (D43). Waiting is bounded (D71): after the
+ * timeout the request fails with 503 and stores nothing. Valid for one backend instance only (D81).
+ * Entries are removed when no request uses them, so the map stays bounded by the number of requests in
+ * flight.
+ */
+public class NameLocks {
+
+<span class="fc" id="L20">    private static final class Entry {</span>
+<span class="fc" id="L21">        private final ReentrantLock lock = new ReentrantLock(true);</span>
+        private int users;
+    }
+
+<span class="fc" id="L25">    private final Map&lt;String, Entry&gt; entries = new HashMap&lt;&gt;();</span>
+    private final Duration timeout;
+
+<span class="fc" id="L28">    public NameLocks(Duration timeout) {</span>
+<span class="fc" id="L29">        this.timeout = timeout;</span>
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * Runs the action while holding the lock of the key.
+     *
+     * @param key the vocabulary name or a fixed key
+     * @param action the action
+     * @param &lt;T&gt; result type
+     * @return the action result
+     * @throws eu.simpl.vocabulary.api.problem.ApiException 503 when the lock is not obtained in time
+     */
+    public &lt;T&gt; T withLock(String key, Supplier&lt;T&gt; action) {
+<span class="fc" id="L42">        String normalised = key.toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L43">        Entry entry = acquireEntry(normalised);</span>
+<span class="fc" id="L44">        boolean locked = false;</span>
+        try {
+<span class="fc" id="L46">            locked = entry.lock.tryLock(timeout.toMillis(), TimeUnit.MILLISECONDS);</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">            if (!locked) {</span>
+<span class="fc" id="L48">                throw Problems.storeUnavailable();</span>
+            }
+<span class="fc" id="L50">            return action.get();</span>
+<span class="nc" id="L51">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L52">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L53">            throw Problems.storeUnavailable();</span>
+        } finally {
+<span class="fc bfc" id="L55" title="All 2 branches covered.">            if (locked) {</span>
+<span class="fc" id="L56">                entry.lock.unlock();</span>
+            }
+<span class="fc" id="L58">            releaseEntry(normalised, entry);</span>
+        }
+    }
+
+    private synchronized Entry acquireEntry(String key) {
+<span class="fc" id="L63">        Entry entry = entries.computeIfAbsent(key, k -&gt; new Entry());</span>
+<span class="fc" id="L64">        entry.users++;</span>
+<span class="fc" id="L65">        return entry;</span>
+    }
+
+    private synchronized void releaseEntry(String key, Entry entry) {
+<span class="fc" id="L69">        entry.users--;</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (entry.users == 0) {</span>
+<span class="fc" id="L71">            entries.remove(key);</span>
+        }
+<span class="fc" id="L73">    }</span>
+
+    /** Number of keys in use, for tests. */
+    synchronized int size() {
+<span class="fc" id="L77">        return entries.size();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

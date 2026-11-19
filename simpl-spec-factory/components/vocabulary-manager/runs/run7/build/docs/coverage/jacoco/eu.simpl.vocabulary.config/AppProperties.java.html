@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.config</a> &gt; <span class="el_source">AppProperties.java</span></div><h1>AppProperties.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.config;
+
+import java.time.Duration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * Configuration of the component, all from the environment (MACH-07, E2, E4).
+ *
+ * @param contentBaseUrl base of contentHref values and of internal references (D12)
+ * @param store store settings
+ * @param security token settings
+ * @param limits component limits (Q2)
+ */
+@ConfigurationProperties(prefix = &quot;vocabulary&quot;)
+public record AppProperties(String contentBaseUrl, Store store, Security security, Limits limits) {
+
+<span class="fc" id="L17">    public AppProperties {</span>
+<span class="pc bpc" id="L18" title="2 of 4 branches missed.">        if (contentBaseUrl == null || contentBaseUrl.isBlank()) {</span>
+<span class="nc" id="L19">            contentBaseUrl = &quot;https://authority.example/vocabulary-manager&quot;;</span>
+        }
+<span class="pc bpc" id="L21" title="1 of 2 branches missed.">        while (contentBaseUrl.endsWith(&quot;/&quot;)) {</span>
+<span class="nc" id="L22">            contentBaseUrl = contentBaseUrl.substring(0, contentBaseUrl.length() - 1);</span>
+        }
+<span class="pc bpc" id="L24" title="1 of 2 branches missed.">        store = store == null ? new Store(null, null, null, null, null, null) : store;</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">        security = security == null ? new Security(null, null, null, null) : security;</span>
+<span class="pc bpc" id="L26" title="1 of 2 branches missed.">        limits = limits == null ? new Limits(0, 0, 0, null) : limits;</span>
+<span class="fc" id="L27">    }</span>
+
+    /**
+     * Store (Fuseki) settings (D44, D71).
+     *
+     * @param url dataset URL, for example http://fuseki:3030/vocabulary
+     * @param connectTimeout connect timeout
+     * @param readTimeout response timeout of reads
+     * @param writeTimeout response timeout of updates
+     * @param healthTimeout timeout of the health probe
+     * @param retryDelays delays before the read retries
+     */
+    public record Store(
+            String url,
+            Duration connectTimeout,
+            Duration readTimeout,
+            Duration writeTimeout,
+            Duration healthTimeout,
+            java.util.List&lt;Duration&gt; retryDelays) {
+
+<span class="fc" id="L47">        public Store {</span>
+<span class="pc bpc" id="L48" title="2 of 4 branches missed.">            url = url == null || url.isBlank() ? &quot;http://localhost:3030/vocabulary&quot; : url;</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">            connectTimeout = connectTimeout == null ? Duration.ofSeconds(2) : connectTimeout;</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">            readTimeout = readTimeout == null ? Duration.ofSeconds(10) : readTimeout;</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">            writeTimeout = writeTimeout == null ? Duration.ofSeconds(45) : writeTimeout;</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">            healthTimeout = healthTimeout == null ? Duration.ofSeconds(2) : healthTimeout;</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">            retryDelays = retryDelays == null</span>
+<span class="fc" id="L54">                    ? java.util.List.of(Duration.ofMillis(200), Duration.ofMillis(400))</span>
+<span class="pc" id="L55">                    : java.util.List.copyOf(retryDelays);</span>
+<span class="fc" id="L56">        }</span>
+    }
+
+    /**
+     * Token validation settings (E1, E5, D44).
+     *
+     * @param issuerUri the one accepted issuer
+     * @param jwksUri where the realm keys are fetched
+     * @param audience the required audience
+     * @param keyFetchTimeout timeout of a key fetch
+     */
+    public record Security(String issuerUri, String jwksUri, String audience, Duration keyFetchTimeout) {
+
+<span class="fc" id="L69">        public Security {</span>
+<span class="pc bpc" id="L70" title="2 of 4 branches missed.">            issuerUri = issuerUri == null || issuerUri.isBlank() ? &quot;http://localhost:8180/realms/simpl&quot; : issuerUri;</span>
+<span class="pc bpc" id="L71" title="1 of 4 branches missed.">            jwksUri = jwksUri == null || jwksUri.isBlank() ? issuerUri + &quot;/protocol/openid-connect/certs&quot; : jwksUri;</span>
+<span class="pc bpc" id="L72" title="2 of 4 branches missed.">            audience = audience == null || audience.isBlank() ? &quot;vocabulary-manager-be&quot; : audience;</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">            keyFetchTimeout = keyFetchTimeout == null ? Duration.ofSeconds(2) : keyFetchTimeout;</span>
+<span class="fc" id="L74">        }</span>
+    }
+
+    /**
+     * Limits (D15, D43, D71, D76).
+     *
+     * @param maxFileBytes limit of the vocabularyFile part
+     * @param maxRequestBytes limit of a whole multipart request
+     * @param maxJsonBytes limit of a JSON request body
+     * @param lockTimeout maximum wait for the per-vocabulary lock
+     */
+    public record Limits(long maxFileBytes, long maxRequestBytes, long maxJsonBytes, Duration lockTimeout) {
+
+<span class="fc" id="L87">        public Limits {</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">            maxFileBytes = maxFileBytes &lt;= 0 ? 5L * 1024 * 1024 : maxFileBytes;</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">            maxRequestBytes = maxRequestBytes &lt;= 0 ? 6L * 1024 * 1024 : maxRequestBytes;</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">            maxJsonBytes = maxJsonBytes &lt;= 0 ? 1024L * 1024 : maxJsonBytes;</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">            lockTimeout = lockTimeout == null ? Duration.ofSeconds(30) : lockTimeout;</span>
+<span class="fc" id="L92">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

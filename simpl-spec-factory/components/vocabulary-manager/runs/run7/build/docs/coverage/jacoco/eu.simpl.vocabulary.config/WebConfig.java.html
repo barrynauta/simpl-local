@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WebConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.config</a> &gt; <span class="el_source">WebConfig.java</span></div><h1>WebConfig.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.config;
+
+import eu.simpl.vocabulary.api.filter.EntryFilter;
+import eu.simpl.vocabulary.api.filter.RequestGateFilter;
+import eu.simpl.vocabulary.api.problem.ProblemWriter;
+import java.time.Clock;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.web.firewall.HttpFirewall;
+
+/** Servlet filters around Spring Security and shared beans. */
+@Configuration
+@EnableConfigurationProperties(AppProperties.class)
+<span class="fc" id="L17">public class WebConfig {</span>
+
+    /** Runs before Spring Security (order -100). */
+    static final int ENTRY_FILTER_ORDER = -1000;
+
+    /** Runs after Spring Security. */
+    static final int GATE_FILTER_ORDER = -50;
+
+    @Bean
+    public FilterRegistrationBean&lt;EntryFilter&gt; entryFilter(
+            HttpFirewall firewall,
+            ProblemWriter problemWriter,
+            @Value(&quot;${management.server.port:8081}&quot;) int managementPort) {
+<span class="fc" id="L30">        FilterRegistrationBean&lt;EntryFilter&gt; registration =</span>
+                new FilterRegistrationBean&lt;&gt;(new EntryFilter(firewall, problemWriter, managementPort));
+<span class="fc" id="L32">        registration.setOrder(ENTRY_FILTER_ORDER);</span>
+<span class="fc" id="L33">        return registration;</span>
+    }
+
+    @Bean
+    public FilterRegistrationBean&lt;RequestGateFilter&gt; requestGateFilter(
+            ProblemWriter problemWriter, AppProperties properties) {
+<span class="fc" id="L39">        FilterRegistrationBean&lt;RequestGateFilter&gt; registration =</span>
+<span class="fc" id="L40">                new FilterRegistrationBean&lt;&gt;(new RequestGateFilter(problemWriter, properties.limits()));</span>
+<span class="fc" id="L41">        registration.setOrder(GATE_FILTER_ORDER);</span>
+<span class="fc" id="L42">        return registration;</span>
+    }
+
+    @Bean
+    public Clock clock() {
+<span class="fc" id="L47">        return Clock.systemUTC();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

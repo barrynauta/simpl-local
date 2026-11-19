@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Page.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.service</a> &gt; <span class="el_source">Page.java</span></div><h1>Page.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.service;
+
+import java.util.List;
+
+/**
+ * One page of a sorted list (D22).
+ *
+ * @param items items of the page
+ * @param total number of items in the whole list
+ * @param page page number, from 1
+ * @param pageSize page size
+ * @param &lt;T&gt; item type
+ */
+<span class="fc" id="L14">public record Page&lt;T&gt;(List&lt;T&gt; items, long total, long page, int pageSize) {</span>
+
+    /**
+     * Cuts a page out of a full, sorted list.
+     *
+     * @param all the full list
+     * @param page page number, from 1
+     * @param pageSize page size
+     * @param &lt;T&gt; item type
+     * @return the page, empty when beyond the last page
+     */
+    public static &lt;T&gt; Page&lt;T&gt; of(List&lt;T&gt; all, long page, int pageSize) {
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (page - 1 &gt;= (all.size() + (long) pageSize - 1) / pageSize) {</span>
+<span class="fc" id="L27">            return new Page&lt;&gt;(List.of(), all.size(), page, pageSize);</span>
+        }
+<span class="fc" id="L29">        long from = (page - 1) * pageSize;</span>
+<span class="fc" id="L30">        int to = (int) Math.min(all.size(), from + pageSize);</span>
+<span class="fc" id="L31">        return new Page&lt;&gt;(List.copyOf(all.subList((int) from, to)), all.size(), page, pageSize);</span>
+    }
+
+    /** Number of pages; 0 when the list is empty. */
+    public long totalPages() {
+<span class="fc" id="L36">        return (total + pageSize - 1) / pageSize;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

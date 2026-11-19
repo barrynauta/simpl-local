@@ -1,0 +1,88 @@
+# All values can be overridden by environment variables (MACH-07, E4).
+spring:
+  application:
+    name: vocabulary-manager-be
+  threads:
+    virtual:
+      enabled: true
+  servlet:
+    multipart:
+      # Multipart bodies are parsed by Apache Commons FileUpload (MultipartForm), not by the container.
+      enabled: false
+  web:
+    resources:
+      add-mappings: false
+  mvc:
+    problemdetails:
+      enabled: false
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  error:
+    include-stacktrace: never
+    include-message: never
+    whitelabel:
+      enabled: false
+  tomcat:
+    max-swallow-size: 64MB
+    max-part-count: 200
+    max-http-form-post-size: 1MB
+    connection-timeout: 20s
+    threads:
+      max: 200
+  max-http-request-header-size: 16KB
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8081}
+  endpoints:
+    access:
+      default: none
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      access: read-only
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    defaults:
+      enabled: false
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+logging:
+  structured:
+    format:
+      console: ecs
+  level:
+    root: INFO
+    org.apache.jena: WARN
+
+vocabulary:
+  content-base-url: ${VOCABULARY_CONTENT_BASE_URL:https://authority.example/vocabulary-manager}
+  store:
+    url: ${STORE_URL:http://localhost:3030/vocabulary}
+    connect-timeout: 2s
+    read-timeout: 10s
+    write-timeout: 45s
+    health-timeout: 2s
+  security:
+    issuer-uri: ${ISSUER_URI:http://localhost:8180/realms/simpl}
+    jwks-uri: ${JWKS_URI:}
+    audience: ${TOKEN_AUDIENCE:vocabulary-manager-be}
+    key-fetch-timeout: 2s
+  limits:
+    max-file-bytes: 5242880
+    max-request-bytes: 6291456
+    max-json-bytes: 1048576
+    lock-timeout: 30s

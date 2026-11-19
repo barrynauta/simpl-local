@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.api</a> &gt; <span class="el_source">ApiMapper.java</span></div><h1>ApiMapper.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.api;
+
+import eu.simpl.vocabulary.api.dto.CreatedVersionDto;
+import eu.simpl.vocabulary.api.dto.ExternalVocabularyDto;
+import eu.simpl.vocabulary.api.dto.PageDto;
+import eu.simpl.vocabulary.api.dto.SearchItemDto;
+import eu.simpl.vocabulary.api.dto.VersionDto;
+import eu.simpl.vocabulary.api.dto.VocabularyDto;
+import eu.simpl.vocabulary.api.dto.WarningDto;
+import eu.simpl.vocabulary.api.request.QueryParameters;
+import eu.simpl.vocabulary.domain.model.ExternalVocabulary;
+import eu.simpl.vocabulary.domain.model.Vocabulary;
+import eu.simpl.vocabulary.domain.model.VocabularyVersion;
+import eu.simpl.vocabulary.service.CreatedVersion;
+import eu.simpl.vocabulary.service.Page;
+import eu.simpl.vocabulary.service.SearchService.SearchResult;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.function.Function;
+
+/**
+ * Maps the domain to the wire format of the contract (D25, D26, D27, D38) and builds paging links (D22,
+ * D59, D78). href values are relative to the API base (E2).
+ */
+public class ApiMapper {
+
+    private final String contentBaseUrl;
+
+<span class="fc" id="L31">    public ApiMapper(String contentBaseUrl) {</span>
+<span class="fc" id="L32">        this.contentBaseUrl = contentBaseUrl;</span>
+<span class="fc" id="L33">    }</span>
+
+    public static String vocabularyHref(String name) {
+<span class="fc" id="L36">        return &quot;/vocabularies/&quot; + name;</span>
+    }
+
+    public static String versionHref(String name, long version) {
+<span class="fc" id="L40">        return &quot;/vocabularies/&quot; + name + &quot;/versions/&quot; + version;</span>
+    }
+
+    public static String externalHref(String name) {
+<span class="fc" id="L44">        return &quot;/external-vocabularies/&quot; + name;</span>
+    }
+
+    public String contentHref(String name) {
+<span class="fc" id="L48">        return contentBaseUrl + &quot;/content/&quot; + name;</span>
+    }
+
+    public String contentHref(String name, long version) {
+<span class="fc" id="L52">        return contentBaseUrl + &quot;/content/&quot; + name + &quot;/versions/&quot; + version;</span>
+    }
+
+    public VocabularyDto vocabulary(Vocabulary vocabulary) {
+<span class="fc" id="L56">        return new VocabularyDto(</span>
+<span class="fc" id="L57">                vocabularyHref(vocabulary.name()),</span>
+<span class="fc" id="L58">                contentHref(vocabulary.name()),</span>
+<span class="fc" id="L59">                vocabulary.name(),</span>
+<span class="fc" id="L60">                vocabulary.latestVersion(),</span>
+<span class="fc" id="L61">                vocabulary.latestDescription(),</span>
+<span class="fc" id="L62">                vocabulary.status().name(),</span>
+<span class="fc" id="L63">                vocabulary.createdBy(),</span>
+<span class="fc" id="L64">                time(vocabulary.creationDate()),</span>
+<span class="fc" id="L65">                time(vocabulary.lastUpdateDate()));</span>
+    }
+
+    public VersionDto version(VocabularyVersion version, long latestVersion) {
+<span class="fc" id="L69">        return new VersionDto(</span>
+<span class="fc" id="L70">                versionHref(version.name(), version.version()),</span>
+<span class="fc" id="L71">                contentHref(version.name(), version.version()),</span>
+<span class="fc" id="L72">                versionHref(version.name(), latestVersion),</span>
+<span class="fc" id="L73">                version.name(),</span>
+<span class="fc" id="L74">                version.version(),</span>
+<span class="fc" id="L75">                version.description(),</span>
+<span class="fc" id="L76">                version.changelog(),</span>
+<span class="fc" id="L77">                version.status().name(),</span>
+<span class="fc" id="L78">                version.createdBy(),</span>
+<span class="fc" id="L79">                time(version.creationDate()),</span>
+<span class="fc" id="L80">                time(version.lastUpdateDate()));</span>
+    }
+
+    public CreatedVersionDto created(CreatedVersion created) {
+<span class="fc" id="L84">        VocabularyVersion version = created.version();</span>
+<span class="fc" id="L85">        List&lt;WarningDto&gt; warnings = created.warnings().stream()</span>
+<span class="fc" id="L86">                .map(w -&gt; new WarningDto(w.code(), w.description(), w.location()))</span>
+<span class="fc" id="L87">                .toList();</span>
+<span class="fc" id="L88">        return new CreatedVersionDto(</span>
+<span class="fc" id="L89">                versionHref(version.name(), version.version()),</span>
+<span class="fc" id="L90">                contentHref(version.name(), version.version()),</span>
+<span class="fc" id="L91">                versionHref(version.name(), version.version()),</span>
+<span class="fc" id="L92">                version.name(),</span>
+<span class="fc" id="L93">                version.version(),</span>
+<span class="fc" id="L94">                version.description(),</span>
+<span class="fc" id="L95">                version.changelog(),</span>
+<span class="fc" id="L96">                version.status().name(),</span>
+<span class="fc" id="L97">                version.createdBy(),</span>
+<span class="fc" id="L98">                time(version.creationDate()),</span>
+<span class="fc" id="L99">                time(version.lastUpdateDate()),</span>
+                warnings);
+    }
+
+    public SearchItemDto searchItem(SearchResult result) {
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (result.latest()) {</span>
+<span class="fc" id="L105">            return new SearchItemDto(</span>
+<span class="fc" id="L106">                    vocabularyHref(result.name()),</span>
+<span class="fc" id="L107">                    contentHref(result.name()),</span>
+<span class="fc" id="L108">                    result.name(),</span>
+<span class="fc" id="L109">                    result.version(),</span>
+<span class="fc" id="L110">                    result.status().name(),</span>
+                    true);
+        }
+<span class="fc" id="L113">        return new SearchItemDto(</span>
+<span class="fc" id="L114">                versionHref(result.name(), result.version()),</span>
+<span class="fc" id="L115">                contentHref(result.name(), result.version()),</span>
+<span class="fc" id="L116">                result.name(),</span>
+<span class="fc" id="L117">                result.version(),</span>
+<span class="fc" id="L118">                result.status().name(),</span>
+                false);
+    }
+
+    public ExternalVocabularyDto external(ExternalVocabulary external) {
+<span class="fc" id="L123">        return new ExternalVocabularyDto(</span>
+<span class="fc" id="L124">                externalHref(external.name()),</span>
+<span class="fc" id="L125">                external.name(),</span>
+<span class="fc" id="L126">                external.namespaceUri(),</span>
+<span class="fc" id="L127">                external.aliasUris(),</span>
+<span class="fc" id="L128">                external.sourceUri(),</span>
+<span class="fc" id="L129">                external.description(),</span>
+<span class="fc" id="L130">                external.createdBy(),</span>
+<span class="fc" id="L131">                time(external.creationDate()));</span>
+    }
+
+    /**
+     * A paged collection with links (D22, D59, D78).
+     *
+     * @param path collection path relative to the API base
+     * @param query request query parameters
+     * @param page the page
+     * @param mapper item mapper
+     * @param &lt;S&gt; domain type
+     * @param &lt;T&gt; wire type
+     * @return the wire page
+     */
+    public static &lt;S, T&gt; PageDto&lt;T&gt; page(String path, QueryParameters query, Page&lt;S&gt; page, Function&lt;S, T&gt; mapper) {
+<span class="fc" id="L146">        long totalPages = page.totalPages();</span>
+<span class="fc" id="L147">        long number = page.page();</span>
+<span class="fc" id="L148">        String prev = null;</span>
+<span class="fc bfc" id="L149" title="All 4 branches covered.">        if (page.total() &gt; 0 &amp;&amp; number &gt; 1) {</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">            prev = link(path, query, number &gt; totalPages ? totalPages : number - 1, page.pageSize());</span>
+        }
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        String next = number &lt; totalPages ? link(path, query, number + 1, page.pageSize()) : null;</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        String last = page.total() &gt; 0 ? link(path, query, totalPages, page.pageSize()) : null;</span>
+<span class="fc" id="L154">        return new PageDto&lt;&gt;(</span>
+                number,
+                totalPages,
+<span class="fc" id="L157">                page.total(),</span>
+<span class="fc" id="L158">                page.pageSize(),</span>
+<span class="fc" id="L159">                link(path, query, number, page.pageSize()),</span>
+<span class="fc" id="L160">                link(path, query, 1, page.pageSize()),</span>
+                prev,
+                next,
+                last,
+<span class="fc" id="L164">                page.items().stream().map(mapper).toList());</span>
+    }
+
+    /**
+     * A search result collection: one page holding everything, no links (D38).
+     *
+     * @param items the items
+     * @param &lt;T&gt; item type
+     * @return the wire page
+     */
+    public static &lt;T&gt; PageDto&lt;T&gt; unpaged(List&lt;T&gt; items) {
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">        return new PageDto&lt;&gt;(1, items.isEmpty() ? 0 : 1, items.size(), 100, null, null, null, null, null, items);</span>
+    }
+
+    static String link(String path, QueryParameters query, long page, int pageSize) {
+<span class="fc" id="L179">        StringBuilder link = new StringBuilder(path)</span>
+<span class="fc" id="L180">                .append(&quot;?page=&quot;)</span>
+<span class="fc" id="L181">                .append(page)</span>
+<span class="fc" id="L182">                .append(&quot;&amp;pageSize=&quot;)</span>
+<span class="fc" id="L183">                .append(pageSize);</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">        for (QueryParameters.Parameter parameter : query.parameters()) {</span>
+<span class="fc bfc" id="L185" title="All 4 branches covered.">            if (&quot;page&quot;.equals(parameter.name()) || &quot;pageSize&quot;.equals(parameter.name())) {</span>
+<span class="fc" id="L186">                continue;</span>
+            }
+<span class="fc" id="L188">            link.append('&amp;').append(encode(parameter.name())).append('=').append(encode(parameter.value()));</span>
+<span class="fc" id="L189">        }</span>
+<span class="fc" id="L190">        return link.toString();</span>
+    }
+
+    private static String encode(String value) {
+<span class="fc" id="L194">        StringBuilder out = new StringBuilder();</span>
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        for (byte b : value.getBytes(StandardCharsets.UTF_8)) {</span>
+<span class="fc" id="L196">            char c = (char) (b &amp; 0xff);</span>
+<span class="pc bpc" id="L197" title="5 of 22 branches missed.">            if ((c &gt;= 'A' &amp;&amp; c &lt;= 'Z')</span>
+                    || (c &gt;= 'a' &amp;&amp; c &lt;= 'z')
+                    || (c &gt;= '0' &amp;&amp; c &lt;= '9')
+                    || c == '-'
+                    || c == '.'
+                    || c == '_'
+                    || c == '~'
+                    || c == ':') {
+<span class="fc" id="L205">                out.append(c);</span>
+            } else {
+<span class="nc" id="L207">                out.append('%').append(String.format(&quot;%02X&quot;, b &amp; 0xff));</span>
+            }
+        }
+<span class="fc" id="L210">        return out.toString();</span>
+    }
+
+    /**
+     * UTC time to the second with 'Z' (D58).
+     *
+     * @param instant the time
+     * @return ISO 8601 text
+     */
+    public static String time(Instant instant) {
+<span class="fc" id="L220">        return instant.truncatedTo(ChronoUnit.SECONDS).toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EntryFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.api.filter</a> &gt; <span class="el_source">EntryFilter.java</span></div><h1>EntryFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.api.filter;
+
+import eu.simpl.vocabulary.api.RouteTable;
+import eu.simpl.vocabulary.api.problem.ApiException;
+import eu.simpl.vocabulary.api.problem.ProblemWriter;
+import eu.simpl.vocabulary.api.problem.Problems;
+import eu.simpl.vocabulary.security.IdpUnavailableException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.RequestRejectedException;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * First filter of every API request. It sets the correlation id (MSV-09) and applies the checks that come
+ * before authentication (D67): unknown method 405, firewall 400, undeclared method on a known path 405
+ * (D77). It also turns an unavailable identity provider into 503 (D44) and any unexpected failure in a
+ * later filter into a problem response (A10, fail closed).
+ */
+public class EntryFilter extends OncePerRequestFilter {
+
+    /** Request attribute holding the matched {@link RouteTable.Operation}. */
+<span class="fc" id="L32">    public static final String OPERATION_ATTRIBUTE = EntryFilter.class.getName() + &quot;.operation&quot;;</span>
+
+    public static final String CORRELATION_HEADER = &quot;X-Correlation-ID&quot;;
+    public static final String CORRELATION_MDC = &quot;correlationId&quot;;
+
+<span class="fc" id="L37">    private static final Logger LOG = LoggerFactory.getLogger(EntryFilter.class);</span>
+<span class="fc" id="L38">    private static final Pattern SAFE_CORRELATION = Pattern.compile(&quot;^[A-Za-z0-9._-]{1,64}$&quot;);</span>
+
+    private final HttpFirewall firewall;
+    private final ProblemWriter problemWriter;
+    private final int managementPort;
+
+<span class="fc" id="L44">    public EntryFilter(HttpFirewall firewall, ProblemWriter problemWriter, int managementPort) {</span>
+<span class="fc" id="L45">        this.firewall = firewall;</span>
+<span class="fc" id="L46">        this.problemWriter = problemWriter;</span>
+<span class="fc" id="L47">        this.managementPort = managementPort;</span>
+<span class="fc" id="L48">    }</span>
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">        return request.getLocalPort() == managementPort;</span>
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L58">        String correlationId = correlationId(request);</span>
+<span class="fc" id="L59">        MDC.put(CORRELATION_MDC, correlationId);</span>
+<span class="fc" id="L60">        response.setHeader(CORRELATION_HEADER, correlationId);</span>
+        try {
+<span class="fc" id="L62">            Optional&lt;ApiException&gt; early = earlyRejection(request);</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            if (early.isPresent()) {</span>
+<span class="fc" id="L64">                problemWriter.write(response, early.get());</span>
+<span class="fc" id="L65">                return;</span>
+            }
+<span class="fc" id="L67">            chain.doFilter(request, response);</span>
+<span class="fc" id="L68">        } catch (RuntimeException e) {</span>
+<span class="fc" id="L69">            handleUnexpected(response, e);</span>
+        } finally {
+<span class="fc" id="L71">            MDC.remove(CORRELATION_MDC);</span>
+        }
+<span class="fc" id="L73">    }</span>
+
+    private Optional&lt;ApiException&gt; earlyRejection(HttpServletRequest request) {
+<span class="fc" id="L76">        String method = request.getMethod();</span>
+<span class="fc" id="L77">        Optional&lt;RouteTable.PathMatch&gt; match = RouteTable.match(request.getRequestURI());</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        if (!RouteTable.KNOWN_METHODS.contains(method)) {</span>
+<span class="fc" id="L79">            return Optional.of(Problems.methodNotAllowed(</span>
+<span class="fc" id="L80">                    match.map(RouteTable.PathMatch::allowHeader).orElse(null)));</span>
+        }
+        try {
+<span class="fc" id="L83">            firewall.getFirewalledRequest(request);</span>
+<span class="fc" id="L84">        } catch (RequestRejectedException e) {</span>
+<span class="fc" id="L85">            LOG.info(&quot;Request rejected by the firewall: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L86">            return Optional.of(Problems.rejectedRequest());</span>
+<span class="fc" id="L87">        }</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (match.isPresent()) {</span>
+<span class="fc" id="L89">            Optional&lt;RouteTable.Operation&gt; operation = match.get().operation(method);</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">            if (operation.isEmpty()) {</span>
+<span class="fc" id="L91">                return Optional.of(Problems.methodNotAllowed(match.get().allowHeader()));</span>
+            }
+<span class="fc" id="L93">            request.setAttribute(OPERATION_ATTRIBUTE, operation.get());</span>
+        }
+<span class="fc" id="L95">        return Optional.empty();</span>
+    }
+
+    private void handleUnexpected(HttpServletResponse response, RuntimeException e) throws IOException {
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">        if (causedBy(e, IdpUnavailableException.class)) {</span>
+<span class="fc" id="L100">            LOG.warn(&quot;Token could not be checked, identity provider unavailable: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L101">            problemWriter.write(response, Problems.serviceUnavailable(Problems.IDP_UNAVAILABLE));</span>
+<span class="fc" id="L102">            return;</span>
+        }
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (e instanceof ApiException apiException) {</span>
+<span class="nc" id="L105">            problemWriter.write(response, apiException);</span>
+<span class="nc" id="L106">            return;</span>
+        }
+<span class="nc" id="L108">        LOG.error(&quot;Unexpected failure while processing the request&quot;, e);</span>
+<span class="nc" id="L109">        problemWriter.write(response, Problems.internalError());</span>
+<span class="nc" id="L110">    }</span>
+
+    /**
+     * Tells whether the throwable or one of its causes has the given type.
+     *
+     * @param throwable the throwable
+     * @param type the type
+     * @return true when found
+     */
+    public static boolean causedBy(Throwable throwable, Class&lt;? extends Throwable&gt; type) {
+<span class="fc" id="L120">        Throwable current = throwable;</span>
+<span class="fc" id="L121">        int depth = 0;</span>
+<span class="pc bpc" id="L122" title="1 of 4 branches missed.">        while (current != null &amp;&amp; depth &lt; 16) {</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">            if (type.isInstance(current)) {</span>
+<span class="fc" id="L124">                return true;</span>
+            }
+<span class="fc" id="L126">            current = current.getCause();</span>
+<span class="fc" id="L127">            depth++;</span>
+        }
+<span class="fc" id="L129">        return false;</span>
+    }
+
+    private static String correlationId(HttpServletRequest request) {
+<span class="fc" id="L133">        String given = request.getHeader(CORRELATION_HEADER);</span>
+<span class="pc bpc" id="L134" title="3 of 4 branches missed.">        if (given != null &amp;&amp; SAFE_CORRELATION.matcher(given).matches()) {</span>
+<span class="nc" id="L135">            return given;</span>
+        }
+<span class="fc" id="L137">        return UUID.randomUUID().toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

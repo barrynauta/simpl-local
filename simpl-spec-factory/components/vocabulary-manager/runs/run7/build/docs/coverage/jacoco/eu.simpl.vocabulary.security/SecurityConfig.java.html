@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabulary.security</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabulary.security;
+
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.proc.JWSVerificationKeySelector;
+import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+import eu.simpl.vocabulary.api.RouteTable;
+import eu.simpl.vocabulary.api.filter.EntryFilter;
+import eu.simpl.vocabulary.api.problem.ProblemWriter;
+import eu.simpl.vocabulary.api.problem.Problems;
+import eu.simpl.vocabulary.config.AppProperties;
+import jakarta.servlet.DispatcherType;
+import java.net.URI;
+import java.time.Clock;
+import java.time.Duration;
+import java.util.List;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimNames;
+import org.springframework.security.oauth2.jwt.JwtClaimValidator;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.RequestRejectedHandler;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
+
+/**
+ * Token validation and access rules (D16, D17, D40, D44, E1, E5). Spring Security and Nimbus JOSE + JWT do
+ * the cryptography (REUSE-01); the role per operation comes from the {@link RouteTable}.
+ */
+@Configuration
+@EnableWebSecurity
+<span class="fc" id="L51">public class SecurityConfig {</span>
+
+<span class="fc" id="L53">    private static final Logger LOG = LoggerFactory.getLogger(SecurityConfig.class);</span>
+
+    @Bean
+    public RealmKeySource realmKeySource(AppProperties properties) {
+<span class="fc" id="L57">        AppProperties.Security security = properties.security();</span>
+<span class="fc" id="L58">        RealmKeySource source = new RealmKeySource(</span>
+<span class="fc" id="L59">                new HttpKeyFetcher(URI.create(security.jwksUri()), security.keyFetchTimeout()),</span>
+<span class="fc" id="L60">                Duration.ofSeconds(10),</span>
+<span class="fc" id="L61">                Clock.systemUTC());</span>
+<span class="fc" id="L62">        Thread.ofVirtual().name(&quot;realm-key-loader&quot;).start(source::tryRefresh);</span>
+<span class="fc" id="L63">        return source;</span>
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder(RealmKeySource keySource, AppProperties properties) {
+<span class="fc" id="L68">        DefaultJWTProcessor&lt;SecurityContext&gt; processor = new DefaultJWTProcessor&lt;&gt;();</span>
+<span class="fc" id="L69">        processor.setJWSKeySelector(new JWSVerificationKeySelector&lt;&gt;(</span>
+<span class="fc" id="L70">                Set.of(</span>
+                        JWSAlgorithm.RS256,
+                        JWSAlgorithm.RS384,
+                        JWSAlgorithm.RS512,
+                        JWSAlgorithm.PS256,
+                        JWSAlgorithm.ES256),
+                keySource));
+<span class="fc" id="L77">        processor.setJWTClaimsSetVerifier((claims, context) -&gt; {</span>
+            // Claims are checked by the Spring validators below.
+<span class="fc" id="L79">        });</span>
+<span class="fc" id="L80">        NimbusJwtDecoder decoder = new NimbusJwtDecoder(processor);</span>
+<span class="fc" id="L81">        decoder.setJwtValidator(tokenValidator(properties.security()));</span>
+<span class="fc" id="L82">        return decoder;</span>
+    }
+
+    /**
+     * Issuer, expiry and audience checks (E5, OWT-A07).
+     *
+     * @param security token settings
+     * @return the validator
+     */
+    static OAuth2TokenValidator&lt;Jwt&gt; tokenValidator(AppProperties.Security security) {
+<span class="fc" id="L92">        String audience = security.audience();</span>
+<span class="fc" id="L93">        OAuth2TokenValidator&lt;Jwt&gt; audienceValidator =</span>
+<span class="pc bpc" id="L94" title="1 of 4 branches missed.">                new JwtClaimValidator&lt;List&lt;String&gt;&gt;(JwtClaimNames.AUD, aud -&gt; aud != null &amp;&amp; aud.contains(audience));</span>
+<span class="fc" id="L95">        return new DelegatingOAuth2TokenValidator&lt;&gt;(</span>
+<span class="fc" id="L96">                JwtValidators.createDefaultWithIssuer(security.issuerUri()), audienceValidator);</span>
+    }
+
+    @Bean
+    public HttpFirewall httpFirewall() {
+<span class="fc" id="L101">        StrictHttpFirewall firewall = new StrictHttpFirewall();</span>
+<span class="fc" id="L102">        firewall.setUnsafeAllowAnyHttpMethod(true);</span>
+<span class="fc" id="L103">        return firewall;</span>
+    }
+
+    @Bean
+    public RequestRejectedHandler requestRejectedHandler(ProblemWriter problemWriter) {
+<span class="pc" id="L108">        return (request, response, exception) -&gt; problemWriter.write(response, Problems.rejectedRequest());</span>
+    }
+
+    @Bean
+    public AuthenticationEntryPoint problemEntryPoint(ProblemWriter problemWriter) {
+<span class="fc" id="L113">        return (request, response, exception) -&gt; {</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">            if (EntryFilter.causedBy(exception, IdpUnavailableException.class)) {</span>
+<span class="nc" id="L115">                LOG.warn(&quot;Token could not be checked: identity provider unavailable&quot;);</span>
+<span class="nc" id="L116">                problemWriter.write(response, Problems.serviceUnavailable(Problems.IDP_UNAVAILABLE));</span>
+<span class="nc" id="L117">                return;</span>
+            }
+<span class="fc" id="L119">            LOG.warn(</span>
+                    &quot;Authentication failed: {} {} ({})&quot;,
+<span class="fc" id="L121">                    request.getMethod(),</span>
+<span class="fc" id="L122">                    request.getRequestURI(),</span>
+<span class="fc" id="L123">                    exception.getClass().getSimpleName());</span>
+<span class="fc" id="L124">            response.setHeader(&quot;WWW-Authenticate&quot;, &quot;Bearer&quot;);</span>
+<span class="fc" id="L125">            problemWriter.write(response, Problems.unauthorized());</span>
+<span class="fc" id="L126">        };</span>
+    }
+
+    @Bean
+    @Order(1)
+    public SecurityFilterChain managementChain(
+            HttpSecurity http, @Value(&quot;${management.server.port:8081}&quot;) int managementPort) throws Exception {
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">        http.securityMatcher(request -&gt; request.getLocalPort() == managementPort)</span>
+<span class="fc" id="L134">                .authorizeHttpRequests(rules -&gt; rules.anyRequest().permitAll())</span>
+<span class="fc" id="L135">                .csrf(csrf -&gt; csrf.disable())</span>
+<span class="fc" id="L136">                .sessionManagement(s -&gt; s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));</span>
+<span class="fc" id="L137">        return http.build();</span>
+    }
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain apiChain(
+            HttpSecurity http, JwtDecoder jwtDecoder, AuthenticationEntryPoint problemEntryPoint) throws Exception {
+<span class="fc" id="L144">        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();</span>
+<span class="fc" id="L145">        converter.setJwtGrantedAuthoritiesConverter(Roles::authorities);</span>
+<span class="fc" id="L146">        http.csrf(csrf -&gt; csrf.disable())</span>
+<span class="fc" id="L147">                .sessionManagement(s -&gt; s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
+<span class="fc" id="L148">                .requestCache(cache -&gt; cache.disable())</span>
+<span class="fc" id="L149">                .formLogin(form -&gt; form.disable())</span>
+<span class="fc" id="L150">                .httpBasic(basic -&gt; basic.disable())</span>
+<span class="fc" id="L151">                .logout(logout -&gt; logout.disable())</span>
+<span class="fc" id="L152">                .authorizeHttpRequests(rules -&gt; rules.dispatcherTypeMatchers(DispatcherType.ERROR)</span>
+<span class="fc" id="L153">                        .permitAll()</span>
+<span class="fc" id="L154">                        .requestMatchers(HttpMethod.GET, RouteTable.API_PREFIX + &quot;/health&quot;)</span>
+<span class="fc" id="L155">                        .permitAll()</span>
+<span class="fc" id="L156">                        .anyRequest()</span>
+<span class="fc" id="L157">                        .authenticated())</span>
+<span class="fc" id="L158">                .oauth2ResourceServer(oauth -&gt; oauth.bearerTokenResolver(bearerTokenResolver())</span>
+<span class="fc" id="L159">                        .authenticationEntryPoint(problemEntryPoint)</span>
+<span class="fc" id="L160">                        .jwt(jwt -&gt; jwt.decoder(jwtDecoder).jwtAuthenticationConverter(converter)))</span>
+<span class="fc" id="L161">                .exceptionHandling(e -&gt; e.authenticationEntryPoint(problemEntryPoint))</span>
+<span class="fc" id="L162">                .headers(headers -&gt; headers.contentSecurityPolicy(</span>
+<span class="fc" id="L163">                                csp -&gt; csp.policyDirectives(&quot;default-src 'none'; frame-ancestors 'none'&quot;))</span>
+<span class="fc" id="L164">                        .frameOptions(frame -&gt; frame.deny()));</span>
+<span class="fc" id="L165">        return http.build();</span>
+    }
+
+    private static BearerTokenResolver bearerTokenResolver() {
+<span class="fc" id="L169">        DefaultBearerTokenResolver delegate = new DefaultBearerTokenResolver();</span>
+<span class="fc" id="L170">        return request -&gt; {</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">            if ((RouteTable.API_PREFIX + &quot;/health&quot;).equals(request.getRequestURI())) {</span>
+<span class="fc" id="L172">                return null;</span>
+            }
+<span class="fc" id="L174">            return delegate.resolve(request);</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>
