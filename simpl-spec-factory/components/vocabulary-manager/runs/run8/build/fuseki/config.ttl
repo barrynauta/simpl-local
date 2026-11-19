@@ -1,0 +1,32 @@
+# Fuseki configuration (E3, D83). Dataset 'vocabulary' on TDB2. No anonymous access:
+#   query  : read user, update user, backup user
+#   update : update user, backup user
+#   data   : Graph Store Protocol, backup user only (backup and restore scripts)
+# Dataset 'vocabulary-restore' is the staging dataset of the restore procedure (Q3), backup user only.
+PREFIX fuseki: <http://jena.apache.org/fuseki#>
+PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX tdb2:   <http://jena.apache.org/2016/tdb#>
+
+[] rdf:type fuseki:Server .
+
+<#vocabulary> rdf:type fuseki:Service ;
+    fuseki:name "vocabulary" ;
+    fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "query" ;
+                      fuseki:allowedUsers "@READ_USER@", "@UPDATE_USER@", "@BACKUP_USER@" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:update ; fuseki:name "update" ;
+                      fuseki:allowedUsers "@UPDATE_USER@", "@BACKUP_USER@" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:gsp-rw ; fuseki:name "data" ;
+                      fuseki:allowedUsers "@BACKUP_USER@" ] ;
+    fuseki:dataset <#vocabularyData> .
+
+<#vocabularyData> rdf:type tdb2:DatasetTDB2 ;
+    tdb2:location "/fuseki/databases/vocabulary" .
+
+<#restore> rdf:type fuseki:Service ;
+    fuseki:name "vocabulary-restore" ;
+    fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "query" ; fuseki:allowedUsers "@BACKUP_USER@" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:gsp-rw ; fuseki:name "data" ; fuseki:allowedUsers "@BACKUP_USER@" ] ;
+    fuseki:dataset <#restoreData> .
+
+<#restoreData> rdf:type tdb2:DatasetTDB2 ;
+    tdb2:location "/fuseki/databases/vocabulary-restore" .

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Responses.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.api</a> &gt; <span class="el_source">Responses.java</span></div><h1>Responses.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.api;
+
+import eu.simpl.vocabularymanager.security.AuthenticatedUser;
+import eu.simpl.vocabularymanager.web.problem.Problems;
+import java.util.List;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
+
+/**
+ * Builds success responses with a preset Content-Type, so the body format never depends on content negotiation (the
+ * Accept check of D63 has already run).
+ */
+@Component
+public class Responses {
+
+    /** text/turtle without charset (D70). */
+<span class="fc" id="L24">    public static final MediaType TURTLE = new MediaType(&quot;text&quot;, &quot;turtle&quot;);</span>
+
+    private final JsonMapper jsonMapper;
+
+    /**
+     * @param jsonMapper the JSON mapper
+     */
+<span class="fc" id="L31">    public Responses(JsonMapper jsonMapper) {</span>
+<span class="fc" id="L32">        this.jsonMapper = jsonMapper;</span>
+<span class="fc" id="L33">    }</span>
+
+    /**
+     * @param body the representation
+     * @return 200 with application/json
+     */
+    public ResponseEntity&lt;byte[]&gt; ok(Object body) {
+<span class="fc" id="L40">        return json(HttpStatus.OK, body, null);</span>
+    }
+
+    /**
+     * @param body the representation
+     * @param location the Location header, relative to the API base
+     * @return 201 with application/json
+     */
+    public ResponseEntity&lt;byte[]&gt; created(Object body, String location) {
+<span class="fc" id="L49">        return json(HttpStatus.CREATED, body, location);</span>
+    }
+
+    /**
+     * @param content stored Turtle bytes
+     * @param filename the attachment filename (D29)
+     * @return 200 with text/turtle
+     */
+    public ResponseEntity&lt;byte[]&gt; turtle(byte[] content, String filename) {
+<span class="fc" id="L58">        HttpHeaders headers = new HttpHeaders();</span>
+<span class="fc" id="L59">        headers.setContentType(TURTLE);</span>
+<span class="fc" id="L60">        headers.setContentDisposition(</span>
+<span class="fc" id="L61">                ContentDisposition.attachment().filename(filename).build());</span>
+<span class="fc" id="L62">        return new ResponseEntity&lt;&gt;(content, headers, HttpStatus.OK);</span>
+    }
+
+    private ResponseEntity&lt;byte[]&gt; json(HttpStatus status, Object body, String location) {
+<span class="fc" id="L66">        HttpHeaders headers = new HttpHeaders();</span>
+<span class="fc" id="L67">        headers.setContentType(MediaType.APPLICATION_JSON);</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (location != null) {</span>
+<span class="fc" id="L69">            headers.set(HttpHeaders.LOCATION, location);</span>
+        }
+<span class="fc" id="L71">        return new ResponseEntity&lt;&gt;(jsonMapper.writeValueAsBytes(body), headers, status);</span>
+    }
+
+    /**
+     * @return the caller of the current request
+     */
+    public static AuthenticatedUser currentUser() {
+<span class="fc" id="L78">        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();</span>
+<span class="pc bpc" id="L79" title="2 of 4 branches missed.">        if (authentication != null &amp;&amp; authentication.getPrincipal() instanceof AuthenticatedUser user) {</span>
+<span class="fc" id="L80">            return user;</span>
+        }
+<span class="nc" id="L82">        throw new IllegalStateException(&quot;No authenticated user on a secured operation&quot;);</span>
+    }
+
+    /**
+     * @param issues collected issues
+     * @throws eu.simpl.vocabularymanager.web.problem.ApiException 400 when there are issues
+     */
+    public static void failOn(List&lt;eu.simpl.vocabularymanager.web.problem.ProblemIssue&gt; issues) {
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L91">            throw Problems.badRequest(issues);</span>
+        }
+<span class="fc" id="L93">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MultipartForm.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.body</a> &gt; <span class="el_source">MultipartForm.java</span></div><h1>MultipartForm.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.body;
+
+import eu.simpl.vocabularymanager.web.problem.ProblemIssue;
+import eu.simpl.vocabularymanager.web.problem.Problems;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import org.apache.tomcat.util.http.fileupload.MultipartStream;
+import org.apache.tomcat.util.http.fileupload.ParameterParser;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
+
+/**
+ * The parts of a multipart/form-data request, read with the multipart stream parser bundled with the servlet container
+ * (Tomcat's copy of Apache Commons FileUpload, REUSE-02). The container's own part handling is not used because it
+ * silently drops a part with an empty name, which D70 requires to be reported. Limits (D15, D76): a vocabularyFile
+ * part over 5 MB or a request over 6 MB gives 413. Unknown, empty-named and repeated parts give 400 (D52, D70).
+ */
+public final class MultipartForm {
+
+    /** Largest vocabularyFile part (D15). */
+    public static final long MAX_FILE_BYTES = 5L * 1024 * 1024;
+    /** Largest multipart request (D76). */
+    public static final long MAX_REQUEST_BYTES = 6L * 1024 * 1024;
+    /** Most parts in one request: 20 aliases plus the other fields, with room to report unknown ones. */
+    static final int MAX_PARTS = 50;
+    private static final int MAX_PART_HEADER_BYTES = 2048;
+
+    private final Map&lt;String, List&lt;byte[]&gt;&gt; parts;
+
+<span class="fc" id="L40">    private MultipartForm(Map&lt;String, List&lt;byte[]&gt;&gt; parts) {</span>
+<span class="fc" id="L41">        this.parts = parts;</span>
+<span class="fc" id="L42">    }</span>
+
+    /**
+     * @param request the request
+     * @param allowed the part names the operation defines
+     * @param repeatable the part names that may appear more than once
+     * @return the form, with every part read
+     * @throws eu.simpl.vocabularymanager.web.problem.ApiException 413 or 400
+     */
+    public static MultipartForm read(HttpServletRequest request, Set&lt;String&gt; allowed, Set&lt;String&gt; repeatable) {
+<span class="fc" id="L52">        byte[] boundary = boundary(request.getContentType());</span>
+<span class="fc" id="L53">        Map&lt;String, List&lt;byte[]&gt;&gt; parts = new LinkedHashMap&lt;&gt;();</span>
+        LimitedInputStream input;
+        try {
+<span class="fc" id="L56">            input = new LimitedInputStream(request.getInputStream(), MAX_REQUEST_BYTES);</span>
+<span class="nc" id="L57">        } catch (IOException e) {</span>
+<span class="nc" id="L58">            throw unreadable();</span>
+<span class="fc" id="L59">        }</span>
+        try {
+<span class="fc" id="L61">            MultipartStream stream = new MultipartStream(input, boundary, 8192, null);</span>
+<span class="fc" id="L62">            stream.setHeaderEncoding(StandardCharsets.UTF_8.name());</span>
+<span class="fc" id="L63">            stream.setPartHeaderSizeMax(MAX_PART_HEADER_BYTES);</span>
+<span class="fc" id="L64">            boolean next = stream.skipPreamble();</span>
+<span class="fc" id="L65">            int count = 0;</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            while (next) {</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">                if (++count &gt; MAX_PARTS) {</span>
+<span class="nc" id="L68">                    throw Problems.schemaViolation(&quot;body&quot;, &quot;body&quot;, &quot;The request has too many form fields.&quot;);</span>
+                }
+<span class="fc" id="L70">                String name = fieldName(stream.readHeaders());</span>
+<span class="fc" id="L71">                ByteArrayOutputStream body = new ByteArrayOutputStream();</span>
+<span class="fc" id="L72">                stream.readBodyData(body);</span>
+<span class="fc bfc" id="L73" title="All 4 branches covered.">                if (&quot;vocabularyFile&quot;.equals(name) &amp;&amp; body.size() &gt; MAX_FILE_BYTES) {</span>
+<span class="fc" id="L74">                    throw Problems.payloadTooLarge(&quot;vocabularyFile&quot;);</span>
+                }
+<span class="fc" id="L76">                parts.computeIfAbsent(name, key -&gt; new ArrayList&lt;&gt;()).add(body.toByteArray());</span>
+<span class="fc" id="L77">                next = stream.readBoundary();</span>
+<span class="fc" id="L78">            }</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">            if (count == 0) {</span>
+<span class="fc" id="L80">                throw unreadable();</span>
+            }
+<span class="fc" id="L82">        } catch (IOException | RuntimeException e) {</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">            if (input.exceeded()) {</span>
+<span class="nc" id="L84">                throw Problems.payloadTooLarge(&quot;vocabularyFile&quot;);</span>
+            }
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">            if (e instanceof eu.simpl.vocabularymanager.web.problem.ApiException api) {</span>
+<span class="fc" id="L87">                throw api;</span>
+            }
+<span class="nc" id="L89">            throw unreadable();</span>
+<span class="fc" id="L90">        }</span>
+<span class="fc" id="L91">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L92">        parts.forEach((name, values) -&gt; {</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc" id="L94">                issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, name, &quot;Form field '&quot; + shorten(name)</span>
+                        + &quot;' is not defined for this operation.&quot;));
+<span class="fc bfc" id="L96" title="All 4 branches covered.">            } else if (values.size() &gt; 1 &amp;&amp; !repeatable.contains(name)) {</span>
+<span class="fc" id="L97">                issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, name, &quot;Form field '&quot; + name</span>
+                        + &quot;' may be given only once.&quot;));
+            }
+<span class="fc" id="L100">        });</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L102">            throw Problems.badRequest(issues);</span>
+        }
+<span class="fc" id="L104">        return new MultipartForm(parts);</span>
+    }
+
+    private static byte[] boundary(String contentType) {
+        try {
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">            String boundary = contentType == null ? null : MediaType.parseMediaType(contentType).getParameter(&quot;boundary&quot;);</span>
+<span class="pc bpc" id="L110" title="4 of 8 branches missed.">            if (boundary != null &amp;&amp; boundary.length() &gt; 1 &amp;&amp; boundary.startsWith(&quot;\&quot;&quot;) &amp;&amp; boundary.endsWith(&quot;\&quot;&quot;)) {</span>
+<span class="nc" id="L111">                boundary = boundary.substring(1, boundary.length() - 1);</span>
+            }
+<span class="pc bpc" id="L113" title="2 of 6 branches missed.">            if (boundary == null || boundary.isEmpty() || boundary.length() &gt; 70) {</span>
+<span class="fc" id="L114">                throw unreadable();</span>
+            }
+<span class="fc" id="L116">            return boundary.getBytes(StandardCharsets.ISO_8859_1);</span>
+<span class="nc" id="L117">        } catch (InvalidMediaTypeException e) {</span>
+<span class="nc" id="L118">            throw unreadable();</span>
+        }
+    }
+
+    /**
+     * @param headers the raw header block of one part
+     * @return the name parameter of its Content-Disposition, or an empty string when it has none (D70)
+     */
+    static String fieldName(String headers) {
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">        for (String line : headers.split(&quot;\r\n&quot;)) {</span>
+<span class="fc" id="L128">            int colon = line.indexOf(':');</span>
+<span class="pc bpc" id="L129" title="2 of 4 branches missed.">            if (colon &gt; 0 &amp;&amp; line.substring(0, colon).trim().toLowerCase(Locale.ROOT).equals(&quot;content-disposition&quot;)) {</span>
+<span class="fc" id="L130">                ParameterParser parser = new ParameterParser();</span>
+<span class="fc" id="L131">                parser.setLowerCaseNames(true);</span>
+<span class="fc" id="L132">                String name = parser.parse(line.substring(colon + 1), ';').get(&quot;name&quot;);</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">                return name == null ? &quot;&quot; : name;</span>
+            }
+        }
+<span class="nc" id="L136">        return &quot;&quot;;</span>
+    }
+
+    private static RuntimeException unreadable() {
+<span class="fc" id="L140">        return Problems.schemaViolation(&quot;body&quot;, &quot;body&quot;, &quot;The multipart request body cannot be read.&quot;);</span>
+    }
+
+    /** Counts the bytes read and stops after the limit. */
+    static final class LimitedInputStream extends FilterInputStream {
+
+        private final long limit;
+        private long count;
+        private boolean exceeded;
+
+        LimitedInputStream(InputStream in, long limit) {
+<span class="fc" id="L151">            super(in);</span>
+<span class="fc" id="L152">            this.limit = limit;</span>
+<span class="fc" id="L153">        }</span>
+
+        boolean exceeded() {
+<span class="fc" id="L156">            return exceeded;</span>
+        }
+
+        @Override
+        public int read() throws IOException {
+<span class="nc" id="L161">            int value = super.read();</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            if (value &gt;= 0) {</span>
+<span class="nc" id="L163">                count(1);</span>
+            }
+<span class="nc" id="L165">            return value;</span>
+        }
+
+        @Override
+        public int read(byte[] buffer, int offset, int length) throws IOException {
+<span class="fc" id="L170">            int read = super.read(buffer, offset, length);</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">            if (read &gt; 0) {</span>
+<span class="fc" id="L172">                count(read);</span>
+            }
+<span class="fc" id="L174">            return read;</span>
+        }
+
+        private void count(long read) throws IOException {
+<span class="fc" id="L178">            count += read;</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">            if (count &gt; limit) {</span>
+<span class="nc" id="L180">                exceeded = true;</span>
+<span class="nc" id="L181">                throw new IOException(&quot;Request body larger than &quot; + limit + &quot; bytes&quot;);</span>
+            }
+<span class="fc" id="L183">        }</span>
+    }
+
+    private static String shorten(String value) {
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">        return value.length() &gt; 64 ? value.substring(0, 64) + &quot;...&quot; : value;</span>
+    }
+
+    /**
+     * @param name a part name
+     * @return true when the part is present
+     */
+    public boolean has(String name) {
+<span class="fc" id="L195">        return parts.containsKey(name);</span>
+    }
+
+    /**
+     * @param name a part name
+     * @return the bytes of the first part with this name, or null
+     */
+    public byte[] bytes(String name) {
+<span class="fc" id="L203">        List&lt;byte[]&gt; values = parts.get(name);</span>
+<span class="fc bfc" id="L204" title="All 2 branches covered.">        return values == null ? null : values.get(0);</span>
+    }
+
+    /**
+     * @param name a part name
+     * @return the first part as UTF-8 text, or null
+     */
+    public String text(String name) {
+<span class="fc" id="L212">        byte[] value = bytes(name);</span>
+<span class="fc bfc" id="L213" title="All 2 branches covered.">        return value == null ? null : new String(value, StandardCharsets.UTF_8);</span>
+    }
+
+    /**
+     * @param name a part name
+     * @return every part with this name as UTF-8 text, in request order
+     */
+    public List&lt;String&gt; texts(String name) {
+<span class="fc" id="L221">        return parts.getOrDefault(name, List.of()).stream()</span>
+<span class="fc" id="L222">                .map(value -&gt; new String(value, StandardCharsets.UTF_8))</span>
+<span class="fc" id="L223">                .toList();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

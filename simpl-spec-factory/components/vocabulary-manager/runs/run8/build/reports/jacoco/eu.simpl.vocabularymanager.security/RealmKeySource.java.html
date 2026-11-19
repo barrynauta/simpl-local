@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RealmKeySource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">RealmKeySource.java</span></div><h1>RealmKeySource.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.KeySourceException;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSelector;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
+import eu.simpl.vocabularymanager.config.VocabularyManagerProperties;
+import eu.simpl.vocabularymanager.web.trace.TraceContext;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.text.ParseException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * The realm keys of the identity provider (D44). Fetched at start and again when a token names an unknown key id, with
+ * a 2 s timeout and no retry inside a request. Cached keys keep working while the identity provider is down. When a key
+ * id is unknown and the keys cannot be fetched, {@link IdentityProviderUnavailableException} is thrown: the request
+ * fails closed.
+ */
+public class RealmKeySource implements JWKSource&lt;SecurityContext&gt; {
+
+<span class="fc" id="L32">    private static final Logger LOG = LoggerFactory.getLogger(RealmKeySource.class);</span>
+    private static final int MAX_JWKS_BYTES = 1_000_000;
+
+    private final HttpClient httpClient;
+    private final URI jwksUri;
+    private final Duration fetchTimeout;
+    private final Duration refreshCooldown;
+    private final Clock clock;
+
+<span class="fc" id="L41">    private volatile JWKSet keys = new JWKSet();</span>
+    private volatile Instant lastSuccessfulFetch;
+
+    /**
+     * @param httpClient client for the key fetch
+     * @param identity identity provider settings
+     * @param clock clock for the refresh cooldown
+     */
+<span class="fc" id="L49">    public RealmKeySource(HttpClient httpClient, VocabularyManagerProperties.Identity identity, Clock clock) {</span>
+<span class="fc" id="L50">        this.httpClient = httpClient;</span>
+<span class="fc" id="L51">        this.jwksUri = URI.create(identity.jwksUri());</span>
+<span class="fc" id="L52">        this.fetchTimeout = identity.fetchTimeout();</span>
+<span class="fc" id="L53">        this.refreshCooldown = identity.refreshCooldown();</span>
+<span class="fc" id="L54">        this.clock = clock;</span>
+<span class="fc" id="L55">    }</span>
+
+    /** Fetches the keys at start; a failure is logged and retried on the first token. */
+    public void loadAtStart() {
+        try {
+<span class="fc" id="L60">            refresh();</span>
+<span class="fc" id="L61">        } catch (IdentityProviderUnavailableException e) {</span>
+<span class="fc" id="L62">            LOG.warn(&quot;Realm keys could not be loaded at start; they are fetched on the first token&quot;, e);</span>
+<span class="fc" id="L63">        }</span>
+<span class="fc" id="L64">    }</span>
+
+    /**
+     * @return true when at least one key is cached
+     */
+    public boolean hasKeys() {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        return !keys.getKeys().isEmpty();</span>
+    }
+
+    @Override
+    public List&lt;JWK&gt; get(JWKSelector selector, SecurityContext context) throws KeySourceException {
+<span class="fc" id="L75">        List&lt;JWK&gt; matches = selector.select(keys);</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if (!matches.isEmpty()) {</span>
+<span class="fc" id="L77">            return matches;</span>
+        }
+<span class="fc" id="L79">        Instant last = lastSuccessfulFetch;</span>
+<span class="pc bpc" id="L80" title="1 of 4 branches missed.">        if (last != null &amp;&amp; last.plus(refreshCooldown).isAfter(clock.instant())) {</span>
+<span class="nc" id="L81">            return List.of();</span>
+        }
+<span class="fc" id="L83">        refresh();</span>
+<span class="fc" id="L84">        return selector.select(keys);</span>
+    }
+
+    /**
+     * Fetches the key set once.
+     *
+     * @throws IdentityProviderUnavailableException when the identity provider does not answer in time or answers
+     *     with something that is not a key set
+     */
+    public void refresh() throws IdentityProviderUnavailableException {
+<span class="fc" id="L94">        HttpRequest.Builder builder = HttpRequest.newBuilder(jwksUri)</span>
+<span class="fc" id="L95">                .timeout(fetchTimeout)</span>
+<span class="fc" id="L96">                .header(&quot;Accept&quot;, &quot;application/json&quot;)</span>
+<span class="fc" id="L97">                .GET();</span>
+<span class="fc" id="L98">        TraceContext.outgoingHeaders().forEach(builder::header);</span>
+        try {
+<span class="fc" id="L100">            HttpResponse&lt;byte[]&gt; response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofByteArray());</span>
+<span class="pc bpc" id="L101" title="1 of 4 branches missed.">            if (response.statusCode() != 200 || response.body().length &gt; MAX_JWKS_BYTES) {</span>
+<span class="fc" id="L102">                throw new IdentityProviderUnavailableException(</span>
+<span class="fc" id="L103">                        &quot;Key set request answered with status &quot; + response.statusCode(), null);</span>
+            }
+<span class="fc" id="L105">            keys = JWKSet.parse(new String(response.body(), java.nio.charset.StandardCharsets.UTF_8));</span>
+<span class="fc" id="L106">            lastSuccessfulFetch = clock.instant();</span>
+<span class="fc" id="L107">        } catch (IOException | ParseException e) {</span>
+<span class="fc" id="L108">            throw new IdentityProviderUnavailableException(&quot;Key set could not be fetched&quot;, e);</span>
+<span class="nc" id="L109">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L110">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L111">            throw new IdentityProviderUnavailableException(&quot;Key set fetch interrupted&quot;, e);</span>
+<span class="fc" id="L112">        }</span>
+<span class="fc" id="L113">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

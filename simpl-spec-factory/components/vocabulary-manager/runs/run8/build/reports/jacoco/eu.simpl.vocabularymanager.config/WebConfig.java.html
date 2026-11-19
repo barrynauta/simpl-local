@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WebConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">WebConfig.java</span></div><h1>WebConfig.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import eu.simpl.vocabularymanager.store.HttpSparqlStore;
+import eu.simpl.vocabularymanager.store.SparqlStore;
+import eu.simpl.vocabularymanager.web.problem.ProblemWriter;
+import eu.simpl.vocabularymanager.web.routing.OperationCatalogue;
+import eu.simpl.vocabularymanager.web.routing.RequestShapeInterceptor;
+import eu.simpl.vocabularymanager.web.routing.RoutingGuardFilter;
+import eu.simpl.vocabularymanager.web.trace.CorrelationFilter;
+import java.net.http.HttpClient;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.method.HandlerTypePredicate;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+/** Web wiring: API base /v1 (E2), filter order of D67, request-shape interceptor, store client. */
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    private final OperationCatalogue catalogue;
+
+    /**
+     * @param catalogue the operations of the contract
+     */
+<span class="fc" id="L30">    public WebConfig(OperationCatalogue catalogue) {</span>
+<span class="fc" id="L31">        this.catalogue = catalogue;</span>
+<span class="fc" id="L32">    }</span>
+
+    @Override
+    public void configurePathMatch(PathMatchConfigurer configurer) {
+<span class="fc" id="L36">        configurer.addPathPrefix(OperationCatalogue.API_BASE, HandlerTypePredicate.forAnnotation(RestController.class));</span>
+<span class="fc" id="L37">    }</span>
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+<span class="fc" id="L41">        registry.addInterceptor(new RequestShapeInterceptor(catalogue));</span>
+<span class="fc" id="L42">    }</span>
+
+    /**
+     * @return the correlation and access log filter, first of all filters
+     */
+    @Bean
+    public FilterRegistrationBean&lt;CorrelationFilter&gt; correlationFilter() {
+<span class="fc" id="L49">        FilterRegistrationBean&lt;CorrelationFilter&gt; registration = new FilterRegistrationBean&lt;&gt;(new CorrelationFilter());</span>
+<span class="fc" id="L50">        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);</span>
+<span class="fc" id="L51">        return registration;</span>
+    }
+
+    /**
+     * @param problemWriter writes the 405 body
+     * @return the 405 guard, before the firewall and the token check (D67)
+     */
+    @Bean
+    public FilterRegistrationBean&lt;RoutingGuardFilter&gt; routingGuardFilter(ProblemWriter problemWriter) {
+<span class="fc" id="L60">        FilterRegistrationBean&lt;RoutingGuardFilter&gt; registration =</span>
+                new FilterRegistrationBean&lt;&gt;(new RoutingGuardFilter(catalogue, problemWriter));
+<span class="fc" id="L62">        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 5);</span>
+<span class="fc" id="L63">        return registration;</span>
+    }
+
+    /**
+     * @param properties component settings
+     * @return the HTTP client for the store and the identity provider: connect timeout of D44, no redirects
+     *     (OWA-API7)
+     */
+    @Bean
+    public HttpClient httpClient(VocabularyManagerProperties properties) {
+<span class="fc" id="L73">        return HttpClient.newBuilder()</span>
+<span class="fc" id="L74">                .connectTimeout(properties.store().connectTimeout())</span>
+<span class="fc" id="L75">                .followRedirects(HttpClient.Redirect.NEVER)</span>
+<span class="fc" id="L76">                .version(HttpClient.Version.HTTP_1_1)</span>
+<span class="fc" id="L77">                .build();</span>
+    }
+
+    /**
+     * @param httpClient the HTTP client
+     * @param properties component settings
+     * @return the store client
+     */
+    @Bean
+    public SparqlStore sparqlStore(HttpClient httpClient, VocabularyManagerProperties properties) {
+<span class="fc" id="L87">        return new HttpSparqlStore(httpClient, properties.store());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

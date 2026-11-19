@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HandlerRuleVerifier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">HandlerRuleVerifier.java</span></div><h1>HandlerRuleVerifier.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import eu.simpl.vocabularymanager.web.problem.ProblemErrorController;
+import eu.simpl.vocabularymanager.web.routing.ApiOperation;
+import eu.simpl.vocabularymanager.web.routing.OperationCatalogue;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+/**
+ * D84: the build fails at start when a handler exists without a role rule, or a rule has no handler. Compares every
+ * MVC handler mapping with the operation catalogue.
+ */
+@Component
+public class HandlerRuleVerifier {
+
+    private final RequestMappingHandlerMapping handlerMapping;
+    private final OperationCatalogue catalogue;
+
+    /**
+     * @param handlerMapping the MVC handler mapping
+     * @param catalogue the operations and their role rules
+     */
+    public HandlerRuleVerifier(
+            @Qualifier(&quot;requestMappingHandlerMapping&quot;) RequestMappingHandlerMapping handlerMapping,
+<span class="fc" id="L35">            OperationCatalogue catalogue) {</span>
+<span class="fc" id="L36">        this.handlerMapping = handlerMapping;</span>
+<span class="fc" id="L37">        this.catalogue = catalogue;</span>
+<span class="fc" id="L38">    }</span>
+
+    /**
+     * @param event the refresh event
+     * @throws IllegalStateException when handlers and rules differ
+     */
+    @EventListener(ContextRefreshedEvent.class)
+    public void verify(ContextRefreshedEvent event) {
+<span class="fc" id="L46">        Set&lt;String&gt; problems = mismatches(handlerMapping.getHandlerMethods(), catalogue);</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        if (!problems.isEmpty()) {</span>
+<span class="nc" id="L48">            throw new IllegalStateException(&quot;Handlers and role rules differ (D84): &quot; + problems);</span>
+        }
+<span class="fc" id="L50">    }</span>
+
+    /**
+     * @param handlers the handler mappings
+     * @param catalogue the operations
+     * @return a description of every handler without a rule and every rule without a handler
+     */
+    static Set&lt;String&gt; mismatches(Map&lt;RequestMappingInfo, HandlerMethod&gt; handlers, OperationCatalogue catalogue) {
+<span class="fc" id="L58">        Set&lt;String&gt; declared = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        for (ApiOperation operation : catalogue.operations()) {</span>
+<span class="fc" id="L60">            declared.add(operation.method().name() + &quot; &quot; + operation.path());</span>
+<span class="fc" id="L61">        }</span>
+<span class="fc" id="L62">        Set&lt;String&gt; served = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L63">        Set&lt;String&gt; problems = new TreeSet&lt;&gt;();</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        for (RequestMappingInfo info : handlers.keySet()) {</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            for (String pattern : info.getPatternValues()) {</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">                if (ProblemErrorController.PATH.equals(pattern)) {</span>
+<span class="fc" id="L67">                    continue;</span>
+                }
+<span class="fc" id="L69">                Set&lt;RequestMethod&gt; methods = info.getMethodsCondition().getMethods();</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">                if (methods.isEmpty()) {</span>
+<span class="fc" id="L71">                    problems.add(&quot;handler without method: &quot; + pattern);</span>
+                }
+<span class="fc bfc" id="L73" title="All 2 branches covered.">                for (RequestMethod method : methods) {</span>
+<span class="fc" id="L74">                    String key = method.name() + &quot; &quot; + pattern;</span>
+<span class="fc" id="L75">                    served.add(key);</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">                    if (!declared.contains(key)) {</span>
+<span class="fc" id="L77">                        problems.add(&quot;handler without rule: &quot; + key);</span>
+                    }
+<span class="fc" id="L79">                }</span>
+<span class="fc" id="L80">            }</span>
+<span class="fc" id="L81">        }</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        for (String key : declared) {</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">            if (!served.contains(key)) {</span>
+<span class="fc" id="L84">                problems.add(&quot;rule without handler: &quot; + key);</span>
+            }
+<span class="fc" id="L86">        }</span>
+<span class="fc" id="L87">        return problems;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import eu.simpl.vocabularymanager.config.VocabularyManagerProperties;
+import eu.simpl.vocabularymanager.web.problem.ProblemWriter;
+import eu.simpl.vocabularymanager.web.problem.Problems;
+import eu.simpl.vocabularymanager.web.routing.ApiOperation;
+import eu.simpl.vocabularymanager.web.routing.OperationCatalogue;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.http.HttpClient;
+import java.time.Clock;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationResult;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.firewall.RequestRejectedHandler;
+
+/**
+ * Authorisation by default deny (D16, D17, D84): every request is decided by the role rule of the contract operation
+ * it addresses. A request that addresses no operation is denied: 401 without a token, 404 with one.
+ */
+@Configuration
+<span class="fc" id="L36">public class SecurityConfig {</span>
+
+<span class="fc" id="L38">    private static final Logger SECURITY_LOG = LoggerFactory.getLogger(&quot;security&quot;);</span>
+
+    /**
+     * @param properties component settings
+     * @param httpClient shared HTTP client
+     * @param clock clock
+     * @return the realm keys, loaded at start
+     */
+    @Bean
+    public RealmKeySource realmKeySource(VocabularyManagerProperties properties, HttpClient httpClient, Clock clock) {
+<span class="fc" id="L48">        RealmKeySource source = new RealmKeySource(httpClient, properties.identity(), clock);</span>
+<span class="fc" id="L49">        source.loadAtStart();</span>
+<span class="fc" id="L50">        return source;</span>
+    }
+
+    /**
+     * @param keySource the realm keys
+     * @param properties component settings
+     * @return the token validator
+     */
+    @Bean
+    public TokenValidator tokenValidator(RealmKeySource keySource, VocabularyManagerProperties properties) {
+<span class="fc" id="L60">        return new TokenValidator(</span>
+                keySource,
+<span class="fc" id="L62">                properties.identity().issuerUri(),</span>
+<span class="fc" id="L63">                properties.identity().audience());</span>
+    }
+
+    /**
+     * The management port (health probes, Prometheus metrics) is internal to the deployment and never published (D67,
+     * D86). Its requests skip the token rules of the API.
+     *
+     * @param http the security builder
+     * @param managementPort the management port
+     * @return the filter chain of the management port
+     * @throws Exception when the configuration fails
+     */
+    @Bean
+    @Order(1)
+    public SecurityFilterChain managementFilterChain(
+            HttpSecurity http, @Value(&quot;${management.server.port:8081}&quot;) int managementPort) throws Exception {
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        http.securityMatcher(request -&gt; request.getLocalPort() == managementPort)</span>
+<span class="fc" id="L80">                .csrf(csrf -&gt; csrf.disable())</span>
+<span class="fc" id="L81">                .httpBasic(basic -&gt; basic.disable())</span>
+<span class="fc" id="L82">                .formLogin(form -&gt; form.disable())</span>
+<span class="fc" id="L83">                .sessionManagement(session -&gt; session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
+<span class="fc" id="L84">                .authorizeHttpRequests(rules -&gt; rules.anyRequest().permitAll());</span>
+<span class="fc" id="L85">        return http.build();</span>
+    }
+
+    /**
+     * @param http the security builder
+     * @param validator validates tokens
+     * @param catalogue the operations and their role rules
+     * @param problemWriter writes problem bodies
+     * @return the filter chain
+     * @throws Exception when the configuration fails
+     */
+    @Bean
+    @Order(2)
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http, TokenValidator validator, OperationCatalogue catalogue, ProblemWriter problemWriter)
+            throws Exception {
+<span class="fc" id="L101">        http.csrf(csrf -&gt; csrf.disable())</span>
+<span class="fc" id="L102">                .httpBasic(basic -&gt; basic.disable())</span>
+<span class="fc" id="L103">                .formLogin(form -&gt; form.disable())</span>
+<span class="fc" id="L104">                .logout(logout -&gt; logout.disable())</span>
+<span class="fc" id="L105">                .requestCache(cache -&gt; cache.disable())</span>
+<span class="fc" id="L106">                .sessionManagement(session -&gt; session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
+<span class="fc" id="L107">                .addFilterBefore(</span>
+                        new TokenAuthenticationFilter(validator, problemWriter), AnonymousAuthenticationFilter.class)
+<span class="fc" id="L109">                .authorizeHttpRequests(rules -&gt; rules.dispatcherTypeMatchers(DispatcherType.ERROR)</span>
+<span class="fc" id="L110">                        .permitAll()</span>
+<span class="fc" id="L111">                        .anyRequest()</span>
+<span class="fc" id="L112">                        .access((authentication, context) -&gt; decide(catalogue, authentication, context)))</span>
+<span class="fc" id="L113">                .exceptionHandling(handling -&gt; handling.authenticationEntryPoint((request, response, exception) -&gt; {</span>
+<span class="fc" id="L114">                            SECURITY_LOG.warn(&quot;Access without a token refused&quot;);</span>
+<span class="fc" id="L115">                            problemWriter.write(</span>
+                                    response,
+<span class="fc" id="L117">                                    Problems.unauthorized(&quot;Authentication is required.&quot;),</span>
+<span class="fc" id="L118">                                    Map.of(&quot;WWW-Authenticate&quot;, &quot;Bearer&quot;));</span>
+<span class="fc" id="L119">                        })</span>
+<span class="fc" id="L120">                        .accessDeniedHandler((request, response, exception) -&gt; {</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">                            if (operationOf(catalogue, request).isEmpty()) {</span>
+<span class="fc" id="L122">                                problemWriter.write(response, Problems.unknownPath());</span>
+                            } else {
+<span class="fc" id="L124">                                SECURITY_LOG.warn(&quot;Access refused: missing role for {}&quot;, request.getMethod());</span>
+<span class="fc" id="L125">                                problemWriter.write(response, Problems.forbidden());</span>
+                            }
+<span class="fc" id="L127">                        }))</span>
+<span class="fc" id="L128">                .headers(headers -&gt; headers.contentSecurityPolicy(csp -&gt; csp.policyDirectives(</span>
+                                &quot;default-src 'none'; frame-ancestors 'none'&quot;))
+<span class="fc" id="L130">                        .cacheControl(cache -&gt; {}));</span>
+<span class="fc" id="L131">        return http.build();</span>
+    }
+
+    /**
+     * Firewall refusals (encoded slash, control characters) become a Belgif 400 without issues (D67).
+     *
+     * @param problemWriter writes the body
+     * @return the handler
+     */
+    @Bean
+    public RequestRejectedHandler requestRejectedHandler(ProblemWriter problemWriter) {
+<span class="fc" id="L142">        return (request, response, exception) -&gt; {</span>
+<span class="fc" id="L143">            SECURITY_LOG.warn(&quot;Request refused by the firewall&quot;);</span>
+<span class="fc" id="L144">            problemWriter.write(response, Problems.badRequestProblem(null));</span>
+<span class="fc" id="L145">        };</span>
+    }
+
+    /**
+     * The role rule of D16, applied per contract operation; anything else is denied (D84).
+     *
+     * @param catalogue the operations
+     * @param authentication the caller
+     * @param context the request
+     * @return the decision
+     */
+    static AuthorizationResult decide(
+            OperationCatalogue catalogue,
+            Supplier&lt;? extends Authentication&gt; authentication,
+            RequestAuthorizationContext context) {
+<span class="fc" id="L160">        Optional&lt;ApiOperation&gt; operation = operationOf(catalogue, context.getRequest());</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">        if (operation.isEmpty()) {</span>
+<span class="fc" id="L162">            return new AuthorizationDecision(false);</span>
+        }
+<span class="fc bfc" id="L164" title="All 2 branches covered.">        if (operation.get().access() == ApiOperation.Access.PUBLIC) {</span>
+<span class="fc" id="L165">            return new AuthorizationDecision(true);</span>
+        }
+<span class="fc" id="L167">        Authentication current = authentication.get();</span>
+<span class="pc bpc" id="L168" title="1 of 4 branches missed.">        if (current == null || !(current.getPrincipal() instanceof AuthenticatedUser user)) {</span>
+<span class="fc" id="L169">            return new AuthorizationDecision(false);</span>
+        }
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        boolean allowed = operation.get().access() == ApiOperation.Access.READ ? user.canRead() : user.canWrite();</span>
+<span class="fc" id="L172">        return new AuthorizationDecision(allowed);</span>
+    }
+
+    private static Optional&lt;ApiOperation&gt; operationOf(OperationCatalogue catalogue, HttpServletRequest request) {
+<span class="fc" id="L176">        return catalogue.resolve(request.getRequestURI(), request.getMethod());</span>
+    }
+
+    /**
+     * @return the system clock in UTC
+     */
+    @Bean
+    public Clock clock() {
+<span class="fc" id="L184">        return Clock.systemUTC();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

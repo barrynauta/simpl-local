@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProblemErrorController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.problem</a> &gt; <span class="el_source">ProblemErrorController.java</span></div><h1>ProblemErrorController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.problem;
+
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.springframework.boot.webmvc.error.ErrorController;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+/**
+ * Container error dispatches (errors raised outside the MVC handlers) answered as problem+json. Served only on the
+ * ERROR dispatch; a direct request to /error is denied by the default-deny rule (D84).
+ */
+@Controller
+public class ProblemErrorController implements ErrorController {
+
+    public static final String PATH = &quot;/error&quot;;
+
+    private final ProblemWriter writer;
+
+    /**
+     * @param writer writes problem bodies
+     */
+<span class="fc" id="L25">    public ProblemErrorController(ProblemWriter writer) {</span>
+<span class="fc" id="L26">        this.writer = writer;</span>
+<span class="fc" id="L27">    }</span>
+
+    /**
+     * @param request the error dispatch
+     * @param response the response
+     * @throws IOException when the client connection fails
+     */
+    @RequestMapping(PATH)
+    public void error(HttpServletRequest request, HttpServletResponse response) throws IOException {
+<span class="nc" id="L36">        Object code = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        int status = code instanceof Integer value ? value : 500;</span>
+<span class="nc bnc" id="L38" title="All 5 branches missed.">        Problem problem = switch (status) {</span>
+<span class="nc" id="L39">            case 400 -&gt; Problems.badRequestProblem(null);</span>
+<span class="nc" id="L40">            case 404 -&gt; Problems.unknownPath();</span>
+<span class="nc" id="L41">            case 405 -&gt; Problems.methodNotAllowed(request.getMethod());</span>
+<span class="nc" id="L42">            case 413 -&gt; Problems.payloadTooLarge(&quot;vocabularyFile&quot;).problem();</span>
+<span class="nc" id="L43">            default -&gt; Problems.internalServerError();</span>
+        };
+<span class="nc" id="L45">        writer.write(response, problem);</span>
+<span class="nc" id="L46">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

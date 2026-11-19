@@ -1,0 +1,119 @@
+# Physical model of the Vocabulary Manager in the RDF store (D87): SHACL Core shapes of each named graph of the
+# dataset 'vocabulary' (E3), exactly as VocabularyRepository and ExternalVocabularyRepository write the data.
+# Apply the whole file to each named graph separately; a shape whose targets do not occur in a graph is vacuous there.
+#
+#   <urn:simpl:vocabulary-manager:graph:vocabularies>           vm:Vocabulary, vm:VocabularyVersion
+#   <urn:simpl:vocabulary-manager:graph:external-vocabularies>  vm:ExternalVocabulary
+#   <urn:simpl:vocabulary-manager:graph:changes>                vm:Change (one record per applied write, D82)
+#   <urn:simpl:vocabulary-manager:content:<token>>              one content graph per version or external vocabulary,
+#                                                               one triple: <owner> vm:content "<base64>"
+# Resource IRIs: urn:simpl:vocabulary-manager:vocabulary:<Name>, ...:vocabulary:<Name>:version:<n>,
+# urn:simpl:vocabulary-manager:external-vocabulary:<Name>, urn:simpl:vocabulary-manager:change:<token>.
+# The default graph is empty.
+PREFIX sh:   <http://www.w3.org/ns/shacl#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX vm:   <urn:simpl:vocabulary-manager:ns#>
+PREFIX vms:  <urn:simpl:vocabulary-manager:shapes#>
+
+vms:NameProperty a sh:PropertyShape ;
+    sh:path vm:name ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:minLength 3 ; sh:maxLength 64 ; sh:pattern "^[A-Z][a-zA-Z0-9]*$" .                      # D37
+
+vms:NameKeyProperty a sh:PropertyShape ;
+    sh:path vm:nameKey ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:pattern "^[a-z][a-z0-9]*$" ;
+    rdfs:comment "Lower-case name, the case-insensitive uniqueness key (D37, D56)." .
+
+vms:StatusProperty a sh:PropertyShape ;
+    sh:path vm:status ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:in ( "ACTIVE" "DEPRECATED" ) .                                                          # D3, D6
+
+vms:CreatedByProperty a sh:PropertyShape ;
+    sh:path vm:createdBy ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ; sh:minLength 1 .  # D27
+
+vms:CreationDateProperty a sh:PropertyShape ;
+    sh:path vm:creationDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ;
+    rdfs:comment "UTC to the second with 'Z' (D58); the code writes this form, SHACL checks the datatype." .
+
+vms:LastUpdateDateProperty a sh:PropertyShape ;
+    sh:path vm:lastUpdateDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 .
+
+vms:ContentGraphProperty a sh:PropertyShape ;
+    sh:path vm:contentGraph ; sh:nodeKind sh:IRI ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:pattern "^urn:simpl:vocabulary-manager:content:" .
+
+# Graph <urn:simpl:vocabulary-manager:graph:vocabularies>
+vms:VocabularyShape a sh:NodeShape ;
+    rdfs:comment "Vocabulary (CDM InternalVocabulary, D25). Description lives on the version (D28)." ;
+    sh:targetClass vm:Vocabulary ;
+    sh:nodeKind sh:IRI ; sh:pattern "^urn:simpl:vocabulary-manager:vocabulary:[A-Z][a-zA-Z0-9]*$" ;
+    sh:closed true ; sh:ignoredProperties ( <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ) ;
+    sh:property vms:NameProperty , vms:NameKeyProperty , vms:StatusProperty , vms:CreatedByProperty ,
+        vms:CreationDateProperty , vms:LastUpdateDateProperty ;
+    sh:property [
+        sh:path vm:latestVersion ; sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:minInclusive 1 ;
+        rdfs:comment "Highest version number (D5); the condition of every conditional write (D82)." ] .
+
+vms:VocabularyVersionShape a sh:NodeShape ;
+    rdfs:comment "Vocabulary version (CDM InternalVocabularyVersion, D26)." ;
+    sh:targetClass vm:VocabularyVersion ;
+    sh:nodeKind sh:IRI ;
+    sh:pattern "^urn:simpl:vocabulary-manager:vocabulary:[A-Z][a-zA-Z0-9]*:version:[1-9][0-9]*$" ;
+    sh:closed true ; sh:ignoredProperties ( <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ) ;
+    sh:property vms:StatusProperty , vms:CreatedByProperty , vms:CreationDateProperty ,
+        vms:LastUpdateDateProperty , vms:ContentGraphProperty ;
+    sh:property [ sh:path vm:ofVocabulary ; sh:class vm:Vocabulary ; sh:nodeKind sh:IRI ;
+                  sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:versionNumber ; sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:minInclusive 1 ] ;                                                         # D7
+    sh:property [ sh:path vm:description ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:minLength 1 ; sh:maxLength 1000 ] ;                                        # D28, D37
+    sh:property [ sh:path vm:changelog ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:minLength 1 ; sh:maxLength 1000 ] ;                                        # D32, D37
+    sh:property [ sh:path vm:contentSha256 ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:pattern "^[0-9a-f]{64}$" ;
+                  rdfs:comment "SHA-256 of the stored bytes, hex; used by the identical-version check (D46)." ] ;
+    sh:property [ sh:path vm:contentLength ; sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:minInclusive 0 ; sh:maxInclusive 5242880 ] .                               # D15, D70
+
+# Graph <urn:simpl:vocabulary-manager:graph:external-vocabularies>
+vms:ExternalVocabularyShape a sh:NodeShape ;
+    rdfs:comment "External vocabulary, a registered cached copy (CDM ExternalVocabulary, D30, D56)." ;
+    sh:targetClass vm:ExternalVocabulary ;
+    sh:nodeKind sh:IRI ; sh:pattern "^urn:simpl:vocabulary-manager:external-vocabulary:[A-Z][a-zA-Z0-9]*$" ;
+    sh:closed true ; sh:ignoredProperties ( <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ) ;
+    sh:property vms:NameProperty , vms:NameKeyProperty , vms:CreatedByProperty , vms:CreationDateProperty ,
+        vms:ContentGraphProperty ;
+    sh:property [ sh:path vm:namespaceUri ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:minLength 1 ; sh:maxLength 2048 ;
+                  rdfs:comment "Absolute URI, stored exactly as sent (D73)." ] ;
+    sh:property [ sh:path vm:aliasUris ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+                  rdfs:comment "Alias URIs as sent, in order, joined by one space; empty when there are none (D56, D73)." ] ;
+    sh:property [ sh:path vm:lookupKey ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 21 ;
+                  rdfs:comment "Namespace URI and each alias with a trailing '#' or '/' removed; unique over the graph (D30)." ] ;
+    sh:property [ sh:path vm:sourceUri ; sh:datatype xsd:string ; sh:maxCount 1 ; sh:maxLength 2048 ] ;
+    sh:property [ sh:path vm:description ; sh:datatype xsd:string ; sh:maxCount 1 ; sh:maxLength 1000 ] .
+
+# Graph <urn:simpl:vocabulary-manager:graph:changes>
+vms:ChangeShape a sh:NodeShape ;
+    rdfs:comment "Change record: written in the same update as the change it confirms (D82); the actor is the token subject (D80)." ;
+    sh:targetClass vm:Change ;
+    sh:nodeKind sh:IRI ; sh:pattern "^urn:simpl:vocabulary-manager:change:" ;
+    sh:closed true ; sh:ignoredProperties ( <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ) ;
+    sh:property [ sh:path vm:operation ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:in ( "createVocabulary" "createVocabularyVersion" "updateVocabularyStatus"
+                          "updateVocabularyVersionStatus" "createExternalVocabulary" "deleteExternalVocabulary" ) ] ;
+    sh:property [ sh:path vm:target ; sh:nodeKind sh:IRI ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:actor ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:at ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+# Content graphs <urn:simpl:vocabulary-manager:content:<token>>
+vms:ContentShape a sh:NodeShape ;
+    rdfs:comment "Vocabulary content: the uploaded Turtle bytes as base64, unchanged (D29)." ;
+    sh:targetSubjectsOf vm:content ;
+    sh:nodeKind sh:IRI ;
+    sh:pattern "^urn:simpl:vocabulary-manager:(vocabulary:[A-Z][a-zA-Z0-9]*:version:[1-9][0-9]*|external-vocabulary:[A-Z][a-zA-Z0-9]*)$" ;
+    sh:closed true ;
+    sh:property [ sh:path vm:content ; sh:datatype xsd:base64Binary ; sh:minCount 1 ; sh:maxCount 1 ] .

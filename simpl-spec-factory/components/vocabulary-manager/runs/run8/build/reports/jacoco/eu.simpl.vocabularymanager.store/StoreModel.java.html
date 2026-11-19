@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StoreModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">StoreModel.java</span></div><h1>StoreModel.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.sparql.util.FmtUtils;
+
+/**
+ * The physical model in the RDF store (docs/physical-model.shacl.ttl) and safe SPARQL term formatting. Every value
+ * that goes into a SPARQL string goes through these helpers, so no input reaches the store unescaped (OWASP-04).
+ */
+public final class StoreModel {
+
+    public static final String NS = &quot;urn:simpl:vocabulary-manager:ns#&quot;;
+    public static final String PREFIXES = &quot;PREFIX vm: &lt;&quot; + NS + &quot;&gt;\n&quot;
+            + &quot;PREFIX xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;\n&quot;;
+    /** Vocabularies and their versions (metadata only). */
+    public static final String VOCABULARY_GRAPH = &quot;&lt;urn:simpl:vocabulary-manager:graph:vocabularies&gt;&quot;;
+    /** External vocabularies (metadata only). */
+    public static final String EXTERNAL_GRAPH = &quot;&lt;urn:simpl:vocabulary-manager:graph:external-vocabularies&gt;&quot;;
+    /** Change records: one per applied write, used to confirm conditional updates (D82) and as an audit trail. */
+    public static final String CHANGE_GRAPH = &quot;&lt;urn:simpl:vocabulary-manager:graph:changes&gt;&quot;;
+
+    private StoreModel() {}
+
+    /**
+     * @param name a validated vocabulary name
+     * @return the IRI of the vocabulary resource
+     */
+    public static String vocabularyIri(String name) {
+<span class="fc" id="L34">        return FmtUtils.stringForURI(&quot;urn:simpl:vocabulary-manager:vocabulary:&quot; + name);</span>
+    }
+
+    /**
+     * @param name a validated vocabulary name
+     * @param version the version number
+     * @return the IRI of the version resource
+     */
+    public static String versionIri(String name, long version) {
+<span class="fc" id="L43">        return FmtUtils.stringForURI(&quot;urn:simpl:vocabulary-manager:vocabulary:&quot; + name + &quot;:version:&quot; + version);</span>
+    }
+
+    /**
+     * @param name a validated external vocabulary name
+     * @return the IRI of the external vocabulary resource
+     */
+    public static String externalIri(String name) {
+<span class="fc" id="L51">        return FmtUtils.stringForURI(&quot;urn:simpl:vocabulary-manager:external-vocabulary:&quot; + name);</span>
+    }
+
+    /**
+     * @param id a random id
+     * @return the IRI of a content graph
+     */
+    public static String contentGraphIri(String id) {
+<span class="fc" id="L59">        return FmtUtils.stringForURI(&quot;urn:simpl:vocabulary-manager:content:&quot; + id);</span>
+    }
+
+    /**
+     * @param token the change token
+     * @return the IRI of a change record
+     */
+    public static String changeIri(String token) {
+<span class="fc" id="L67">        return FmtUtils.stringForURI(&quot;urn:simpl:vocabulary-manager:change:&quot; + token);</span>
+    }
+
+    /**
+     * @param value any string
+     * @return an escaped SPARQL string literal
+     */
+    public static String str(String value) {
+<span class="fc" id="L75">        return FmtUtils.stringForString(value);</span>
+    }
+
+    /**
+     * @param values strings
+     * @return escaped literals separated by spaces, for VALUES
+     */
+    public static String strings(Collection&lt;String&gt; values) {
+<span class="fc" id="L83">        return values.stream().map(StoreModel::str).collect(Collectors.joining(&quot; &quot;));</span>
+    }
+
+    /**
+     * @param value a number
+     * @return an xsd:integer literal
+     */
+    public static String integer(long value) {
+<span class="fc" id="L91">        return &quot;\&quot;&quot; + value + &quot;\&quot;^^xsd:integer&quot;;</span>
+    }
+
+    /**
+     * @param instant a time, stored in UTC to the second (D58)
+     * @return an xsd:dateTime literal
+     */
+    public static String dateTime(Instant instant) {
+<span class="fc" id="L99">        return &quot;\&quot;&quot; + instant.truncatedTo(ChronoUnit.SECONDS) + &quot;\&quot;^^xsd:dateTime&quot;;</span>
+    }
+
+    /**
+     * @param solution a query solution
+     * @param variable a variable name
+     * @return the lexical form, or null when unbound
+     */
+    public static String text(QuerySolution solution, String variable) {
+<span class="fc" id="L108">        RDFNode node = solution.get(variable);</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (node == null) {</span>
+<span class="fc" id="L110">            return null;</span>
+        }
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        return node.isLiteral() ? node.asLiteral().getLexicalForm() : node.toString();</span>
+    }
+
+    /**
+     * @param solution a query solution
+     * @param variable a variable name
+     * @return the number, or -1 when unbound
+     */
+    public static long number(QuerySolution solution, String variable) {
+<span class="fc" id="L121">        String value = text(solution, variable);</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        return value == null ? -1 : Long.parseLong(value);</span>
+    }
+
+    /**
+     * @param solution a query solution
+     * @param variable a variable name
+     * @return the time, or null when unbound
+     */
+    public static Instant instant(QuerySolution solution, String variable) {
+<span class="fc" id="L131">        String value = text(solution, variable);</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">        return value == null ? null : Instant.parse(value);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

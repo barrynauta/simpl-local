@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TokenValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">TokenValidator.java</span></div><h1>TokenValidator.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.JWSVerificationKeySelector;
+import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
+import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
+import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+import java.text.ParseException;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Validates bearer tokens with Nimbus JOSE+JWT (REUSE-01): signature against the realm keys, issuer, audience, expiry
+ * and not-before (OWT-A07, E5). Never accepts a token without a signature check.
+ */
+public class TokenValidator {
+
+<span class="fc" id="L25">    private static final Set&lt;JWSAlgorithm&gt; ALGORITHMS = Set.of(</span>
+            JWSAlgorithm.RS256,
+            JWSAlgorithm.RS384,
+            JWSAlgorithm.RS512,
+            JWSAlgorithm.PS256,
+            JWSAlgorithm.ES256,
+            JWSAlgorithm.ES384);
+    private static final int CLOCK_SKEW_SECONDS = 30;
+
+    private final ConfigurableJWTProcessor&lt;SecurityContext&gt; processor;
+
+    /**
+     * @param keySource the realm keys
+     * @param issuer the accepted issuer
+     * @param audience the required audience
+     */
+<span class="fc" id="L41">    public TokenValidator(RealmKeySource keySource, String issuer, String audience) {</span>
+<span class="fc" id="L42">        DefaultJWTProcessor&lt;SecurityContext&gt; jwtProcessor = new DefaultJWTProcessor&lt;&gt;();</span>
+<span class="fc" id="L43">        jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector&lt;&gt;(ALGORITHMS, keySource));</span>
+<span class="fc" id="L44">        DefaultJWTClaimsVerifier&lt;SecurityContext&gt; verifier = new DefaultJWTClaimsVerifier&lt;&gt;(</span>
+<span class="fc" id="L45">                Set.of(audience),</span>
+<span class="fc" id="L46">                new JWTClaimsSet.Builder().issuer(issuer).build(),</span>
+<span class="fc" id="L47">                Set.of(&quot;sub&quot;, &quot;exp&quot;, &quot;iss&quot;, &quot;aud&quot;),</span>
+<span class="fc" id="L48">                Set.of());</span>
+<span class="fc" id="L49">        verifier.setMaxClockSkew(CLOCK_SKEW_SECONDS);</span>
+<span class="fc" id="L50">        jwtProcessor.setJWTClaimsSetVerifier(verifier);</span>
+<span class="fc" id="L51">        this.processor = jwtProcessor;</span>
+<span class="fc" id="L52">    }</span>
+
+    /**
+     * @param token the compact JWT
+     * @return the caller
+     * @throws InvalidTokenException when the token is not acceptable
+     * @throws IdentityProviderUnavailableException when the keys are needed and cannot be fetched
+     */
+    public AuthenticatedUser validate(String token) throws InvalidTokenException, IdentityProviderUnavailableException {
+        JWTClaimsSet claims;
+        try {
+<span class="fc" id="L63">            claims = processor.process(token, null);</span>
+<span class="fc" id="L64">        } catch (IdentityProviderUnavailableException e) {</span>
+<span class="fc" id="L65">            throw e;</span>
+<span class="fc" id="L66">        } catch (ParseException | BadJOSEException | JOSEException e) {</span>
+<span class="fc" id="L67">            throw new InvalidTokenException(e.getMessage(), e);</span>
+<span class="fc" id="L68">        }</span>
+<span class="fc" id="L69">        return toUser(claims);</span>
+    }
+
+    private static AuthenticatedUser toUser(JWTClaimsSet claims) throws InvalidTokenException {
+        try {
+<span class="fc" id="L74">            String email = claims.getStringClaim(&quot;email&quot;);</span>
+<span class="fc" id="L75">            String username = claims.getStringClaim(&quot;preferred_username&quot;);</span>
+<span class="pc bpc" id="L76" title="1 of 4 branches missed.">            String creator = email != null &amp;&amp; !email.isBlank() ? email : username;</span>
+<span class="pc bpc" id="L77" title="2 of 4 branches missed.">            if (creator == null || creator.isBlank()) {</span>
+<span class="nc" id="L78">                creator = claims.getSubject();</span>
+            }
+<span class="fc" id="L80">            return new AuthenticatedUser(claims.getSubject(), creator, realmRoles(claims));</span>
+<span class="nc" id="L81">        } catch (ParseException e) {</span>
+<span class="nc" id="L82">            throw new InvalidTokenException(&quot;Token claims have unexpected types&quot;, e);</span>
+        }
+    }
+
+    private static Set&lt;String&gt; realmRoles(JWTClaimsSet claims) {
+<span class="fc" id="L87">        Object realmAccess = claims.getClaim(&quot;realm_access&quot;);</span>
+<span class="fc" id="L88">        Set&lt;String&gt; roles = new LinkedHashSet&lt;&gt;();</span>
+<span class="pc bpc" id="L89" title="2 of 4 branches missed.">        if (realmAccess instanceof Map&lt;?, ?&gt; map &amp;&amp; map.get(&quot;roles&quot;) instanceof Collection&lt;?&gt; values) {</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">            for (Object value : values) {</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">                if (value instanceof String role) {</span>
+<span class="fc" id="L92">                    roles.add(role);</span>
+                }
+<span class="fc" id="L94">            }</span>
+        }
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        return Set.copyOf(roles.isEmpty() ? List.of() : roles);</span>
+    }
+
+    /** The token is not acceptable: 401. */
+    public static class InvalidTokenException extends Exception {
+
+        private static final long serialVersionUID = 1L;
+
+        /**
+         * @param message why
+         * @param cause the cause
+         */
+        public InvalidTokenException(String message, Throwable cause) {
+<span class="fc" id="L109">            super(message, cause);</span>
+<span class="fc" id="L110">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

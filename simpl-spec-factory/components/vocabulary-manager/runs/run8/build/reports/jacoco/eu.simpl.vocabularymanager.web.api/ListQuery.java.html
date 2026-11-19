@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ListQuery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.api</a> &gt; <span class="el_source">ListQuery.java</span></div><h1>ListQuery.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.api;
+
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.store.VocabularyFilter;
+import eu.simpl.vocabularymanager.store.VocabularyFilter.TimeRange;
+import eu.simpl.vocabularymanager.web.problem.ProblemIssue;
+import eu.simpl.vocabularymanager.web.routing.QueryParameters;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+/** Parses the filters and sort values of the list operations (D19, D20, D21, D23). */
+public final class ListQuery {
+
+<span class="fc" id="L22">    private static final Pattern NAME_FILTER = Pattern.compile(&quot;^[A-Za-z0-9]{1,64}$&quot;);</span>
+<span class="fc" id="L23">    private static final Pattern DATE_FILTER = Pattern.compile(&quot;^\\d{4}-\\d{2}-\\d{2}(T.*)?$&quot;);</span>
+<span class="fc" id="L24">    private static final Map&lt;String, String&gt; VOCABULARY_SORT = Map.of(</span>
+            &quot;name&quot;, &quot;ASC(?name)&quot;,
+            &quot;-name&quot;, &quot;DESC(?name)&quot;,
+            &quot;status&quot;, &quot;ASC(?status) ASC(?name)&quot;,
+            &quot;-status&quot;, &quot;DESC(?status) ASC(?name)&quot;,
+            &quot;creationDate&quot;, &quot;ASC(?creationDate) ASC(?name)&quot;,
+            &quot;-creationDate&quot;, &quot;DESC(?creationDate) ASC(?name)&quot;,
+            &quot;lastUpdated&quot;, &quot;ASC(?lastUpdateDate) ASC(?name)&quot;,
+            &quot;-lastUpdated&quot;, &quot;DESC(?lastUpdateDate) ASC(?name)&quot;);
+<span class="fc" id="L33">    private static final Map&lt;String, String&gt; VERSION_SORT = Map.of(</span>
+            &quot;name&quot;, &quot;DESC(?num)&quot;,
+            &quot;-name&quot;, &quot;DESC(?num)&quot;,
+            &quot;status&quot;, &quot;ASC(?verStatus) DESC(?num)&quot;,
+            &quot;-status&quot;, &quot;DESC(?verStatus) DESC(?num)&quot;,
+            &quot;creationDate&quot;, &quot;ASC(?verCreationDate) DESC(?num)&quot;,
+            &quot;-creationDate&quot;, &quot;DESC(?verCreationDate) DESC(?num)&quot;);
+    private static final String VOCABULARY_SORT_VALUES =
+            &quot;[name, -name, status, -status, creationDate, -creationDate, lastUpdated, -lastUpdated]&quot;;
+    private static final String VERSION_SORT_VALUES = &quot;[name, -name, status, -status, creationDate, -creationDate]&quot;;
+
+    private ListQuery() {}
+
+    /**
+     * @param parameters the query parameters
+     * @param issues collects invalid values
+     * @return the filters of GET /vocabularies
+     */
+    public static VocabularyFilter vocabularyFilter(QueryParameters parameters, List&lt;ProblemIssue&gt; issues) {
+<span class="fc" id="L52">        String name = parameters.first(&quot;name&quot;);</span>
+<span class="fc bfc" id="L53" title="All 4 branches covered.">        if (name != null &amp;&amp; !NAME_FILTER.matcher(name).matches()) {</span>
+<span class="fc" id="L54">            issues.add(ProblemIssue.schemaViolation(</span>
+                    &quot;query&quot;, &quot;name&quot;, &quot;Query parameter 'name' must have 1 to 64 letters or digits.&quot;));
+<span class="fc" id="L56">            name = null;</span>
+        }
+<span class="fc" id="L58">        VocabularyStatus status = null;</span>
+<span class="fc" id="L59">        String statusValue = parameters.first(&quot;status&quot;);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (statusValue != null) {</span>
+<span class="fc" id="L61">            status = VocabularyStatus.parse(statusValue).orElse(null);</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            if (status == null) {</span>
+<span class="fc" id="L63">                issues.add(ProblemIssue.schemaViolation(</span>
+                        &quot;query&quot;, &quot;status&quot;, &quot;Query parameter 'status' must be one of [ACTIVE, DEPRECATED].&quot;));
+            }
+        }
+<span class="fc" id="L67">        TimeRange creation = timeRange(parameters.first(&quot;creationDate&quot;), &quot;creationDate&quot;, issues);</span>
+<span class="fc" id="L68">        TimeRange lastUpdated = timeRange(parameters.first(&quot;lastUpdated&quot;), &quot;lastUpdated&quot;, issues);</span>
+<span class="fc" id="L69">        return new VocabularyFilter(name, status, creation, lastUpdated);</span>
+    }
+
+    /**
+     * @param parameters the query parameters
+     * @param issues collects invalid values
+     * @return the ORDER BY clause of GET /vocabularies, name ascending by default
+     */
+    public static String vocabularySort(QueryParameters parameters, List&lt;ProblemIssue&gt; issues) {
+<span class="fc" id="L78">        return sort(parameters, issues, VOCABULARY_SORT, &quot;name&quot;, VOCABULARY_SORT_VALUES);</span>
+    }
+
+    /**
+     * @param parameters the query parameters
+     * @param issues collects invalid values
+     * @return the ORDER BY clause of GET .../versions, version descending by default
+     */
+    public static String versionSort(QueryParameters parameters, List&lt;ProblemIssue&gt; issues) {
+<span class="fc" id="L87">        String value = parameters.first(&quot;sort&quot;);</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L89">            return &quot;DESC(?num)&quot;;</span>
+        }
+<span class="fc" id="L91">        return sort(parameters, issues, VERSION_SORT, &quot;name&quot;, VERSION_SORT_VALUES);</span>
+    }
+
+    private static String sort(
+            QueryParameters parameters,
+            List&lt;ProblemIssue&gt; issues,
+            Map&lt;String, String&gt; clauses,
+            String defaultValue,
+            String allowed) {
+<span class="fc" id="L100">        String value = parameters.first(&quot;sort&quot;);</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        String clause = clauses.get(value == null ? defaultValue : value);</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        if (clause == null) {</span>
+<span class="fc" id="L103">            issues.add(ProblemIssue.schemaViolation(</span>
+                    &quot;query&quot;, &quot;sort&quot;, &quot;Query parameter 'sort' must be one of &quot; + allowed + &quot;.&quot;));
+<span class="fc" id="L105">            return clauses.get(defaultValue);</span>
+        }
+<span class="fc" id="L107">        return clause;</span>
+    }
+
+    /**
+     * D20: a date matches the whole UTC day; a date-time matches to the second.
+     *
+     * @param value the filter value, or null
+     * @param parameter the parameter name
+     * @param issues collects invalid values
+     * @return the range, or null
+     */
+    static TimeRange timeRange(String value, String parameter, List&lt;ProblemIssue&gt; issues) {
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L120">            return null;</span>
+        }
+<span class="fc" id="L122">        String message = &quot;Query parameter '&quot; + parameter + &quot;' must be a valid date (YYYY-MM-DD) or date-time.&quot;;</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        if (!DATE_FILTER.matcher(value).matches()) {</span>
+<span class="fc" id="L124">            issues.add(ProblemIssue.schemaViolation(&quot;query&quot;, parameter, message));</span>
+<span class="fc" id="L125">            return null;</span>
+        }
+        try {
+<span class="fc bfc" id="L128" title="All 2 branches covered.">            if (value.length() == 10) {</span>
+<span class="fc" id="L129">                Instant start = LocalDate.parse(value).atStartOfDay(ZoneOffset.UTC).toInstant();</span>
+<span class="fc" id="L130">                return new TimeRange(start, start.plus(1, ChronoUnit.DAYS));</span>
+            }
+<span class="fc" id="L132">            Instant moment = parseDateTime(value).truncatedTo(ChronoUnit.SECONDS);</span>
+<span class="fc" id="L133">            return new TimeRange(moment, moment.plusSeconds(1));</span>
+<span class="fc" id="L134">        } catch (DateTimeParseException e) {</span>
+<span class="fc" id="L135">            issues.add(ProblemIssue.schemaViolation(&quot;query&quot;, parameter, message));</span>
+<span class="fc" id="L136">            return null;</span>
+        }
+    }
+
+    private static Instant parseDateTime(String value) {
+        try {
+<span class="fc" id="L142">            return OffsetDateTime.parse(value).toInstant();</span>
+<span class="fc" id="L143">        } catch (DateTimeParseException e) {</span>
+<span class="nc" id="L144">            return LocalDateTime.parse(value).toInstant(ZoneOffset.UTC);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

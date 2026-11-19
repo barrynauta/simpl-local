@@ -1,0 +1,88 @@
+# Every value can be overridden from the environment (MACH-07, E4). Secrets have no defaults here.
+spring:
+  application:
+    name: vocabulary-manager-be
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: false
+  servlet:
+    multipart:
+      enabled: false              # parts are read by MultipartForm (D15 5 MB part, D76 6 MB request, D70)
+  web:
+    resources:
+      add-mappings: false
+  lifecycle:
+    timeout-per-shutdown-phase: 25s
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: never
+    include-message: never
+  tomcat:
+    max-swallow-size: 10MB
+    max-part-count: 50
+    max-part-header-size: 2KB
+    relaxed-query-chars: "[,],|,{,},^,`,<,>,\\"
+    relaxed-path-chars: "[,],|,{,},^,`,<,>,\\"
+    threads:
+      max: 100
+    accept-count: 100
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8081}
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    defaults:
+      enabled: false
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  metrics:
+    tags:
+      application: vocabulary-manager-be
+
+logging:
+  structured:
+    format:
+      console: ecs
+  level:
+    root: INFO
+    org.apache.jena: WARN
+
+vocabulary-manager:
+  content-base-url: ${VOCABULARY_CONTENT_BASE_URL:https://authority.example/vocabulary-manager}
+  store:
+    url: ${STORE_URL:http://localhost:3030/vocabulary}
+    read-user: ${STORE_READ_USER:vm-reader}
+    read-password: ${STORE_READ_PASSWORD:}
+    update-user: ${STORE_UPDATE_USER:vm-writer}
+    update-password: ${STORE_UPDATE_PASSWORD:}
+    connect-timeout: 2s
+    read-timeout: 10s
+    update-timeout: 45s
+    health-timeout: 2s
+  identity:
+    issuer-uri: ${ISSUER_URI:http://localhost:8180/realms/simpl}
+    jwks-uri: ${JWKS_URI:http://localhost:8180/realms/simpl/protocol/openid-connect/certs}
+    audience: ${TOKEN_AUDIENCE:vocabulary-manager-be}
+    fetch-timeout: 2s
+    refresh-cooldown: 10s
+  writes:
+    budget: 30s
+    max-retries: 5

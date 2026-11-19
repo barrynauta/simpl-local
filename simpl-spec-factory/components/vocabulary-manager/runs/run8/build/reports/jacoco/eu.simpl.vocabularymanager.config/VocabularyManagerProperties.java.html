@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyManagerProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">VocabularyManagerProperties.java</span></div><h1>VocabularyManagerProperties.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import java.time.Duration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * Configuration of the component, read from the environment (MACH-07, E4). Every value has a default for local runs;
+ * the deployment sets the real ones.
+ *
+ * @param contentBaseUrl contentBase of E2, used for contentHref and for recognising internal references (D12)
+ * @param store the RDF store (E3, D44, D83)
+ * @param identity the identity provider (E1, E5, D44)
+ * @param writes the write budget (D71, D82)
+ */
+@ConfigurationProperties(prefix = &quot;vocabulary-manager&quot;)
+<span class="fc" id="L16">public record VocabularyManagerProperties(String contentBaseUrl, Store store, Identity identity, Writes writes) {</span>
+
+    /**
+     * @param url base URL of the dataset, for example http://fuseki:3030/vocabulary
+     * @param readUser user for queries
+     * @param readPassword password of the read user
+     * @param updateUser user for updates
+     * @param updatePassword password of the update user
+     * @param connectTimeout connect timeout per call
+     * @param readTimeout response timeout of a query
+     * @param updateTimeout response timeout of an update
+     * @param healthTimeout timeout of the health probe
+     */
+<span class="fc" id="L29">    public record Store(</span>
+            String url,
+            String readUser,
+            String readPassword,
+            String updateUser,
+            String updatePassword,
+            Duration connectTimeout,
+            Duration readTimeout,
+            Duration updateTimeout,
+            Duration healthTimeout) {}
+
+    /**
+     * @param issuerUri the one accepted issuer (E5)
+     * @param jwksUri where the realm keys are fetched
+     * @param audience the audience tokens must carry (E5)
+     * @param fetchTimeout timeout of the key fetch (D44)
+     * @param refreshCooldown minimum time between two key fetches after a success
+     */
+<span class="fc" id="L47">    public record Identity(</span>
+            String issuerUri, String jwksUri, String audience, Duration fetchTimeout, Duration refreshCooldown) {}
+
+    /**
+     * @param budget total time a write may spend on conditional retries (D71)
+     * @param maxRetries number of retries after a failed store condition (D82)
+     */
+<span class="fc" id="L54">    public record Writes(Duration budget, int maxRetries) {}</span>
+
+    /**
+     * @return contentBase without a trailing slash
+     */
+    public String contentBase() {
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        return contentBaseUrl.endsWith(&quot;/&quot;) ? contentBaseUrl.substring(0, contentBaseUrl.length() - 1) : contentBaseUrl;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

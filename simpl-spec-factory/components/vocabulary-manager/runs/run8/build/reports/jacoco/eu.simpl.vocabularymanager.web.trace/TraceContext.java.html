@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TraceContext.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.trace</a> &gt; <span class="el_source">TraceContext.java</span></div><h1>TraceContext.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.trace;
+
+import java.security.SecureRandom;
+import java.util.HexFormat;
+import java.util.Map;
+import java.util.regex.Pattern;
+import org.slf4j.MDC;
+
+/**
+ * W3C trace context and correlation id of the current request (D86, MSV-09). Values live in the logging MDC, so every
+ * log line carries them and outgoing calls can forward them.
+ */
+public final class TraceContext {
+
+    public static final String TRACEPARENT = &quot;traceparent&quot;;
+    public static final String CORRELATION_ID = &quot;X-Correlation-Id&quot;;
+    public static final String MDC_CORRELATION_ID = &quot;correlationId&quot;;
+    public static final String MDC_TRACE_ID = &quot;traceId&quot;;
+    public static final String MDC_SPAN_ID = &quot;spanId&quot;;
+    public static final String MDC_USER_ID = &quot;userId&quot;;
+    public static final String MDC_OPERATION = &quot;operationId&quot;;
+
+<span class="fc" id="L23">    private static final Pattern TRACEPARENT_PATTERN = Pattern.compile(&quot;^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$&quot;);</span>
+<span class="fc" id="L24">    private static final Pattern CORRELATION_PATTERN = Pattern.compile(&quot;^[A-Za-z0-9._:-]{1,64}$&quot;);</span>
+<span class="fc" id="L25">    private static final String ZERO_TRACE = &quot;0&quot;.repeat(32);</span>
+<span class="fc" id="L26">    private static final SecureRandom RANDOM = new SecureRandom();</span>
+
+    private TraceContext() {}
+
+    /**
+     * @param traceparent the incoming traceparent header, or null
+     * @return the trace id to continue, a new one when the header is absent or malformed
+     */
+    public static String traceIdFrom(String traceparent) {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (traceparent != null) {</span>
+<span class="fc" id="L36">            var matcher = TRACEPARENT_PATTERN.matcher(traceparent.trim());</span>
+<span class="pc bpc" id="L37" title="1 of 4 branches missed.">            if (matcher.matches() &amp;&amp; !ZERO_TRACE.equals(matcher.group(1))) {</span>
+<span class="fc" id="L38">                return matcher.group(1);</span>
+            }
+        }
+<span class="fc" id="L41">        return randomHex(16);</span>
+    }
+
+    /**
+     * @param correlationId the incoming X-Correlation-Id header, or null
+     * @return the correlation id to use, a new one when absent or malformed (no log injection)
+     */
+    public static String correlationIdFrom(String correlationId) {
+<span class="fc bfc" id="L49" title="All 4 branches covered.">        if (correlationId != null &amp;&amp; CORRELATION_PATTERN.matcher(correlationId).matches()) {</span>
+<span class="fc" id="L50">            return correlationId;</span>
+        }
+<span class="fc" id="L52">        return java.util.UUID.randomUUID().toString();</span>
+    }
+
+    /**
+     * @param bytes number of random bytes
+     * @return lower-case hex
+     */
+    public static String randomHex(int bytes) {
+<span class="fc" id="L60">        byte[] buffer = new byte[bytes];</span>
+<span class="fc" id="L61">        RANDOM.nextBytes(buffer);</span>
+<span class="fc" id="L62">        return HexFormat.of().formatHex(buffer);</span>
+    }
+
+    /**
+     * Headers to forward on calls to the store and the identity provider.
+     *
+     * @return header name to value, empty outside a request
+     */
+    public static Map&lt;String, String&gt; outgoingHeaders() {
+<span class="fc" id="L71">        String traceId = MDC.get(MDC_TRACE_ID);</span>
+<span class="fc" id="L72">        String spanId = MDC.get(MDC_SPAN_ID);</span>
+<span class="fc" id="L73">        String correlationId = MDC.get(MDC_CORRELATION_ID);</span>
+<span class="pc bpc" id="L74" title="2 of 6 branches missed.">        if (traceId == null || spanId == null || correlationId == null) {</span>
+<span class="fc" id="L75">            return Map.of();</span>
+        }
+<span class="fc" id="L77">        return Map.of(TRACEPARENT, &quot;00-&quot; + traceId + &quot;-&quot; + spanId + &quot;-01&quot;, CORRELATION_ID, correlationId);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

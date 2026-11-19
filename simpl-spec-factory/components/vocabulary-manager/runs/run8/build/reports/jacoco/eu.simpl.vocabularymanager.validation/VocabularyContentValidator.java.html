@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyContentValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">VocabularyContentValidator.java</span></div><h1>VocabularyContentValidator.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.stereotype.Component;
+
+/**
+ * The two validation steps of D9: syntax, then semantic (S1 to S7). A syntax error stops validation with one issue;
+ * otherwise every semantic rule runs and every error is returned. Error count is capped (NFR-04) at
+ * {@value #MAX_ISSUES}.
+ */
+@Component
+<span class="fc" id="L13">public class VocabularyContentValidator {</span>
+
+    public static final int MAX_ISSUES = 1000;
+
+    /**
+     * Validates content of an internal vocabulary version.
+     *
+     * @param content the uploaded bytes
+     * @param vocabularyName the vocabulary being created or versioned
+     * @param base the base IRI of the new version (D57)
+     * @param contentBase contentBase of E2
+     * @param lookup the store port for references
+     * @return errors and warnings
+     */
+    public ValidationOutcome validate(
+            byte[] content, String vocabularyName, String base, String contentBase, ReferenceLookup lookup) {
+        ParsedContent parsed;
+        try {
+<span class="fc" id="L31">            parsed = TurtleParser.parse(content, base);</span>
+<span class="fc" id="L32">        } catch (TurtleSyntaxException e) {</span>
+<span class="fc" id="L33">            return new ValidationOutcome(List.of(new ContentIssue(e.detail(), e.location())), List.of());</span>
+<span class="fc" id="L34">        }</span>
+<span class="fc" id="L35">        List&lt;ContentIssue&gt; errors = new ArrayList&lt;&gt;(SemanticRules.check(parsed));</span>
+<span class="fc" id="L36">        List&lt;ValidationWarning&gt; warnings = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L37" title="1 of 4 branches missed.">        if (!parsed.triples().isEmpty() || !parsed.prefixes().isEmpty()) {</span>
+<span class="fc" id="L38">            ValidationOutcome references = ReferenceRules.check(parsed, vocabularyName, contentBase, lookup);</span>
+<span class="fc" id="L39">            errors.addAll(references.errors());</span>
+<span class="fc" id="L40">            warnings.addAll(references.warnings());</span>
+        }
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">        if (errors.size() &gt; MAX_ISSUES) {</span>
+<span class="nc" id="L43">            errors = new ArrayList&lt;&gt;(errors.subList(0, MAX_ISSUES));</span>
+        }
+<span class="fc" id="L45">        return new ValidationOutcome(List.copyOf(errors), List.copyOf(warnings));</span>
+    }
+
+    /**
+     * Validates content of an external vocabulary: syntax only, and not empty (D30, D70).
+     *
+     * @param content the uploaded bytes
+     * @param base the base IRI
+     * @return the errors, at most one
+     */
+    public List&lt;ContentIssue&gt; validateExternal(byte[] content, String base) {
+        try {
+<span class="fc" id="L57">            ParsedContent parsed = TurtleParser.parse(content, base);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">            if (parsed.triples().isEmpty()) {</span>
+<span class="fc" id="L59">                return List.of(new ContentIssue(SemanticRules.S6, &quot;document&quot;));</span>
+            }
+<span class="fc" id="L61">            return List.of();</span>
+<span class="fc" id="L62">        } catch (TurtleSyntaxException e) {</span>
+<span class="fc" id="L63">            return List.of(new ContentIssue(e.detail(), e.location()));</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

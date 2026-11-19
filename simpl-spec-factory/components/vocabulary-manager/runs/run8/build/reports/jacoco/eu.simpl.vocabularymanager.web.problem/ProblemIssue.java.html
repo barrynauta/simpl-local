@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProblemIssue.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.problem</a> &gt; <span class="el_source">ProblemIssue.java</span></div><h1>ProblemIssue.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.problem;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+/**
+ * One issue of a problem (Belgif InputValidationIssue or VocabularyValidationIssue).
+ *
+ * @param type issue type URN
+ * @param href link to the issue type description
+ * @param title short summary of the issue type
+ * @param detail explanation of this issue
+ * @param in where the input was: body, header, path or query
+ * @param name name of the input element
+ * @param value offending value, when it is safe and useful to echo it
+ * @param location location inside uploaded content (vocabulary validation only)
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L19">public record ProblemIssue(</span>
+        String type,
+        String href,
+        String title,
+        String detail,
+        @JsonProperty(&quot;in&quot;) String in,
+        String name,
+        Object value,
+        String location) {
+
+    public static final String SCHEMA_VIOLATION = &quot;urn:problem-type:belgif:input-validation:schemaViolation&quot;;
+    public static final String INVALID_INPUT = &quot;urn:problem-type:belgif:input-validation:invalidInput&quot;;
+    private static final String SCHEMA_VIOLATION_HREF =
+            &quot;https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html&quot;;
+    private static final String INVALID_INPUT_HREF =
+            &quot;https://www.belgif.be/specification/rest/api-guide/issues/invalidInput.html&quot;;
+
+    /**
+     * An input that breaks the request schema (types, formats, limits, unknown names).
+     *
+     * @param in location kind
+     * @param name input name
+     * @param detail explanation
+     * @return the issue
+     */
+    public static ProblemIssue schemaViolation(String in, String name, String detail) {
+<span class="fc" id="L45">        return new ProblemIssue(</span>
+                SCHEMA_VIOLATION,
+                SCHEMA_VIOLATION_HREF,
+                &quot;Input isn't valid with respect to schema&quot;,
+                detail,
+                in,
+                name,
+                null,
+                null);
+    }
+
+    /**
+     * An input that has the right shape but invalid content (Turtle syntax or semantics).
+     *
+     * @param in location kind
+     * @param name input name
+     * @param detail explanation
+     * @param location location inside the content, or null
+     * @return the issue
+     */
+    public static ProblemIssue invalidInput(String in, String name, String detail, String location) {
+<span class="fc" id="L66">        return new ProblemIssue(INVALID_INPUT, INVALID_INPUT_HREF, &quot;Invalid input&quot;, detail, in, name, null, location);</span>
+    }
+
+    /**
+     * A plain issue without a type, as used by the not-found responses of the OpenAPI.
+     *
+     * @param in location kind
+     * @param name input name
+     * @param detail explanation
+     * @return the issue
+     */
+    public static ProblemIssue plain(String in, String name, String detail) {
+<span class="fc" id="L78">        return new ProblemIssue(null, null, null, detail, in, name, null, null);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

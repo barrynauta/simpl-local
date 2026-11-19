@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">VocabularyRepository.java</span></div><h1>VocabularyRepository.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import static eu.simpl.vocabularymanager.store.StoreModel.CHANGE_GRAPH;
+import static eu.simpl.vocabularymanager.store.StoreModel.EXTERNAL_GRAPH;
+import static eu.simpl.vocabularymanager.store.StoreModel.PREFIXES;
+import static eu.simpl.vocabularymanager.store.StoreModel.VOCABULARY_GRAPH;
+import static eu.simpl.vocabularymanager.store.StoreModel.changeIri;
+import static eu.simpl.vocabularymanager.store.StoreModel.contentGraphIri;
+import static eu.simpl.vocabularymanager.store.StoreModel.dateTime;
+import static eu.simpl.vocabularymanager.store.StoreModel.instant;
+import static eu.simpl.vocabularymanager.store.StoreModel.integer;
+import static eu.simpl.vocabularymanager.store.StoreModel.number;
+import static eu.simpl.vocabularymanager.store.StoreModel.str;
+import static eu.simpl.vocabularymanager.store.StoreModel.strings;
+import static eu.simpl.vocabularymanager.store.StoreModel.text;
+import static eu.simpl.vocabularymanager.store.StoreModel.versionIri;
+import static eu.simpl.vocabularymanager.store.StoreModel.vocabularyIri;
+
+import eu.simpl.vocabularymanager.domain.FieldRules;
+import eu.simpl.vocabularymanager.domain.Page;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.validation.ReferenceLookup;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.apache.jena.query.QuerySolution;
+import org.springframework.stereotype.Repository;
+
+/**
+ * Store access for vocabularies and versions. Every list query runs filter, sort and paging in the store with ORDER
+ * BY, LIMIT and OFFSET, and every query has a LIMIT (D85). Every write is one conditional SPARQL update, confirmed by
+ * its change record (D82).
+ */
+@Repository
+public class VocabularyRepository implements ReferenceLookup {
+
+    /** Highest LIMIT of a reference or search lookup: 100 references plus their ACTIVE versions (D38, Q5). */
+    static final int LOOKUP_LIMIT = 20_000;
+
+    private static final String VOCABULARY_PATTERN = &quot;&quot;&quot;
+            ?voc a vm:Vocabulary ; vm:name ?name ; vm:status ?status ; vm:latestVersion ?latest ;
+                 vm:createdBy ?createdBy ; vm:creationDate ?creationDate ; vm:lastUpdateDate ?lastUpdateDate .
+            &quot;&quot;&quot;;
+    private static final String VERSION_FIELDS = &quot;&quot;&quot;
+            ?ver vm:ofVocabulary ?voc ; vm:versionNumber ?num ; vm:status ?verStatus ; vm:description ?description ;
+                 vm:changelog ?changelog ; vm:createdBy ?verCreatedBy ; vm:creationDate ?verCreationDate ;
+                 vm:lastUpdateDate ?verLastUpdateDate .
+            &quot;&quot;&quot;;
+
+    private final SparqlStore store;
+
+    /**
+     * @param store the SPARQL store
+     */
+<span class="fc" id="L65">    public VocabularyRepository(SparqlStore store) {</span>
+<span class="fc" id="L66">        this.store = store;</span>
+<span class="fc" id="L67">    }</span>
+
+    /**
+     * @param name exact vocabulary name (D54)
+     * @return the vocabulary with its latest version values
+     */
+    public Optional&lt;Vocabulary&gt; findVocabulary(String name) {
+<span class="fc" id="L74">        String query = PREFIXES + &quot;SELECT * WHERE { GRAPH &quot; + VOCABULARY_GRAPH + &quot; {\n&quot;</span>
+<span class="fc" id="L75">                + &quot;  VALUES ?name { &quot; + str(name) + &quot; }\n&quot; + VOCABULARY_PATTERN</span>
+                + &quot;  ?lv vm:ofVocabulary ?voc ; vm:versionNumber ?latest ; vm:description ?latestDescription ;&quot;
+                + &quot; vm:contentSha256 ?sha .\n&quot;
+                + &quot;} } LIMIT 1&quot;;
+<span class="fc" id="L79">        return store.select(query).stream().findFirst().map(VocabularyRepository::toVocabulary);</span>
+    }
+
+    /**
+     * @param name a name
+     * @return true when a vocabulary with this name exists, compared case-insensitively (D37)
+     */
+    public boolean nameTaken(String name) {
+<span class="fc" id="L87">        return store.ask(PREFIXES + &quot;ASK { GRAPH &quot; + VOCABULARY_GRAPH + &quot; { ?voc vm:nameKey &quot;</span>
+<span class="fc" id="L88">                + str(FieldRules.nameKey(name)) + &quot; } }&quot;);</span>
+    }
+
+    /**
+     * @param filter the list filters (D19, D20)
+     * @param sort the ORDER BY clause
+     * @param offset rows to skip
+     * @param limit rows to return, at most 100
+     * @return the page and the total
+     */
+    public Page&lt;Vocabulary&gt; listVocabularies(VocabularyFilter filter, String sort, long offset, int limit) {
+<span class="fc" id="L99">        String filters = filter.toSparql();</span>
+<span class="fc" id="L100">        String countQuery = PREFIXES + &quot;SELECT (COUNT(*) AS ?total) WHERE { GRAPH &quot; + VOCABULARY_GRAPH + &quot; {\n&quot;</span>
+                + VOCABULARY_PATTERN + &quot;}\n&quot; + filters + &quot;} LIMIT 1&quot;;
+<span class="fc" id="L102">        long total = store.select(countQuery).stream()</span>
+<span class="fc" id="L103">                .findFirst()</span>
+<span class="fc" id="L104">                .map(solution -&gt; number(solution, &quot;total&quot;))</span>
+<span class="fc" id="L105">                .orElse(0L);</span>
+<span class="fc bfc" id="L106" title="All 4 branches covered.">        if (total == 0 || offset &gt;= total) {</span>
+<span class="fc" id="L107">            return new Page&lt;&gt;(List.of(), total);</span>
+        }
+<span class="fc" id="L109">        String query = PREFIXES + &quot;SELECT * WHERE { GRAPH &quot; + VOCABULARY_GRAPH + &quot; {\n&quot; + VOCABULARY_PATTERN</span>
+                + &quot;  ?lv vm:ofVocabulary ?voc ; vm:versionNumber ?latest ; vm:description ?latestDescription ;&quot;
+                + &quot; vm:contentSha256 ?sha .\n&quot;
+                + &quot;}\n&quot; + filters + &quot;} ORDER BY &quot; + sort + &quot; LIMIT &quot; + limit + &quot; OFFSET &quot; + offset;
+<span class="fc" id="L113">        List&lt;Vocabulary&gt; items = store.select(query).stream()</span>
+<span class="fc" id="L114">                .map(VocabularyRepository::toVocabulary)</span>
+<span class="fc" id="L115">                .toList();</span>
+<span class="fc" id="L116">        return new Page&lt;&gt;(items, total);</span>
+    }
+
+    /**
+     * @param name exact vocabulary name
+     * @param version version number
+     * @return the version
+     */
+    public Optional&lt;VocabularyVersion&gt; findVersion(String name, long version) {
+<span class="fc" id="L125">        String query = PREFIXES + &quot;SELECT * WHERE { GRAPH &quot; + VOCABULARY_GRAPH + &quot; {\n&quot;</span>
+<span class="fc" id="L126">                + &quot;  ?voc vm:name &quot; + str(name) + &quot; ; vm:latestVersion ?latest .\n&quot;</span>
+<span class="fc" id="L127">                + &quot;  VALUES ?num { &quot; + integer(version) + &quot; }\n&quot; + VERSION_FIELDS</span>
+                + &quot;} } LIMIT 1&quot;;
+<span class="fc" id="L129">        return store.select(query).stream().findFirst().map(solution -&gt; toVersion(name, solution));</span>
+    }
+
+    /**
+     * @param name exact vocabulary name
+     * @param sort the ORDER BY clause
+     * @param offset rows to skip
+     * @param limit rows to return, at most 100
+     * @return the versions of the page
+     */
+    public List&lt;VocabularyVersion&gt; listVersions(String name, String sort, long offset, int limit) {
+<span class="fc" id="L140">        String query = PREFIXES + &quot;SELECT * WHERE { GRAPH &quot; + VOCABULARY_GRAPH + &quot; {\n&quot;</span>
+<span class="fc" id="L141">                + &quot;  ?voc vm:name &quot; + str(name) + &quot; ; vm:latestVersion ?latest .\n&quot; + VERSION_FIELDS</span>
+                + &quot;} } ORDER BY &quot; + sort + &quot; LIMIT &quot; + limit + &quot; OFFSET &quot; + offset;
+<span class="fc" id="L143">        return store.select(query).stream()</span>
+<span class="fc" id="L144">                .map(solution -&gt; toVersion(name, solution))</span>
+<span class="fc" id="L145">                .toList();</span>
+    }
+
+    /**
+     * @param name exact vocabulary name
+     * @param version version number, or null for the latest version
+     * @return the stored content bytes
+     */
+    public Optional&lt;byte[]&gt; content(String name, Long version) {
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        String number = version == null ? &quot;?latest&quot; : integer(version);</span>
+<span class="fc" id="L155">        String query = PREFIXES + &quot;SELECT ?content WHERE {\n&quot;</span>
+<span class="fc" id="L156">                + &quot;  GRAPH &quot; + VOCABULARY_GRAPH + &quot; { ?voc vm:name &quot; + str(name) + &quot; ; vm:latestVersion ?latest .\n&quot;</span>
+                + &quot;    ?ver vm:ofVocabulary ?voc ; vm:versionNumber &quot; + number + &quot; ; vm:contentGraph ?g . }\n&quot;
+                + &quot;  GRAPH ?g { ?ver vm:content ?content }\n&quot;
+                + &quot;} LIMIT 1&quot;;
+<span class="fc" id="L160">        return store.select(query).stream()</span>
+<span class="fc" id="L161">                .findFirst()</span>
+<span class="fc" id="L162">                .map(solution -&gt; Base64.getDecoder().decode(text(solution, &quot;content&quot;)));</span>
+    }
+
+    @Override
+    public State lookup(Set&lt;String&gt; internalNames, Set&lt;Long&gt; versions, Set&lt;String&gt; externalKeys) {
+<span class="pc bpc" id="L167" title="1 of 4 branches missed.">        if (internalNames.isEmpty() &amp;&amp; externalKeys.isEmpty()) {</span>
+<span class="nc" id="L168">            return new State(Map.of(), Set.of());</span>
+        }
+<span class="fc" id="L170">        List&lt;String&gt; branches = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        if (!internalNames.isEmpty()) {</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">            String versionFilter = versions.isEmpty()</span>
+<span class="fc" id="L173">                    ? &quot;&quot;</span>
+<span class="fc" id="L174">                    : &quot; || ?num IN (&quot; + versions.stream().map(StoreModel::integer).collect(Collectors.joining(&quot;, &quot;))</span>
+<span class="fc" id="L175">                            + &quot;)&quot;;</span>
+<span class="fc" id="L176">            branches.add(&quot;{ VALUES ?name { &quot; + strings(internalNames) + &quot; }\n&quot;</span>
+                    + &quot;  GRAPH &quot; + VOCABULARY_GRAPH + &quot; { ?voc vm:name ?name ; vm:status ?vstatus ;&quot;
+                    + &quot; vm:latestVersion ?latest .\n&quot;
+                    + &quot;    OPTIONAL { ?ver vm:ofVocabulary ?voc ; vm:versionNumber ?num ; vm:status ?verStatus .\n&quot;
+                    + &quot;      FILTER(?verStatus = \&quot;ACTIVE\&quot; || ?num = ?latest&quot; + versionFilter + &quot;) } }\n&quot;
+                    + &quot;  BIND(\&quot;internal\&quot; AS ?kind) }&quot;);
+        }
+<span class="fc bfc" id="L183" title="All 2 branches covered.">        if (!externalKeys.isEmpty()) {</span>
+<span class="fc" id="L184">            branches.add(&quot;{ VALUES ?key { &quot; + strings(externalKeys) + &quot; }\n&quot;</span>
+                    + &quot;  GRAPH &quot; + EXTERNAL_GRAPH + &quot; { ?ext vm:lookupKey ?key }\n&quot;
+                    + &quot;  BIND(\&quot;external\&quot; AS ?kind) }&quot;);
+        }
+<span class="fc" id="L188">        String query = PREFIXES + &quot;SELECT ?kind ?name ?vstatus ?latest ?num ?verStatus ?key WHERE {\n&quot;</span>
+<span class="fc" id="L189">                + String.join(&quot;\nUNION\n&quot;, branches) + &quot;\n} LIMIT &quot; + LOOKUP_LIMIT;</span>
+<span class="fc" id="L190">        Map&lt;String, VocabularyStatus&gt; statuses = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L191">        Map&lt;String, Long&gt; latest = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L192">        Map&lt;String, Map&lt;Long, VocabularyStatus&gt;&gt; versionStatuses = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L193">        Set&lt;String&gt; registered = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">        for (QuerySolution solution : store.select(query)) {</span>
+<span class="fc bfc" id="L195" title="All 2 branches covered.">            if (&quot;external&quot;.equals(text(solution, &quot;kind&quot;))) {</span>
+<span class="fc" id="L196">                registered.add(text(solution, &quot;key&quot;));</span>
+<span class="fc" id="L197">                continue;</span>
+            }
+<span class="fc" id="L199">            String name = text(solution, &quot;name&quot;);</span>
+<span class="fc" id="L200">            statuses.put(name, VocabularyStatus.valueOf(text(solution, &quot;vstatus&quot;)));</span>
+<span class="fc" id="L201">            latest.put(name, number(solution, &quot;latest&quot;));</span>
+<span class="fc" id="L202">            Map&lt;Long, VocabularyStatus&gt; byVersion = versionStatuses.computeIfAbsent(name, key -&gt; new HashMap&lt;&gt;());</span>
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">            if (solution.contains(&quot;num&quot;)) {</span>
+<span class="fc" id="L204">                byVersion.put(number(solution, &quot;num&quot;), VocabularyStatus.valueOf(text(solution, &quot;verStatus&quot;)));</span>
+            }
+<span class="fc" id="L206">        }</span>
+<span class="fc" id="L207">        Map&lt;String, InternalVocabularyState&gt; internal = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L208">        versionStatuses.forEach((name, byVersion) -&gt; internal.put(</span>
+<span class="fc" id="L209">                name, new InternalVocabularyState(name, statuses.get(name), latest.get(name), Map.copyOf(byVersion))));</span>
+<span class="fc" id="L210">        return new State(internal, registered);</span>
+    }
+
+    /**
+     * Creates a vocabulary with version 1, only when no vocabulary has the same name case-insensitively (D37, D43).
+     *
+     * @param write the new version 1
+     * @return true when applied, false when the name was taken in the meantime
+     */
+    public boolean insertVocabulary(VersionWrite write) {
+<span class="fc" id="L220">        String voc = vocabularyIri(write.name());</span>
+<span class="fc" id="L221">        String update = PREFIXES + &quot;INSERT {\n  GRAPH &quot; + VOCABULARY_GRAPH + &quot; {\n&quot;</span>
+<span class="fc" id="L222">                + &quot;    &quot; + voc + &quot; a vm:Vocabulary ; vm:name &quot; + str(write.name()) + &quot; ; vm:nameKey &quot;</span>
+<span class="fc" id="L223">                + str(FieldRules.nameKey(write.name())) + &quot; ;\n&quot;</span>
+<span class="fc" id="L224">                + &quot;      vm:status \&quot;ACTIVE\&quot; ; vm:latestVersion &quot; + integer(1) + &quot; ; vm:createdBy &quot;</span>
+<span class="fc" id="L225">                + str(write.createdBy()) + &quot; ;\n&quot;</span>
+<span class="fc" id="L226">                + &quot;      vm:creationDate &quot; + dateTime(write.time()) + &quot; ; vm:lastUpdateDate &quot; + dateTime(write.time())</span>
+                + &quot; .\n&quot;
+<span class="fc" id="L228">                + versionTriples(write, 1) + &quot;  }\n&quot;</span>
+<span class="fc" id="L229">                + contentAndChange(write, 1, &quot;createVocabulary&quot;, voc)</span>
+                + &quot;}\nWHERE { FILTER NOT EXISTS { GRAPH &quot; + VOCABULARY_GRAPH + &quot; { ?existing vm:nameKey &quot;
+<span class="fc" id="L231">                + str(FieldRules.nameKey(write.name())) + &quot; } } }&quot;;</span>
+<span class="fc" id="L232">        return applyAndConfirm(update, write.changeToken());</span>
+    }
+
+    /**
+     * Creates the next version, only when the latest version is still the one read (D82). Every older ACTIVE version
+     * becomes DEPRECATED in the same transaction (D4).
+     *
+     * @param write the new version
+     * @param expectedLatest the latest version number the request read
+     * @return true when applied, false when another write changed the latest version
+     */
+    public boolean insertVersion(VersionWrite write, long expectedLatest) {
+<span class="fc" id="L244">        long next = expectedLatest + 1;</span>
+<span class="fc" id="L245">        String voc = vocabularyIri(write.name());</span>
+<span class="fc" id="L246">        String now = dateTime(write.time());</span>
+<span class="fc" id="L247">        String update = PREFIXES + &quot;DELETE {\n  GRAPH &quot; + VOCABULARY_GRAPH + &quot; {\n&quot;</span>
+                + &quot;    &quot; + voc + &quot; vm:latestVersion ?latest ; vm:lastUpdateDate ?vocUpdated .\n&quot;
+                + &quot;    ?old vm:status \&quot;ACTIVE\&quot; ; vm:lastUpdateDate ?oldUpdated .\n  }\n}\n&quot;
+                + &quot;INSERT {\n  GRAPH &quot; + VOCABULARY_GRAPH + &quot; {\n&quot;
+<span class="fc" id="L251">                + &quot;    &quot; + voc + &quot; vm:latestVersion &quot; + integer(next) + &quot; ; vm:lastUpdateDate &quot; + now + &quot; .\n&quot;</span>
+                + &quot;    ?old vm:status \&quot;DEPRECATED\&quot; ; vm:lastUpdateDate &quot; + now + &quot; .\n&quot;
+<span class="fc" id="L253">                + versionTriples(write, next) + &quot;  }\n&quot;</span>
+<span class="fc" id="L254">                + contentAndChange(write, next, &quot;createVocabularyVersion&quot;, voc)</span>
+                + &quot;}\nWHERE {\n  GRAPH &quot; + VOCABULARY_GRAPH + &quot; {\n&quot;
+                + &quot;    &quot; + voc + &quot; vm:latestVersion ?latest ; vm:lastUpdateDate ?vocUpdated .\n&quot;
+<span class="fc" id="L257">                + &quot;    FILTER(?latest = &quot; + integer(expectedLatest) + &quot;)\n&quot;</span>
+                + &quot;    OPTIONAL { ?old vm:ofVocabulary &quot; + voc
+                + &quot; ; vm:status \&quot;ACTIVE\&quot; ; vm:lastUpdateDate ?oldUpdated . }\n&quot;
+                + &quot;  }\n}&quot;;
+<span class="fc" id="L261">        return applyAndConfirm(update, write.changeToken());</span>
+    }
+
+    /**
+     * Changes the vocabulary status, only when it is still the status read (D82).
+     *
+     * @param name exact vocabulary name
+     * @param from the status read
+     * @param to the requested status
+     * @param change the change record values
+     * @return true when applied
+     */
+    public boolean updateVocabularyStatus(String name, VocabularyStatus from, VocabularyStatus to, ChangeRecord change) {
+<span class="fc" id="L274">        String voc = vocabularyIri(name);</span>
+<span class="fc" id="L275">        String update = PREFIXES + &quot;DELETE { GRAPH &quot; + VOCABULARY_GRAPH + &quot; { &quot; + voc + &quot; vm:status &quot;</span>
+<span class="fc" id="L276">                + str(from.name()) + &quot; ; vm:lastUpdateDate ?updated } }\n&quot;</span>
+<span class="fc" id="L277">                + &quot;INSERT { GRAPH &quot; + VOCABULARY_GRAPH + &quot; { &quot; + voc + &quot; vm:status &quot; + str(to.name())</span>
+<span class="fc" id="L278">                + &quot; ; vm:lastUpdateDate &quot; + dateTime(change.time()) + &quot; }\n&quot;</span>
+<span class="fc" id="L279">                + changeTriples(change, &quot;updateVocabularyStatus&quot;, voc) + &quot;}\n&quot;</span>
+<span class="fc" id="L280">                + &quot;WHERE { GRAPH &quot; + VOCABULARY_GRAPH + &quot; { &quot; + voc + &quot; vm:status &quot; + str(from.name())</span>
+                + &quot; ; vm:lastUpdateDate ?updated } }&quot;;
+<span class="fc" id="L282">        return applyAndConfirm(update, change.token());</span>
+    }
+
+    /**
+     * Changes a version status, only when it is still the status read (D82). The vocabulary's last update date
+     * follows (D25).
+     *
+     * @param name exact vocabulary name
+     * @param version the version number
+     * @param from the status read
+     * @param to the requested status
+     * @param change the change record values
+     * @return true when applied
+     */
+    public boolean updateVersionStatus(
+            String name, long version, VocabularyStatus from, VocabularyStatus to, ChangeRecord change) {
+<span class="fc" id="L298">        String voc = vocabularyIri(name);</span>
+<span class="fc" id="L299">        String ver = versionIri(name, version);</span>
+<span class="fc" id="L300">        String now = dateTime(change.time());</span>
+<span class="fc" id="L301">        String update = PREFIXES + &quot;DELETE { GRAPH &quot; + VOCABULARY_GRAPH + &quot; { &quot; + ver + &quot; vm:status &quot;</span>
+<span class="fc" id="L302">                + str(from.name()) + &quot; ; vm:lastUpdateDate ?verUpdated . &quot; + voc</span>
+                + &quot; vm:lastUpdateDate ?vocUpdated } }\n&quot;
+<span class="fc" id="L304">                + &quot;INSERT { GRAPH &quot; + VOCABULARY_GRAPH + &quot; { &quot; + ver + &quot; vm:status &quot; + str(to.name())</span>
+                + &quot; ; vm:lastUpdateDate &quot; + now + &quot; . &quot; + voc + &quot; vm:lastUpdateDate &quot; + now + &quot; }\n&quot;
+<span class="fc" id="L306">                + changeTriples(change, &quot;updateVocabularyVersionStatus&quot;, ver) + &quot;}\n&quot;</span>
+<span class="fc" id="L307">                + &quot;WHERE { GRAPH &quot; + VOCABULARY_GRAPH + &quot; { &quot; + ver + &quot; vm:status &quot; + str(from.name())</span>
+                + &quot; ; vm:lastUpdateDate ?verUpdated . &quot; + voc + &quot; vm:lastUpdateDate ?vocUpdated } }&quot;;
+<span class="fc" id="L309">        return applyAndConfirm(update, change.token());</span>
+    }
+
+    private String versionTriples(VersionWrite write, long number) {
+<span class="fc" id="L313">        String ver = versionIri(write.name(), number);</span>
+<span class="fc" id="L314">        String now = dateTime(write.time());</span>
+<span class="fc" id="L315">        return &quot;    &quot; + ver + &quot; a vm:VocabularyVersion ; vm:ofVocabulary &quot; + vocabularyIri(write.name()) + &quot; ;\n&quot;</span>
+<span class="fc" id="L316">                + &quot;      vm:versionNumber &quot; + integer(number) + &quot; ; vm:status \&quot;ACTIVE\&quot; ;\n&quot;</span>
+<span class="fc" id="L317">                + &quot;      vm:description &quot; + str(write.description()) + &quot; ; vm:changelog &quot; + str(write.changelog())</span>
+                + &quot; ;\n&quot;
+<span class="fc" id="L319">                + &quot;      vm:createdBy &quot; + str(write.createdBy()) + &quot; ; vm:creationDate &quot; + now</span>
+                + &quot; ; vm:lastUpdateDate &quot; + now + &quot; ;\n&quot;
+<span class="fc" id="L321">                + &quot;      vm:contentGraph &quot; + contentGraphIri(write.changeToken()) + &quot; ; vm:contentSha256 &quot;</span>
+<span class="fc" id="L322">                + str(write.contentSha256()) + &quot; ;\n&quot;</span>
+<span class="fc" id="L323">                + &quot;      vm:contentLength &quot; + integer(write.content().length) + &quot; .\n&quot;;</span>
+    }
+
+    private String contentAndChange(VersionWrite write, long number, String operation, String target) {
+<span class="fc" id="L327">        String encoded = Base64.getEncoder().encodeToString(write.content());</span>
+<span class="fc" id="L328">        return &quot;  GRAPH &quot; + contentGraphIri(write.changeToken()) + &quot; { &quot; + versionIri(write.name(), number)</span>
+                + &quot; vm:content \&quot;&quot; + encoded + &quot;\&quot;^^xsd:base64Binary }\n&quot;
+<span class="fc" id="L330">                + changeTriples(new ChangeRecord(write.changeToken(), write.actor(), write.time()), operation, target);</span>
+    }
+
+    static String changeTriples(ChangeRecord change, String operation, String target) {
+<span class="fc" id="L334">        return &quot;  GRAPH &quot; + CHANGE_GRAPH + &quot; { &quot; + changeIri(change.token()) + &quot; a vm:Change ; vm:operation &quot;</span>
+<span class="fc" id="L335">                + str(operation) + &quot; ; vm:target &quot; + target + &quot; ; vm:actor &quot; + str(change.actor()) + &quot; ; vm:at &quot;</span>
+<span class="fc" id="L336">                + dateTime(change.time()) + &quot; }\n&quot;;</span>
+    }
+
+    private boolean applyAndConfirm(String update, String token) {
+<span class="fc" id="L340">        store.update(update);</span>
+<span class="fc" id="L341">        return confirmed(store, token);</span>
+    }
+
+    static boolean confirmed(SparqlStore store, String token) {
+<span class="fc" id="L345">        return store.ask(PREFIXES + &quot;ASK { GRAPH &quot; + CHANGE_GRAPH + &quot; { &quot; + changeIri(token) + &quot; a vm:Change } }&quot;);</span>
+    }
+
+    private static Vocabulary toVocabulary(QuerySolution solution) {
+<span class="fc" id="L349">        return new Vocabulary(</span>
+<span class="fc" id="L350">                text(solution, &quot;name&quot;),</span>
+<span class="fc" id="L351">                VocabularyStatus.valueOf(text(solution, &quot;status&quot;)),</span>
+<span class="fc" id="L352">                number(solution, &quot;latest&quot;),</span>
+<span class="fc" id="L353">                text(solution, &quot;latestDescription&quot;),</span>
+<span class="fc" id="L354">                text(solution, &quot;sha&quot;),</span>
+<span class="fc" id="L355">                text(solution, &quot;createdBy&quot;),</span>
+<span class="fc" id="L356">                instant(solution, &quot;creationDate&quot;),</span>
+<span class="fc" id="L357">                instant(solution, &quot;lastUpdateDate&quot;));</span>
+    }
+
+    private static VocabularyVersion toVersion(String name, QuerySolution solution) {
+<span class="fc" id="L361">        return new VocabularyVersion(</span>
+                name,
+<span class="fc" id="L363">                number(solution, &quot;num&quot;),</span>
+<span class="fc" id="L364">                VocabularyStatus.valueOf(text(solution, &quot;verStatus&quot;)),</span>
+<span class="fc" id="L365">                text(solution, &quot;description&quot;),</span>
+<span class="fc" id="L366">                text(solution, &quot;changelog&quot;),</span>
+<span class="fc" id="L367">                text(solution, &quot;verCreatedBy&quot;),</span>
+<span class="fc" id="L368">                instant(solution, &quot;verCreationDate&quot;),</span>
+<span class="fc" id="L369">                instant(solution, &quot;verLastUpdateDate&quot;),</span>
+<span class="fc" id="L370">                number(solution, &quot;latest&quot;));</span>
+    }
+
+    /**
+     * Values of a new vocabulary version.
+     *
+     * @param name vocabulary name
+     * @param description trimmed description
+     * @param changelog trimmed changelog
+     * @param createdBy creator (D27)
+     * @param actor token subject for the change record (D80)
+     * @param content uploaded bytes
+     * @param contentSha256 hash of the bytes (D46)
+     * @param time creation time, to the second
+     * @param changeToken unique id of this write
+     */
+<span class="fc" id="L386">    public record VersionWrite(</span>
+            String name,
+            String description,
+            String changelog,
+            String createdBy,
+            String actor,
+            byte[] content,
+            String contentSha256,
+            Instant time,
+            String changeToken) {}
+
+    /**
+     * Values of a change record.
+     *
+     * @param token unique id of the write
+     * @param actor token subject (D80)
+     * @param time time of the change
+     */
+<span class="fc" id="L404">    public record ChangeRecord(String token, String actor, Instant time) {}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

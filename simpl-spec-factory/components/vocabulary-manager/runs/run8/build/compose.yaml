@@ -1,0 +1,148 @@
+# Vocabulary Manager stack (build profile run 8). Start: ./stack.sh up
+# Secrets come from .env, which stack.sh generates with random values (no default credentials, OWASP-06).
+name: vm-factory-run8
+
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  restart: unless-stopped
+
+networks:
+  store-net:        # internal network of the store (D83): no route to the host or the internet
+    internal: true
+  front:
+
+volumes:
+  fuseki-data:
+
+services:
+  fuseki:
+    <<: *hardening
+    build: ./fuseki
+    image: vm-factory-run8/fuseki:6.2.0
+    networks: [store-net]
+    environment:
+      STORE_READ_USER: ${STORE_READ_USER:?}
+      STORE_READ_PASSWORD: ${STORE_READ_PASSWORD:?}
+      STORE_UPDATE_USER: ${STORE_UPDATE_USER:?}
+      STORE_UPDATE_PASSWORD: ${STORE_UPDATE_PASSWORD:?}
+      STORE_BACKUP_USER: ${STORE_BACKUP_USER:?}
+      STORE_BACKUP_PASSWORD: ${STORE_BACKUP_PASSWORD:?}
+      JAVA_OPTS: -Xmx768m
+    volumes:
+      - fuseki-data:/fuseki/databases
+    read_only: true
+    tmpfs:
+      - /fuseki/run:mode=1777
+      - /tmp
+    deploy:
+      resources:
+        limits: {cpus: "1.5", memory: 1g}
+
+  keycloak:
+    <<: *hardening
+    image: quay.io/keycloak/keycloak:26.8.2@sha256:7e66a96e4739239070aeaf72e4c5decf0f7f682cfc725b9f7ea2b336eaba38b3
+    command: ["start-dev", "--import-realm", "--http-port=8080"]
+    networks: [front]
+    ports:
+      - "8193:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:?}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?}
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8193}
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      UI_URL: ${UI_PUBLIC_URL:-http://localhost:4433}
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 20s
+    deploy:
+      resources:
+        limits: {cpus: "1.5", memory: 1g}
+
+  backend:
+    <<: *hardening
+    build: ./backend
+    image: vm-factory-run8/backend:1.0.0
+    networks: [store-net, front]
+    ports:
+      - "8196:8080"
+    environment: &backend-env
+      VOCABULARY_CONTENT_BASE_URL: ${VOCABULARY_CONTENT_BASE_URL:-https://authority.example/vocabulary-manager}
+      STORE_URL: http://fuseki:3030/vocabulary
+      STORE_READ_USER: ${STORE_READ_USER:?}
+      STORE_READ_PASSWORD: ${STORE_READ_PASSWORD:?}
+      STORE_UPDATE_USER: ${STORE_UPDATE_USER:?}
+      STORE_UPDATE_PASSWORD: ${STORE_UPDATE_PASSWORD:?}
+      ISSUER_URI: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8193}/realms/simpl
+      JWKS_URI: http://keycloak:8080/realms/simpl/protocol/openid-connect/certs
+      TOKEN_AUDIENCE: vocabulary-manager-be
+    read_only: true
+    tmpfs:
+      - /tmp
+    depends_on:
+      fuseki: {condition: service_healthy}
+      keycloak: {condition: service_healthy}
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits: {cpus: "2", memory: 1g}
+
+  ui:
+    <<: *hardening
+    build: ./ui
+    image: vm-factory-run8/ui:1.0.0
+    networks: [front]
+    ports:
+      - "4433:8080"
+    environment:
+      KEYCLOAK_PUBLIC_URL: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8193}
+      API_UPSTREAM: http://backend:8080
+    read_only: true
+    tmpfs:
+      - /tmp:uid=101,gid=101
+      - /etc/nginx/conf.d:uid=101,gid=101
+    depends_on:
+      backend: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    deploy:
+      resources:
+        limits: {cpus: "0.5", memory: 128m}
+
+  # Second backend whose store is unreachable (D44 tests): ./stack.sh store-down-up
+  backend-store-down:
+    <<: *hardening
+    image: vm-factory-run8/backend:1.0.0
+    profiles: [storedown]
+    networks: [front]
+    ports:
+      - "8199:8080"
+    environment:
+      <<: *backend-env
+      STORE_URL: http://127.0.0.1:9/vocabulary
+    read_only: true
+    tmpfs:
+      - /tmp
+    restart: "no"
+    deploy:
+      resources:
+        limits: {cpus: "1", memory: 768m}
+
+  # Helper image of ops/backup.sh and ops/restore.sh (Q3); built on demand, never runs as a service.
+  ops-tools:
+    build: ./ops
+    image: vm-factory-run8/ops-curl:1.0.0
+    profiles: [tools]
+    networks: [store-net]

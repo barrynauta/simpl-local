@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TomcatConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">TomcatConfig.java</span></div><h1>TomcatConfig.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import java.io.IOException;
+import java.io.Writer;
+import org.apache.catalina.Container;
+import org.apache.catalina.core.StandardHost;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.apache.catalina.valves.ErrorReportValve;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Tomcat settings for D67: an encoded slash reaches the Spring Security firewall (which refuses it with the Belgif 400
+ * of D67) instead of being refused by Tomcat with an HTML page, and any error Tomcat itself answers before the
+ * application runs (bad request line, control characters) has an application/problem+json body.
+ */
+@Configuration
+<span class="fc" id="L21">public class TomcatConfig {</span>
+
+    /**
+     * @return the customizer of the embedded Tomcat
+     */
+    @Bean
+    public WebServerFactoryCustomizer&lt;TomcatServletWebServerFactory&gt; problemTomcatCustomizer() {
+<span class="fc" id="L28">        return factory -&gt; {</span>
+<span class="fc" id="L29">            factory.addConnectorCustomizers(connector -&gt; connector.setEncodedSolidusHandling(&quot;passthrough&quot;));</span>
+<span class="fc" id="L30">            factory.addContextCustomizers(context -&gt; {</span>
+<span class="fc" id="L31">                Container parent = context.getParent();</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">                if (parent instanceof StandardHost host) {</span>
+<span class="fc" id="L33">                    host.setErrorReportValveClass(ProblemErrorReportValve.class.getName());</span>
+                }
+<span class="fc" id="L35">            });</span>
+<span class="fc" id="L36">        };</span>
+    }
+
+    /** Replaces Tomcat's HTML error page with a minimal problem+json body. */
+<span class="fc" id="L40">    public static class ProblemErrorReportValve extends ErrorReportValve {</span>
+
+        @Override
+        protected void report(Request request, Response response, Throwable throwable) {
+<span class="fc" id="L44">            int status = response.getStatus();</span>
+<span class="pc bpc" id="L45" title="1 of 4 branches missed.">            if (status &lt; 400 || response.getContentWritten() &gt; 0) {</span>
+<span class="fc" id="L46">                return;</span>
+            }
+<span class="fc" id="L48">            String body = problemBody(status);</span>
+            try {
+<span class="fc" id="L50">                response.setContentType(&quot;application/problem+json&quot;);</span>
+<span class="fc" id="L51">                response.setCharacterEncoding(&quot;UTF-8&quot;);</span>
+<span class="fc" id="L52">                Writer writer = response.getReporter();</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">                if (writer != null) {</span>
+<span class="fc" id="L54">                    writer.write(body);</span>
+<span class="fc" id="L55">                    response.finishResponse();</span>
+                }
+<span class="nc" id="L57">            } catch (IOException | IllegalStateException e) {</span>
+                // The client is gone or the response is already committed; nothing more can be sent.
+<span class="fc" id="L59">            }</span>
+<span class="fc" id="L60">        }</span>
+
+        /**
+         * @param status the HTTP status
+         * @return the problem body Tomcat sends for that status
+         */
+        static String problemBody(int status) {
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            if (status == 400) {</span>
+<span class="fc" id="L68">                return &quot;{\&quot;type\&quot;:\&quot;urn:problem-type:belgif:badRequest\&quot;,&quot;</span>
+                        + &quot;\&quot;href\&quot;:\&quot;https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\&quot;,&quot;
+                        + &quot;\&quot;title\&quot;:\&quot;Bad Request\&quot;,\&quot;status\&quot;:400,\&quot;detail\&quot;:\&quot;The input message is incorrect\&quot;}&quot;;
+            }
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (status == 413) {</span>
+<span class="fc" id="L73">                return &quot;{\&quot;type\&quot;:\&quot;urn:problem-type:simpl:payloadTooLarge\&quot;,\&quot;title\&quot;:\&quot;Payload Too Large\&quot;,&quot;</span>
+                        + &quot;\&quot;status\&quot;:413,\&quot;detail\&quot;:\&quot;Uploaded vocabulary file is too large. The maximum allowed&quot;
+                        + &quot; upload size is 5 MB. Please upload a smaller Turtle file.\&quot;}&quot;;
+            }
+<span class="fc bfc" id="L77" title="All 2 branches covered.">            if (status &gt;= 500) {</span>
+<span class="fc" id="L78">                return &quot;{\&quot;type\&quot;:\&quot;urn:problem-type:belgif:internalServerError\&quot;,&quot;</span>
+                        + &quot;\&quot;href\&quot;:\&quot;https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html\&quot;,&quot;
+                        + &quot;\&quot;title\&quot;:\&quot;Internal Server Error\&quot;,\&quot;status\&quot;:&quot; + status
+                        + &quot;,\&quot;detail\&quot;:\&quot;An unexpected error occurred.\&quot;}&quot;;
+            }
+<span class="fc" id="L83">            return &quot;{\&quot;type\&quot;:\&quot;about:blank\&quot;,\&quot;status\&quot;:&quot; + status + &quot;}&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

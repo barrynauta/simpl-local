@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">VocabularyFilter.java</span></div><h1>VocabularyFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import static eu.simpl.vocabularymanager.store.StoreModel.dateTime;
+import static eu.simpl.vocabularymanager.store.StoreModel.str;
+
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import java.time.Instant;
+import java.util.Locale;
+
+/**
+ * Filters of GET /vocabularies, turned into SPARQL FILTER clauses (D19, D20, D85).
+ *
+ * @param nameContains case-insensitive 'contains' on the name, or null
+ * @param status vocabulary status, or null
+ * @param creationDate creation time range, or null
+ * @param lastUpdated last update time range, or null
+ */
+<span class="fc" id="L18">public record VocabularyFilter(</span>
+        String nameContains, VocabularyStatus status, TimeRange creationDate, TimeRange lastUpdated) {
+
+    /**
+     * A half-open time range [from, to).
+     *
+     * @param from inclusive start
+     * @param to exclusive end
+     */
+<span class="fc" id="L27">    public record TimeRange(Instant from, Instant to) {}</span>
+
+    /**
+     * @return the FILTER clauses, empty when there are no filters
+     */
+    public String toSparql() {
+<span class="fc" id="L33">        StringBuilder sparql = new StringBuilder();</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (nameContains != null) {</span>
+<span class="fc" id="L35">            sparql.append(&quot;FILTER(CONTAINS(LCASE(?name), &quot;)</span>
+<span class="fc" id="L36">                    .append(str(nameContains.toLowerCase(Locale.ROOT)))</span>
+<span class="fc" id="L37">                    .append(&quot;))\n&quot;);</span>
+        }
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        if (status != null) {</span>
+<span class="fc" id="L40">            sparql.append(&quot;FILTER(?status = &quot;).append(str(status.name())).append(&quot;)\n&quot;);</span>
+        }
+<span class="fc" id="L42">        appendRange(sparql, &quot;?creationDate&quot;, creationDate);</span>
+<span class="fc" id="L43">        appendRange(sparql, &quot;?lastUpdateDate&quot;, lastUpdated);</span>
+<span class="fc" id="L44">        return sparql.toString();</span>
+    }
+
+    private static void appendRange(StringBuilder sparql, String variable, TimeRange range) {
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        if (range == null) {</span>
+<span class="fc" id="L49">            return;</span>
+        }
+<span class="fc" id="L51">        sparql.append(&quot;FILTER(&quot;)</span>
+<span class="fc" id="L52">                .append(variable)</span>
+<span class="fc" id="L53">                .append(&quot; &gt;= &quot;)</span>
+<span class="fc" id="L54">                .append(dateTime(range.from()))</span>
+<span class="fc" id="L55">                .append(&quot; &amp;&amp; &quot;)</span>
+<span class="fc" id="L56">                .append(variable)</span>
+<span class="fc" id="L57">                .append(&quot; &lt; &quot;)</span>
+<span class="fc" id="L58">                .append(dateTime(range.to()))</span>
+<span class="fc" id="L59">                .append(&quot;)\n&quot;);</span>
+<span class="fc" id="L60">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

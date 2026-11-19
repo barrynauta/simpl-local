@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">VocabularyService.java</span></div><h1>VocabularyService.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.config.VocabularyManagerProperties;
+import eu.simpl.vocabularymanager.domain.Page;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.security.AuthenticatedUser;
+import eu.simpl.vocabularymanager.store.VocabularyFilter;
+import eu.simpl.vocabularymanager.store.VocabularyRepository;
+import eu.simpl.vocabularymanager.store.VocabularyRepository.ChangeRecord;
+import eu.simpl.vocabularymanager.store.VocabularyRepository.VersionWrite;
+import eu.simpl.vocabularymanager.validation.ContentIssue;
+import eu.simpl.vocabularymanager.validation.ReferenceLookup;
+import eu.simpl.vocabularymanager.validation.ValidationOutcome;
+import eu.simpl.vocabularymanager.validation.ValidationWarning;
+import eu.simpl.vocabularymanager.validation.VocabularyContentValidator;
+import eu.simpl.vocabularymanager.web.problem.ProblemIssue;
+import eu.simpl.vocabularymanager.web.problem.Problems;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HexFormat;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+/**
+ * Vocabulary and version lifecycle (D3 to D8, D43, D46, D82): create, new version, status changes, reads, search.
+ * Request shape is checked by the caller; this class runs the 404 and 409 checks and validation, in the order of D51.
+ */
+@Service
+public class VocabularyService {
+
+<span class="fc" id="L43">    private static final Logger LOG = LoggerFactory.getLogger(VocabularyService.class);</span>
+
+    private final VocabularyRepository repository;
+    private final VocabularyContentValidator validator;
+    private final ConditionalWrite conditionalWrite;
+    private final Clock clock;
+    private final String contentBase;
+
+    /**
+     * @param repository store access
+     * @param validator content validation
+     * @param conditionalWrite retry of conditional writes
+     * @param clock clock
+     * @param properties component settings
+     */
+    public VocabularyService(
+            VocabularyRepository repository,
+            VocabularyContentValidator validator,
+            ConditionalWrite conditionalWrite,
+            Clock clock,
+<span class="fc" id="L63">            VocabularyManagerProperties properties) {</span>
+<span class="fc" id="L64">        this.repository = repository;</span>
+<span class="fc" id="L65">        this.validator = validator;</span>
+<span class="fc" id="L66">        this.conditionalWrite = conditionalWrite;</span>
+<span class="fc" id="L67">        this.clock = clock;</span>
+<span class="fc" id="L68">        this.contentBase = properties.contentBase();</span>
+<span class="fc" id="L69">    }</span>
+
+    /**
+     * @return contentBase of E2
+     */
+    public String contentBase() {
+<span class="fc" id="L75">        return contentBase;</span>
+    }
+
+    /**
+     * @param filter the filters
+     * @param sort the ORDER BY clause
+     * @param offset rows to skip
+     * @param limit page size
+     * @return the page
+     */
+    public Page&lt;Vocabulary&gt; list(VocabularyFilter filter, String sort, long offset, int limit) {
+<span class="fc" id="L86">        return repository.listVocabularies(filter, sort, offset, limit);</span>
+    }
+
+    /**
+     * @param name exact name
+     * @return the vocabulary
+     * @throws eu.simpl.vocabularymanager.web.problem.ApiException 404
+     */
+    public Vocabulary get(String name) {
+<span class="fc" id="L95">        return repository.findVocabulary(name).orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+    }
+
+    /**
+     * @param name exact name
+     * @param version version number
+     * @return the version
+     * @throws eu.simpl.vocabularymanager.web.problem.ApiException 404 for an unknown vocabulary or version
+     */
+    public VocabularyVersion getVersion(String name, long version) {
+<span class="fc" id="L105">        Optional&lt;VocabularyVersion&gt; found = repository.findVersion(name, version);</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (found.isPresent()) {</span>
+<span class="fc" id="L107">            return found.get();</span>
+        }
+<span class="fc" id="L109">        get(name);</span>
+<span class="fc" id="L110">        throw Problems.versionNotFound(name, version);</span>
+    }
+
+    /**
+     * @param name exact name
+     * @param sort the ORDER BY clause
+     * @param offset rows to skip
+     * @param limit page size
+     * @return the versions and the total
+     * @throws eu.simpl.vocabularymanager.web.problem.ApiException 404
+     */
+    public Page&lt;VocabularyVersion&gt; versions(String name, String sort, long offset, int limit) {
+<span class="fc" id="L122">        Vocabulary vocabulary = get(name);</span>
+<span class="fc" id="L123">        long total = vocabulary.latestVersion();</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">        if (offset &gt;= total) {</span>
+<span class="nc" id="L125">            return new Page&lt;&gt;(List.of(), total);</span>
+        }
+<span class="fc" id="L127">        return new Page&lt;&gt;(repository.listVersions(name, sort, offset, limit), total);</span>
+    }
+
+    /**
+     * @param name exact name
+     * @param version version number, or null for the latest version (D5)
+     * @return the stored bytes (D29)
+     * @throws eu.simpl.vocabularymanager.web.problem.ApiException 404
+     */
+    public byte[] content(String name, Long version) {
+<span class="fc" id="L137">        Optional&lt;byte[]&gt; content = repository.content(name, version);</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        if (content.isPresent()) {</span>
+<span class="fc" id="L139">            return content.get();</span>
+        }
+<span class="fc" id="L141">        get(name);</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">        throw Problems.versionNotFound(name, version == null ? 0 : version);</span>
+    }
+
+    /**
+     * POST /vocabularies: 409 on a taken name, then validation, then version 1 ACTIVE (D6, D15, D51).
+     *
+     * @param command the checked request
+     * @param user the caller
+     * @return the created version 1 and the warnings
+     */
+    public Created create(NewVocabulary command, AuthenticatedUser user) {
+<span class="fc" id="L153">        return conditionalWrite.run(() -&gt; {</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">            if (repository.nameTaken(command.name())) {</span>
+<span class="fc" id="L155">                throw Problems.conflict(&quot;Vocabulary with name '&quot; + command.name() + &quot;' already exists.&quot;);</span>
+            }
+<span class="fc" id="L157">            ValidationOutcome outcome = validate(command.content(), command.name(), 1);</span>
+<span class="fc" id="L158">            VersionWrite write = write(command.name(), command.description(), command.changelog(), command, user);</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">            if (!repository.insertVocabulary(write)) {</span>
+<span class="fc" id="L160">                return Optional.empty();</span>
+            }
+<span class="fc" id="L162">            LOG.info(&quot;Vocabulary created with version 1&quot;);</span>
+<span class="fc" id="L163">            return Optional.of(new Created(created(write, 1), outcome.warnings()));</span>
+        });
+    }
+
+    /**
+     * POST .../versions: 404, 409 identical version (D46), validation, then the next version ACTIVE and every older
+     * ACTIVE version DEPRECATED in one transaction (D4, D7).
+     *
+     * @param command the checked request
+     * @param user the caller
+     * @return the created version and the warnings
+     */
+    public Created createVersion(NewVersion command, AuthenticatedUser user) {
+<span class="fc" id="L176">        return conditionalWrite.run(() -&gt; {</span>
+<span class="fc" id="L177">            Vocabulary vocabulary = get(command.name());</span>
+<span class="fc" id="L178">            String hash = sha256(command.content());</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">            if (hash.equals(vocabulary.latestContentSha256())</span>
+<span class="fc bfc" id="L180" title="All 2 branches covered.">                    &amp;&amp; command.description().equals(vocabulary.latestDescription())) {</span>
+<span class="fc" id="L181">                throw Problems.conflict(&quot;Version &quot; + vocabulary.latestVersion() + &quot; of vocabulary '&quot; + command.name()</span>
+                        + &quot;' already has this content and description.&quot;);
+            }
+<span class="fc" id="L184">            long next = vocabulary.latestVersion() + 1;</span>
+<span class="fc" id="L185">            ValidationOutcome outcome = validate(command.content(), command.name(), next);</span>
+<span class="fc" id="L186">            VersionWrite write = write(command.name(), command.description(), command.changelog(), command, user);</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">            if (!repository.insertVersion(write, vocabulary.latestVersion())) {</span>
+<span class="fc" id="L188">                return Optional.empty();</span>
+            }
+<span class="fc" id="L190">            LOG.info(&quot;Vocabulary version {} created&quot;, next);</span>
+<span class="fc" id="L191">            return Optional.of(new Created(created(write, next), outcome.warnings()));</span>
+        });
+    }
+
+    /**
+     * PATCH /vocabularies/{name} (D3, D4): versions are not touched.
+     *
+     * @param name exact name
+     * @param target the requested status
+     * @param user the caller
+     * @return the vocabulary after the change
+     */
+    public Vocabulary changeStatus(String name, VocabularyStatus target, AuthenticatedUser user) {
+<span class="fc" id="L204">        return conditionalWrite.run(() -&gt; {</span>
+<span class="fc" id="L205">            Vocabulary vocabulary = get(name);</span>
+<span class="fc bfc" id="L206" title="All 2 branches covered.">            if (vocabulary.status() == target) {</span>
+<span class="fc" id="L207">                throw Problems.conflict(&quot;Vocabulary is already in status &quot; + target.name());</span>
+            }
+<span class="fc" id="L209">            ChangeRecord change = change(user);</span>
+<span class="fc bfc" id="L210" title="All 2 branches covered.">            if (!repository.updateVocabularyStatus(name, vocabulary.status(), target, change)) {</span>
+<span class="fc" id="L211">                return Optional.empty();</span>
+            }
+<span class="fc" id="L213">            LOG.info(&quot;Vocabulary status changed to {}&quot;, target);</span>
+<span class="fc" id="L214">            return Optional.of(new Vocabulary(</span>
+<span class="fc" id="L215">                    vocabulary.name(),</span>
+                    target,
+<span class="fc" id="L217">                    vocabulary.latestVersion(),</span>
+<span class="fc" id="L218">                    vocabulary.latestDescription(),</span>
+<span class="fc" id="L219">                    vocabulary.latestContentSha256(),</span>
+<span class="fc" id="L220">                    vocabulary.createdBy(),</span>
+<span class="fc" id="L221">                    vocabulary.creationDate(),</span>
+<span class="fc" id="L222">                    change.time()));</span>
+        });
+    }
+
+    /**
+     * PATCH .../versions/{version} (D4): only that version's status.
+     *
+     * @param name exact name
+     * @param version version number
+     * @param target the requested status
+     * @param user the caller
+     * @return the version after the change
+     */
+    public VocabularyVersion changeVersionStatus(
+            String name, long version, VocabularyStatus target, AuthenticatedUser user) {
+<span class="fc" id="L237">        return conditionalWrite.run(() -&gt; {</span>
+<span class="fc" id="L238">            VocabularyVersion current = getVersion(name, version);</span>
+<span class="fc bfc" id="L239" title="All 2 branches covered.">            if (current.status() == target) {</span>
+<span class="fc" id="L240">                throw Problems.conflict(&quot;Vocabulary version is already in status &quot; + target.name());</span>
+            }
+<span class="fc" id="L242">            ChangeRecord change = change(user);</span>
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">            if (!repository.updateVersionStatus(name, version, current.status(), target, change)) {</span>
+<span class="nc" id="L244">                return Optional.empty();</span>
+            }
+<span class="fc" id="L246">            LOG.info(&quot;Vocabulary version {} status changed to {}&quot;, version, target);</span>
+<span class="fc" id="L247">            return Optional.of(new VocabularyVersion(</span>
+<span class="fc" id="L248">                    current.name(),</span>
+<span class="fc" id="L249">                    current.version(),</span>
+                    target,
+<span class="fc" id="L251">                    current.description(),</span>
+<span class="fc" id="L252">                    current.changelog(),</span>
+<span class="fc" id="L253">                    current.createdBy(),</span>
+<span class="fc" id="L254">                    current.creationDate(),</span>
+<span class="fc" id="L255">                    change.time(),</span>
+<span class="fc" id="L256">                    current.latestVersion()));</span>
+        });
+    }
+
+    /**
+     * POST /vocabularies/searches (D38): one store query; missing references left out; results in request order;
+     * repeated references once.
+     *
+     * @param references the references, already checked
+     * @return the results
+     */
+    public List&lt;SearchResult&gt; search(List&lt;SearchReference&gt; references) {
+<span class="fc" id="L268">        Set&lt;String&gt; names = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L269">        Set&lt;Long&gt; versions = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L270" title="All 2 branches covered.">        for (SearchReference reference : references) {</span>
+<span class="fc" id="L271">            names.add(reference.name());</span>
+<span class="fc bfc" id="L272" title="All 2 branches covered.">            if (reference.version() != null) {</span>
+<span class="fc" id="L273">                versions.add(reference.version());</span>
+            }
+<span class="fc" id="L275">        }</span>
+<span class="fc" id="L276">        ReferenceLookup.State state = repository.lookup(names, versions, Set.of());</span>
+<span class="fc" id="L277">        Set&lt;SearchReference&gt; seen = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L278">        List&lt;SearchResult&gt; results = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">        for (SearchReference reference : references) {</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">            if (!seen.add(reference)) {</span>
+<span class="fc" id="L281">                continue;</span>
+            }
+<span class="fc" id="L283">            ReferenceLookup.InternalVocabularyState vocabulary =</span>
+<span class="fc" id="L284">                    state.internal().get(reference.name());</span>
+<span class="fc bfc" id="L285" title="All 2 branches covered.">            if (vocabulary == null) {</span>
+<span class="fc" id="L286">                continue;</span>
+            }
+<span class="fc bfc" id="L288" title="All 2 branches covered.">            if (reference.version() == null) {</span>
+<span class="fc" id="L289">                results.add(new SearchResult(reference.name(), vocabulary.latestVersion(), vocabulary.status(), true));</span>
+            } else {
+<span class="fc" id="L291">                VocabularyStatus status = vocabulary.versionStatuses().get(reference.version());</span>
+<span class="pc bpc" id="L292" title="1 of 4 branches missed.">                if (status != null &amp;&amp; reference.version() &lt;= vocabulary.latestVersion()) {</span>
+<span class="fc" id="L293">                    results.add(new SearchResult(reference.name(), reference.version(), status, false));</span>
+                }
+            }
+<span class="fc" id="L296">        }</span>
+<span class="fc" id="L297">        return results;</span>
+    }
+
+    private ValidationOutcome validate(byte[] content, String name, long version) {
+<span class="fc" id="L301">        String base = contentBase + &quot;/content/&quot; + name + &quot;/versions/&quot; + version;</span>
+<span class="fc" id="L302">        ValidationOutcome outcome = validator.validate(content, name, base, contentBase, repository);</span>
+<span class="fc bfc" id="L303" title="All 2 branches covered.">        if (!outcome.valid()) {</span>
+<span class="fc" id="L304">            LOG.info(&quot;Vocabulary content rejected with {} validation errors&quot;, outcome.errors().size());</span>
+<span class="fc" id="L305">            List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L306" title="All 2 branches covered.">            for (ContentIssue issue : outcome.errors()) {</span>
+<span class="fc" id="L307">                issues.add(ProblemIssue.invalidInput(&quot;body&quot;, &quot;vocabularyFile&quot;, issue.detail(), issue.location()));</span>
+<span class="fc" id="L308">            }</span>
+<span class="fc" id="L309">            throw Problems.badRequest(issues);</span>
+        }
+<span class="fc" id="L311">        return outcome;</span>
+    }
+
+    private VersionWrite write(
+            String name, String description, String changelog, ContentCommand command, AuthenticatedUser user) {
+<span class="fc" id="L316">        return new VersionWrite(</span>
+                name,
+                description,
+                changelog,
+<span class="fc" id="L320">                user.creator(),</span>
+<span class="fc" id="L321">                user.subject(),</span>
+<span class="fc" id="L322">                command.content(),</span>
+<span class="fc" id="L323">                sha256(command.content()),</span>
+<span class="fc" id="L324">                now(),</span>
+<span class="fc" id="L325">                UUID.randomUUID().toString());</span>
+    }
+
+    private static VocabularyVersion created(VersionWrite write, long number) {
+<span class="fc" id="L329">        return new VocabularyVersion(</span>
+<span class="fc" id="L330">                write.name(),</span>
+                number,
+                VocabularyStatus.ACTIVE,
+<span class="fc" id="L333">                write.description(),</span>
+<span class="fc" id="L334">                write.changelog(),</span>
+<span class="fc" id="L335">                write.createdBy(),</span>
+<span class="fc" id="L336">                write.time(),</span>
+<span class="fc" id="L337">                write.time(),</span>
+                number);
+    }
+
+    private ChangeRecord change(AuthenticatedUser user) {
+<span class="fc" id="L342">        return new ChangeRecord(UUID.randomUUID().toString(), user.subject(), now());</span>
+    }
+
+    private Instant now() {
+<span class="fc" id="L346">        return clock.instant().truncatedTo(ChronoUnit.SECONDS);</span>
+    }
+
+    /**
+     * @param content bytes
+     * @return lower-case hex SHA-256
+     */
+    static String sha256(byte[] content) {
+        try {
+<span class="fc" id="L355">            return HexFormat.of().formatHex(MessageDigest.getInstance(&quot;SHA-256&quot;).digest(content));</span>
+<span class="nc" id="L356">        } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L357">            throw new IllegalStateException(&quot;SHA-256 is part of every Java runtime&quot;, e);</span>
+        }
+    }
+
+    /** A request that carries vocabulary content. */
+    public interface ContentCommand {
+        /**
+         * @return the uploaded bytes
+         */
+        byte[] content();
+    }
+
+    /**
+     * @param name name
+     * @param description trimmed description
+     * @param changelog trimmed changelog
+     * @param content uploaded bytes
+     */
+<span class="fc" id="L375">    public record NewVocabulary(String name, String description, String changelog, byte[] content)</span>
+            implements ContentCommand {}
+
+    /**
+     * @param name exact vocabulary name
+     * @param description trimmed description
+     * @param changelog trimmed changelog
+     * @param content uploaded bytes
+     */
+<span class="fc" id="L384">    public record NewVersion(String name, String description, String changelog, byte[] content)</span>
+            implements ContentCommand {}
+
+    /**
+     * @param version the created version
+     * @param warnings the validation warnings
+     */
+<span class="fc" id="L391">    public record Created(VocabularyVersion version, List&lt;ValidationWarning&gt; warnings) {}</span>
+
+    /**
+     * @param name exact name
+     * @param version version number, or null for the latest version
+     */
+<span class="fc" id="L397">    public record SearchReference(String name, Long version) {}</span>
+
+    /**
+     * @param name name
+     * @param version version number
+     * @param status vocabulary status (latest) or version status
+     * @param latest true when resolved as latest
+     */
+<span class="fc" id="L405">    public record SearchResult(String name, long version, VocabularyStatus status, boolean latest) {}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

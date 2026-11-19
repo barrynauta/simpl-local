@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.api</a> &gt; <span class="el_source">VocabularyController.java</span></div><h1>VocabularyController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.api;
+
+import eu.simpl.vocabularymanager.domain.FieldRules;
+import eu.simpl.vocabularymanager.domain.Page;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import eu.simpl.vocabularymanager.service.VocabularyService.Created;
+import eu.simpl.vocabularymanager.service.VocabularyService.SearchReference;
+import eu.simpl.vocabularymanager.service.VocabularyService.SearchResult;
+import eu.simpl.vocabularymanager.store.VocabularyFilter;
+import eu.simpl.vocabularymanager.web.api.Representations.CollectionPage;
+import eu.simpl.vocabularymanager.web.api.Representations.VocabularyCategory;
+import eu.simpl.vocabularymanager.web.api.Representations.VocabularyMetadata;
+import eu.simpl.vocabularymanager.web.api.Representations.VocabularySearchItem;
+import eu.simpl.vocabularymanager.web.api.Representations.VocabularyVersionMetadataResponse;
+import eu.simpl.vocabularymanager.web.body.JsonBody;
+import eu.simpl.vocabularymanager.web.body.MultipartForm;
+import eu.simpl.vocabularymanager.web.problem.ProblemIssue;
+import eu.simpl.vocabularymanager.web.routing.QueryParameters;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+
+/** Vocabulary management operations of the OpenAPI (tag 'Vocabulary management'). */
+@RestController
+public class VocabularyController {
+
+<span class="fc" id="L38">    private static final Set&lt;String&gt; CREATE_FIELDS = Set.of(&quot;vocabularyFile&quot;, &quot;name&quot;, &quot;description&quot;, &quot;changelog&quot;);</span>
+<span class="fc" id="L39">    private static final Set&lt;String&gt; VERSION_FIELDS = Set.of(&quot;vocabularyFile&quot;, &quot;description&quot;, &quot;changelog&quot;);</span>
+    private static final int MAX_SEARCH_ITEMS = 100;
+
+    private final VocabularyService service;
+    private final Responses responses;
+
+    /**
+     * @param service the vocabulary service
+     * @param responses response builder
+     */
+<span class="fc" id="L49">    public VocabularyController(VocabularyService service, Responses responses) {</span>
+<span class="fc" id="L50">        this.service = service;</span>
+<span class="fc" id="L51">        this.responses = responses;</span>
+<span class="fc" id="L52">    }</span>
+
+    /**
+     * getVocabularies.
+     *
+     * @param request the request
+     * @return the page
+     */
+    @GetMapping(&quot;/vocabularies&quot;)
+    public ResponseEntity&lt;byte[]&gt; getVocabularies(HttpServletRequest request) {
+<span class="fc" id="L62">        QueryParameters parameters = QueryParameters.parse(request.getQueryString());</span>
+<span class="fc" id="L63">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L64">        VocabularyFilter filter = ListQuery.vocabularyFilter(parameters, issues);</span>
+<span class="fc" id="L65">        String sort = ListQuery.vocabularySort(parameters, issues);</span>
+<span class="fc" id="L66">        Paging paging = Paging.parse(parameters, issues);</span>
+<span class="fc" id="L67">        Responses.failOn(issues);</span>
+<span class="fc" id="L68">        Page&lt;Vocabulary&gt; page = service.list(filter, sort, paging.offset(), paging.pageSize());</span>
+<span class="fc" id="L69">        List&lt;VocabularyCategory&gt; items = page.items().stream()</span>
+<span class="fc" id="L70">                .map(vocabulary -&gt; VocabularyCategory.of(vocabulary, service.contentBase()))</span>
+<span class="fc" id="L71">                .toList();</span>
+<span class="fc" id="L72">        return responses.ok(paging.page(&quot;/vocabularies&quot;, parameters, page.total(), items));</span>
+    }
+
+    /**
+     * createVocabulary.
+     *
+     * @param request the multipart request
+     * @return 201 with version 1
+     */
+    @PostMapping(&quot;/vocabularies&quot;)
+    public ResponseEntity&lt;byte[]&gt; createVocabulary(HttpServletRequest request) {
+<span class="fc" id="L83">        MultipartForm form = MultipartForm.read(request, CREATE_FIELDS, Set.of());</span>
+<span class="fc" id="L84">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L85">        String name = form.text(&quot;name&quot;);</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        if (name == null) {</span>
+<span class="nc" id="L87">            issues.add(required(&quot;name&quot;));</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        } else if (!FieldRules.isValidName(name)) {</span>
+<span class="fc" id="L89">            issues.add(ProblemIssue.schemaViolation(</span>
+                    &quot;body&quot;, &quot;name&quot;, &quot;Name must have 3 to 64 characters and match ^[A-Z][a-zA-Z0-9]*$.&quot;));
+        }
+<span class="fc" id="L92">        String description = requiredText(form, &quot;description&quot;, issues);</span>
+<span class="fc" id="L93">        String changelog = requiredText(form, &quot;changelog&quot;, issues);</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (!form.has(&quot;vocabularyFile&quot;)) {</span>
+<span class="fc" id="L95">            issues.add(required(&quot;vocabularyFile&quot;));</span>
+        }
+<span class="fc" id="L97">        Responses.failOn(issues);</span>
+<span class="fc" id="L98">        Created created = service.create(</span>
+<span class="fc" id="L99">                new VocabularyService.NewVocabulary(name, description, changelog, form.bytes(&quot;vocabularyFile&quot;)),</span>
+<span class="fc" id="L100">                Responses.currentUser());</span>
+<span class="fc" id="L101">        return createdResponse(created);</span>
+    }
+
+    /**
+     * searchVocabularies (D38, D68).
+     *
+     * @param request the JSON request
+     * @return the results, not paged
+     */
+    @PostMapping(&quot;/vocabularies/searches&quot;)
+    public ResponseEntity&lt;byte[]&gt; searchVocabularies(HttpServletRequest request) {
+<span class="fc" id="L112">        JsonNode body = JsonBody.readObject(request);</span>
+<span class="fc" id="L113">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;(JsonBody.unknownProperties(body, Set.of(&quot;items&quot;), &quot;&quot;));</span>
+<span class="fc" id="L114">        List&lt;SearchReference&gt; references = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L115">        JsonNode items = body.get(&quot;items&quot;);</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">        if (items == null) {</span>
+<span class="fc" id="L117">            issues.add(required(&quot;items&quot;));</span>
+<span class="fc bfc" id="L118" title="All 6 branches covered.">        } else if (!items.isArray() || items.isEmpty() || items.size() &gt; MAX_SEARCH_ITEMS) {</span>
+<span class="fc" id="L119">            issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, &quot;items&quot;, &quot;items must be an array of 1 to 100 entries.&quot;));</span>
+        } else {
+<span class="fc bfc" id="L121" title="All 2 branches covered.">            for (int i = 0; i &lt; items.size(); i++) {</span>
+<span class="fc" id="L122">                searchReference(items.get(i), &quot;items[&quot; + i + &quot;]&quot;, issues, references);</span>
+            }
+        }
+<span class="fc" id="L125">        Responses.failOn(issues);</span>
+<span class="fc" id="L126">        List&lt;VocabularySearchItem&gt; results = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L127" title="All 2 branches covered.">        for (SearchResult result : service.search(references)) {</span>
+<span class="fc" id="L128">            results.add(searchItem(result));</span>
+<span class="fc" id="L129">        }</span>
+<span class="fc" id="L130">        return responses.ok(new CollectionPage&lt;&gt;(</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">                1, results.isEmpty() ? 0 : 1, results.size(), 100, null, null, null, null, null, results));</span>
+    }
+
+    /**
+     * getVocabulary.
+     *
+     * @param vocabularyName the name
+     * @return the vocabulary
+     */
+    @GetMapping(&quot;/vocabularies/{vocabularyName}&quot;)
+    public ResponseEntity&lt;byte[]&gt; getVocabulary(@PathVariable String vocabularyName) {
+<span class="fc" id="L142">        return responses.ok(VocabularyCategory.of(service.get(vocabularyName), service.contentBase()));</span>
+    }
+
+    /**
+     * updateVocabularyStatus.
+     *
+     * @param vocabularyName the name
+     * @param request the JSON request
+     * @return the vocabulary after the change
+     */
+    @PatchMapping(&quot;/vocabularies/{vocabularyName}&quot;)
+    public ResponseEntity&lt;byte[]&gt; updateVocabularyStatus(
+            @PathVariable String vocabularyName, HttpServletRequest request) {
+<span class="fc" id="L155">        VocabularyStatus status = statusFromBody(request);</span>
+<span class="fc" id="L156">        Vocabulary vocabulary = service.changeStatus(vocabularyName, status, Responses.currentUser());</span>
+<span class="fc" id="L157">        return responses.ok(VocabularyCategory.of(vocabulary, service.contentBase()));</span>
+    }
+
+    /**
+     * getVocabularyVersions.
+     *
+     * @param vocabularyName the name
+     * @param request the request
+     * @return the page of versions
+     */
+    @GetMapping(&quot;/vocabularies/{vocabularyName}/versions&quot;)
+    public ResponseEntity&lt;byte[]&gt; getVocabularyVersions(
+            @PathVariable String vocabularyName, HttpServletRequest request) {
+<span class="fc" id="L170">        QueryParameters parameters = QueryParameters.parse(request.getQueryString());</span>
+<span class="fc" id="L171">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L172">        String sort = ListQuery.versionSort(parameters, issues);</span>
+<span class="fc" id="L173">        Paging paging = Paging.parse(parameters, issues);</span>
+<span class="fc" id="L174">        Responses.failOn(issues);</span>
+<span class="fc" id="L175">        Page&lt;VocabularyVersion&gt; page =</span>
+<span class="fc" id="L176">                service.versions(vocabularyName, sort, paging.offset(), paging.pageSize());</span>
+<span class="fc" id="L177">        List&lt;VocabularyMetadata&gt; items = page.items().stream()</span>
+<span class="fc" id="L178">                .map(version -&gt; VocabularyMetadata.of(version, service.contentBase()))</span>
+<span class="fc" id="L179">                .toList();</span>
+<span class="fc" id="L180">        return responses.ok(</span>
+<span class="fc" id="L181">                paging.page(&quot;/vocabularies/&quot; + vocabularyName + &quot;/versions&quot;, parameters, page.total(), items));</span>
+    }
+
+    /**
+     * createVocabularyVersion.
+     *
+     * @param vocabularyName the name
+     * @param request the multipart request
+     * @return 201 with the new version
+     */
+    @PostMapping(&quot;/vocabularies/{vocabularyName}/versions&quot;)
+    public ResponseEntity&lt;byte[]&gt; createVocabularyVersion(
+            @PathVariable String vocabularyName, HttpServletRequest request) {
+<span class="fc" id="L194">        MultipartForm form = MultipartForm.read(request, VERSION_FIELDS, Set.of());</span>
+<span class="fc" id="L195">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L196">        String description = requiredText(form, &quot;description&quot;, issues);</span>
+<span class="fc" id="L197">        String changelog = requiredText(form, &quot;changelog&quot;, issues);</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">        if (!form.has(&quot;vocabularyFile&quot;)) {</span>
+<span class="nc" id="L199">            issues.add(required(&quot;vocabularyFile&quot;));</span>
+        }
+<span class="fc" id="L201">        Responses.failOn(issues);</span>
+<span class="fc" id="L202">        Created created = service.createVersion(</span>
+                new VocabularyService.NewVersion(
+<span class="fc" id="L204">                        vocabularyName, description, changelog, form.bytes(&quot;vocabularyFile&quot;)),</span>
+<span class="fc" id="L205">                Responses.currentUser());</span>
+<span class="fc" id="L206">        return createdResponse(created);</span>
+    }
+
+    /**
+     * getVocabularyVersion.
+     *
+     * @param vocabularyName the name
+     * @param version the version number
+     * @return the version
+     */
+    @GetMapping(&quot;/vocabularies/{vocabularyName}/versions/{version}&quot;)
+    public ResponseEntity&lt;byte[]&gt; getVocabularyVersion(
+            @PathVariable String vocabularyName, @PathVariable String version) {
+<span class="fc" id="L219">        VocabularyVersion found = service.getVersion(vocabularyName, Long.parseLong(version));</span>
+<span class="fc" id="L220">        return responses.ok(VocabularyMetadata.of(found, service.contentBase()));</span>
+    }
+
+    /**
+     * updateVocabularyVersionStatus.
+     *
+     * @param vocabularyName the name
+     * @param version the version number
+     * @param request the JSON request
+     * @return the version after the change
+     */
+    @PatchMapping(&quot;/vocabularies/{vocabularyName}/versions/{version}&quot;)
+    public ResponseEntity&lt;byte[]&gt; updateVocabularyVersionStatus(
+            @PathVariable String vocabularyName, @PathVariable String version, HttpServletRequest request) {
+<span class="fc" id="L234">        VocabularyStatus status = statusFromBody(request);</span>
+<span class="fc" id="L235">        VocabularyVersion changed = service.changeVersionStatus(</span>
+<span class="fc" id="L236">                vocabularyName, Long.parseLong(version), status, Responses.currentUser());</span>
+<span class="fc" id="L237">        return responses.ok(VocabularyMetadata.of(changed, service.contentBase()));</span>
+    }
+
+    private ResponseEntity&lt;byte[]&gt; createdResponse(Created created) {
+<span class="fc" id="L241">        VocabularyVersionMetadataResponse body =</span>
+<span class="fc" id="L242">                VocabularyVersionMetadataResponse.of(created.version(), created.warnings(), service.contentBase());</span>
+<span class="fc" id="L243">        return responses.created(body, body.href());</span>
+    }
+
+    private VocabularySearchItem searchItem(SearchResult result) {
+<span class="fc bfc" id="L247" title="All 2 branches covered.">        String href = result.latest()</span>
+<span class="fc" id="L248">                ? &quot;/vocabularies/&quot; + result.name()</span>
+<span class="fc" id="L249">                : &quot;/vocabularies/&quot; + result.name() + &quot;/versions/&quot; + result.version();</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">        String contentHref = result.latest()</span>
+<span class="fc" id="L251">                ? service.contentBase() + &quot;/content/&quot; + result.name()</span>
+<span class="fc" id="L252">                : service.contentBase() + &quot;/content/&quot; + result.name() + &quot;/versions/&quot; + result.version();</span>
+<span class="fc" id="L253">        return new VocabularySearchItem(</span>
+<span class="fc" id="L254">                href, contentHref, result.name(), result.version(), result.status(), result.latest());</span>
+    }
+
+    private static void searchReference(
+            JsonNode item, String path, List&lt;ProblemIssue&gt; issues, List&lt;SearchReference&gt; references) {
+<span class="fc bfc" id="L259" title="All 2 branches covered.">        if (!item.isObject()) {</span>
+<span class="fc" id="L260">            issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, path, &quot;Each item must be an object.&quot;));</span>
+<span class="fc" id="L261">            return;</span>
+        }
+<span class="fc" id="L263">        issues.addAll(JsonBody.unknownProperties(item, Set.of(&quot;name&quot;, &quot;version&quot;), path + &quot;.&quot;));</span>
+<span class="fc" id="L264">        JsonNode name = item.get(&quot;name&quot;);</span>
+<span class="fc" id="L265">        boolean valid = true;</span>
+<span class="pc bpc" id="L266" title="2 of 6 branches missed.">        if (name == null || !name.isString() || !FieldRules.isValidName(name.asString())) {</span>
+<span class="fc" id="L267">            issues.add(ProblemIssue.schemaViolation(</span>
+                    &quot;body&quot;, path + &quot;.name&quot;, &quot;name must have 3 to 64 characters and match ^[A-Z][a-zA-Z0-9]*$.&quot;));
+<span class="fc" id="L269">            valid = false;</span>
+        }
+<span class="fc" id="L271">        JsonNode version = item.get(&quot;version&quot;);</span>
+<span class="fc" id="L272">        Long versionNumber = null;</span>
+<span class="fc bfc" id="L273" title="All 2 branches covered.">        if (version != null) {</span>
+<span class="pc bpc" id="L274" title="1 of 6 branches missed.">            if (version.isIntegralNumber() &amp;&amp; version.canConvertToLong() &amp;&amp; version.asLong() &gt;= 1) {</span>
+<span class="fc" id="L275">                versionNumber = version.asLong();</span>
+            } else {
+<span class="fc" id="L277">                issues.add(ProblemIssue.schemaViolation(</span>
+                        &quot;body&quot;, path + &quot;.version&quot;, &quot;version must be an integer of at least 1.&quot;));
+<span class="fc" id="L279">                valid = false;</span>
+            }
+        }
+<span class="fc bfc" id="L282" title="All 2 branches covered.">        if (valid) {</span>
+<span class="fc" id="L283">            references.add(new SearchReference(name.asString(), versionNumber));</span>
+        }
+<span class="fc" id="L285">    }</span>
+
+    private static VocabularyStatus statusFromBody(HttpServletRequest request) {
+<span class="fc" id="L288">        JsonNode body = JsonBody.readObject(request);</span>
+<span class="fc" id="L289">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;(JsonBody.unknownProperties(body, Set.of(&quot;status&quot;), &quot;&quot;));</span>
+<span class="fc" id="L290">        JsonNode status = body.get(&quot;status&quot;);</span>
+<span class="fc" id="L291">        VocabularyStatus parsed = null;</span>
+<span class="pc bpc" id="L292" title="1 of 2 branches missed.">        if (status == null) {</span>
+<span class="nc" id="L293">            issues.add(required(&quot;status&quot;));</span>
+        } else {
+<span class="pc bpc" id="L295" title="1 of 2 branches missed.">            parsed = status.isString() ? VocabularyStatus.parse(status.asString()).orElse(null) : null;</span>
+<span class="fc bfc" id="L296" title="All 2 branches covered.">            if (parsed == null) {</span>
+<span class="fc" id="L297">                issues.add(ProblemIssue.schemaViolation(</span>
+                        &quot;body&quot;, &quot;status&quot;, &quot;status must be one of [ACTIVE, DEPRECATED].&quot;));
+            }
+        }
+<span class="fc" id="L301">        Responses.failOn(issues);</span>
+<span class="fc" id="L302">        return parsed;</span>
+    }
+
+    private static String requiredText(MultipartForm form, String field, List&lt;ProblemIssue&gt; issues) {
+<span class="fc" id="L306">        String value = form.text(field);</span>
+<span class="fc bfc" id="L307" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L308">            issues.add(required(field));</span>
+<span class="fc" id="L309">            return null;</span>
+        }
+<span class="fc bfc" id="L311" title="All 2 branches covered.">        if (!FieldRules.isValidRequiredText(value)) {</span>
+<span class="fc" id="L312">            issues.add(ProblemIssue.schemaViolation(</span>
+                    &quot;body&quot;, field, field + &quot; must have 1 to 1000 characters after trimming.&quot;));
+<span class="fc" id="L314">            return null;</span>
+        }
+<span class="fc" id="L316">        return value.strip();</span>
+    }
+
+    static ProblemIssue required(String field) {
+<span class="fc" id="L320">        return ProblemIssue.schemaViolation(&quot;body&quot;, field, field + &quot; is required.&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

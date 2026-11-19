@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalVocabularyRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">ExternalVocabularyRepository.java</span></div><h1>ExternalVocabularyRepository.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import static eu.simpl.vocabularymanager.store.StoreModel.CHANGE_GRAPH;
+import static eu.simpl.vocabularymanager.store.StoreModel.EXTERNAL_GRAPH;
+import static eu.simpl.vocabularymanager.store.StoreModel.PREFIXES;
+import static eu.simpl.vocabularymanager.store.StoreModel.contentGraphIri;
+import static eu.simpl.vocabularymanager.store.StoreModel.dateTime;
+import static eu.simpl.vocabularymanager.store.StoreModel.externalIri;
+import static eu.simpl.vocabularymanager.store.StoreModel.instant;
+import static eu.simpl.vocabularymanager.store.StoreModel.number;
+import static eu.simpl.vocabularymanager.store.StoreModel.str;
+import static eu.simpl.vocabularymanager.store.StoreModel.strings;
+import static eu.simpl.vocabularymanager.store.StoreModel.text;
+
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.FieldRules;
+import eu.simpl.vocabularymanager.domain.Page;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import org.apache.jena.query.QuerySolution;
+import org.springframework.stereotype.Repository;
+
+/** Store access for external vocabularies (D30, D41, D56). Bounded queries (D85), conditional writes (D82). */
+@Repository
+public class ExternalVocabularyRepository {
+
+    private static final String FIELDS = &quot;&quot;&quot;
+            ?ext a vm:ExternalVocabulary ; vm:name ?name ; vm:namespaceUri ?namespaceUri ; vm:aliasUris ?aliasUris ;
+                 vm:createdBy ?createdBy ; vm:creationDate ?creationDate ; vm:contentGraph ?g .
+            OPTIONAL { ?ext vm:sourceUri ?sourceUri }
+            OPTIONAL { ?ext vm:description ?description }
+            &quot;&quot;&quot;;
+
+    private final SparqlStore store;
+
+    /**
+     * @param store the SPARQL store
+     */
+<span class="fc" id="L46">    public ExternalVocabularyRepository(SparqlStore store) {</span>
+<span class="fc" id="L47">        this.store = store;</span>
+<span class="fc" id="L48">    }</span>
+
+    /**
+     * @param offset rows to skip
+     * @param limit rows to return, at most 100
+     * @return the page, ordered by name ascending (D41)
+     */
+    public Page&lt;ExternalVocabulary&gt; list(long offset, int limit) {
+<span class="fc" id="L56">        long total = store</span>
+<span class="fc" id="L57">                .select(PREFIXES + &quot;SELECT (COUNT(*) AS ?total) WHERE { GRAPH &quot; + EXTERNAL_GRAPH</span>
+                        + &quot; { ?ext a vm:ExternalVocabulary } } LIMIT 1&quot;)
+<span class="fc" id="L59">                .stream()</span>
+<span class="fc" id="L60">                .findFirst()</span>
+<span class="fc" id="L61">                .map(solution -&gt; number(solution, &quot;total&quot;))</span>
+<span class="fc" id="L62">                .orElse(0L);</span>
+<span class="pc bpc" id="L63" title="2 of 4 branches missed.">        if (total == 0 || offset &gt;= total) {</span>
+<span class="nc" id="L64">            return new Page&lt;&gt;(List.of(), total);</span>
+        }
+<span class="fc" id="L66">        String query = PREFIXES + &quot;SELECT * WHERE { GRAPH &quot; + EXTERNAL_GRAPH + &quot; {\n&quot; + FIELDS</span>
+                + &quot;} } ORDER BY ASC(?name) LIMIT &quot; + limit + &quot; OFFSET &quot; + offset;
+<span class="fc" id="L68">        return new Page&lt;&gt;(store.select(query).stream().map(ExternalVocabularyRepository::toExternal).toList(), total);</span>
+    }
+
+    /**
+     * @param name exact name
+     * @return the external vocabulary
+     */
+    public Optional&lt;ExternalVocabulary&gt; find(String name) {
+<span class="fc" id="L76">        String query = PREFIXES + &quot;SELECT * WHERE { GRAPH &quot; + EXTERNAL_GRAPH + &quot; {\n  VALUES ?name { &quot; + str(name)</span>
+                + &quot; }\n&quot; + FIELDS + &quot;} } LIMIT 1&quot;;
+<span class="fc" id="L78">        return store.select(query).stream().findFirst().map(ExternalVocabularyRepository::toExternal);</span>
+    }
+
+    /**
+     * @param keys normalised URIs (D30)
+     * @return for each key that matches, the external vocabulary it matches
+     */
+    public Map&lt;String, ExternalVocabulary&gt; findByKeys(Set&lt;String&gt; keys) {
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        if (keys.isEmpty()) {</span>
+<span class="nc" id="L87">            return Map.of();</span>
+        }
+<span class="fc" id="L89">        String query = PREFIXES + &quot;SELECT * WHERE { GRAPH &quot; + EXTERNAL_GRAPH + &quot; {\n  VALUES ?key { &quot; + strings(keys)</span>
+<span class="fc" id="L90">                + &quot; }\n  ?ext vm:lookupKey ?key .\n&quot; + FIELDS + &quot;} } LIMIT &quot; + (keys.size() + 1);</span>
+<span class="fc" id="L91">        Map&lt;String, ExternalVocabulary&gt; result = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        for (QuerySolution solution : store.select(query)) {</span>
+<span class="fc" id="L93">            result.put(text(solution, &quot;key&quot;), toExternal(solution));</span>
+<span class="fc" id="L94">        }</span>
+<span class="fc" id="L95">        return result;</span>
+    }
+
+    /**
+     * @param name exact name
+     * @return the stored content bytes
+     */
+    public Optional&lt;byte[]&gt; content(String name) {
+<span class="fc" id="L103">        String query = PREFIXES + &quot;SELECT ?content WHERE {\n  GRAPH &quot; + EXTERNAL_GRAPH + &quot; { ?ext vm:name &quot;</span>
+<span class="fc" id="L104">                + str(name) + &quot; ; vm:contentGraph ?g }\n  GRAPH ?g { ?ext vm:content ?content }\n} LIMIT 1&quot;;</span>
+<span class="fc" id="L105">        return store.select(query).stream()</span>
+<span class="fc" id="L106">                .findFirst()</span>
+<span class="fc" id="L107">                .map(solution -&gt; Base64.getDecoder().decode(text(solution, &quot;content&quot;)));</span>
+    }
+
+    /**
+     * @param nameKey case-insensitive name key
+     * @param keys normalised namespace and alias keys
+     * @return the conflicts: &quot;name&quot; and/or the keys already registered
+     */
+    public Set&lt;String&gt; conflicts(String nameKey, Set&lt;String&gt; keys) {
+<span class="fc" id="L116">        String query = PREFIXES + &quot;SELECT ?kind ?key WHERE {\n&quot;</span>
+<span class="fc" id="L117">                + &quot;  { GRAPH &quot; + EXTERNAL_GRAPH + &quot; { ?e vm:nameKey &quot; + str(nameKey) + &quot; } BIND(\&quot;name\&quot; AS ?kind) }\n&quot;</span>
+<span class="fc" id="L118">                + &quot;  UNION { VALUES ?key { &quot; + strings(keys) + &quot; } GRAPH &quot; + EXTERNAL_GRAPH</span>
+<span class="fc" id="L119">                + &quot; { ?e vm:lookupKey ?key } BIND(\&quot;key\&quot; AS ?kind) }\n} LIMIT &quot; + (keys.size() + 2);</span>
+<span class="fc" id="L120">        Set&lt;String&gt; conflicts = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        for (QuerySolution solution : store.select(query)) {</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">            conflicts.add(&quot;name&quot;.equals(text(solution, &quot;kind&quot;)) ? &quot;name&quot; : text(solution, &quot;key&quot;));</span>
+<span class="fc" id="L123">        }</span>
+<span class="fc" id="L124">        return conflicts;</span>
+    }
+
+    /**
+     * Registers an external vocabulary, only when its name, namespace and aliases are still free (D30, D82).
+     *
+     * @param write the values
+     * @return true when applied
+     */
+    public boolean insert(ExternalWrite write) {
+<span class="fc" id="L134">        ExternalVocabulary vocabulary = write.vocabulary();</span>
+<span class="fc" id="L135">        String ext = externalIri(vocabulary.name());</span>
+<span class="fc" id="L136">        String graph = contentGraphIri(write.changeToken());</span>
+<span class="fc" id="L137">        StringBuilder update = new StringBuilder(PREFIXES)</span>
+<span class="fc" id="L138">                .append(&quot;INSERT {\n  GRAPH &quot;)</span>
+<span class="fc" id="L139">                .append(EXTERNAL_GRAPH)</span>
+<span class="fc" id="L140">                .append(&quot; {\n    &quot;)</span>
+<span class="fc" id="L141">                .append(ext)</span>
+<span class="fc" id="L142">                .append(&quot; a vm:ExternalVocabulary ; vm:name &quot;)</span>
+<span class="fc" id="L143">                .append(str(vocabulary.name()))</span>
+<span class="fc" id="L144">                .append(&quot; ; vm:nameKey &quot;)</span>
+<span class="fc" id="L145">                .append(str(FieldRules.nameKey(vocabulary.name())))</span>
+<span class="fc" id="L146">                .append(&quot; ;\n      vm:namespaceUri &quot;)</span>
+<span class="fc" id="L147">                .append(str(vocabulary.namespaceUri()))</span>
+<span class="fc" id="L148">                .append(&quot; ; vm:aliasUris &quot;)</span>
+<span class="fc" id="L149">                .append(str(String.join(&quot; &quot;, vocabulary.aliasUris())))</span>
+<span class="fc" id="L150">                .append(&quot; ;\n      vm:createdBy &quot;)</span>
+<span class="fc" id="L151">                .append(str(vocabulary.createdBy()))</span>
+<span class="fc" id="L152">                .append(&quot; ; vm:creationDate &quot;)</span>
+<span class="fc" id="L153">                .append(dateTime(vocabulary.creationDate()))</span>
+<span class="fc" id="L154">                .append(&quot; ; vm:contentGraph &quot;)</span>
+<span class="fc" id="L155">                .append(graph)</span>
+<span class="fc" id="L156">                .append(&quot; .\n&quot;);</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        for (String key : write.keys()) {</span>
+<span class="fc" id="L158">            update.append(&quot;    &quot;).append(ext).append(&quot; vm:lookupKey &quot;).append(str(key)).append(&quot; .\n&quot;);</span>
+<span class="fc" id="L159">        }</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (vocabulary.sourceUri() != null) {</span>
+<span class="nc" id="L161">            update.append(&quot;    &quot;).append(ext).append(&quot; vm:sourceUri &quot;).append(str(vocabulary.sourceUri())).append(&quot; .\n&quot;);</span>
+        }
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        if (vocabulary.description() != null) {</span>
+<span class="fc" id="L164">            update.append(&quot;    &quot;)</span>
+<span class="fc" id="L165">                    .append(ext)</span>
+<span class="fc" id="L166">                    .append(&quot; vm:description &quot;)</span>
+<span class="fc" id="L167">                    .append(str(vocabulary.description()))</span>
+<span class="fc" id="L168">                    .append(&quot; .\n&quot;);</span>
+        }
+<span class="fc" id="L170">        update.append(&quot;  }\n  GRAPH &quot;)</span>
+<span class="fc" id="L171">                .append(graph)</span>
+<span class="fc" id="L172">                .append(&quot; { &quot;)</span>
+<span class="fc" id="L173">                .append(ext)</span>
+<span class="fc" id="L174">                .append(&quot; vm:content \&quot;&quot;)</span>
+<span class="fc" id="L175">                .append(Base64.getEncoder().encodeToString(write.content()))</span>
+<span class="fc" id="L176">                .append(&quot;\&quot;^^xsd:base64Binary }\n&quot;)</span>
+<span class="fc" id="L177">                .append(VocabularyRepository.changeTriples(</span>
+                        new VocabularyRepository.ChangeRecord(
+<span class="fc" id="L179">                                write.changeToken(), write.actor(), vocabulary.creationDate()),</span>
+                        &quot;createExternalVocabulary&quot;,
+                        ext))
+<span class="fc" id="L182">                .append(&quot;}\nWHERE {\n  FILTER NOT EXISTS { GRAPH &quot;)</span>
+<span class="fc" id="L183">                .append(EXTERNAL_GRAPH)</span>
+<span class="fc" id="L184">                .append(&quot; { ?e vm:nameKey &quot;)</span>
+<span class="fc" id="L185">                .append(str(FieldRules.nameKey(vocabulary.name())))</span>
+<span class="fc" id="L186">                .append(&quot; } }\n  FILTER NOT EXISTS { VALUES ?key { &quot;)</span>
+<span class="fc" id="L187">                .append(strings(write.keys()))</span>
+<span class="fc" id="L188">                .append(&quot; } GRAPH &quot;)</span>
+<span class="fc" id="L189">                .append(EXTERNAL_GRAPH)</span>
+<span class="fc" id="L190">                .append(&quot; { ?e2 vm:lookupKey ?key } }\n}&quot;);</span>
+<span class="fc" id="L191">        store.update(update.toString());</span>
+<span class="fc" id="L192">        return VocabularyRepository.confirmed(store, write.changeToken());</span>
+    }
+
+    /**
+     * Hard deletes the metadata and the content graph (D41). Stored internal versions are not touched (D42).
+     *
+     * @param name exact name
+     * @param change the change record values
+     * @return true when something was deleted
+     */
+    public boolean delete(String name, VocabularyRepository.ChangeRecord change) {
+<span class="fc" id="L203">        String ext = externalIri(name);</span>
+<span class="fc" id="L204">        String update = PREFIXES + &quot;DELETE { GRAPH &quot; + EXTERNAL_GRAPH + &quot; { &quot; + ext + &quot; ?p ?o } GRAPH ?g { ?s ?cp ?co } }\n&quot;</span>
+<span class="fc" id="L205">                + &quot;INSERT {\n&quot; + VocabularyRepository.changeTriples(change, &quot;deleteExternalVocabulary&quot;, ext) + &quot;}\n&quot;</span>
+                + &quot;WHERE { GRAPH &quot; + EXTERNAL_GRAPH + &quot; { &quot; + ext + &quot; vm:contentGraph ?g ; ?p ?o }\n&quot;
+                + &quot;  OPTIONAL { GRAPH ?g { ?s ?cp ?co } } }&quot;;
+<span class="fc" id="L208">        store.update(update);</span>
+<span class="fc" id="L209">        return VocabularyRepository.confirmed(store, change.token());</span>
+    }
+
+    private static ExternalVocabulary toExternal(QuerySolution solution) {
+<span class="fc" id="L213">        String aliases = text(solution, &quot;aliasUris&quot;);</span>
+<span class="pc bpc" id="L214" title="1 of 4 branches missed.">        List&lt;String&gt; aliasUris = aliases == null || aliases.isEmpty()</span>
+<span class="fc" id="L215">                ? List.of()</span>
+<span class="fc" id="L216">                : new ArrayList&lt;&gt;(Arrays.asList(aliases.split(&quot; &quot;)));</span>
+<span class="fc" id="L217">        return new ExternalVocabulary(</span>
+<span class="fc" id="L218">                text(solution, &quot;name&quot;),</span>
+<span class="fc" id="L219">                text(solution, &quot;namespaceUri&quot;),</span>
+<span class="fc" id="L220">                List.copyOf(aliasUris),</span>
+<span class="fc" id="L221">                text(solution, &quot;sourceUri&quot;),</span>
+<span class="fc" id="L222">                text(solution, &quot;description&quot;),</span>
+<span class="fc" id="L223">                text(solution, &quot;createdBy&quot;),</span>
+<span class="fc" id="L224">                instant(solution, &quot;creationDate&quot;));</span>
+    }
+
+    /**
+     * Values of a registration.
+     *
+     * @param vocabulary the metadata
+     * @param keys normalised namespace and alias keys
+     * @param content the uploaded bytes
+     * @param actor token subject (D80)
+     * @param changeToken unique id of this write
+     */
+<span class="fc" id="L236">    public record ExternalWrite(</span>
+            ExternalVocabulary vocabulary, Set&lt;String&gt; keys, byte[] content, String actor, String changeToken) {}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OperationCatalogue.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.routing</a> &gt; <span class="el_source">OperationCatalogue.java</span></div><h1>OperationCatalogue.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.routing;
+
+import static eu.simpl.vocabularymanager.web.routing.ApiOperation.Access.PUBLIC;
+import static eu.simpl.vocabularymanager.web.routing.ApiOperation.Access.READ;
+import static eu.simpl.vocabularymanager.web.routing.ApiOperation.Access.WRITE;
+import static eu.simpl.vocabularymanager.web.routing.ApiOperation.RequestBody.JSON;
+import static eu.simpl.vocabularymanager.web.routing.ApiOperation.RequestBody.MULTIPART;
+import static eu.simpl.vocabularymanager.web.routing.ApiOperation.RequestBody.NONE;
+
+import eu.simpl.vocabularymanager.web.routing.ApiOperation.ResponseKind;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.server.PathContainer;
+import org.springframework.stereotype.Component;
+import org.springframework.web.util.pattern.PathPattern;
+
+/**
+ * The operations of the published contract (vocabulary_openapi-tier1.yaml), each with an explicit role rule (D16,
+ * D84). Nothing outside this list is served.
+ */
+@Component
+public class OperationCatalogue {
+
+    public static final String API_BASE = &quot;/v1&quot;;
+
+<span class="fc" id="L32">    private static final Set&lt;String&gt; LIST_PARAMETERS =</span>
+<span class="fc" id="L33">            Set.of(&quot;name&quot;, &quot;status&quot;, &quot;creationDate&quot;, &quot;lastUpdated&quot;, &quot;sort&quot;, &quot;page&quot;, &quot;pageSize&quot;);</span>
+<span class="fc" id="L34">    private static final Set&lt;String&gt; PAGE_PARAMETERS = Set.of(&quot;page&quot;, &quot;pageSize&quot;);</span>
+<span class="fc" id="L35">    private static final Set&lt;String&gt; VERSION_LIST_PARAMETERS = Set.of(&quot;sort&quot;, &quot;page&quot;, &quot;pageSize&quot;);</span>
+
+<span class="fc" id="L37">    private final List&lt;ApiOperation&gt; operations = List.of(</span>
+<span class="fc" id="L38">            op(&quot;getHealth&quot;, HttpMethod.GET, &quot;/health&quot;, PUBLIC, NONE, ResponseKind.JSON, Set.of()),</span>
+<span class="fc" id="L39">            op(&quot;getVocabularies&quot;, HttpMethod.GET, &quot;/vocabularies&quot;, READ, NONE, ResponseKind.JSON, LIST_PARAMETERS),</span>
+<span class="fc" id="L40">            op(&quot;createVocabulary&quot;, HttpMethod.POST, &quot;/vocabularies&quot;, WRITE, MULTIPART, ResponseKind.JSON, Set.of()),</span>
+<span class="fc" id="L41">            op(</span>
+                    &quot;searchVocabularies&quot;,
+                    HttpMethod.POST,
+                    &quot;/vocabularies/searches&quot;,
+                    READ,
+                    JSON,
+                    ResponseKind.JSON,
+<span class="fc" id="L48">                    Set.of()),</span>
+<span class="fc" id="L49">            op(</span>
+                    &quot;getVocabulary&quot;,
+                    HttpMethod.GET,
+                    &quot;/vocabularies/{vocabularyName}&quot;,
+                    READ,
+                    NONE,
+                    ResponseKind.JSON,
+<span class="fc" id="L56">                    Set.of()),</span>
+<span class="fc" id="L57">            op(</span>
+                    &quot;updateVocabularyStatus&quot;,
+                    HttpMethod.PATCH,
+                    &quot;/vocabularies/{vocabularyName}&quot;,
+                    WRITE,
+                    JSON,
+                    ResponseKind.JSON,
+<span class="fc" id="L64">                    Set.of()),</span>
+<span class="fc" id="L65">            op(</span>
+                    &quot;getVocabularyVersions&quot;,
+                    HttpMethod.GET,
+                    &quot;/vocabularies/{vocabularyName}/versions&quot;,
+                    READ,
+                    NONE,
+                    ResponseKind.JSON,
+                    VERSION_LIST_PARAMETERS),
+<span class="fc" id="L73">            op(</span>
+                    &quot;createVocabularyVersion&quot;,
+                    HttpMethod.POST,
+                    &quot;/vocabularies/{vocabularyName}/versions&quot;,
+                    WRITE,
+                    MULTIPART,
+                    ResponseKind.JSON,
+<span class="fc" id="L80">                    Set.of()),</span>
+<span class="fc" id="L81">            op(</span>
+                    &quot;getVocabularyVersion&quot;,
+                    HttpMethod.GET,
+                    &quot;/vocabularies/{vocabularyName}/versions/{version}&quot;,
+                    READ,
+                    NONE,
+                    ResponseKind.JSON,
+<span class="fc" id="L88">                    Set.of()),</span>
+<span class="fc" id="L89">            op(</span>
+                    &quot;updateVocabularyVersionStatus&quot;,
+                    HttpMethod.PATCH,
+                    &quot;/vocabularies/{vocabularyName}/versions/{version}&quot;,
+                    WRITE,
+                    JSON,
+                    ResponseKind.JSON,
+<span class="fc" id="L96">                    Set.of()),</span>
+<span class="fc" id="L97">            op(</span>
+                    &quot;downloadVocabulary&quot;,
+                    HttpMethod.GET,
+                    &quot;/content/{vocabularyName}&quot;,
+                    READ,
+                    NONE,
+                    ResponseKind.TURTLE,
+<span class="fc" id="L104">                    Set.of()),</span>
+<span class="fc" id="L105">            op(</span>
+                    &quot;downloadVocabularyVersion&quot;,
+                    HttpMethod.GET,
+                    &quot;/content/{vocabularyName}/versions/{version}&quot;,
+                    READ,
+                    NONE,
+                    ResponseKind.TURTLE,
+<span class="fc" id="L112">                    Set.of()),</span>
+<span class="fc" id="L113">            op(</span>
+                    &quot;getExternalVocabularies&quot;,
+                    HttpMethod.GET,
+                    &quot;/external-vocabularies&quot;,
+                    READ,
+                    NONE,
+                    ResponseKind.JSON,
+                    PAGE_PARAMETERS),
+<span class="fc" id="L121">            op(</span>
+                    &quot;createExternalVocabulary&quot;,
+                    HttpMethod.POST,
+                    &quot;/external-vocabularies&quot;,
+                    WRITE,
+                    MULTIPART,
+                    ResponseKind.JSON,
+<span class="fc" id="L128">                    Set.of()),</span>
+<span class="fc" id="L129">            op(</span>
+                    &quot;searchExternalVocabularies&quot;,
+                    HttpMethod.POST,
+                    &quot;/external-vocabulary/searches&quot;,
+                    READ,
+                    JSON,
+                    ResponseKind.JSON,
+<span class="fc" id="L136">                    Set.of()),</span>
+<span class="fc" id="L137">            op(</span>
+                    &quot;downloadExternalVocabularyContent&quot;,
+                    HttpMethod.POST,
+                    &quot;/external-vocabularies/content&quot;,
+                    READ,
+                    JSON,
+                    ResponseKind.TURTLE,
+<span class="fc" id="L144">                    Set.of()),</span>
+<span class="fc" id="L145">            op(</span>
+                    &quot;getExternalVocabularyContentByName&quot;,
+                    HttpMethod.GET,
+                    &quot;/external-vocabularies/{name}/content&quot;,
+                    READ,
+                    NONE,
+                    ResponseKind.TURTLE,
+<span class="fc" id="L152">                    Set.of()),</span>
+<span class="fc" id="L153">            op(</span>
+                    &quot;getExternalVocabulary&quot;,
+                    HttpMethod.GET,
+                    &quot;/external-vocabularies/{name}&quot;,
+                    READ,
+                    NONE,
+                    ResponseKind.JSON,
+<span class="fc" id="L160">                    Set.of()),</span>
+<span class="fc" id="L161">            op(</span>
+                    &quot;deleteExternalVocabulary&quot;,
+                    HttpMethod.DELETE,
+                    &quot;/external-vocabularies/{name}&quot;,
+                    WRITE,
+                    NONE,
+                    ResponseKind.JSON,
+<span class="fc" id="L168">                    Set.of()));</span>
+
+<span class="fc" id="L170">    private final Map&lt;String, List&lt;ApiOperation&gt;&gt; operationsByPath = new LinkedHashMap&lt;&gt;();</span>
+    private final List&lt;PathPattern&gt; patternsBySpecificity;
+
+    /** Builds the lookup tables. */
+<span class="fc" id="L174">    public OperationCatalogue() {</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        for (ApiOperation operation : operations) {</span>
+<span class="fc" id="L176">            operationsByPath</span>
+<span class="fc" id="L177">                    .computeIfAbsent(operation.path(), key -&gt; new ArrayList&lt;&gt;())</span>
+<span class="fc" id="L178">                    .add(operation);</span>
+<span class="fc" id="L179">        }</span>
+<span class="fc" id="L180">        List&lt;PathPattern&gt; patterns = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        for (String path : operationsByPath.keySet()) {</span>
+<span class="fc" id="L182">            patterns.add(operationsByPath.get(path).get(0).pattern());</span>
+<span class="fc" id="L183">        }</span>
+<span class="fc" id="L184">        patterns.sort(PathPattern.SPECIFICITY_COMPARATOR);</span>
+<span class="fc" id="L185">        this.patternsBySpecificity = List.copyOf(patterns);</span>
+<span class="fc" id="L186">    }</span>
+
+    private static ApiOperation op(
+            String id,
+            HttpMethod method,
+            String path,
+            ApiOperation.Access access,
+            ApiOperation.RequestBody body,
+            ResponseKind response,
+            Set&lt;String&gt; query) {
+<span class="fc" id="L196">        return new ApiOperation(id, method, API_BASE + path, access, body, response, query);</span>
+    }
+
+    /**
+     * @return every operation of the contract
+     */
+    public List&lt;ApiOperation&gt; operations() {
+<span class="fc" id="L203">        return operations;</span>
+    }
+
+    /**
+     * Finds the path template a raw request path belongs to. A fixed segment wins over a path parameter (D77).
+     *
+     * @param rawPath the request URI path, still percent-encoded
+     * @return the matching path template
+     */
+    public Optional&lt;String&gt; matchPath(String rawPath) {
+<span class="fc" id="L213">        PathContainer container = PathContainer.parsePath(rawPath);</span>
+<span class="fc" id="L214">        return patternsBySpecificity.stream()</span>
+<span class="fc" id="L215">                .filter(pattern -&gt; pattern.matches(container))</span>
+<span class="fc" id="L216">                .findFirst()</span>
+<span class="fc" id="L217">                .map(PathPattern::getPatternString);</span>
+    }
+
+    /**
+     * @param path a path template returned by {@link #matchPath(String)}
+     * @return the methods declared on it
+     */
+    public Set&lt;String&gt; methodsOf(String path) {
+<span class="fc" id="L225">        Set&lt;String&gt; methods = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        for (ApiOperation operation : operationsByPath.getOrDefault(path, List.of())) {</span>
+<span class="fc" id="L227">            methods.add(operation.method().name());</span>
+<span class="fc" id="L228">        }</span>
+<span class="fc" id="L229">        return methods;</span>
+    }
+
+    /**
+     * @param path a path template
+     * @param method the request method
+     * @return the operation, when the template declares the method
+     */
+    public Optional&lt;ApiOperation&gt; find(String path, String method) {
+<span class="fc" id="L238">        return operationsByPath.getOrDefault(path, List.of()).stream()</span>
+<span class="fc" id="L239">                .filter(operation -&gt; operation.method().name().equals(method))</span>
+<span class="fc" id="L240">                .findFirst();</span>
+    }
+
+    /**
+     * @param rawPath the request URI path, still percent-encoded
+     * @param method the request method
+     * @return the operation the request addresses, if any
+     */
+    public Optional&lt;ApiOperation&gt; resolve(String rawPath, String method) {
+<span class="fc" id="L249">        return matchPath(rawPath).flatMap(path -&gt; find(path, method));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

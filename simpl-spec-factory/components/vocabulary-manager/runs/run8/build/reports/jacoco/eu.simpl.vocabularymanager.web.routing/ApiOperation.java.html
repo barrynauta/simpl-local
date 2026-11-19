@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiOperation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.routing</a> &gt; <span class="el_source">ApiOperation.java</span></div><h1>ApiOperation.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.routing;
+
+import java.util.Set;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.util.pattern.PathPattern;
+import org.springframework.web.util.pattern.PathPatternParser;
+
+/**
+ * One operation of the published contract, with its role rule and request shape. The catalogue of these is the single
+ * source for routing (405), authorisation (D16, D84) and request-shape checks (D21, D52, D63).
+ *
+ * @param operationId the OpenAPI operationId
+ * @param method the HTTP method
+ * @param path the full path template, including the /v1 base
+ * @param access who may call it
+ * @param requestBody the request body kind
+ * @param response the success response kind
+ * @param queryParameters the query parameters the operation declares
+ */
+<span class="fc" id="L20">public record ApiOperation(</span>
+        String operationId,
+        HttpMethod method,
+        String path,
+        Access access,
+        RequestBody requestBody,
+        ResponseKind response,
+        Set&lt;String&gt; queryParameters) {
+
+    /** Who may call an operation. */
+<span class="fc" id="L30">    public enum Access {</span>
+        /** No token needed (GET /health only). */
+<span class="fc" id="L32">        PUBLIC,</span>
+        /** GA_VOCABULARY_VIEWER or GA_VOCABULARY_ADMIN. */
+<span class="fc" id="L34">        READ,</span>
+        /** GA_VOCABULARY_ADMIN. */
+<span class="fc" id="L36">        WRITE</span>
+    }
+
+    /** Request body kinds. */
+<span class="fc" id="L40">    public enum RequestBody {</span>
+<span class="fc" id="L41">        NONE,</span>
+<span class="fc" id="L42">        JSON,</span>
+<span class="fc" id="L43">        MULTIPART</span>
+    }
+
+    /** Success response kinds, used for the Accept check (D63). */
+<span class="fc" id="L47">    public enum ResponseKind {</span>
+<span class="fc" id="L48">        JSON,</span>
+<span class="fc" id="L49">        TURTLE</span>
+    }
+
+    /**
+     * @return the parsed path pattern
+     */
+    public PathPattern pattern() {
+<span class="fc" id="L56">        return PathPatternParser.defaultInstance.parse(path);</span>
+    }
+
+    /**
+     * @param parameter a query parameter name
+     * @return true when the operation declares it
+     */
+    public boolean declaresQueryParameter(String parameter) {
+<span class="fc" id="L64">        return queryParameters.contains(parameter);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

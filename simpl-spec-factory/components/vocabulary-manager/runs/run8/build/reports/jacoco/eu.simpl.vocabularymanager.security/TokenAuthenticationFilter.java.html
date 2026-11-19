@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TokenAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">TokenAuthenticationFilter.java</span></div><h1>TokenAuthenticationFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import eu.simpl.vocabularymanager.web.problem.ProblemWriter;
+import eu.simpl.vocabularymanager.web.problem.Problems;
+import eu.simpl.vocabularymanager.web.trace.TraceContext;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Reads the bearer token and validates it (D17, D44). No token: the request continues anonymous and the
+ * authorisation rules decide (401 or the public health operation). A bad token: 401. Keys needed but not obtainable:
+ * 503. Runs before role and body checks.
+ */
+public class TokenAuthenticationFilter extends OncePerRequestFilter {
+
+<span class="fc" id="L29">    private static final Logger LOG = LoggerFactory.getLogger(&quot;security&quot;);</span>
+    private static final String BEARER = &quot;bearer &quot;;
+    private static final String HEALTH_PATH = &quot;/v1/health&quot;;
+
+    private final TokenValidator validator;
+    private final ProblemWriter problemWriter;
+
+    /**
+     * @param validator validates tokens
+     * @param problemWriter writes 401 and 503 bodies
+     */
+<span class="fc" id="L40">    public TokenAuthenticationFilter(TokenValidator validator, ProblemWriter problemWriter) {</span>
+<span class="fc" id="L41">        this.validator = validator;</span>
+<span class="fc" id="L42">        this.problemWriter = problemWriter;</span>
+<span class="fc" id="L43">    }</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L48">        List&lt;String&gt; headers = Collections.list(request.getHeaders(&quot;Authorization&quot;));</span>
+<span class="pc bpc" id="L49" title="1 of 4 branches missed.">        if (headers.isEmpty() || HEALTH_PATH.equals(request.getRequestURI())) {</span>
+<span class="fc" id="L50">            chain.doFilter(request, response);</span>
+<span class="fc" id="L51">            return;</span>
+        }
+<span class="fc" id="L53">        String header = headers.get(0);</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        if (headers.size() &gt; 1</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">                || header.length() &lt;= BEARER.length()</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">                || !header.regionMatches(true, 0, BEARER, 0, BEARER.length())) {</span>
+<span class="fc" id="L57">            reject(response, &quot;The Authorization header is not a single bearer token.&quot;);</span>
+<span class="fc" id="L58">            return;</span>
+        }
+<span class="fc" id="L60">        String token = header.substring(BEARER.length()).trim();</span>
+        try {
+<span class="fc" id="L62">            AuthenticatedUser user = validator.validate(token);</span>
+<span class="fc" id="L63">            MDC.put(TraceContext.MDC_USER_ID, user.subject());</span>
+<span class="fc" id="L64">            List&lt;SimpleGrantedAuthority&gt; authorities =</span>
+<span class="fc" id="L65">                    user.roles().stream().map(SimpleGrantedAuthority::new).toList();</span>
+<span class="fc" id="L66">            var authentication = UsernamePasswordAuthenticationToken.authenticated(user, null, authorities);</span>
+<span class="fc" id="L67">            SecurityContextHolder.getContext().setAuthentication(authentication);</span>
+<span class="fc" id="L68">        } catch (TokenValidator.InvalidTokenException e) {</span>
+<span class="fc" id="L69">            LOG.warn(&quot;Rejected bearer token: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L70">            reject(response, &quot;The bearer token is not valid.&quot;);</span>
+<span class="fc" id="L71">            return;</span>
+<span class="fc" id="L72">        } catch (IdentityProviderUnavailableException e) {</span>
+<span class="fc" id="L73">            LOG.error(&quot;Identity provider not available while validating a token&quot;, e);</span>
+<span class="fc" id="L74">            problemWriter.write(</span>
+                    response,
+<span class="fc" id="L76">                    Problems.serviceUnavailableProblem(&quot;The identity provider is not available. Retry later.&quot;),</span>
+<span class="fc" id="L77">                    Map.of(&quot;Retry-After&quot;, Problems.RETRY_AFTER_SECONDS));</span>
+<span class="fc" id="L78">            return;</span>
+<span class="fc" id="L79">        }</span>
+        try {
+<span class="fc" id="L81">            chain.doFilter(request, response);</span>
+        } finally {
+<span class="fc" id="L83">            SecurityContextHolder.clearContext();</span>
+        }
+<span class="fc" id="L85">    }</span>
+
+    private void reject(HttpServletResponse response, String detail) throws IOException {
+<span class="fc" id="L88">        problemWriter.write(</span>
+                response,
+<span class="fc" id="L90">                Problems.unauthorized(detail),</span>
+<span class="fc" id="L91">                Map.of(&quot;WWW-Authenticate&quot;, &quot;Bearer error=\&quot;invalid_token\&quot;&quot;));</span>
+<span class="fc" id="L92">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

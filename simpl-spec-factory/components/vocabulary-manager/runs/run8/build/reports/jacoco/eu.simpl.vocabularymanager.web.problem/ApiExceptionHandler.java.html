@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.problem</a> &gt; <span class="el_source">ApiExceptionHandler.java</span></div><h1>ApiExceptionHandler.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.problem;
+
+import eu.simpl.vocabularymanager.store.StoreException;
+import eu.simpl.vocabularymanager.store.StoreUnavailableException;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+/**
+ * One exception strategy for the whole component (CODE-34 to CODE-36): application exceptions carry their problem;
+ * store, framework and unexpected exceptions map to a fixed problem without internal details (BLG-err-sanit,
+ * OWT-A10). Each exception is logged once, with its stack trace when it is unexpected.
+ */
+@RestControllerAdvice
+public class ApiExceptionHandler {
+
+    static final String STORE_UNAVAILABLE = &quot;The vocabulary store is not available. Retry later.&quot;;
+<span class="fc" id="L29">    private static final Logger LOG = LoggerFactory.getLogger(ApiExceptionHandler.class);</span>
+
+    private final ProblemWriter writer;
+
+    /**
+     * @param writer writes problem bodies
+     */
+<span class="fc" id="L36">    public ApiExceptionHandler(ProblemWriter writer) {</span>
+<span class="fc" id="L37">        this.writer = writer;</span>
+<span class="fc" id="L38">    }</span>
+
+    /**
+     * @param exception an application exception
+     * @param response the response
+     * @throws IOException when the client connection fails
+     */
+    @ExceptionHandler(ApiException.class)
+    public void handleApi(ApiException exception, HttpServletResponse response) throws IOException {
+<span class="fc" id="L47">        LOG.info(&quot;Request answered with {}: {}&quot;, exception.problem().status(), exception.problem().title());</span>
+<span class="fc" id="L48">        writer.write(response, exception.problem(), exception.headers());</span>
+<span class="fc" id="L49">    }</span>
+
+    /**
+     * @param exception the store is unreachable or too slow
+     * @param response the response
+     * @throws IOException when the client connection fails
+     */
+    @ExceptionHandler(StoreUnavailableException.class)
+    public void handleStoreUnavailable(StoreUnavailableException exception, HttpServletResponse response)
+            throws IOException {
+<span class="fc" id="L59">        LOG.warn(&quot;Vocabulary store not available&quot;, exception);</span>
+<span class="fc" id="L60">        writer.write(</span>
+                response,
+<span class="fc" id="L62">                Problems.serviceUnavailableProblem(STORE_UNAVAILABLE),</span>
+<span class="fc" id="L63">                Map.of(&quot;Retry-After&quot;, Problems.RETRY_AFTER_SECONDS));</span>
+<span class="fc" id="L64">    }</span>
+
+    /**
+     * @param exception a store error that is not a timeout or connection failure
+     * @param response the response
+     * @throws IOException when the client connection fails
+     */
+    @ExceptionHandler(StoreException.class)
+    public void handleStore(StoreException exception, HttpServletResponse response) throws IOException {
+<span class="fc" id="L73">        LOG.error(&quot;Vocabulary store error&quot;, exception);</span>
+<span class="fc" id="L74">        writer.write(response, Problems.internalServerError());</span>
+<span class="fc" id="L75">    }</span>
+
+    /**
+     * @param exception no handler for the path
+     * @param response the response
+     * @throws IOException when the client connection fails
+     */
+    @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
+    public void handleNotFound(Exception exception, HttpServletResponse response) throws IOException {
+<span class="nc" id="L84">        writer.write(response, Problems.unknownPath());</span>
+<span class="nc" id="L85">    }</span>
+
+    /**
+     * @param exception method not supported by the matched handler
+     * @param response the response
+     * @throws IOException when the client connection fails
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public void handleMethod(HttpRequestMethodNotSupportedException exception, HttpServletResponse response)
+            throws IOException {
+<span class="nc" id="L95">        writer.write(response, Problems.methodNotAllowed(exception.getMethod()));</span>
+<span class="nc" id="L96">    }</span>
+
+    /**
+     * @param exception framework content negotiation failure
+     * @param response the response
+     * @throws IOException when the client connection fails
+     */
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public void handleNotAcceptable(HttpMediaTypeNotAcceptableException exception, HttpServletResponse response)
+            throws IOException {
+<span class="nc" id="L106">        writer.write(response, Problems.notAcceptable().problem());</span>
+<span class="nc" id="L107">    }</span>
+
+    /**
+     * @param exception framework content type failure
+     * @param response the response
+     * @throws IOException when the client connection fails
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public void handleUnsupported(HttpMediaTypeNotSupportedException exception, HttpServletResponse response)
+            throws IOException {
+<span class="nc" id="L117">        writer.write(response, Problems.unsupportedMediaType().problem());</span>
+<span class="nc" id="L118">    }</span>
+
+    /**
+     * @param exception upload over the container limits
+     * @param response the response
+     * @throws IOException when the client connection fails
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public void handleTooLarge(MaxUploadSizeExceededException exception, HttpServletResponse response)
+            throws IOException {
+<span class="nc" id="L128">        writer.write(response, Problems.payloadTooLarge(&quot;vocabularyFile&quot;).problem());</span>
+<span class="nc" id="L129">    }</span>
+
+    /**
+     * @param exception malformed multipart body
+     * @param response the response
+     * @throws IOException when the client connection fails
+     */
+    @ExceptionHandler(MultipartException.class)
+    public void handleMultipart(MultipartException exception, HttpServletResponse response) throws IOException {
+<span class="nc" id="L138">        writer.write(</span>
+                response,
+<span class="nc" id="L140">                Problems.schemaViolation(&quot;body&quot;, &quot;body&quot;, &quot;The multipart request body cannot be read.&quot;)</span>
+<span class="nc" id="L141">                        .problem());</span>
+<span class="nc" id="L142">    }</span>
+
+    /**
+     * @param exception anything unexpected
+     * @param response the response
+     * @throws IOException when the client connection fails
+     */
+    @ExceptionHandler(Exception.class)
+    public void handleUnexpected(Exception exception, HttpServletResponse response) throws IOException {
+<span class="nc" id="L151">        LOG.error(&quot;Unexpected error&quot;, exception);</span>
+<span class="nc" id="L152">        writer.write(response, Problems.internalServerError());</span>
+<span class="nc" id="L153">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

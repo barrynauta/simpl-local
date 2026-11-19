@@ -1,0 +1,112 @@
+{
+  "operation": "POST /external-vocabularies/content",
+  "method": "POST",
+  "path_template": "/external-vocabularies/content",
+  "fingerprint": "704a9599",
+  "case_id": "lWACV6",
+  "code_sample": "curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{\"\\u00f1\": {\"\\u00ec\\u008a\\u00eb\": []}, \"\\u00b9\\ud972\\ude18\\u0010\\u00acI\": [], \"namespaceUri\": \"http://ext.example.org/qwayz4socml/terms\"}' http://localhost:8196/v1/external-vocabularies/content",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://localhost:8196/v1/external-vocabularies/content",
+      "url_template": "http://localhost:8196/v1/external-vocabularies/content",
+      "headers": {
+        "User-Agent": "schemathesis/4.33.4",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "lWACV6",
+        "Content-Type": "application/json",
+        "Content-Length": "137"
+      },
+      "response": {
+        "status_code": 400,
+        "headers": {
+          "x-correlation-id": "7b18fde3-5591-473e-b7d8-eee241aefad6",
+          "traceparent": "00-c9276162c0118deb308e9e130917b8d5-5f30b251bb266fda-01",
+          "x-content-type-options": "nosniff",
+          "x-xss-protection": "0",
+          "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+          "pragma": "no-cache",
+          "expires": "0",
+          "x-frame-options": "DENY",
+          "content-security-policy": "default-src 'none'; frame-ancestors 'none'",
+          "content-type": "application/problem+json",
+          "content-length": "875",
+          "date": "Thu, 19 Nov 2026 13:29:58 GMT",
+          "connection": "close"
+        },
+        "body": "{\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"The input message is incorrect\",\"instance\":\"urn:uuid:faf3a928-4d87-4e66-abaa-c80eeeacaefb\",\"issues\":[{\"type\":\"urn:problem-type:belgif:input-validation:schemaViolation\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html\",\"title\":\"Input isn't valid with respect to schema\",\"detail\":\"Property '\u00f1' is not defined by the schema.\",\"in\":\"body\",\"name\":\"\u00f1\"},{\"type\":\"urn:problem-type:belgif:input-validation:schemaViolation\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html\",\"title\":\"Input isn't valid with respect to schema\",\"detail\":\"Property '\u00b9\ud972\ude18\\u0010\u00acI' is not defined by the schema.\",\"in\":\"body\",\"name\":\"\u00b9\ud972\ude18\\u0010\u00acI\"}]}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "positive_data_acceptance",
+          "status": "failure",
+          "message": "Schema-valid request rejected\n\nValid data should have been accepted\nExpected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx\nHint: The request body contains 2 additional properties not defined in the schema (`\u00b9\ud972\ude18\u0010\u00acI`, `\u00f1`). The server appears to reject properties the schema allows. Declare `additionalProperties: false` if extras are not accepted, or make the server ignore unknown fields."
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.0007218748796731234,
+          "mode": "positive"
+        },
+        "components": {
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "fuzzing",
+          "data": {
+            "type": "FuzzingPhaseData",
+            "description": "Positive test case",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "mutations": []
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [
+          {
+            "path": [
+              "namespaceUri"
+            ],
+            "type_token": "string",
+            "format_token": "uri",
+            "pattern_hash": null,
+            "normalized_name": "namespaceuri",
+            "value": "http://ext.example.org/qwayz4socml/terms",
+            "source_operation": "GET /external-vocabularies"
+          }
+        ],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/external-vocabularies/content",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "\u00f1": {
+            "\u00ec\u008a\u00eb": []
+          },
+          "\u00b9\ud972\ude18\u0010\u00acI": [],
+          "namespaceUri": "http://ext.example.org/qwayz4socml/terms"
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null,
+      "auth_identity": null,
+      "operation": "POST /external-vocabularies/content"
+    }
+  ],
+  "aliases": []
+}

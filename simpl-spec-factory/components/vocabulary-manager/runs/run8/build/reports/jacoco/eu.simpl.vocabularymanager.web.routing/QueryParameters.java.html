@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QueryParameters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.routing</a> &gt; <span class="el_source">QueryParameters.java</span></div><h1>QueryParameters.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.routing;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.web.util.UriUtils;
+
+/**
+ * The query parameters of a request, decoded, in request order. Parsed from the raw query string so a multipart body
+ * is never read for it.
+ */
+public final class QueryParameters {
+
+    private final Map&lt;String, List&lt;String&gt;&gt; values;
+
+<span class="fc" id="L19">    private QueryParameters(Map&lt;String, List&lt;String&gt;&gt; values) {</span>
+<span class="fc" id="L20">        this.values = values;</span>
+<span class="fc" id="L21">    }</span>
+
+    /**
+     * @param queryString the raw query string, or null
+     * @return the parameters
+     * @throws IllegalArgumentException when the percent-encoding is malformed
+     */
+    public static QueryParameters parse(String queryString) {
+<span class="fc" id="L29">        Map&lt;String, List&lt;String&gt;&gt; values = new LinkedHashMap&lt;&gt;();</span>
+<span class="pc bpc" id="L30" title="1 of 4 branches missed.">        if (queryString == null || queryString.isEmpty()) {</span>
+<span class="fc" id="L31">            return new QueryParameters(values);</span>
+        }
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        for (String pair : queryString.split(&quot;&amp;&quot;, -1)) {</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">            if (pair.isEmpty()) {</span>
+<span class="nc" id="L35">                continue;</span>
+            }
+<span class="fc" id="L37">            int equals = pair.indexOf('=');</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">            String rawName = equals &lt; 0 ? pair : pair.substring(0, equals);</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">            String rawValue = equals &lt; 0 ? &quot;&quot; : pair.substring(equals + 1);</span>
+<span class="fc" id="L40">            String name = UriUtils.decode(rawName.replace('+', ' '), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L41">            String value = UriUtils.decode(rawValue.replace('+', ' '), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L42">            values.computeIfAbsent(name, key -&gt; new ArrayList&lt;&gt;()).add(value);</span>
+        }
+<span class="fc" id="L44">        return new QueryParameters(values);</span>
+    }
+
+    /**
+     * @return the parameter names, in request order
+     */
+    public Set&lt;String&gt; names() {
+<span class="fc" id="L51">        return values.keySet();</span>
+    }
+
+    /**
+     * @param name a parameter name
+     * @return its values, empty when absent
+     */
+    public List&lt;String&gt; values(String name) {
+<span class="fc" id="L59">        return values.getOrDefault(name, List.of());</span>
+    }
+
+    /**
+     * @param name a parameter name
+     * @return its first value, or null when absent
+     */
+    public String first(String name) {
+<span class="fc" id="L67">        List&lt;String&gt; list = values.get(name);</span>
+<span class="pc bpc" id="L68" title="1 of 4 branches missed.">        return list == null || list.isEmpty() ? null : list.get(0);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

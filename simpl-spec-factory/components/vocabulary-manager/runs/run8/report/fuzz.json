@@ -1,0 +1,150 @@
+{
+ "summary": {
+  "operations": 20,
+  "failed_checks": 14,
+  "explained": 11,
+  "findings": 3,
+  "server_errors": 0,
+  "by_check": {
+   "ST202": 13,
+   "ST201": 1
+  },
+  "schemathesis_exit": 1
+ },
+ "failures": [
+  {
+   "operation": "POST /external-vocabularies",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Encountered invalid Turtle syntax: Out of place: [KEY",
+   "verdict": "explained",
+   "decision": "D9",
+   "reason": "the OpenAPI types the file as binary; the decisions require valid Turtle"
+  },
+  {
+   "operation": "POST /external-vocabularies/content",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Property 'ñ' is not",
+   "verdict": "explained",
+   "decision": "D52",
+   "reason": "unknown JSON properties are rejected, also where the schema allows additional properties; D38 limits on search bodies"
+  },
+  {
+   "operation": "POST /external-vocabulary/searches",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "aliasUris must be an",
+   "verdict": "finding"
+  },
+  {
+   "operation": "POST /vocabularies",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Encountered invalid Turtle syntax: Out of place: [KEY",
+   "verdict": "explained",
+   "decision": "D9",
+   "reason": "the OpenAPI types the file as binary; the decisions require valid Turtle"
+  },
+  {
+   "operation": "POST /vocabularies/searches",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "version must be an i",
+   "verdict": "finding"
+  },
+  {
+   "operation": "POST /vocabularies/{vocabularyName}/versions",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "changelog must have",
+   "verdict": "finding"
+  },
+  {
+   "operation": "GET /content/{vocabularyName}/versions/{version}",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Path parameter 'vers",
+   "verdict": "explained",
+   "decision": "D49",
+   "reason": "a version in the path must be a positive integer"
+  },
+  {
+   "operation": "GET /external-vocabularies",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Query parameter 'pag",
+   "verdict": "explained",
+   "decision": "D22",
+   "reason": "page at least 1, pageSize 1 to 100"
+  },
+  {
+   "operation": "GET /vocabularies",
+   "check": "ST201",
+   "title": "Schema-violating request accepted",
+   "status": "200",
+   "detail": "Invalid data should have been rejected",
+   "verdict": "explained",
+   "decision": "D19",
+   "reason": "the name filter pattern is relaxed to ^[A-Za-z0-9]+$"
+  },
+  {
+   "operation": "GET /vocabularies",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Query parameter 'cre",
+   "verdict": "explained",
+   "decision": "D20",
+   "reason": "a creationDate that matches the pattern but is not a real date is refused"
+  },
+  {
+   "operation": "GET /vocabularies/{vocabularyName}/versions",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Query parameter 'pag",
+   "verdict": "explained",
+   "decision": "D22",
+   "reason": "page at least 1, pageSize 1 to 100"
+  },
+  {
+   "operation": "GET /vocabularies/{vocabularyName}/versions/{version}",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Path parameter 'vers",
+   "verdict": "explained",
+   "decision": "D49",
+   "reason": "a version in the path must be a positive integer"
+  },
+  {
+   "operation": "PATCH /vocabularies/{vocabularyName}",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Property '' is not d",
+   "verdict": "explained",
+   "decision": "D52",
+   "reason": "unknown JSON properties are rejected, also where the schema allows additional properties; D38 limits on search bodies"
+  },
+  {
+   "operation": "PATCH /vocabularies/{vocabularyName}/versions/{version}",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Path parameter 'vers",
+   "verdict": "explained",
+   "decision": "D49",
+   "reason": "a version in the path must be a positive integer"
+  }
+ ]
+}

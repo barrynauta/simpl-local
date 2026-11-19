@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestShapeInterceptor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.routing</a> &gt; <span class="el_source">RequestShapeInterceptor.java</span></div><h1>RequestShapeInterceptor.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.routing;
+
+import eu.simpl.vocabularymanager.domain.FieldRules;
+import eu.simpl.vocabularymanager.web.problem.ProblemIssue;
+import eu.simpl.vocabularymanager.web.problem.Problems;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.HandlerMapping;
+
+/**
+ * Request checks that run after authentication and authorisation, in the order of D51 and D63: 406 Accept, 415
+ * Content-Type, 413 declared size, then 400 for path values (D49) and query parameters (D21, D52). Body checks follow
+ * in the controllers.
+ */
+public class RequestShapeInterceptor implements HandlerInterceptor {
+
+    /** Largest multipart request (D76). */
+    public static final long MAX_MULTIPART_BYTES = 6L * 1024 * 1024;
+    /** Largest JSON request body (NFR-04). */
+    public static final long MAX_JSON_BYTES = 1024L * 1024;
+
+<span class="fc" id="L30">    private static final Set&lt;String&gt; JSON_ACCEPT = Set.of(&quot;application/json&quot;, &quot;application/problem+json&quot;, &quot;*/*&quot;);</span>
+<span class="fc" id="L31">    private static final Set&lt;String&gt; TURTLE_ACCEPT = Set.of(&quot;text/turtle&quot;, &quot;*/*&quot;);</span>
+<span class="fc" id="L32">    private static final Set&lt;String&gt; NAME_PARAMETERS = Set.of(&quot;vocabularyName&quot;, &quot;name&quot;);</span>
+
+    private final OperationCatalogue catalogue;
+
+    /**
+     * @param catalogue the operations of the contract
+     */
+<span class="fc" id="L39">    public RequestShapeInterceptor(OperationCatalogue catalogue) {</span>
+<span class="fc" id="L40">        this.catalogue = catalogue;</span>
+<span class="fc" id="L41">    }</span>
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+<span class="fc" id="L45">        ApiOperation operation = catalogue</span>
+<span class="fc" id="L46">                .resolve(request.getRequestURI(), request.getMethod())</span>
+<span class="fc" id="L47">                .orElse(null);</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        if (operation == null) {</span>
+<span class="nc" id="L49">            return true;</span>
+        }
+<span class="fc" id="L51">        checkAccept(request, operation);</span>
+<span class="fc" id="L52">        checkContentType(request, operation);</span>
+<span class="fc" id="L53">        checkDeclaredSize(request, operation);</span>
+<span class="fc" id="L54">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;(pathIssues(request));</span>
+<span class="fc" id="L55">        issues.addAll(queryIssues(request, operation));</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L57">            throw Problems.badRequest(issues);</span>
+        }
+<span class="fc" id="L59">        return true;</span>
+    }
+
+    private static void checkAccept(HttpServletRequest request, ApiOperation operation) {
+<span class="fc" id="L63">        List&lt;String&gt; headers = Collections.list(request.getHeaders(&quot;Accept&quot;));</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (headers.isEmpty()) {</span>
+<span class="fc" id="L65">            return;</span>
+        }
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        Set&lt;String&gt; allowed = operation.response() == ApiOperation.ResponseKind.TURTLE ? TURTLE_ACCEPT : JSON_ACCEPT;</span>
+        try {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            for (MediaType mediaType : MediaType.parseMediaTypes(headers)) {</span>
+<span class="fc" id="L70">                String plain = mediaType.getType() + &quot;/&quot; + mediaType.getSubtype();</span>
+<span class="pc bpc" id="L71" title="1 of 4 branches missed.">                if (mediaType.getQualityValue() &gt; 0 &amp;&amp; allowed.contains(plain.toLowerCase(java.util.Locale.ROOT))) {</span>
+<span class="fc" id="L72">                    return;</span>
+                }
+<span class="fc" id="L74">            }</span>
+<span class="fc" id="L75">        } catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L76">            throw Problems.notAcceptable();</span>
+<span class="fc" id="L77">        }</span>
+<span class="fc" id="L78">        throw Problems.notAcceptable();</span>
+    }
+
+    private static void checkContentType(HttpServletRequest request, ApiOperation operation) {
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (operation.requestBody() == ApiOperation.RequestBody.NONE) {</span>
+<span class="fc" id="L83">            return;</span>
+        }
+<span class="fc" id="L85">        String header = request.getContentType();</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        if (header == null) {</span>
+<span class="fc" id="L87">            throw Problems.unsupportedMediaType();</span>
+        }
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        MediaType expected = operation.requestBody() == ApiOperation.RequestBody.JSON</span>
+<span class="fc" id="L90">                ? MediaType.APPLICATION_JSON</span>
+<span class="fc" id="L91">                : MediaType.MULTIPART_FORM_DATA;</span>
+        try {
+<span class="fc" id="L93">            MediaType actual = MediaType.parseMediaType(header);</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            if (!actual.getType().equalsIgnoreCase(expected.getType())</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">                    || !actual.getSubtype().equalsIgnoreCase(expected.getSubtype())) {</span>
+<span class="fc" id="L96">                throw Problems.unsupportedMediaType();</span>
+            }
+<span class="fc" id="L98">        } catch (InvalidMediaTypeException e) {</span>
+<span class="fc" id="L99">            throw Problems.unsupportedMediaType();</span>
+<span class="fc" id="L100">        }</span>
+<span class="fc" id="L101">    }</span>
+
+    private static void checkDeclaredSize(HttpServletRequest request, ApiOperation operation) {
+<span class="fc" id="L104">        long length = request.getContentLengthLong();</span>
+<span class="fc bfc" id="L105" title="All 4 branches covered.">        if (operation.requestBody() == ApiOperation.RequestBody.MULTIPART &amp;&amp; length &gt; MAX_MULTIPART_BYTES) {</span>
+<span class="fc" id="L106">            throw Problems.payloadTooLarge(&quot;vocabularyFile&quot;);</span>
+        }
+<span class="fc bfc" id="L108" title="All 4 branches covered.">        if (operation.requestBody() == ApiOperation.RequestBody.JSON &amp;&amp; length &gt; MAX_JSON_BYTES) {</span>
+<span class="fc" id="L109">            throw Problems.payloadTooLarge(&quot;body&quot;);</span>
+        }
+<span class="fc" id="L111">    }</span>
+
+    private static List&lt;ProblemIssue&gt; pathIssues(HttpServletRequest request) {
+<span class="fc" id="L114">        Object attribute = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);</span>
+<span class="fc" id="L115">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">        if (!(attribute instanceof Map&lt;?, ?&gt; variables)) {</span>
+<span class="nc" id="L117">            return issues;</span>
+        }
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        for (Map.Entry&lt;?, ?&gt; entry : variables.entrySet()) {</span>
+<span class="fc" id="L120">            String name = String.valueOf(entry.getKey());</span>
+<span class="fc" id="L121">            String value = String.valueOf(entry.getValue());</span>
+<span class="fc bfc" id="L122" title="All 4 branches covered.">            if (NAME_PARAMETERS.contains(name) &amp;&amp; !FieldRules.isValidName(value)) {</span>
+<span class="fc" id="L123">                issues.add(ProblemIssue.schemaViolation(</span>
+                        &quot;path&quot;,
+                        name,
+                        &quot;Path parameter '&quot; + name + &quot;' must have 3 to 64 characters and match ^[A-Z][a-zA-Z0-9]*$.&quot;));
+<span class="fc bfc" id="L127" title="All 4 branches covered.">            } else if (&quot;version&quot;.equals(name) &amp;&amp; !FieldRules.isValidVersion(value)) {</span>
+<span class="fc" id="L128">                issues.add(ProblemIssue.schemaViolation(</span>
+                        &quot;path&quot;, name, &quot;Path parameter 'version' must be a positive integer.&quot;));
+            }
+<span class="fc" id="L131">        }</span>
+<span class="fc" id="L132">        return issues;</span>
+    }
+
+    private static List&lt;ProblemIssue&gt; queryIssues(HttpServletRequest request, ApiOperation operation) {
+<span class="fc" id="L136">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+        QueryParameters parameters;
+        try {
+<span class="fc" id="L139">            parameters = QueryParameters.parse(request.getQueryString());</span>
+<span class="nc" id="L140">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L141">            issues.add(ProblemIssue.schemaViolation(&quot;query&quot;, &quot;&quot;, &quot;The query string is not correctly encoded.&quot;));</span>
+<span class="nc" id="L142">            return issues;</span>
+<span class="fc" id="L143">        }</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">        for (String name : parameters.names()) {</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">            if (!operation.declaresQueryParameter(name)) {</span>
+<span class="fc" id="L146">                issues.add(ProblemIssue.schemaViolation(</span>
+<span class="fc" id="L147">                        &quot;query&quot;, name, &quot;Query parameter '&quot; + shorten(name) + &quot;' is not supported.&quot;));</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">            } else if (parameters.values(name).size() &gt; 1) {</span>
+<span class="fc" id="L149">                issues.add(ProblemIssue.schemaViolation(</span>
+                        &quot;query&quot;, name, &quot;Query parameter '&quot; + name + &quot;' may be given only once.&quot;));
+            }
+<span class="fc" id="L152">        }</span>
+<span class="fc" id="L153">        return issues;</span>
+    }
+
+    private static String shorten(String value) {
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">        return value.length() &gt; 64 ? value.substring(0, 64) + &quot;...&quot; : value;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

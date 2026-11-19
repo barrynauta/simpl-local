@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonBody.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.body</a> &gt; <span class="el_source">JsonBody.java</span></div><h1>JsonBody.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.body;
+
+import eu.simpl.vocabularymanager.web.problem.ProblemIssue;
+import eu.simpl.vocabularymanager.web.problem.Problems;
+import eu.simpl.vocabularymanager.web.routing.RequestShapeInterceptor;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
+/**
+ * Reads a JSON request body as a tree, so every property can be checked against the schema by hand: unknown
+ * properties, duplicate keys, wrong types (D52, OWT-A05). Never binds to classes (OWT-A08).
+ */
+public final class JsonBody {
+
+<span class="fc" id="L23">    private static final JsonMapper STRICT =</span>
+<span class="fc" id="L24">            JsonMapper.builder().enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build();</span>
+
+    private JsonBody() {}
+
+    /**
+     * @param request the request
+     * @return the body, which is a JSON object
+     * @throws eu.simpl.vocabularymanager.web.problem.ApiException 413 or 400
+     */
+    public static JsonNode readObject(HttpServletRequest request) {
+        byte[] body;
+<span class="fc" id="L35">        try (InputStream input = request.getInputStream()) {</span>
+<span class="fc" id="L36">            body = input.readNBytes((int) RequestShapeInterceptor.MAX_JSON_BYTES + 1);</span>
+<span class="nc" id="L37">        } catch (IOException e) {</span>
+<span class="nc" id="L38">            throw Problems.schemaViolation(&quot;body&quot;, &quot;body&quot;, &quot;The request body cannot be read.&quot;);</span>
+<span class="fc" id="L39">        }</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (body.length &gt; RequestShapeInterceptor.MAX_JSON_BYTES) {</span>
+<span class="nc" id="L41">            throw Problems.payloadTooLarge(&quot;body&quot;);</span>
+        }
+        JsonNode node;
+        try {
+<span class="fc" id="L45">            node = STRICT.readTree(body);</span>
+<span class="fc" id="L46">        } catch (JacksonException e) {</span>
+<span class="fc" id="L47">            throw Problems.schemaViolation(&quot;body&quot;, &quot;body&quot;, &quot;The request body is not valid JSON.&quot;);</span>
+<span class="fc" id="L48">        }</span>
+<span class="pc bpc" id="L49" title="1 of 4 branches missed.">        if (node == null || !node.isObject()) {</span>
+<span class="fc" id="L50">            throw Problems.schemaViolation(&quot;body&quot;, &quot;body&quot;, &quot;The request body must be a JSON object.&quot;);</span>
+        }
+<span class="fc" id="L52">        return node;</span>
+    }
+
+    /**
+     * @param node a JSON object
+     * @param allowed the property names the schema defines
+     * @param prefix name prefix for the issue (for example 'items[0].'), empty at the top level
+     * @return one issue per unknown property (D52)
+     */
+    public static List&lt;ProblemIssue&gt; unknownProperties(JsonNode node, Set&lt;String&gt; allowed, String prefix) {
+<span class="fc" id="L62">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        for (String name : node.propertyNames()) {</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc" id="L65">                issues.add(ProblemIssue.schemaViolation(</span>
+<span class="fc" id="L66">                        &quot;body&quot;, prefix + name, &quot;Property '&quot; + shorten(name) + &quot;' is not defined by the schema.&quot;));</span>
+            }
+<span class="fc" id="L68">        }</span>
+<span class="fc" id="L69">        return issues;</span>
+    }
+
+    private static String shorten(String value) {
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        return value.length() &gt; 64 ? value.substring(0, 64) + &quot;...&quot; : value;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

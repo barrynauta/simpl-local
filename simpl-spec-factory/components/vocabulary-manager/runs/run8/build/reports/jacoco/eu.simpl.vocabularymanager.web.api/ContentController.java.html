@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContentController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web.api</a> &gt; <span class="el_source">ContentController.java</span></div><h1>ContentController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web.api;
+
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+/** Content downloads (D29, D70): the stored Turtle bytes as uploaded, text/turtle without charset. */
+@RestController
+public class ContentController {
+
+    private final VocabularyService service;
+    private final Responses responses;
+
+    /**
+     * @param service the vocabulary service
+     * @param responses response builder
+     */
+<span class="fc" id="L20">    public ContentController(VocabularyService service, Responses responses) {</span>
+<span class="fc" id="L21">        this.service = service;</span>
+<span class="fc" id="L22">        this.responses = responses;</span>
+<span class="fc" id="L23">    }</span>
+
+    /**
+     * downloadVocabulary: the latest version (D5).
+     *
+     * @param vocabularyName the name
+     * @return the Turtle bytes, filename '&amp;lt;Name&amp;gt;.ttl'
+     */
+    @GetMapping(&quot;/content/{vocabularyName}&quot;)
+    public ResponseEntity&lt;byte[]&gt; downloadVocabulary(@PathVariable String vocabularyName) {
+<span class="fc" id="L33">        return responses.turtle(service.content(vocabularyName, null), vocabularyName + &quot;.ttl&quot;);</span>
+    }
+
+    /**
+     * downloadVocabularyVersion.
+     *
+     * @param vocabularyName the name
+     * @param version the version number
+     * @return the Turtle bytes, filename '&amp;lt;Name&amp;gt;-v&amp;lt;n&amp;gt;.ttl'
+     */
+    @GetMapping(&quot;/content/{vocabularyName}/versions/{version}&quot;)
+    public ResponseEntity&lt;byte[]&gt; downloadVocabularyVersion(
+            @PathVariable String vocabularyName, @PathVariable String version) {
+<span class="fc" id="L46">        long number = Long.parseLong(version);</span>
+<span class="fc" id="L47">        return responses.turtle(service.content(vocabularyName, number), vocabularyName + &quot;-v&quot; + number + &quot;.ttl&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>
