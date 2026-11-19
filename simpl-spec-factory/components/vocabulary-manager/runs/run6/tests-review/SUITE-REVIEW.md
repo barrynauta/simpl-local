@@ -43,9 +43,7 @@
 
 ## Answers of the test writer (45b)
 
-🟢 qmd healthy — 4 collection(s), 18054 docs, 167732 vectors, MCP up | ⬆ qmd CLI 2.8.3 → 2.9.0: npm i -g @tobilu/qmd@latest, then qmd doctor ⬆ qmd plugin 2.8.3 → 2.9.0: /plugin marketplace update qmd && /plugin update qmd@qmd
 
-Handoff loaded: "Nauta - de Jonge MFT batches, after batch 93"; its first step is going through the open master-list lines one decision at a time. I left it alone, because this is a headless pipeline step.
 
 SR-01: fixed. The case-duplicate check now expects exactly one external vocabulary that matches in any case, and it must carry the original name `Terms<run>`.
 SR-02: fixed. `aliasUris` is compared as a set, after removing a trailing `#` or `/` (D30).

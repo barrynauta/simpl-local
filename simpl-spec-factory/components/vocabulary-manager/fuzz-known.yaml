@@ -1,5 +1,5 @@
 # Fuzz failures that the decisions explain (step 70, pipeline/fuzz_api.py). Everything not listed here is a finding.
-# The decisions make the contract stricter on purpose in these places (D39 lists them).
+# The decisions make the contract stricter on purpose in these places (D79 lists them).
 # Match: operation ("*" for all), Schemathesis check code, and a text in the server's answer.
 known:
   - {operation: "*", check: ST202, detail_contains: "Encountered invalid Turtle syntax", decision: D9,
@@ -16,3 +16,18 @@ known:
      reason: "a creationDate that matches the pattern but is not a real date is refused"}
   - {operation: "GET /vocabularies", check: ST201, detail_contains: "", decision: D19,
      reason: "the name filter pattern is relaxed to ^[A-Za-z0-9]+$"}
+  # Added 19 Nov 2026 after run 6 (the run 6 build words its issues differently from run 5).
+  - {operation: "*", check: ST202, detail_contains: "is not defined for this operation", decision: D52,
+     reason: "unknown form parts and JSON properties are rejected, also a part with an empty name (D70)"}
+  - {operation: "*", check: ST202, detail_contains: "Field 'aliasUris'", decision: D38,
+     reason: "each search array has at least 1 entry when present; at most 100 URIs in total"}
+  - {operation: "*", check: ST202, detail_contains: "Field 'namespaceUris'", decision: D38,
+     reason: "each search array has at least 1 entry when present; at most 100 URIs in total"}
+  - {operation: "*", check: ST202, detail_contains: "Field 'changelog'", decision: D37,
+     reason: "changelog 1 to 1000 characters after trimming"}
+  - {operation: "*", check: ST202, detail_contains: "Field 'description'", decision: D37,
+     reason: "description 1 to 1000 characters after trimming"}
+  - {operation: "*", check: ST202, detail_contains: "Field 'name'", decision: D37,
+     reason: "name 3 to 64 characters, pattern ^[A-Z][a-zA-Z0-9]*$"}
+  - {operation: "*", check: ST202, detail_contains: "is not an absolute URI", decision: D73,
+     reason: "namespaceUri, aliasUris and sourceUri must be absolute URIs"}
