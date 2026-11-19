@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Paging.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">Paging.java</span></div><h1>Paging.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.problem.Issue;
+import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+import org.springframework.util.MultiValueMap;
+
+/**
+ * Page parameters and paging links of decisions D22 and D59: page minimum 1, default 1; pageSize 1 to 100,
+ * default 20; self and first always, prev, next and last when they exist.
+ *
+ * @param page the page number, may be far beyond the last page
+ * @param pageSize the page size
+ */
+<span class="fc" id="L20">public record Paging(BigInteger page, int pageSize) {</span>
+
+    /** Largest page size (decision D22). */
+    public static final int MAX_PAGE_SIZE = 100;
+
+    private static final int DEFAULT_PAGE_SIZE = 20;
+<span class="fc" id="L26">    private static final Pattern DIGITS = Pattern.compile(&quot;^[0-9]+$&quot;);</span>
+
+    /**
+     * Reads page and pageSize from the query parameters.
+     *
+     * @param parameters the query parameters
+     * @param issues the issue list
+     * @return the paging, with defaults for invalid values (the caller throws on issues)
+     */
+    public static Paging from(MultiValueMap&lt;String, String&gt; parameters, List&lt;Issue&gt; issues) {
+<span class="fc" id="L36">        BigInteger page = BigInteger.ONE;</span>
+<span class="fc" id="L37">        int pageSize = DEFAULT_PAGE_SIZE;</span>
+<span class="fc" id="L38">        String pageText = parameters.getFirst(&quot;page&quot;);</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        if (pageText != null) {</span>
+<span class="fc bfc" id="L40" title="All 4 branches covered.">            if (DIGITS.matcher(pageText).matches() &amp;&amp; new BigInteger(pageText).signum() &gt; 0) {</span>
+<span class="fc" id="L41">                page = new BigInteger(pageText);</span>
+            } else {
+<span class="fc" id="L43">                issues.add(Issue.schemaViolation(</span>
+                        Issue.IN_QUERY, &quot;page&quot;, &quot;Query parameter 'page' must be an integer of at least 1.&quot;));
+            }
+        }
+<span class="fc" id="L47">        String sizeText = parameters.getFirst(&quot;pageSize&quot;);</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        if (sizeText != null) {</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">            if (DIGITS.matcher(sizeText).matches()</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">                    &amp;&amp; sizeText.length() &lt;= 3</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">                    &amp;&amp; Integer.parseInt(sizeText) &gt;= 1</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">                    &amp;&amp; Integer.parseInt(sizeText) &lt;= MAX_PAGE_SIZE) {</span>
+<span class="nc" id="L53">                pageSize = Integer.parseInt(sizeText);</span>
+            } else {
+<span class="fc" id="L55">                issues.add(Issue.schemaViolation(</span>
+                        Issue.IN_QUERY,
+                        &quot;pageSize&quot;,
+                        &quot;Query parameter 'pageSize' must be an integer from 1 to &quot; + MAX_PAGE_SIZE + &quot;.&quot;));
+            }
+        }
+<span class="fc" id="L61">        return new Paging(page, pageSize);</span>
+    }
+
+    /**
+     * Number of items to skip; saturates at Long.MAX_VALUE for pages far beyond any collection.
+     *
+     * @return the offset
+     */
+    public long offset() {
+<span class="fc" id="L70">        BigInteger offset = page.subtract(BigInteger.ONE).multiply(BigInteger.valueOf(pageSize));</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        return offset.bitLength() &lt; 63 ? offset.longValue() : Long.MAX_VALUE;</span>
+    }
+
+    /**
+     * Builds the paged response with its links.
+     *
+     * @param path the collection path relative to the API base, for example /vocabularies
+     * @param otherParameters filter and sort parameters to repeat in the links, in order
+     * @param total the number of items in the collection
+     * @param items the items of this page
+     * @param &lt;T&gt; the item type
+     * @return the response body
+     */
+    public &lt;T&gt; PageDto&lt;T&gt; response(String path, Map&lt;String, String&gt; otherParameters, long total, List&lt;T&gt; items) {
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        long totalPages = total == 0 ? 0 : (total + pageSize - 1) / pageSize;</span>
+<span class="fc" id="L86">        BigInteger last = BigInteger.valueOf(totalPages);</span>
+<span class="fc" id="L87">        String prev = null;</span>
+<span class="fc bfc" id="L88" title="All 4 branches covered.">        if (total &gt; 0 &amp;&amp; page.compareTo(BigInteger.ONE) &gt; 0) {</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            prev = page.compareTo(last) &gt; 0</span>
+<span class="fc" id="L90">                    ? link(path, last, otherParameters)</span>
+<span class="fc" id="L91">                    : link(path, page.subtract(BigInteger.ONE), otherParameters);</span>
+        }
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        String next = page.compareTo(last) &lt; 0 ? link(path, page.add(BigInteger.ONE), otherParameters) : null;</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        String lastLink = total &gt; 0 ? link(path, last, otherParameters) : null;</span>
+<span class="fc" id="L95">        return new PageDto&lt;&gt;(</span>
+                page,
+                totalPages,
+                total,
+                pageSize,
+<span class="fc" id="L100">                link(path, page, otherParameters),</span>
+<span class="fc" id="L101">                link(path, BigInteger.ONE, otherParameters),</span>
+                prev,
+                next,
+                lastLink,
+                items);
+    }
+
+    private String link(String path, BigInteger pageNumber, Map&lt;String, String&gt; otherParameters) {
+<span class="fc" id="L109">        Map&lt;String, String&gt; parameters = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L110">        parameters.put(&quot;page&quot;, pageNumber.toString());</span>
+<span class="fc" id="L111">        parameters.put(&quot;pageSize&quot;, Integer.toString(pageSize));</span>
+<span class="fc" id="L112">        parameters.putAll(otherParameters);</span>
+<span class="fc" id="L113">        StringBuilder link = new StringBuilder(path).append('?');</span>
+<span class="fc" id="L114">        boolean first = true;</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : parameters.entrySet()) {</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">            if (!first) {</span>
+<span class="fc" id="L117">                link.append('&amp;');</span>
+            }
+<span class="fc" id="L119">            first = false;</span>
+<span class="fc" id="L120">            link.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));</span>
+<span class="fc" id="L121">        }</span>
+<span class="fc" id="L122">        return link.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

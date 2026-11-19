@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">VocabularyService.java</span></div><h1>VocabularyService.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.domain.Page;
+import eu.simpl.vocabularymanager.domain.ValidationWarning;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.problem.Problems;
+import eu.simpl.vocabularymanager.store.SortOrder;
+import eu.simpl.vocabularymanager.store.VocabularyQuery;
+import eu.simpl.vocabularymanager.store.VocabularyStore;
+import eu.simpl.vocabularymanager.validation.ContentValidator;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+/**
+ * Use cases of the vocabulary aggregate: the vocabulary is the root, its versions change only through it
+ * (DDD-11). Implements the lifecycle of decisions D3 to D8, D43 and D46. Request shape checks (400, 413, 415)
+ * happen before these methods are called (decision D51).
+ */
+@Service
+public class VocabularyService {
+
+<span class="fc" id="L34">    private static final Logger LOG = LoggerFactory.getLogger(VocabularyService.class);</span>
+
+    private final VocabularyStore store;
+    private final ContentValidator validator;
+    private final VocabularyLocks locks;
+    private final Clock clock;
+
+    /**
+     * A created version with its warnings.
+     *
+     * @param version the stored version
+     * @param warnings validation warnings (decision D10)
+     */
+<span class="fc" id="L47">    public record Created(VocabularyVersion version, List&lt;ValidationWarning&gt; warnings) {}</span>
+
+    /**
+     * A vocabulary search reference (decision D38).
+     *
+     * @param name the vocabulary name
+     * @param version the version number, or null for the latest version
+     */
+<span class="fc" id="L55">    public record SearchReference(String name, Long version) {}</span>
+
+    /**
+     * A search result: a vocabulary (latest) or a version.
+     *
+     * @param name the vocabulary name
+     * @param version the version number
+     * @param status the vocabulary status (latest) or the version status
+     * @param latest true when the result came from the latest version
+     */
+<span class="fc" id="L65">    public record SearchResult(String name, int version, VocabularyStatus status, boolean latest) {}</span>
+
+    /**
+     * Creates the service.
+     *
+     * @param store the store
+     * @param validator the content validator
+     * @param locks the per-vocabulary locks
+     * @param clock the clock
+     */
+<span class="fc" id="L75">    public VocabularyService(VocabularyStore store, ContentValidator validator, VocabularyLocks locks, Clock clock) {</span>
+<span class="fc" id="L76">        this.store = store;</span>
+<span class="fc" id="L77">        this.validator = validator;</span>
+<span class="fc" id="L78">        this.locks = locks;</span>
+<span class="fc" id="L79">        this.clock = clock;</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Creates a vocabulary with version 1, ACTIVE (decisions D3, D6, D7).
+     *
+     * @param name the vocabulary name, already checked against D37
+     * @param description the trimmed description
+     * @param changelog the trimmed changelog
+     * @param content the content bytes
+     * @param createdBy the creator (decision D27)
+     * @return the created version
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 409 for a taken name, 400 for invalid content
+     */
+    public Created createVocabulary(
+            String name, String description, String changelog, byte[] content, String createdBy) {
+<span class="fc" id="L95">        return locks.withVocabulary(name, () -&gt; {</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (store.vocabularyNameTaken(name)) {</span>
+<span class="fc" id="L97">                throw Problems.conflict(&quot;Vocabulary with name '&quot; + name + &quot;' already exists.&quot;);</span>
+            }
+<span class="fc" id="L99">            ContentValidator.Outcome outcome = validator.validateVersion(content, name, 1);</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">            if (!outcome.passed()) {</span>
+<span class="fc" id="L101">                throw Problems.badRequest(outcome.errors());</span>
+            }
+<span class="fc" id="L103">            Instant now = now();</span>
+<span class="fc" id="L104">            VocabularyVersion first = new VocabularyVersion(</span>
+<span class="fc" id="L105">                    name, 1, VocabularyStatus.ACTIVE, description, changelog, createdBy, now, now, sha256(content));</span>
+<span class="fc" id="L106">            Vocabulary vocabulary = new Vocabulary(name, VocabularyStatus.ACTIVE, createdBy, now, now, 1, description);</span>
+<span class="fc" id="L107">            store.createVocabulary(vocabulary, first, content);</span>
+<span class="fc" id="L108">            LOG.info(&quot;Vocabulary {} created with version 1 by {}&quot;, name, createdBy);</span>
+<span class="fc" id="L109">            return new Created(first, outcome.warnings());</span>
+        });
+    }
+
+    /**
+     * Creates the next version, ACTIVE, and deprecates every older ACTIVE version (decisions D4, D7, D43, D46).
+     *
+     * @param name the vocabulary name
+     * @param description the trimmed description
+     * @param changelog the trimmed changelog
+     * @param content the content bytes
+     * @param createdBy the creator
+     * @return the created version
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 404, 409 (identical version) or 400 (content)
+     */
+    public Created createVersion(String name, String description, String changelog, byte[] content, String createdBy) {
+<span class="fc" id="L125">        return locks.withVocabulary(name, () -&gt; {</span>
+<span class="fc" id="L126">            Vocabulary vocabulary = store.findVocabulary(name).orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+<span class="fc" id="L127">            int latestNumber = vocabulary.latestVersion();</span>
+<span class="fc" id="L128">            String hash = sha256(content);</span>
+<span class="fc" id="L129">            Optional&lt;VocabularyVersion&gt; latest = store.findVersion(name, latestNumber);</span>
+<span class="pc bpc" id="L130" title="1 of 4 branches missed.">            if (latest.isPresent() &amp;&amp; isIdentical(latest.get(), hash, description, content)) {</span>
+<span class="fc" id="L131">                throw Problems.conflict(&quot;Version &quot; + latestNumber + &quot; of vocabulary '&quot; + name</span>
+                        + &quot;' already has this content and description.&quot;);
+            }
+<span class="fc" id="L134">            int number = latestNumber + 1;</span>
+<span class="fc" id="L135">            ContentValidator.Outcome outcome = validator.validateVersion(content, name, number);</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">            if (!outcome.passed()) {</span>
+<span class="nc" id="L137">                throw Problems.badRequest(outcome.errors());</span>
+            }
+<span class="fc" id="L139">            Instant now = now();</span>
+<span class="fc" id="L140">            VocabularyVersion version = new VocabularyVersion(</span>
+                    name, number, VocabularyStatus.ACTIVE, description, changelog, createdBy, now, now, hash);
+<span class="fc" id="L142">            store.createVersion(version, content);</span>
+<span class="fc" id="L143">            LOG.info(&quot;Vocabulary {} version {} created by {}&quot;, name, number, createdBy);</span>
+<span class="fc" id="L144">            return new Created(version, outcome.warnings());</span>
+        });
+    }
+
+    private boolean isIdentical(VocabularyVersion latest, String hash, String description, byte[] content) {
+<span class="fc bfc" id="L149" title="All 4 branches covered.">        if (!latest.contentSha256().equals(hash) || !latest.description().equals(description)) {</span>
+<span class="fc" id="L150">            return false;</span>
+        }
+<span class="fc" id="L152">        return store.versionContent(latest.name(), latest.version())</span>
+<span class="fc" id="L153">                .map(stored -&gt; Arrays.equals(stored, content))</span>
+<span class="fc" id="L154">                .orElse(false);</span>
+    }
+
+    /**
+     * Changes the vocabulary status; versions are not touched (decision D3).
+     *
+     * @param name the vocabulary name
+     * @param status the requested status
+     * @param user who asked, for the log
+     * @return the vocabulary after the change
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 404, or 409 for the current status (D4)
+     */
+    public Vocabulary changeVocabularyStatus(String name, VocabularyStatus status, String user) {
+<span class="fc" id="L167">        return locks.withVocabulary(name, () -&gt; {</span>
+<span class="fc" id="L168">            Vocabulary vocabulary = store.findVocabulary(name).orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">            if (vocabulary.status() == status) {</span>
+<span class="fc" id="L170">                throw Problems.conflict(&quot;Vocabulary is already in status &quot; + status.name());</span>
+            }
+<span class="fc" id="L172">            store.updateVocabularyStatus(name, status, now());</span>
+<span class="fc" id="L173">            LOG.info(&quot;Vocabulary {} status changed to {} by {}&quot;, name, status, user);</span>
+<span class="pc" id="L174">            return store.findVocabulary(name).orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+        });
+    }
+
+    /**
+     * Changes one version status (decision D4).
+     *
+     * @param name the vocabulary name
+     * @param versionText the version number from the path, already checked to be a positive integer
+     * @param status the requested status
+     * @param user who asked, for the log
+     * @return the version after the change
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 404, or 409 for the current status
+     */
+    public VocabularyVersion changeVersionStatus(
+            String name, String versionText, VocabularyStatus status, String user) {
+<span class="fc" id="L190">        return locks.withVocabulary(name, () -&gt; {</span>
+<span class="pc" id="L191">            store.findVocabulary(name).orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+<span class="fc" id="L192">            VocabularyVersion version = findVersionOrThrow(name, versionText);</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">            if (version.status() == status) {</span>
+<span class="fc" id="L194">                throw Problems.conflict(&quot;Vocabulary version is already in status &quot; + status.name());</span>
+            }
+<span class="fc" id="L196">            store.updateVersionStatus(name, version.version(), status, now());</span>
+<span class="fc" id="L197">            LOG.info(&quot;Vocabulary {} version {} status changed to {} by {}&quot;, name, version.version(), status, user);</span>
+<span class="fc" id="L198">            return findVersionOrThrow(name, versionText);</span>
+        });
+    }
+
+    /**
+     * Reads a vocabulary.
+     *
+     * @param name the exact name (decision D54)
+     * @return the vocabulary
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 404
+     */
+    public Vocabulary getVocabulary(String name) {
+<span class="fc" id="L210">        return store.findVocabulary(name).orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+    }
+
+    /**
+     * Lists vocabularies.
+     *
+     * @param query filters, order and page
+     * @return the page
+     */
+    public Page&lt;Vocabulary&gt; listVocabularies(VocabularyQuery query) {
+<span class="fc" id="L220">        return store.listVocabularies(query);</span>
+    }
+
+    /**
+     * Lists the versions of a vocabulary.
+     *
+     * @param name the vocabulary name
+     * @param sort the order
+     * @param offset items to skip
+     * @param limit items to return
+     * @return the page
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 404 for an unknown vocabulary
+     */
+    public Page&lt;VocabularyVersion&gt; listVersions(String name, SortOrder sort, long offset, int limit) {
+<span class="fc" id="L234">        getVocabulary(name);</span>
+<span class="fc" id="L235">        return store.listVersions(name, sort, offset, limit);</span>
+    }
+
+    /**
+     * Reads a version.
+     *
+     * @param name the vocabulary name
+     * @param versionText the version number from the path
+     * @return the version
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 404
+     */
+    public VocabularyVersion getVersion(String name, String versionText) {
+<span class="fc" id="L247">        getVocabulary(name);</span>
+<span class="fc" id="L248">        return findVersionOrThrow(name, versionText);</span>
+    }
+
+    /**
+     * Reads the content of the latest version (decision D29).
+     *
+     * @param name the vocabulary name
+     * @return the bytes
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 404
+     */
+    public byte[] latestContent(String name) {
+<span class="fc" id="L259">        Vocabulary vocabulary = getVocabulary(name);</span>
+<span class="fc" id="L260">        return store.versionContent(name, vocabulary.latestVersion())</span>
+<span class="pc" id="L261">                .orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+    }
+
+    /**
+     * Reads the content of one version.
+     *
+     * @param name the vocabulary name
+     * @param versionText the version number from the path
+     * @return the bytes
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 404
+     */
+    public byte[] versionContent(String name, String versionText) {
+<span class="fc" id="L273">        VocabularyVersion version = getVersion(name, versionText);</span>
+<span class="fc" id="L274">        return store.versionContent(name, version.version())</span>
+<span class="pc" id="L275">                .orElseThrow(() -&gt; Problems.versionNotFound(name, versionText));</span>
+    }
+
+    /**
+     * Resolves search references (decision D38): request order, missing references left out, repeats once.
+     *
+     * @param references the references, already deduplicated by the caller
+     * @return the results
+     */
+    public List&lt;SearchResult&gt; search(List&lt;SearchReference&gt; references) {
+<span class="fc" id="L285">        return references.stream().map(this::resolve).flatMap(Optional::stream).toList();</span>
+    }
+
+    private Optional&lt;SearchResult&gt; resolve(SearchReference reference) {
+<span class="fc" id="L289">        Optional&lt;Vocabulary&gt; vocabulary = store.findVocabulary(reference.name());</span>
+<span class="fc bfc" id="L290" title="All 2 branches covered.">        if (vocabulary.isEmpty()) {</span>
+<span class="fc" id="L291">            return Optional.empty();</span>
+        }
+<span class="fc bfc" id="L293" title="All 2 branches covered.">        if (reference.version() == null) {</span>
+<span class="fc" id="L294">            Vocabulary v = vocabulary.get();</span>
+<span class="fc" id="L295">            return Optional.of(new SearchResult(v.name(), v.latestVersion(), v.status(), true));</span>
+        }
+<span class="fc" id="L297">        return store.findVersion(reference.name(), reference.version())</span>
+<span class="fc" id="L298">                .map(v -&gt; new SearchResult(v.name(), v.version(), v.status(), false));</span>
+    }
+
+    private VocabularyVersion findVersionOrThrow(String name, String versionText) {
+        long number;
+        try {
+<span class="fc" id="L304">            number = Long.parseLong(versionText);</span>
+<span class="fc" id="L305">        } catch (NumberFormatException e) {</span>
+<span class="fc" id="L306">            throw Problems.versionNotFound(name, versionText);</span>
+<span class="fc" id="L307">        }</span>
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">        if (number &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L309">            throw Problems.versionNotFound(name, versionText);</span>
+        }
+<span class="fc" id="L311">        return store.findVersion(name, number).orElseThrow(() -&gt; Problems.versionNotFound(name, versionText));</span>
+    }
+
+    private Instant now() {
+<span class="fc" id="L315">        return clock.instant().truncatedTo(ChronoUnit.SECONDS);</span>
+    }
+
+    /**
+     * Computes the SHA-256 of content with the JDK provider (REUSE-01).
+     *
+     * @param content the bytes
+     * @return the hex digest
+     */
+    static String sha256(byte[] content) {
+        try {
+<span class="fc" id="L326">            return HexFormat.of().formatHex(MessageDigest.getInstance(&quot;SHA-256&quot;).digest(content));</span>
+<span class="nc" id="L327">        } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L328">            throw new IllegalStateException(&quot;SHA-256 is not available&quot;, e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

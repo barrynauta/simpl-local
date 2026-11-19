@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalVocabularyController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">ExternalVocabularyController.java</span></div><h1>ExternalVocabularyController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.Page;
+import eu.simpl.vocabularymanager.problem.Issue;
+import eu.simpl.vocabularymanager.service.ExternalVocabularyService;
+import eu.simpl.vocabularymanager.validation.ContentValidator;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+
+/** External vocabulary operations of the OpenAPI file (decisions D30, D38, D41, D42, D56). */
+@RestController
+@RequestMapping(&quot;/v1&quot;)
+public class ExternalVocabularyController {
+
+<span class="fc" id="L34">    private static final Set&lt;String&gt; REGISTER_FIELDS =</span>
+<span class="fc" id="L35">            Set.of(&quot;vocabularyFile&quot;, &quot;name&quot;, &quot;namespaceUri&quot;, &quot;aliasUris&quot;, &quot;description&quot;, &quot;sourceUri&quot;);</span>
+    private static final int MAX_ALIASES = 20;
+    private static final int MAX_SEARCH_URIS = 100;
+
+    private final ExternalVocabularyService service;
+    private final Representations representations;
+    private final JsonBodyReader jsonReader;
+    private final long maxUploadBytes;
+
+    /**
+     * Creates the controller.
+     *
+     * @param service the external vocabulary service
+     * @param representations the wire mapper
+     * @param jsonReader the JSON body reader
+     * @param properties the configuration
+     */
+    public ExternalVocabularyController(
+            ExternalVocabularyService service,
+            Representations representations,
+            JsonBodyReader jsonReader,
+<span class="fc" id="L56">            AppProperties properties) {</span>
+<span class="fc" id="L57">        this.service = service;</span>
+<span class="fc" id="L58">        this.representations = representations;</span>
+<span class="fc" id="L59">        this.jsonReader = jsonReader;</span>
+<span class="fc" id="L60">        this.maxUploadBytes = properties.limits().maxUploadBytes();</span>
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * GET /external-vocabularies (getExternalVocabularies): name ascending, paged.
+     *
+     * @param request the request
+     * @return the page
+     */
+    @GetMapping(&quot;/external-vocabularies&quot;)
+    public ResponseEntity&lt;PageDto&lt;Representations.ExternalDto&gt;&gt; list(HttpServletRequest request) {
+<span class="fc" id="L71">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L72">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L73">        MultiValueMap&lt;String, String&gt; parameters = RequestChecks.queryParameters(request, issues);</span>
+<span class="fc" id="L74">        RequestChecks.checkQueryNames(parameters, ListParameters.EXTERNAL_LIST, issues);</span>
+<span class="fc" id="L75">        Paging paging = Paging.from(parameters, issues);</span>
+<span class="fc" id="L76">        RequestChecks.throwIfAny(issues);</span>
+<span class="fc" id="L77">        Page&lt;ExternalVocabulary&gt; page = service.list(paging.offset(), paging.pageSize());</span>
+<span class="fc" id="L78">        return json(paging.response(</span>
+                &quot;/external-vocabularies&quot;,
+<span class="fc" id="L80">                Map.of(),</span>
+<span class="fc" id="L81">                page.total(),</span>
+<span class="fc" id="L82">                page.items().stream().map(representations::external).toList()));</span>
+    }
+
+    /**
+     * POST /external-vocabularies (createExternalVocabulary): register.
+     *
+     * @param request the multipart request
+     * @param jwt the caller's token
+     * @return 201 with the external vocabulary
+     */
+    @PostMapping(&quot;/external-vocabularies&quot;)
+    public ResponseEntity&lt;Representations.ExternalDto&gt; register(
+            HttpServletRequest request, @AuthenticationPrincipal Jwt jwt) {
+<span class="fc" id="L95">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L96">        RequestChecks.requireMultipart(request);</span>
+<span class="fc" id="L97">        MultipartForm form = MultipartForm.read(request);</span>
+<span class="fc" id="L98">        form.checkFileSize(ContentValidator.FIELD, maxUploadBytes);</span>
+<span class="fc" id="L99">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L100">        RequestChecks.checkQueryNames(RequestChecks.queryParameters(request, issues), Set.of(), issues);</span>
+<span class="fc" id="L101">        form.checkNames(REGISTER_FIELDS, Set.of(&quot;aliasUris&quot;), issues);</span>
+<span class="fc" id="L102">        String name = form.text(&quot;name&quot;, issues);</span>
+<span class="pc bpc" id="L103" title="3 of 4 branches missed.">        if (name == null &amp;&amp; !form.has(&quot;name&quot;)) {</span>
+<span class="nc" id="L104">            issues.add(Issue.schemaViolation(Issue.IN_BODY, &quot;name&quot;, &quot;Field 'name' is required.&quot;));</span>
+<span class="pc bpc" id="L105" title="2 of 4 branches missed.">        } else if (name != null &amp;&amp; !RequestChecks.validName(name)) {</span>
+<span class="nc" id="L106">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_BODY, &quot;name&quot;, &quot;Field 'name' must be 3 to 64 characters and match ^[A-Z][a-zA-Z0-9]*$.&quot;));
+        }
+<span class="fc" id="L109">        String namespaceUri = form.text(&quot;namespaceUri&quot;, issues);</span>
+<span class="pc bpc" id="L110" title="3 of 4 branches missed.">        if (namespaceUri == null &amp;&amp; !form.has(&quot;namespaceUri&quot;)) {</span>
+<span class="nc" id="L111">            issues.add(Issue.schemaViolation(Issue.IN_BODY, &quot;namespaceUri&quot;, &quot;Field 'namespaceUri' is required.&quot;));</span>
+<span class="pc bpc" id="L112" title="2 of 4 branches missed.">        } else if (namespaceUri != null &amp;&amp; !UriValues.isAbsoluteUri(namespaceUri)) {</span>
+<span class="nc" id="L113">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_BODY, &quot;namespaceUri&quot;, &quot;Field 'namespaceUri' must be an absolute URI.&quot;));
+        }
+<span class="fc" id="L116">        List&lt;String&gt; aliases = form.texts(&quot;aliasUris&quot;, issues);</span>
+<span class="fc" id="L117">        checkAliases(aliases, namespaceUri, issues);</span>
+<span class="fc" id="L118">        String description = optionalDescription(form.text(&quot;description&quot;, issues), issues);</span>
+<span class="fc" id="L119">        String sourceUri = form.text(&quot;sourceUri&quot;, issues);</span>
+<span class="pc bpc" id="L120" title="3 of 4 branches missed.">        if (sourceUri != null &amp;&amp; !UriValues.isAbsoluteUri(sourceUri)) {</span>
+<span class="nc" id="L121">            issues.add(Issue.schemaViolation(Issue.IN_BODY, &quot;sourceUri&quot;, &quot;Field 'sourceUri' must be an absolute URI.&quot;));</span>
+        }
+<span class="fc" id="L123">        byte[] content = form.file(ContentValidator.FIELD, issues);</span>
+<span class="fc" id="L124">        RequestChecks.throwIfAny(issues);</span>
+<span class="fc" id="L125">        ExternalVocabulary registered =</span>
+<span class="fc" id="L126">                service.register(name, namespaceUri, aliases, sourceUri, description, content, Callers.creator(jwt));</span>
+<span class="fc" id="L127">        return ResponseEntity.status(HttpStatus.CREATED)</span>
+<span class="fc" id="L128">                .header(&quot;Location&quot;, Representations.externalHref(registered.name()))</span>
+<span class="fc" id="L129">                .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L130">                .body(representations.external(registered));</span>
+    }
+
+    private static void checkAliases(List&lt;String&gt; aliases, String namespaceUri, List&lt;Issue&gt; issues) {
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        if (aliases.size() &gt; MAX_ALIASES) {</span>
+<span class="nc" id="L135">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_BODY, &quot;aliasUris&quot;, &quot;At most &quot; + MAX_ALIASES + &quot; alias URIs are allowed.&quot;));
+<span class="nc" id="L137">            return;</span>
+        }
+<span class="fc" id="L139">        Set&lt;String&gt; seen = new HashSet&lt;&gt;();</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">        if (namespaceUri != null) {</span>
+<span class="fc" id="L141">            seen.add(ExternalVocabulary.normalise(namespaceUri));</span>
+        }
+<span class="fc bfc" id="L143" title="All 2 branches covered.">        for (String alias : aliases) {</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">            if (!UriValues.isAbsoluteUri(alias)) {</span>
+<span class="nc" id="L145">                issues.add(</span>
+<span class="nc" id="L146">                        Issue.schemaViolation(Issue.IN_BODY, &quot;aliasUris&quot;, &quot;Every alias URI must be an absolute URI.&quot;));</span>
+<span class="nc" id="L147">                return;</span>
+            }
+<span class="fc bfc" id="L149" title="All 2 branches covered.">            if (!seen.add(ExternalVocabulary.normalise(alias))) {</span>
+<span class="fc" id="L150">                issues.add(Issue.schemaViolation(</span>
+                        Issue.IN_BODY,
+                        &quot;aliasUris&quot;,
+                        &quot;An alias URI repeats the namespace URI or another alias: '&quot; + alias + &quot;'.&quot;));
+<span class="fc" id="L154">                return;</span>
+            }
+<span class="fc" id="L156">        }</span>
+<span class="fc" id="L157">    }</span>
+
+    private static String optionalDescription(String value, List&lt;Issue&gt; issues) {
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (value == null) {</span>
+<span class="fc" id="L161">            return null;</span>
+        }
+<span class="nc" id="L163">        String trimmed = value.strip();</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (trimmed.codePointCount(0, trimmed.length()) &gt; RequestChecks.MAX_TEXT) {</span>
+<span class="nc" id="L165">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_BODY, &quot;description&quot;, &quot;Field 'description' must be at most 1000 characters.&quot;));
+<span class="nc" id="L167">            return null;</span>
+        }
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        return trimmed.isEmpty() ? null : trimmed;</span>
+    }
+
+    /**
+     * GET /external-vocabularies/{name} (getExternalVocabulary).
+     *
+     * @param name the name
+     * @param request the request
+     * @return the external vocabulary
+     */
+    @GetMapping(&quot;/external-vocabularies/{name}&quot;)
+    public ResponseEntity&lt;Representations.ExternalDto&gt; get(@PathVariable String name, HttpServletRequest request) {
+<span class="fc" id="L181">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L182">        checkPathAndNoQuery(name, request);</span>
+<span class="fc" id="L183">        return json(representations.external(service.get(name)));</span>
+    }
+
+    /**
+     * DELETE /external-vocabularies/{name} (deleteExternalVocabulary).
+     *
+     * @param name the name
+     * @param request the request
+     * @param jwt the caller's token
+     * @return 204
+     */
+    @DeleteMapping(&quot;/external-vocabularies/{name}&quot;)
+    public ResponseEntity&lt;Void&gt; delete(
+            @PathVariable String name, HttpServletRequest request, @AuthenticationPrincipal Jwt jwt) {
+<span class="fc" id="L197">        checkPathAndNoQuery(name, request);</span>
+<span class="fc" id="L198">        service.remove(name, Callers.creator(jwt));</span>
+<span class="fc" id="L199">        return ResponseEntity.noContent().build();</span>
+    }
+
+    /**
+     * GET /external-vocabularies/{name}/content (getExternalVocabularyContentByName).
+     *
+     * @param name the name
+     * @param request the request
+     * @return the Turtle bytes
+     */
+    @GetMapping(&quot;/external-vocabularies/{name}/content&quot;)
+    public ResponseEntity&lt;byte[]&gt; contentByName(@PathVariable String name, HttpServletRequest request) {
+<span class="fc" id="L211">        RequestChecks.requireAcceptable(request, ContentController.TURTLE);</span>
+<span class="fc" id="L212">        checkPathAndNoQuery(name, request);</span>
+<span class="fc" id="L213">        return ContentController.turtle(service.contentByName(name), name + &quot;.ttl&quot;);</span>
+    }
+
+    /**
+     * POST /external-vocabularies/content (downloadExternalVocabularyContent) by namespace URI.
+     *
+     * @param request the JSON request
+     * @return the Turtle bytes
+     */
+    @PostMapping(&quot;/external-vocabularies/content&quot;)
+    public ResponseEntity&lt;byte[]&gt; contentByNamespace(HttpServletRequest request) {
+<span class="fc" id="L224">        RequestChecks.requireAcceptable(request, ContentController.TURTLE);</span>
+<span class="fc" id="L225">        RequestChecks.requireJson(request);</span>
+<span class="fc" id="L226">        JsonNode body = jsonReader.read(request);</span>
+<span class="fc" id="L227">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L228">        RequestChecks.checkQueryNames(RequestChecks.queryParameters(request, issues), Set.of(), issues);</span>
+<span class="fc" id="L229">        String namespaceUri = null;</span>
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">        if (JsonBodyReader.checkObject(body, &quot;&quot;, Set.of(&quot;namespaceUri&quot;), issues)) {</span>
+<span class="fc" id="L231">            JsonNode node = body.get(&quot;namespaceUri&quot;);</span>
+<span class="pc bpc" id="L232" title="3 of 6 branches missed.">            if (node == null || !node.isString() || !UriValues.isAbsoluteUri(node.asString())) {</span>
+<span class="nc" id="L233">                issues.add(Issue.schemaViolation(</span>
+                        Issue.IN_BODY, &quot;namespaceUri&quot;, &quot;Field 'namespaceUri' must be an absolute URI.&quot;));
+            } else {
+<span class="fc" id="L236">                namespaceUri = node.asString();</span>
+            }
+        }
+<span class="fc" id="L239">        RequestChecks.throwIfAny(issues);</span>
+<span class="fc" id="L240">        ExternalVocabulary external = service.byNamespace(namespaceUri);</span>
+<span class="fc" id="L241">        return ContentController.turtle(service.contentByName(external.name()), external.name() + &quot;.ttl&quot;);</span>
+    }
+
+    /**
+     * POST /external-vocabulary/searches (searchExternalVocabularies), decision D38.
+     *
+     * @param request the JSON request
+     * @return the matches, unpaged
+     */
+    @PostMapping(&quot;/external-vocabulary/searches&quot;)
+    public ResponseEntity&lt;PageDto&lt;Representations.ExternalDto&gt;&gt; search(HttpServletRequest request) {
+<span class="fc" id="L252">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L253">        RequestChecks.requireJson(request);</span>
+<span class="fc" id="L254">        JsonNode body = jsonReader.read(request);</span>
+<span class="fc" id="L255">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L256">        RequestChecks.checkQueryNames(RequestChecks.queryParameters(request, issues), Set.of(), issues);</span>
+<span class="fc" id="L257">        List&lt;String&gt; uris = ExternalSearchBody.read(body, MAX_SEARCH_URIS, issues);</span>
+<span class="fc" id="L258">        RequestChecks.throwIfAny(issues);</span>
+<span class="fc" id="L259">        List&lt;Representations.ExternalDto&gt; items =</span>
+<span class="fc" id="L260">                service.search(uris).stream().map(representations::external).toList();</span>
+<span class="fc" id="L261">        return json(PageDto.unpaged(items));</span>
+    }
+
+    private static void checkPathAndNoQuery(String name, HttpServletRequest request) {
+<span class="fc" id="L265">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L266">        RequestChecks.checkQueryNames(RequestChecks.queryParameters(request, issues), Set.of(), issues);</span>
+<span class="fc" id="L267">        RequestChecks.checkPathName(&quot;name&quot;, name, issues);</span>
+<span class="fc" id="L268">        RequestChecks.throwIfAny(issues);</span>
+<span class="fc" id="L269">    }</span>
+
+    private static &lt;T&gt; ResponseEntity&lt;T&gt; json(T body) {
+<span class="fc" id="L272">        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

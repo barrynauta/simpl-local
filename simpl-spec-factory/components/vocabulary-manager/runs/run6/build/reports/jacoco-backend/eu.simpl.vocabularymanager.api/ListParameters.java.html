@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ListParameters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">ListParameters.java</span></div><h1>ListParameters.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.problem.Issue;
+import eu.simpl.vocabularymanager.store.InstantRange;
+import eu.simpl.vocabularymanager.store.SortOrder;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
+import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+import org.springframework.util.MultiValueMap;
+
+/** Parsing of the list filters and sort values (decisions D19, D20, D23, D58). */
+public final class ListParameters {
+
+    /** Query parameters of GET /vocabularies. */
+<span class="fc" id="L27">    public static final Set&lt;String&gt; VOCABULARY_LIST =</span>
+<span class="fc" id="L28">            Set.of(&quot;name&quot;, &quot;status&quot;, &quot;creationDate&quot;, &quot;lastUpdated&quot;, &quot;sort&quot;, &quot;page&quot;, &quot;pageSize&quot;);</span>
+
+    /** Query parameters of GET /vocabularies/{name}/versions. */
+<span class="fc" id="L31">    public static final Set&lt;String&gt; VERSION_LIST = Set.of(&quot;sort&quot;, &quot;page&quot;, &quot;pageSize&quot;);</span>
+
+    /** Query parameters of GET /external-vocabularies. */
+<span class="fc" id="L34">    public static final Set&lt;String&gt; EXTERNAL_LIST = Set.of(&quot;page&quot;, &quot;pageSize&quot;);</span>
+
+<span class="fc" id="L36">    private static final Pattern NAME_FILTER = Pattern.compile(&quot;^[A-Za-z0-9]{1,64}$&quot;);</span>
+<span class="fc" id="L37">    private static final Pattern DATE_FILTER = Pattern.compile(&quot;^\\d{4}-\\d{2}-\\d{2}(T.*)?$&quot;);</span>
+<span class="fc" id="L38">    private static final DateTimeFormatter STRICT_DATE =</span>
+<span class="fc" id="L39">            DateTimeFormatter.ofPattern(&quot;uuuu-MM-dd&quot;).withResolverStyle(ResolverStyle.STRICT);</span>
+
+<span class="fc" id="L41">    private static final Map&lt;String, SortOrder&gt; VOCABULARY_SORTS = sorts(true);</span>
+<span class="fc" id="L42">    private static final Map&lt;String, SortOrder&gt; VERSION_SORTS = sorts(false);</span>
+
+    private ListParameters() {}
+
+    private static Map&lt;String, SortOrder&gt; sorts(boolean withLastUpdated) {
+<span class="fc" id="L47">        Map&lt;String, SortOrder&gt; map = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L48">        map.put(&quot;name&quot;, new SortOrder(SortOrder.Field.NAME, false));</span>
+<span class="fc" id="L49">        map.put(&quot;-name&quot;, new SortOrder(SortOrder.Field.NAME, true));</span>
+<span class="fc" id="L50">        map.put(&quot;status&quot;, new SortOrder(SortOrder.Field.STATUS, false));</span>
+<span class="fc" id="L51">        map.put(&quot;-status&quot;, new SortOrder(SortOrder.Field.STATUS, true));</span>
+<span class="fc" id="L52">        map.put(&quot;creationDate&quot;, new SortOrder(SortOrder.Field.CREATION_DATE, false));</span>
+<span class="fc" id="L53">        map.put(&quot;-creationDate&quot;, new SortOrder(SortOrder.Field.CREATION_DATE, true));</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (withLastUpdated) {</span>
+<span class="fc" id="L55">            map.put(&quot;lastUpdated&quot;, new SortOrder(SortOrder.Field.LAST_UPDATED, false));</span>
+<span class="fc" id="L56">            map.put(&quot;-lastUpdated&quot;, new SortOrder(SortOrder.Field.LAST_UPDATED, true));</span>
+        }
+<span class="fc" id="L58">        return java.util.Collections.unmodifiableMap(map);</span>
+    }
+
+    /**
+     * Reads the name filter.
+     *
+     * @param parameters the query parameters
+     * @param issues the issue list
+     * @return the filter or null
+     */
+    public static String nameFilter(MultiValueMap&lt;String, String&gt; parameters, List&lt;Issue&gt; issues) {
+<span class="fc" id="L69">        String value = parameters.getFirst(&quot;name&quot;);</span>
+<span class="fc bfc" id="L70" title="All 4 branches covered.">        if (value != null &amp;&amp; !NAME_FILTER.matcher(value).matches()) {</span>
+<span class="fc" id="L71">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_QUERY, &quot;name&quot;, &quot;Query parameter 'name' must be 1 to 64 letters or digits.&quot;));
+<span class="fc" id="L73">            return null;</span>
+        }
+<span class="fc" id="L75">        return value;</span>
+    }
+
+    /**
+     * Reads the status filter.
+     *
+     * @param parameters the query parameters
+     * @param issues the issue list
+     * @return the status or null
+     */
+    public static VocabularyStatus statusFilter(MultiValueMap&lt;String, String&gt; parameters, List&lt;Issue&gt; issues) {
+<span class="fc" id="L86">        String value = parameters.getFirst(&quot;status&quot;);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L88">            return null;</span>
+        }
+<span class="fc" id="L90">        return VocabularyStatus.fromWire(value).orElseGet(() -&gt; {</span>
+<span class="fc" id="L91">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_QUERY, &quot;status&quot;, &quot;Query parameter 'status' must be one of [ACTIVE, DEPRECATED].&quot;));
+<span class="fc" id="L93">            return null;</span>
+        });
+    }
+
+    /**
+     * Reads a date filter (decision D20): a date matches its whole UTC day; a date-time matches to the second.
+     *
+     * @param parameters the query parameters
+     * @param name creationDate or lastUpdated
+     * @param issues the issue list
+     * @return the range or null
+     */
+    public static InstantRange dateFilter(MultiValueMap&lt;String, String&gt; parameters, String name, List&lt;Issue&gt; issues) {
+<span class="fc" id="L106">        String value = parameters.getFirst(name);</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L108">            return null;</span>
+        }
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        InstantRange range = DATE_FILTER.matcher(value).matches() ? parseDate(value) : null;</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (range == null) {</span>
+<span class="fc" id="L112">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_QUERY, name, &quot;Query parameter '&quot; + name + &quot;' must be an ISO 8601 date or date-time.&quot;));
+        }
+<span class="fc" id="L115">        return range;</span>
+    }
+
+    static InstantRange parseDate(String value) {
+        try {
+<span class="fc bfc" id="L120" title="All 2 branches covered.">            if (value.length() == 10) {</span>
+<span class="fc" id="L121">                Instant start = LocalDate.parse(value, STRICT_DATE)</span>
+<span class="fc" id="L122">                        .atStartOfDay(ZoneOffset.UTC)</span>
+<span class="fc" id="L123">                        .toInstant();</span>
+<span class="fc" id="L124">                return new InstantRange(start, start.plus(1, ChronoUnit.DAYS));</span>
+            }
+            Instant instant;
+            try {
+<span class="fc" id="L128">                instant = OffsetDateTime.parse(value).toInstant();</span>
+<span class="fc" id="L129">            } catch (DateTimeParseException e) {</span>
+<span class="fc" id="L130">                instant = LocalDateTime.parse(value).toInstant(ZoneOffset.UTC);</span>
+<span class="fc" id="L131">            }</span>
+<span class="fc" id="L132">            Instant second = instant.truncatedTo(ChronoUnit.SECONDS);</span>
+<span class="fc" id="L133">            return new InstantRange(second, second.plusSeconds(1));</span>
+<span class="fc" id="L134">        } catch (DateTimeParseException | ArithmeticException e) {</span>
+<span class="fc" id="L135">            return null;</span>
+        }
+    }
+
+    /**
+     * Reads the sort of the vocabulary list; default name ascending (decision D23).
+     *
+     * @param parameters the query parameters
+     * @param issues the issue list
+     * @return the order
+     */
+    public static SortOrder vocabularySort(MultiValueMap&lt;String, String&gt; parameters, List&lt;Issue&gt; issues) {
+<span class="fc" id="L147">        return sort(parameters, VOCABULARY_SORTS, new SortOrder(SortOrder.Field.NAME, false), issues);</span>
+    }
+
+    /**
+     * Reads the sort of the version list; default version descending (decision D23).
+     *
+     * @param parameters the query parameters
+     * @param issues the issue list
+     * @return the order
+     */
+    public static SortOrder versionSort(MultiValueMap&lt;String, String&gt; parameters, List&lt;Issue&gt; issues) {
+<span class="fc" id="L158">        return sort(parameters, VERSION_SORTS, new SortOrder(SortOrder.Field.VERSION, true), issues);</span>
+    }
+
+    private static SortOrder sort(
+            MultiValueMap&lt;String, String&gt; parameters,
+            Map&lt;String, SortOrder&gt; allowed,
+            SortOrder fallback,
+            List&lt;Issue&gt; issues) {
+<span class="fc" id="L166">        String value = parameters.getFirst(&quot;sort&quot;);</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L168">            return fallback;</span>
+        }
+<span class="fc" id="L170">        SortOrder order = allowed.get(value);</span>
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">        if (order == null) {</span>
+<span class="fc" id="L172">            issues.add(Issue.schemaViolation(</span>
+<span class="fc" id="L173">                    Issue.IN_QUERY, &quot;sort&quot;, &quot;Query parameter 'sort' must be one of &quot; + allowed.keySet() + &quot;.&quot;));</span>
+<span class="fc" id="L174">            return fallback;</span>
+        }
+<span class="nc" id="L176">        return order;</span>
+    }
+
+    /**
+     * Gives the filter and sort parameters to repeat in paging links, in a fixed order.
+     *
+     * @param parameters the query parameters
+     * @param names the names to keep
+     * @return the parameters
+     */
+    public static Map&lt;String, String&gt; linkParameters(MultiValueMap&lt;String, String&gt; parameters, List&lt;String&gt; names) {
+<span class="fc" id="L187">        Map&lt;String, String&gt; kept = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        for (String name : names) {</span>
+<span class="fc" id="L189">            String value = parameters.getFirst(name);</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">            if (value != null) {</span>
+<span class="fc" id="L191">                kept.put(name, value);</span>
+            }
+<span class="fc" id="L193">        }</span>
+<span class="fc" id="L194">        return kept;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

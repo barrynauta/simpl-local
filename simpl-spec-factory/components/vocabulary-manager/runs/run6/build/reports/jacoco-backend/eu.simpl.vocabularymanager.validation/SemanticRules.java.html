@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SemanticRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">SemanticRules.java</span></div><h1>SemanticRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.SKOS;
+import org.springframework.stereotype.Component;
+
+/**
+ * Semantic rules S1 to S6 of decision D9 (S7, the references, is in {@link ReferenceChecker}). Every rule runs
+ * and every finding is returned, in rule order and then by location, so the report is stable.
+ */
+@Component
+<span class="fc" id="L23">public class SemanticRules {</span>
+
+    static final String S1 = &quot;Literal value for object property&quot;;
+    static final String S2 = &quot;Resource value for datatype property&quot;;
+    static final String S3 = &quot;Property declared as both object and datatype property&quot;;
+    static final String S4 = &quot;Duplicate preferred label for the same language&quot;;
+    static final String S5 = &quot;Resource is an instance of disjoint classes&quot;;
+    static final String S6 = &quot;Vocabulary contains no statements&quot;;
+
+    /**
+     * One semantic finding.
+     *
+     * @param detail the decided detail text
+     * @param location where in the content
+     */
+<span class="fc" id="L38">    public record Finding(String detail, String location) {}</span>
+
+    /**
+     * Runs rules S1 to S6.
+     *
+     * @param graph the parsed content
+     * @return the findings, in rule order
+     */
+    public List&lt;Finding&gt; check(Graph graph) {
+<span class="fc" id="L47">        List&lt;Finding&gt; findings = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        if (graph.isEmpty()) {</span>
+<span class="fc" id="L49">            findings.add(new Finding(S6, &quot;document&quot;));</span>
+<span class="fc" id="L50">            return findings;</span>
+        }
+<span class="fc" id="L52">        Set&lt;Node&gt; objectProperties = subjectsTypedAs(graph, OWL.ObjectProperty.asNode());</span>
+<span class="fc" id="L53">        Set&lt;Node&gt; datatypeProperties = subjectsTypedAs(graph, OWL.DatatypeProperty.asNode());</span>
+<span class="fc" id="L54">        findings.addAll(literalForObjectProperty(graph, objectProperties));</span>
+<span class="fc" id="L55">        findings.addAll(resourceForDatatypeProperty(graph, datatypeProperties));</span>
+<span class="fc" id="L56">        findings.addAll(bothKinds(objectProperties, datatypeProperties));</span>
+<span class="fc" id="L57">        findings.addAll(duplicatePreferredLabels(graph));</span>
+<span class="fc" id="L58">        findings.addAll(disjointClassInstances(graph));</span>
+<span class="fc" id="L59">        return findings;</span>
+    }
+
+    private static Set&lt;Node&gt; subjectsTypedAs(Graph graph, Node type) {
+<span class="fc" id="L63">        Set&lt;Node&gt; result = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L64">        graph.find(Node.ANY, RDF.type.asNode(), type).forEachRemaining(t -&gt; result.add(t.getSubject()));</span>
+<span class="fc" id="L65">        return result;</span>
+    }
+
+    private static List&lt;Finding&gt; literalForObjectProperty(Graph graph, Set&lt;Node&gt; objectProperties) {
+<span class="fc" id="L69">        TreeSet&lt;String&gt; locations = new TreeSet&lt;&gt;();</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        for (Node property : objectProperties) {</span>
+<span class="fc" id="L71">            graph.find(Node.ANY, property, Node.ANY).forEachRemaining(t -&gt; {</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">                if (t.getObject().isLiteral()) {</span>
+<span class="fc" id="L73">                    locations.add(statement(t));</span>
+                }
+<span class="fc" id="L75">            });</span>
+<span class="fc" id="L76">        }</span>
+<span class="fc" id="L77">        return locations.stream().map(l -&gt; new Finding(S1, l)).toList();</span>
+    }
+
+    private static List&lt;Finding&gt; resourceForDatatypeProperty(Graph graph, Set&lt;Node&gt; datatypeProperties) {
+<span class="fc" id="L81">        TreeSet&lt;String&gt; locations = new TreeSet&lt;&gt;();</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        for (Node property : datatypeProperties) {</span>
+<span class="fc" id="L83">            graph.find(Node.ANY, property, Node.ANY).forEachRemaining(t -&gt; {</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">                if (!t.getObject().isLiteral()) {</span>
+<span class="fc" id="L85">                    locations.add(statement(t));</span>
+                }
+<span class="fc" id="L87">            });</span>
+<span class="fc" id="L88">        }</span>
+<span class="fc" id="L89">        return locations.stream().map(l -&gt; new Finding(S2, l)).toList();</span>
+    }
+
+    private static List&lt;Finding&gt; bothKinds(Set&lt;Node&gt; objectProperties, Set&lt;Node&gt; datatypeProperties) {
+<span class="fc" id="L93">        TreeSet&lt;String&gt; locations = new TreeSet&lt;&gt;();</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        for (Node property : objectProperties) {</span>
+<span class="pc bpc" id="L95" title="1 of 4 branches missed.">            if (property.isURI() &amp;&amp; datatypeProperties.contains(property)) {</span>
+<span class="fc" id="L96">                locations.add(resource(property));</span>
+            }
+<span class="fc" id="L98">        }</span>
+<span class="fc" id="L99">        return locations.stream().map(l -&gt; new Finding(S3, l)).toList();</span>
+    }
+
+    private static List&lt;Finding&gt; duplicatePreferredLabels(Graph graph) {
+<span class="fc" id="L103">        Map&lt;Node, Map&lt;String, Integer&gt;&gt; counts = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L104">        graph.find(Node.ANY, SKOS.prefLabel.asNode(), Node.ANY).forEachRemaining(t -&gt; {</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">            if (t.getObject().isLiteral()) {</span>
+                // Decision D53: an untagged literal counts as one language, the empty tag.
+<span class="fc" id="L107">                String language = t.getObject().getLiteralLanguage();</span>
+<span class="fc" id="L108">                counts.computeIfAbsent(t.getSubject(), s -&gt; new HashMap&lt;&gt;()).merge(language, 1, Integer::sum);</span>
+            }
+<span class="fc" id="L110">        });</span>
+<span class="fc" id="L111">        TreeSet&lt;String&gt; locations = new TreeSet&lt;&gt;();</span>
+<span class="fc" id="L112">        counts.forEach((subject, perLanguage) -&gt; perLanguage.forEach((language, count) -&gt; {</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">            if (count &gt; 1) {</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">                String suffix = language.isEmpty() ? &quot; (no language)&quot; : &quot; (language '&quot; + language + &quot;')&quot;;</span>
+<span class="fc" id="L115">                locations.add(resource(subject) + suffix);</span>
+            }
+<span class="fc" id="L117">        }));</span>
+<span class="fc" id="L118">        return locations.stream().map(l -&gt; new Finding(S4, l)).toList();</span>
+    }
+
+    private static List&lt;Finding&gt; disjointClassInstances(Graph graph) {
+<span class="fc" id="L122">        List&lt;Node[]&gt; disjointPairs = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L123">        graph.find(Node.ANY, OWL.disjointWith.asNode(), Node.ANY)</span>
+<span class="fc" id="L124">                .forEachRemaining(t -&gt; disjointPairs.add(new Node[] {t.getSubject(), t.getObject()}));</span>
+<span class="fc" id="L125">        TreeSet&lt;String&gt; locations = new TreeSet&lt;&gt;();</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">        for (Node[] pair : disjointPairs) {</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">            if (pair[0].equals(pair[1])) {</span>
+<span class="nc" id="L128">                continue;</span>
+            }
+<span class="fc" id="L130">            graph.find(Node.ANY, RDF.type.asNode(), pair[0]).forEachRemaining(t -&gt; {</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">                if (graph.contains(t.getSubject(), RDF.type.asNode(), pair[1])) {</span>
+<span class="fc" id="L132">                    locations.add(resource(t.getSubject()));</span>
+                }
+<span class="fc" id="L134">            });</span>
+<span class="fc" id="L135">        }</span>
+<span class="fc" id="L136">        return locations.stream().map(l -&gt; new Finding(S5, l)).toList();</span>
+    }
+
+    private static String statement(Triple t) {
+<span class="fc" id="L140">        return &quot;statement '&quot; + text(t.getSubject()) + &quot; &quot; + text(t.getPredicate()) + &quot; &quot; + text(t.getObject()) + &quot;'&quot;;</span>
+    }
+
+    private static String resource(Node node) {
+<span class="fc" id="L144">        return &quot;resource '&quot; + text(node) + &quot;'&quot;;</span>
+    }
+
+    private static String text(Node node) {
+<span class="fc bfc" id="L148" title="All 2 branches covered.">        if (node.isURI()) {</span>
+<span class="fc" id="L149">            return node.getURI();</span>
+        }
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">        if (node.isBlank()) {</span>
+<span class="nc" id="L152">            return &quot;_:&quot; + node.getBlankNodeLabel();</span>
+        }
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">        if (node.isLiteral()) {</span>
+<span class="fc" id="L155">            return node.getLiteralLexicalForm();</span>
+        }
+<span class="nc" id="L157">        return node.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

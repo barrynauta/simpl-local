@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PageDto.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">PageDto.java</span></div><h1>PageDto.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import java.math.BigInteger;
+import java.util.List;
+
+/**
+ * CollectionPage of the OpenAPI file with its items. Absent links are left out (decision D22).
+ *
+ * @param page the page number
+ * @param totalPages the number of pages
+ * @param total the number of items in the collection
+ * @param pageSize the page size
+ * @param self link to this page
+ * @param first link to the first page
+ * @param prev link to the previous page
+ * @param next link to the next page
+ * @param last link to the last page
+ * @param items the items
+ * @param &lt;T&gt; the item type
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L23">public record PageDto&lt;T&gt;(</span>
+        BigInteger page,
+        long totalPages,
+        long total,
+        int pageSize,
+        String self,
+        String first,
+        String prev,
+        String next,
+        String last,
+        List&lt;T&gt; items) {
+
+    /**
+     * An unpaged search result (decision D38): page 1, pageSize 100, no links.
+     *
+     * @param items the results
+     * @param &lt;T&gt; the item type
+     * @return the body
+     */
+    public static &lt;T&gt; PageDto&lt;T&gt; unpaged(List&lt;T&gt; items) {
+<span class="fc" id="L43">        return new PageDto&lt;&gt;(</span>
+                BigInteger.ONE,
+<span class="fc bfc" id="L45" title="All 2 branches covered.">                items.isEmpty() ? 0 : 1,</span>
+<span class="fc" id="L46">                items.size(),</span>
+                Paging.MAX_PAGE_SIZE,
+                null,
+                null,
+                null,
+                null,
+                null,
+                items);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

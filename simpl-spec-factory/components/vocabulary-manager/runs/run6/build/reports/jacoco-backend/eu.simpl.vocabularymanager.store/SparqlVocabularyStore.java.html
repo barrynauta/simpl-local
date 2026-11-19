@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SparqlVocabularyStore.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">SparqlVocabularyStore.java</span></div><h1>SparqlVocabularyStore.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.Page;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.sparql.util.FmtUtils;
+import org.springframework.stereotype.Repository;
+
+/**
+ * Store adapter on Apache Jena Fuseki through SPARQL 1.1 (decision E3). Every query is built with
+ * {@link ParameterizedSparqlString}, so request values never reach the query text unescaped (OWASP-04). Every
+ * write is one SPARQL update request, which Fuseki runs as one transaction (decisions D8, D43).
+ */
+@Repository
+public class SparqlVocabularyStore implements VocabularyStore {
+
+    static final String NS = &quot;https://w3id.org/simpl/vocabulary-manager/store#&quot;;
+    private static final String PREFIXES = &quot;PREFIX vm: &lt;&quot; + NS + &quot;&gt;\n&quot;;
+<span class="fc" id="L37">    private static final Pattern NAME = Pattern.compile(&quot;^[A-Z][a-zA-Z0-9]*$&quot;);</span>
+
+    private final SparqlClient client;
+
+    /**
+     * Creates the store adapter.
+     *
+     * @param client the SPARQL client
+     */
+<span class="fc" id="L46">    public SparqlVocabularyStore(SparqlClient client) {</span>
+<span class="fc" id="L47">        this.client = client;</span>
+<span class="fc" id="L48">    }</span>
+
+    // ----- vocabularies -----
+
+    @Override
+    public Optional&lt;Vocabulary&gt; findVocabulary(String name) {
+<span class="fc" id="L54">        ParameterizedSparqlString q = pss(vocabularySelect() + &quot;FILTER(?name = ?wanted)\n}&quot;);</span>
+<span class="fc" id="L55">        q.setLiteral(&quot;wanted&quot;, name);</span>
+<span class="fc" id="L56">        return client.select(q.toString()).stream().findFirst().map(SparqlVocabularyStore::toVocabulary);</span>
+    }
+
+    @Override
+    public boolean vocabularyNameTaken(String name) {
+<span class="fc" id="L61">        ParameterizedSparqlString q = pss(&quot;SELECT ?v WHERE { ?v a vm:Vocabulary ; vm:nameKey ?key } LIMIT 1&quot;);</span>
+<span class="fc" id="L62">        q.setLiteral(&quot;key&quot;, name.toLowerCase(Locale.ROOT));</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        return !client.select(q.toString()).isEmpty();</span>
+    }
+
+    @Override
+    public Page&lt;Vocabulary&gt; listVocabularies(VocabularyQuery query) {
+<span class="fc" id="L68">        String filters = vocabularyFilters(query);</span>
+<span class="fc" id="L69">        ParameterizedSparqlString count = pss(&quot;SELECT (COUNT(?v) AS ?total) WHERE {\n&quot;</span>
+                + &quot;?v a vm:Vocabulary ; vm:name ?name ; vm:status ?status ;&quot;
+                + &quot; vm:creationDate ?creationDate ; vm:lastUpdateDate ?lastUpdateDate .\n&quot;
+                + filters
+                + &quot;}&quot;);
+<span class="fc" id="L74">        bindVocabularyFilters(count, query);</span>
+<span class="fc" id="L75">        long total = client.select(count.toString()).stream()</span>
+<span class="fc" id="L76">                .findFirst()</span>
+<span class="fc" id="L77">                .map(s -&gt; s.getLiteral(&quot;total&quot;).getLong())</span>
+<span class="fc" id="L78">                .orElse(0L);</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (query.offset() &gt;= total) {</span>
+<span class="fc" id="L80">            return new Page&lt;&gt;(List.of(), total);</span>
+        }
+<span class="fc" id="L82">        ParameterizedSparqlString page = pss(vocabularySelect()</span>
+                + filters
+                + &quot;}\nORDER BY &quot;
+<span class="fc" id="L85">                + vocabularyOrder(query.sort())</span>
+                + &quot;\nLIMIT &quot;
+<span class="fc" id="L87">                + query.limit()</span>
+                + &quot; OFFSET &quot;
+<span class="fc" id="L89">                + query.offset());</span>
+<span class="fc" id="L90">        bindVocabularyFilters(page, query);</span>
+<span class="fc" id="L91">        List&lt;Vocabulary&gt; items = client.select(page.toString()).stream()</span>
+<span class="fc" id="L92">                .map(SparqlVocabularyStore::toVocabulary)</span>
+<span class="fc" id="L93">                .toList();</span>
+<span class="fc" id="L94">        return new Page&lt;&gt;(items, total);</span>
+    }
+
+    private static String vocabularySelect() {
+<span class="fc" id="L98">        return &quot;SELECT ?name ?status ?createdBy ?creationDate ?lastUpdateDate ?latestVersion ?description WHERE {\n&quot;</span>
+                + &quot;?v a vm:Vocabulary ; vm:name ?name ; vm:status ?status ; vm:createdBy ?createdBy ;&quot;
+                + &quot; vm:creationDate ?creationDate ; vm:lastUpdateDate ?lastUpdateDate ;&quot;
+                + &quot; vm:latestVersion ?latestVersion .\n&quot;
+                + &quot;?latest vm:vocabulary ?v ; vm:version ?latestVersion ; vm:description ?description .\n&quot;;
+    }
+
+    private static String vocabularyFilters(VocabularyQuery query) {
+<span class="fc" id="L106">        StringBuilder filters = new StringBuilder();</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        if (query.nameContains() != null) {</span>
+<span class="fc" id="L108">            filters.append(&quot;FILTER(CONTAINS(LCASE(?name), ?namePart))\n&quot;);</span>
+        }
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">        if (query.status() != null) {</span>
+<span class="nc" id="L111">            filters.append(&quot;FILTER(?status = ?wantedStatus)\n&quot;);</span>
+        }
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">        if (query.creationDate() != null) {</span>
+<span class="nc" id="L114">            filters.append(&quot;FILTER(?creationDate &gt;= ?cdFrom &amp;&amp; ?creationDate &lt; ?cdTo)\n&quot;);</span>
+        }
+<span class="fc bfc" id="L116" title="All 2 branches covered.">        if (query.lastUpdated() != null) {</span>
+<span class="fc" id="L117">            filters.append(&quot;FILTER(?lastUpdateDate &gt;= ?luFrom &amp;&amp; ?lastUpdateDate &lt; ?luTo)\n&quot;);</span>
+        }
+<span class="fc" id="L119">        return filters.toString();</span>
+    }
+
+    private static void bindVocabularyFilters(ParameterizedSparqlString q, VocabularyQuery query) {
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        if (query.nameContains() != null) {</span>
+<span class="fc" id="L124">            q.setLiteral(&quot;namePart&quot;, query.nameContains().toLowerCase(Locale.ROOT));</span>
+        }
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (query.status() != null) {</span>
+<span class="nc" id="L127">            q.setLiteral(&quot;wantedStatus&quot;, query.status().name());</span>
+        }
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        if (query.creationDate() != null) {</span>
+<span class="nc" id="L130">            q.setParam(&quot;cdFrom&quot;, dateTime(query.creationDate().from()));</span>
+<span class="nc" id="L131">            q.setParam(&quot;cdTo&quot;, dateTime(query.creationDate().to()));</span>
+        }
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        if (query.lastUpdated() != null) {</span>
+<span class="fc" id="L134">            q.setParam(&quot;luFrom&quot;, dateTime(query.lastUpdated().from()));</span>
+<span class="fc" id="L135">            q.setParam(&quot;luTo&quot;, dateTime(query.lastUpdated().to()));</span>
+        }
+<span class="fc" id="L137">    }</span>
+
+    private static String vocabularyOrder(SortOrder sort) {
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">        String direction = sort.descending() ? &quot;DESC&quot; : &quot;ASC&quot;;</span>
+<span class="pc bpc" id="L141" title="3 of 4 branches missed.">        String key = switch (sort.field()) {</span>
+<span class="nc" id="L142">            case STATUS -&gt; &quot;?status&quot;;</span>
+<span class="nc" id="L143">            case CREATION_DATE -&gt; &quot;?creationDate&quot;;</span>
+<span class="nc" id="L144">            case LAST_UPDATED -&gt; &quot;?lastUpdateDate&quot;;</span>
+<span class="fc" id="L145">            default -&gt; &quot;?name&quot;;</span>
+        };
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        if (&quot;?name&quot;.equals(key)) {</span>
+<span class="fc" id="L148">            return direction + &quot;(?name)&quot;;</span>
+        }
+<span class="nc" id="L150">        return direction + &quot;(&quot; + key + &quot;) ASC(?name)&quot;;</span>
+    }
+
+    // ----- versions -----
+
+    @Override
+    public Optional&lt;VocabularyVersion&gt; findVersion(String name, long version) {
+<span class="fc" id="L157">        ParameterizedSparqlString q = pss(versionSelect() + &quot;FILTER(?name = ?wanted &amp;&amp; ?version = ?wantedVersion)\n}&quot;);</span>
+<span class="fc" id="L158">        q.setLiteral(&quot;wanted&quot;, name);</span>
+<span class="fc" id="L159">        q.setParam(&quot;wantedVersion&quot;, integer(version));</span>
+<span class="fc" id="L160">        return client.select(q.toString()).stream().findFirst().map(SparqlVocabularyStore::toVersion);</span>
+    }
+
+    @Override
+    public Page&lt;VocabularyVersion&gt; listVersions(String name, SortOrder sort, long offset, int limit) {
+<span class="fc" id="L165">        ParameterizedSparqlString count = pss(&quot;SELECT (COUNT(?ver) AS ?total) WHERE {\n&quot;</span>
+                + &quot;?v a vm:Vocabulary ; vm:name ?wanted . ?ver vm:vocabulary ?v .\n}&quot;);
+<span class="fc" id="L167">        count.setLiteral(&quot;wanted&quot;, name);</span>
+<span class="fc" id="L168">        long total = client.select(count.toString()).stream()</span>
+<span class="fc" id="L169">                .findFirst()</span>
+<span class="fc" id="L170">                .map(s -&gt; s.getLiteral(&quot;total&quot;).getLong())</span>
+<span class="fc" id="L171">                .orElse(0L);</span>
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">        if (offset &gt;= total) {</span>
+<span class="nc" id="L173">            return new Page&lt;&gt;(List.of(), total);</span>
+        }
+<span class="fc" id="L175">        ParameterizedSparqlString page = pss(versionSelect()</span>
+                + &quot;FILTER(?name = ?wanted)\n}\nORDER BY &quot;
+<span class="fc" id="L177">                + versionOrder(sort)</span>
+                + &quot;\nLIMIT &quot;
+                + limit
+                + &quot; OFFSET &quot;
+                + offset);
+<span class="fc" id="L182">        page.setLiteral(&quot;wanted&quot;, name);</span>
+<span class="fc" id="L183">        List&lt;VocabularyVersion&gt; items = client.select(page.toString()).stream()</span>
+<span class="fc" id="L184">                .map(SparqlVocabularyStore::toVersion)</span>
+<span class="fc" id="L185">                .toList();</span>
+<span class="fc" id="L186">        return new Page&lt;&gt;(items, total);</span>
+    }
+
+    private static String versionSelect() {
+<span class="fc" id="L190">        return &quot;SELECT ?name ?version ?status ?description ?changelog ?createdBy ?creationDate ?lastUpdateDate&quot;</span>
+                + &quot; ?sha WHERE {\n&quot;
+                + &quot;?v a vm:Vocabulary ; vm:name ?name .\n&quot;
+                + &quot;?ver vm:vocabulary ?v ; vm:version ?version ; vm:status ?status ; vm:description ?description ;&quot;
+                + &quot; vm:changelog ?changelog ; vm:createdBy ?createdBy ; vm:creationDate ?creationDate ;&quot;
+                + &quot; vm:lastUpdateDate ?lastUpdateDate ; vm:contentSha256 ?sha .\n&quot;;
+    }
+
+    private static String versionOrder(SortOrder sort) {
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">        String direction = sort.descending() ? &quot;DESC&quot; : &quot;ASC&quot;;</span>
+<span class="pc bpc" id="L200" title="3 of 4 branches missed.">        return switch (sort.field()) {</span>
+<span class="nc" id="L201">            case STATUS -&gt; direction + &quot;(?status) DESC(?version)&quot;;</span>
+<span class="nc" id="L202">            case CREATION_DATE -&gt; direction + &quot;(?creationDate) DESC(?version)&quot;;</span>
+<span class="nc" id="L203">            case NAME -&gt; direction + &quot;(?name) DESC(?version)&quot;;</span>
+<span class="fc" id="L204">            default -&gt; direction + &quot;(?version)&quot;;</span>
+        };
+    }
+
+    @Override
+    public Optional&lt;Integer&gt; latestActiveVersion(String name) {
+<span class="nc" id="L210">        ParameterizedSparqlString q = pss(&quot;SELECT (MAX(?version) AS ?latest) WHERE {\n&quot;</span>
+                + &quot;?v a vm:Vocabulary ; vm:name ?wanted . ?ver vm:vocabulary ?v ; vm:version ?version ;&quot;
+                + &quot; vm:status \&quot;ACTIVE\&quot; .\n}&quot;);
+<span class="nc" id="L213">        q.setLiteral(&quot;wanted&quot;, name);</span>
+<span class="nc" id="L214">        return client.select(q.toString()).stream()</span>
+<span class="nc" id="L215">                .findFirst()</span>
+<span class="nc" id="L216">                .map(s -&gt; s.getLiteral(&quot;latest&quot;))</span>
+<span class="nc" id="L217">                .map(Literal::getInt);</span>
+    }
+
+    @Override
+    public Optional&lt;byte[]&gt; versionContent(String name, long version) {
+<span class="fc" id="L222">        ParameterizedSparqlString q = pss(&quot;SELECT ?content WHERE {\n&quot;</span>
+                + &quot;?v a vm:Vocabulary ; vm:name ?wanted . ?ver vm:vocabulary ?v ; vm:version ?wantedVersion ;&quot;
+                + &quot; vm:content ?content .\n}&quot;);
+<span class="fc" id="L225">        q.setLiteral(&quot;wanted&quot;, name);</span>
+<span class="fc" id="L226">        q.setParam(&quot;wantedVersion&quot;, integer(version));</span>
+<span class="fc" id="L227">        return client.select(q.toString()).stream()</span>
+<span class="fc" id="L228">                .findFirst()</span>
+<span class="fc" id="L229">                .map(s -&gt; Base64.getDecoder().decode(s.getLiteral(&quot;content&quot;).getLexicalForm()));</span>
+    }
+
+    @Override
+    public void createVocabulary(Vocabulary vocabulary, VocabularyVersion firstVersion, byte[] content) {
+<span class="fc" id="L234">        ParameterizedSparqlString u = pss(&quot;INSERT DATA {\n&quot;</span>
+                + &quot;?v a vm:Vocabulary ; vm:name ?name ; vm:nameKey ?key ; vm:status ?status ;&quot;
+                + &quot; vm:createdBy ?createdBy ; vm:creationDate ?creationDate ; vm:lastUpdateDate ?lastUpdateDate ;&quot;
+                + &quot; vm:latestVersion ?latestVersion .\n&quot;
+<span class="fc" id="L238">                + versionTriples()</span>
+                + &quot;}&quot;);
+<span class="fc" id="L240">        u.setIri(&quot;v&quot;, vocabularyIri(vocabulary.name()));</span>
+<span class="fc" id="L241">        u.setLiteral(&quot;name&quot;, vocabulary.name());</span>
+<span class="fc" id="L242">        u.setLiteral(&quot;key&quot;, vocabulary.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L243">        u.setLiteral(&quot;status&quot;, vocabulary.status().name());</span>
+<span class="fc" id="L244">        u.setLiteral(&quot;createdBy&quot;, vocabulary.createdBy());</span>
+<span class="fc" id="L245">        u.setParam(&quot;creationDate&quot;, dateTime(vocabulary.creationDate()));</span>
+<span class="fc" id="L246">        u.setParam(&quot;lastUpdateDate&quot;, dateTime(vocabulary.lastUpdateDate()));</span>
+<span class="fc" id="L247">        u.setParam(&quot;latestVersion&quot;, integer(vocabulary.latestVersion()));</span>
+<span class="fc" id="L248">        bindVersion(u, firstVersion, content);</span>
+<span class="fc" id="L249">        client.update(u.toString());</span>
+<span class="fc" id="L250">    }</span>
+
+    @Override
+    public void createVersion(VocabularyVersion version, byte[] content) {
+<span class="fc" id="L254">        ParameterizedSparqlString u = pss(&quot;DELETE { ?old vm:status \&quot;ACTIVE\&quot; ; vm:lastUpdateDate ?oldUpdate }\n&quot;</span>
+                + &quot;INSERT { ?old vm:status \&quot;DEPRECATED\&quot; ; vm:lastUpdateDate ?now }\n&quot;
+                + &quot;WHERE { ?old vm:vocabulary ?v ; vm:status \&quot;ACTIVE\&quot; ; vm:lastUpdateDate ?oldUpdate } ;\n&quot;
+                + &quot;DELETE { ?v vm:latestVersion ?oldLatest ; vm:lastUpdateDate ?oldVocabularyUpdate }\n&quot;
+                + &quot;INSERT { ?v vm:latestVersion ?versionNumber ; vm:lastUpdateDate ?now }\n&quot;
+                + &quot;WHERE { ?v vm:latestVersion ?oldLatest ; vm:lastUpdateDate ?oldVocabularyUpdate } ;\n&quot;
+                + &quot;INSERT DATA {\n&quot;
+<span class="fc" id="L261">                + versionTriples()</span>
+                + &quot;}&quot;);
+<span class="fc" id="L263">        u.setIri(&quot;v&quot;, vocabularyIri(version.name()));</span>
+<span class="fc" id="L264">        u.setParam(&quot;now&quot;, dateTime(version.creationDate()));</span>
+<span class="fc" id="L265">        bindVersion(u, version, content);</span>
+<span class="fc" id="L266">        client.update(u.toString());</span>
+<span class="fc" id="L267">    }</span>
+
+    private static String versionTriples() {
+<span class="fc" id="L270">        return &quot;?ver a vm:VocabularyVersion ; vm:vocabulary ?v ; vm:version ?versionNumber ;&quot;</span>
+                + &quot; vm:status ?versionStatus ; vm:description ?description ; vm:changelog ?changelog ;&quot;
+                + &quot; vm:createdBy ?versionCreatedBy ; vm:creationDate ?versionCreationDate ;&quot;
+                + &quot; vm:lastUpdateDate ?versionUpdate ; vm:contentSha256 ?sha ; vm:content ?content .\n&quot;;
+    }
+
+    private static void bindVersion(ParameterizedSparqlString u, VocabularyVersion version, byte[] content) {
+<span class="fc" id="L277">        u.setIri(&quot;ver&quot;, versionIri(version.name(), version.version()));</span>
+<span class="fc" id="L278">        u.setParam(&quot;versionNumber&quot;, integer(version.version()));</span>
+<span class="fc" id="L279">        u.setLiteral(&quot;versionStatus&quot;, version.status().name());</span>
+<span class="fc" id="L280">        u.setLiteral(&quot;description&quot;, version.description());</span>
+<span class="fc" id="L281">        u.setLiteral(&quot;changelog&quot;, version.changelog());</span>
+<span class="fc" id="L282">        u.setLiteral(&quot;versionCreatedBy&quot;, version.createdBy());</span>
+<span class="fc" id="L283">        u.setParam(&quot;versionCreationDate&quot;, dateTime(version.creationDate()));</span>
+<span class="fc" id="L284">        u.setParam(&quot;versionUpdate&quot;, dateTime(version.lastUpdateDate()));</span>
+<span class="fc" id="L285">        u.setLiteral(&quot;sha&quot;, version.contentSha256());</span>
+<span class="fc" id="L286">        u.setLiteral(&quot;content&quot;, Base64.getEncoder().encodeToString(content));</span>
+<span class="fc" id="L287">    }</span>
+
+    @Override
+    public void updateVocabularyStatus(String name, VocabularyStatus status, Instant now) {
+<span class="fc" id="L291">        ParameterizedSparqlString u = pss(&quot;DELETE { ?v vm:status ?old ; vm:lastUpdateDate ?oldUpdate }\n&quot;</span>
+                + &quot;INSERT { ?v vm:status ?status ; vm:lastUpdateDate ?now }\n&quot;
+                + &quot;WHERE { ?v vm:status ?old ; vm:lastUpdateDate ?oldUpdate }&quot;);
+<span class="fc" id="L294">        u.setIri(&quot;v&quot;, vocabularyIri(name));</span>
+<span class="fc" id="L295">        u.setLiteral(&quot;status&quot;, status.name());</span>
+<span class="fc" id="L296">        u.setParam(&quot;now&quot;, dateTime(now));</span>
+<span class="fc" id="L297">        client.update(u.toString());</span>
+<span class="fc" id="L298">    }</span>
+
+    @Override
+    public void updateVersionStatus(String name, int version, VocabularyStatus status, Instant now) {
+<span class="nc" id="L302">        ParameterizedSparqlString u = pss(&quot;DELETE { ?ver vm:status ?old ; vm:lastUpdateDate ?oldUpdate }\n&quot;</span>
+                + &quot;INSERT { ?ver vm:status ?status ; vm:lastUpdateDate ?now }\n&quot;
+                + &quot;WHERE { ?ver vm:status ?old ; vm:lastUpdateDate ?oldUpdate } ;\n&quot;
+                + &quot;DELETE { ?v vm:lastUpdateDate ?oldVocabularyUpdate } INSERT { ?v vm:lastUpdateDate ?now }\n&quot;
+                + &quot;WHERE { ?v vm:lastUpdateDate ?oldVocabularyUpdate }&quot;);
+<span class="nc" id="L307">        u.setIri(&quot;v&quot;, vocabularyIri(name));</span>
+<span class="nc" id="L308">        u.setIri(&quot;ver&quot;, versionIri(name, version));</span>
+<span class="nc" id="L309">        u.setLiteral(&quot;status&quot;, status.name());</span>
+<span class="nc" id="L310">        u.setParam(&quot;now&quot;, dateTime(now));</span>
+<span class="nc" id="L311">        client.update(u.toString());</span>
+<span class="nc" id="L312">    }</span>
+
+    // ----- external vocabularies -----
+
+    @Override
+    public Optional&lt;ExternalVocabulary&gt; findExternal(String name) {
+<span class="fc" id="L318">        ParameterizedSparqlString q = pss(externalSelect() + &quot;FILTER(?name = ?wanted)\n}&quot;);</span>
+<span class="fc" id="L319">        q.setLiteral(&quot;wanted&quot;, name);</span>
+<span class="fc" id="L320">        return client.select(q.toString()).stream().findFirst().map(SparqlVocabularyStore::toExternal);</span>
+    }
+
+    @Override
+    public boolean externalNameTaken(String name) {
+<span class="fc" id="L325">        ParameterizedSparqlString q = pss(&quot;SELECT ?e WHERE { ?e a vm:ExternalVocabulary ; vm:nameKey ?key } LIMIT 1&quot;);</span>
+<span class="fc" id="L326">        q.setLiteral(&quot;key&quot;, name.toLowerCase(Locale.ROOT));</span>
+<span class="fc bfc" id="L327" title="All 2 branches covered.">        return !client.select(q.toString()).isEmpty();</span>
+    }
+
+    @Override
+    public Optional&lt;ExternalVocabulary&gt; findExternalByUri(String normalisedUri) {
+<span class="fc" id="L332">        return findExternalsByUris(List.of(normalisedUri)).stream().findFirst();</span>
+    }
+
+    @Override
+    public List&lt;ExternalVocabulary&gt; findExternalsByUris(List&lt;String&gt; normalisedUris) {
+<span class="pc bpc" id="L337" title="1 of 2 branches missed.">        if (normalisedUris.isEmpty()) {</span>
+<span class="nc" id="L338">            return List.of();</span>
+        }
+<span class="fc" id="L340">        String values = normalisedUris.stream()</span>
+<span class="fc" id="L341">                .map(uri -&gt; FmtUtils.stringForNode(NodeFactory.createLiteralString(uri)))</span>
+<span class="fc" id="L342">                .collect(Collectors.joining(&quot; &quot;));</span>
+<span class="fc" id="L343">        ParameterizedSparqlString q = pss(externalSelect()</span>
+                + &quot;{ SELECT DISTINCT ?e WHERE { VALUES ?key { &quot;
+                + values
+                + &quot; } ?e vm:uriKey ?key } }\n}&quot;);
+<span class="fc" id="L347">        return client.select(q.toString()).stream()</span>
+<span class="fc" id="L348">                .map(SparqlVocabularyStore::toExternal)</span>
+<span class="fc" id="L349">                .toList();</span>
+    }
+
+    @Override
+    public Page&lt;ExternalVocabulary&gt; listExternals(long offset, int limit) {
+<span class="fc" id="L354">        ParameterizedSparqlString count = pss(&quot;SELECT (COUNT(?e) AS ?total) WHERE { ?e a vm:ExternalVocabulary }&quot;);</span>
+<span class="fc" id="L355">        long total = client.select(count.toString()).stream()</span>
+<span class="fc" id="L356">                .findFirst()</span>
+<span class="fc" id="L357">                .map(s -&gt; s.getLiteral(&quot;total&quot;).getLong())</span>
+<span class="fc" id="L358">                .orElse(0L);</span>
+<span class="pc bpc" id="L359" title="1 of 2 branches missed.">        if (offset &gt;= total) {</span>
+<span class="nc" id="L360">            return new Page&lt;&gt;(List.of(), total);</span>
+        }
+        ParameterizedSparqlString page =
+<span class="fc" id="L363">                pss(externalSelect() + &quot;}\nORDER BY ASC(?name)\nLIMIT &quot; + limit + &quot; OFFSET &quot; + offset);</span>
+<span class="fc" id="L364">        List&lt;ExternalVocabulary&gt; items = client.select(page.toString()).stream()</span>
+<span class="fc" id="L365">                .map(SparqlVocabularyStore::toExternal)</span>
+<span class="fc" id="L366">                .toList();</span>
+<span class="fc" id="L367">        return new Page&lt;&gt;(items, total);</span>
+    }
+
+    private static String externalSelect() {
+<span class="fc" id="L371">        return &quot;SELECT ?name ?namespaceUri ?aliases ?sourceUri ?description ?createdBy ?creationDate WHERE {\n&quot;</span>
+                + &quot;?e a vm:ExternalVocabulary ; vm:name ?name ; vm:namespaceUri ?namespaceUri ;&quot;
+                + &quot; vm:createdBy ?createdBy ; vm:creationDate ?creationDate .\n&quot;
+                + &quot;OPTIONAL { ?e vm:aliasList ?aliases }\n&quot;
+                + &quot;OPTIONAL { ?e vm:sourceUri ?sourceUri }\n&quot;
+                + &quot;OPTIONAL { ?e vm:description ?description }\n&quot;;
+    }
+
+    @Override
+    public void createExternal(ExternalVocabulary external, byte[] content) {
+<span class="fc" id="L381">        StringBuilder triples = new StringBuilder(&quot;?e a vm:ExternalVocabulary ; vm:name ?name ; vm:nameKey ?key ;&quot;</span>
+                + &quot; vm:namespaceUri ?namespaceUri ; vm:createdBy ?createdBy ; vm:creationDate ?creationDate ;&quot;
+                + &quot; vm:content ?content .\n&quot;);
+<span class="fc" id="L384">        List&lt;String&gt; keys = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L385">        keys.add(ExternalVocabulary.normalise(external.namespaceUri()));</span>
+<span class="fc" id="L386">        external.aliasUris().forEach(alias -&gt; keys.add(ExternalVocabulary.normalise(alias)));</span>
+<span class="fc bfc" id="L387" title="All 2 branches covered.">        for (int i = 0; i &lt; keys.size(); i++) {</span>
+<span class="fc" id="L388">            triples.append(&quot;?e vm:uriKey ?uriKey&quot;).append(i).append(&quot; .\n&quot;);</span>
+        }
+<span class="pc bpc" id="L390" title="1 of 2 branches missed.">        if (!external.aliasUris().isEmpty()) {</span>
+<span class="fc" id="L391">            triples.append(&quot;?e vm:aliasList ?aliases .\n&quot;);</span>
+        }
+<span class="pc bpc" id="L393" title="1 of 2 branches missed.">        if (external.sourceUri() != null) {</span>
+<span class="nc" id="L394">            triples.append(&quot;?e vm:sourceUri ?sourceUri .\n&quot;);</span>
+        }
+<span class="pc bpc" id="L396" title="1 of 2 branches missed.">        if (external.description() != null) {</span>
+<span class="nc" id="L397">            triples.append(&quot;?e vm:description ?description .\n&quot;);</span>
+        }
+<span class="fc" id="L399">        ParameterizedSparqlString u = pss(&quot;INSERT DATA {\n&quot; + triples + &quot;}&quot;);</span>
+<span class="fc" id="L400">        u.setIri(&quot;e&quot;, externalIri(external.name()));</span>
+<span class="fc" id="L401">        u.setLiteral(&quot;name&quot;, external.name());</span>
+<span class="fc" id="L402">        u.setLiteral(&quot;key&quot;, external.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L403">        u.setLiteral(&quot;namespaceUri&quot;, external.namespaceUri());</span>
+<span class="fc" id="L404">        u.setLiteral(&quot;createdBy&quot;, external.createdBy());</span>
+<span class="fc" id="L405">        u.setParam(&quot;creationDate&quot;, dateTime(external.creationDate()));</span>
+<span class="fc" id="L406">        u.setLiteral(&quot;content&quot;, Base64.getEncoder().encodeToString(content));</span>
+<span class="fc bfc" id="L407" title="All 2 branches covered.">        for (int i = 0; i &lt; keys.size(); i++) {</span>
+<span class="fc" id="L408">            u.setLiteral(&quot;uriKey&quot; + i, keys.get(i));</span>
+        }
+<span class="pc bpc" id="L410" title="1 of 2 branches missed.">        if (!external.aliasUris().isEmpty()) {</span>
+<span class="fc" id="L411">            u.setLiteral(&quot;aliases&quot;, String.join(&quot;\n&quot;, external.aliasUris()));</span>
+        }
+<span class="pc bpc" id="L413" title="1 of 2 branches missed.">        if (external.sourceUri() != null) {</span>
+<span class="nc" id="L414">            u.setLiteral(&quot;sourceUri&quot;, external.sourceUri());</span>
+        }
+<span class="pc bpc" id="L416" title="1 of 2 branches missed.">        if (external.description() != null) {</span>
+<span class="nc" id="L417">            u.setLiteral(&quot;description&quot;, external.description());</span>
+        }
+<span class="fc" id="L419">        client.update(u.toString());</span>
+<span class="fc" id="L420">    }</span>
+
+    @Override
+    public void deleteExternal(String name) {
+<span class="fc" id="L424">        ParameterizedSparqlString u = pss(&quot;DELETE WHERE { ?e ?p ?o }&quot;);</span>
+<span class="fc" id="L425">        u.setIri(&quot;e&quot;, externalIri(name));</span>
+<span class="fc" id="L426">        client.update(u.toString());</span>
+<span class="fc" id="L427">    }</span>
+
+    @Override
+    public Optional&lt;byte[]&gt; externalContent(String name) {
+<span class="fc" id="L431">        ParameterizedSparqlString q =</span>
+<span class="fc" id="L432">                pss(&quot;SELECT ?content WHERE { ?e a vm:ExternalVocabulary ; vm:name ?wanted ; vm:content ?content }&quot;);</span>
+<span class="fc" id="L433">        q.setLiteral(&quot;wanted&quot;, name);</span>
+<span class="fc" id="L434">        return client.select(q.toString()).stream()</span>
+<span class="fc" id="L435">                .findFirst()</span>
+<span class="fc" id="L436">                .map(s -&gt; Base64.getDecoder().decode(s.getLiteral(&quot;content&quot;).getLexicalForm()));</span>
+    }
+
+    @Override
+    public boolean isAvailable() {
+<span class="fc" id="L441">        return client.ping();</span>
+    }
+
+    // ----- mapping -----
+
+    private static ParameterizedSparqlString pss(String body) {
+<span class="fc" id="L447">        return new ParameterizedSparqlString(PREFIXES + body);</span>
+    }
+
+    private static String vocabularyIri(String name) {
+<span class="fc" id="L451">        return &quot;urn:simpl:vocabulary-manager:vocabulary:&quot; + checkedName(name);</span>
+    }
+
+    private static String versionIri(String name, int version) {
+<span class="fc" id="L455">        return vocabularyIri(name) + &quot;:version:&quot; + version;</span>
+    }
+
+    private static String externalIri(String name) {
+<span class="fc" id="L459">        return &quot;urn:simpl:vocabulary-manager:external:&quot; + checkedName(name);</span>
+    }
+
+    private static String checkedName(String name) {
+<span class="pc bpc" id="L463" title="1 of 2 branches missed.">        if (!NAME.matcher(name).matches()) {</span>
+<span class="nc" id="L464">            throw new IllegalArgumentException(&quot;Name breaks the name pattern&quot;);</span>
+        }
+<span class="fc" id="L466">        return name;</span>
+    }
+
+    private static Node dateTime(Instant instant) {
+<span class="fc" id="L470">        return NodeFactory.createLiteralDT(instant.toString(), XSDDatatype.XSDdateTime);</span>
+    }
+
+    private static Node integer(long value) {
+<span class="fc" id="L474">        return NodeFactory.createLiteralDT(Long.toString(value), XSDDatatype.XSDinteger);</span>
+    }
+
+    private static Vocabulary toVocabulary(QuerySolution s) {
+<span class="fc" id="L478">        return new Vocabulary(</span>
+<span class="fc" id="L479">                text(s, &quot;name&quot;),</span>
+<span class="fc" id="L480">                VocabularyStatus.valueOf(text(s, &quot;status&quot;)),</span>
+<span class="fc" id="L481">                text(s, &quot;createdBy&quot;),</span>
+<span class="fc" id="L482">                Instant.parse(text(s, &quot;creationDate&quot;)),</span>
+<span class="fc" id="L483">                Instant.parse(text(s, &quot;lastUpdateDate&quot;)),</span>
+<span class="fc" id="L484">                s.getLiteral(&quot;latestVersion&quot;).getInt(),</span>
+<span class="fc" id="L485">                text(s, &quot;description&quot;));</span>
+    }
+
+    private static VocabularyVersion toVersion(QuerySolution s) {
+<span class="fc" id="L489">        return new VocabularyVersion(</span>
+<span class="fc" id="L490">                text(s, &quot;name&quot;),</span>
+<span class="fc" id="L491">                s.getLiteral(&quot;version&quot;).getInt(),</span>
+<span class="fc" id="L492">                VocabularyStatus.valueOf(text(s, &quot;status&quot;)),</span>
+<span class="fc" id="L493">                text(s, &quot;description&quot;),</span>
+<span class="fc" id="L494">                text(s, &quot;changelog&quot;),</span>
+<span class="fc" id="L495">                text(s, &quot;createdBy&quot;),</span>
+<span class="fc" id="L496">                Instant.parse(text(s, &quot;creationDate&quot;)),</span>
+<span class="fc" id="L497">                Instant.parse(text(s, &quot;lastUpdateDate&quot;)),</span>
+<span class="fc" id="L498">                text(s, &quot;sha&quot;));</span>
+    }
+
+    private static ExternalVocabulary toExternal(QuerySolution s) {
+<span class="fc" id="L502">        String aliases = optionalText(s, &quot;aliases&quot;);</span>
+<span class="pc bpc" id="L503" title="1 of 2 branches missed.">        List&lt;String&gt; aliasList = aliases == null ? List.of() : Arrays.asList(aliases.split(&quot;\n&quot;));</span>
+<span class="fc" id="L504">        return new ExternalVocabulary(</span>
+<span class="fc" id="L505">                text(s, &quot;name&quot;),</span>
+<span class="fc" id="L506">                text(s, &quot;namespaceUri&quot;),</span>
+<span class="fc" id="L507">                List.copyOf(aliasList),</span>
+<span class="fc" id="L508">                optionalText(s, &quot;sourceUri&quot;),</span>
+<span class="fc" id="L509">                optionalText(s, &quot;description&quot;),</span>
+<span class="fc" id="L510">                text(s, &quot;createdBy&quot;),</span>
+<span class="fc" id="L511">                Instant.parse(text(s, &quot;creationDate&quot;)));</span>
+    }
+
+    private static String text(QuerySolution s, String variable) {
+<span class="fc" id="L515">        RDFNode node = s.get(variable);</span>
+<span class="pc bpc" id="L516" title="2 of 4 branches missed.">        if (node == null || !node.isLiteral()) {</span>
+<span class="nc" id="L517">            throw new StoreFailureException(&quot;Stored record lacks &quot; + variable);</span>
+        }
+<span class="fc" id="L519">        return node.asLiteral().getLexicalForm();</span>
+    }
+
+    private static String optionalText(QuerySolution s, String variable) {
+<span class="fc" id="L523">        RDFNode node = s.get(variable);</span>
+<span class="fc bfc" id="L524" title="All 2 branches covered.">        return node == null ? null : node.asLiteral().getLexicalForm();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,536 @@
+Schemathesis v4.33.4
+━━━━━━━━━━━━━━━━━━━━
+
+ ✅  Loaded specification from input/specs/api/vocabulary_openapi-tier1.yaml
+ (in 0.10s)
+
+     Base URL:         http://localhost:8196/v1
+     Specification:    Open API 3.0.1
+     Operations:       19 selected / 19 total
+
+ ✅  API capabilities:
+
+     Supports NULL byte in headers:                            ✘
+     Accepts backslash and control characters in URL paths:    ✓
+
+ ❌  Examples (in 0.18s)
+
+     ✅  9 passed  ❌  2 failed  ⏭   8 skipped
+
+ ❌  Coverage (in 0.71s)
+
+     ✅  3 passed  ❌ 16 failed
+
+ ❌  Fuzzing (in 119.05s)
+
+     ✅  9 passed  ❌ 10 failed
+
+=================================== FAILURES ===================================
+__________________________ GET /external-vocabularies __________________________
+1. Test Case ID: Q6L3MS
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:c15b5881-0a23-4a15-811d-55c89f99ac54","issues":[{"type":"urn:problem-type:belgif:input-validation:schemaViolation","href":"https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html","title":"Input isn't valid with respect to schema","detail":"Query parameter 'pag // Output truncated...`
+
+Reproduce with:
+
+    curl -X GET -H 'Authorization: [Filtered]' 'http://localhost:8196/v1/external-vocabularies?page=1&pageSize=9223372036854775808'
+
+    st replay Q6L3MS
+
+______________________________ GET /vocabularies _______________________________
+1. Test Case ID: le48Zj
+
+- ST201 Schema-violating request accepted
+
+    Invalid data should have been rejected
+    Expected: 400, 401, 403, 404, 405, 406, 409, 415, 422, 428, 429, 5xx
+    Invalid component: parameter `name` in query - name: Value not matching the '^[A-Z][a-zA-Z0-9]*$' pattern
+
+[200] OK:
+
+    `{"page":1,"totalPages":0,"total":0,"pageSize":20,"self":"/vocabularies?page=1&pageSize=20&name=000","first":"/vocabularies?page=1&pageSize=20&name=000","items":[]}`
+
+Reproduce with:
+
+    curl -X GET -H 'Authorization: [Filtered]' 'http://localhost:8196/v1/vocabularies?name=000'
+
+    st replay le48Zj
+
+2. Test Case ID: cIJe3l
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:9bf80658-5023-4971-923c-5b212ea145ee","issues":[{"type":"urn:problem-type:belgif:input-validation:schemaViolation","href":"https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html","title":"Input isn't valid with respect to schema","detail":"Query parameter 'cre // Output truncated...`
+
+Reproduce with:
+
+    curl -X GET -H 'Authorization: [Filtered]' 'http://localhost:8196/v1/vocabularies?creationDate=0000-00-00'
+
+    st replay cIJe3l
+
+_________________ GET /vocabularies/{vocabularyName}/versions __________________
+1. Test Case ID: nmWrP1
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:d8a8af05-42fe-4b98-ac81-eaba9525bc78","issues":[{"type":"urn:problem-type:belgif:input-validation:schemaViolation","href":"https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html","title":"Input isn't valid with respect to schema","detail":"Query parameter 'pag // Output truncated...`
+
+Reproduce with:
+
+    curl -X GET -H 'Authorization: [Filtered]' 'http://localhost:8196/v1/vocabularies/A00/versions?sort=name&page=1&pageSize=9223372036854775808'
+
+    st replay nmWrP1
+
+_____________________ PATCH /vocabularies/{vocabularyName} _____________________
+1. Test Case ID: d8ugyp
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+    Hint: The request body contains 5 additional properties not defined in the schema (``, `7ã[𞓴·øF񄟩Q`, `bCÇâ` and 2 more). The server appears to reject properties the schema allows. Declare `additionalProperties: false` if extras are not accepted, or make the server ignore unknown fields.
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:190c8f34-520c-4ffd-a33e-b3b3cae0bd5f","issues":[{"type":"urn:problem-type:belgif:input-validation:unknownInput","href":"https://www.belgif.be/specification/rest/api-guide/issues/unknownInput.html","title":"Unknown input","detail":"Input '' is not defined for this operation.","in":"bo // Output truncated...`
+
+Reproduce with:
+
+    curl -X PATCH -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"": {"\u00ba\uda15\udd76\udb1e\udc0d\u00a0": {}, "\u009f": false, "\udb1d\uddb7p\u00a3\u0088\u0083\u0097\u00b9\udac6\udffc\u00fc\u001f": true}, "7\u00e3[\ud839\udcf4\u001b\u00b7\u0093\u00f8F\ud8d1\udfe9Q": [{"5\u0081\u00e4": 0.99999}, [], {"": true, "__main__": true, "\u00ed\ud9e0\udded\u008b?": null}], "bC\u00c7\u00e2": "\u00e8", "\u0096\u00d7\u00b1": [true, false], "\u00d9\u009d\u0080\u00c2\u009b": [], "status": "DEPRECATED"}' http://localhost:8196/v1/vocabularies/HealthcareVocabulary
+
+    st replay d8ugyp
+
+___________ PATCH /vocabularies/{vocabularyName}/versions/{version} ____________
+1. Test Case ID: Ofm7pI
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+    Hint: The request body contains 5 additional properties not defined in the schema (` 򳌬`, `񭔊{oà򄲧`, `¬Ô񳠂]󊣩󒳖` and 2 more). The server appears to reject properties the schema allows. Declare `additionalProperties: false` if extras are not accepted, or make the server ignore unknown fields.
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:b216cbb3-859b-47aa-a2e4-df7d1ef8657c","issues":[{"type":"urn:problem-type:belgif:input-validation:unknownInput","href":"https://www.belgif.be/specification/rest/api-guide/issues/unknownInput.html","title":"Unknown input","detail":"Input ' 򳌬' is not defined for this operation.","in":" // Output truncated...`
+
+Reproduce with:
+
+    curl -X PATCH -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{" \uda8c\udf2c": [[], 35729, -4.4031578535189976e+16], "\u00ac\u00d4\ud98e\udc02]\udaea\udce9\udb0b\udcd6": 2862319431302969.0, "\u008b\ud975\udd0a{o\u00e0\ud9d3\udca7\u0017": "\u008f\u0082\u0015\ud861\udfdb\u008b\u00cfx\ud99f\udce4\ud832\udcc0\u00d4\ud9cf\udcb9\u00d0\udbd2\udd06\u00c8\u00ad\u00df\u0004j", "\u00bf\u00ef": [[], true], "\u00b8": 1.194889313563433e-118, "status": "ACTIVE"}' http://localhost:8196/v1/vocabularies/HealthcareVocabulary/versions/1
+
+    st replay Ofm7pI
+
+_________________________ POST /external-vocabularies __________________________
+1. Test Case ID: hPUoyi
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:4b501233-8dbf-4862-b5df-1e0eaac8adae","issues":[{"type":"urn:problem-type:belgif:input-validation:invalidInput","href":"https://www.belgif.be/specification/rest/api-guide/issues/invalidInput.html","title":"Invalid input","detail":"Encountered invalid Turtle syntax: Out of place: [KEY // Output truncated...`
+
+Reproduce with:
+
+    curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=5b79479dd64073c33ae857702ce26d66' -d $'--5b79479dd64073c33ae857702ce26d66\r\nContent-Disposition: form-data; name="name"\r\n\r\nDublinCoreTerms\r\n--5b79479dd64073c33ae857702ce26d66\r\nContent-Disposition: form-data; name="namespaceUri"\r\n\r\nhttp://purl.org/dc/terms/\r\n--5b79479dd64073c33ae857702ce26d66\r\nContent-Disposition: form-data; name="aliasUris"\r\n\r\nhttps://purl.org/dc/terms/\r\n--5b79479dd64073c33ae857702ce26d66\r\nContent-Disposition: form-data; name="description"\r\n\r\nCached copy of DCMI Metadata Terms for validation.\r\n--5b79479dd64073c33ae857702ce26d66\r\nContent-Disposition: form-data; name="sourceUri"\r\n\r\nhttps://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl\r\n--5b79479dd64073c33ae857702ce26d66\r\nContent-Disposition: form-data; name="vocabularyFile"; filename="vocabularyFile.png"\r\n\r\n�PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x00\x00\x00\x00:~�U\x00\x00\x00\nIDATx�c`\x00\x00\x00\x02\x00\x01H��q\x00\x00\x00\x00IEND�B`�\r\n--5b79479dd64073c33ae857702ce26d66--\r\n' http://localhost:8196/v1/external-vocabularies
+
+    st replay hPUoyi
+
+_____________________ POST /external-vocabularies/content ______________________
+1. Test Case ID: VJGDWA
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+    Hint: The request body contains 2 additional properties not defined in the schema (`¹񬨘¬I`, `ñ`). The server appears to reject properties the schema allows. Declare `additionalProperties: false` if extras are not accepted, or make the server ignore unknown fields.
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:85a341c4-6bd5-42ec-a047-555f461234c1","issues":[{"type":"urn:problem-type:belgif:input-validation:unknownInput","href":"https://www.belgif.be/specification/rest/api-guide/issues/unknownInput.html","title":"Unknown input","detail":"Input 'ñ' is not defined for this operation.","in":"b // Output truncated...`
+
+Reproduce with:
+
+    curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"\u00f1": {"\u00ec\u008a\u00eb": []}, "\u00b9\ud972\ude18\u0010\u00acI": [], "namespaceUri": "https://authority.example/vocabulary-manager/content/Smoke179505371927468"}' http://localhost:8196/v1/external-vocabularies/content
+
+    st replay VJGDWA
+
+______________________ POST /external-vocabulary/searches ______________________
+1. Test Case ID: xb9BB8
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:681eb2ff-8f7f-437b-bd13-25da9397b372","issues":[{"type":"urn:problem-type:belgif:input-validation:schemaViolation","href":"https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html","title":"Input isn't valid with respect to schema","detail":"Field 'aliasUris' mu // Output truncated...`
+
+Reproduce with:
+
+    curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"namespaceUris": ["https://a1i64wdd.ol.dev", "https://0.com", "https://0.com"], "aliasUris": []}' http://localhost:8196/v1/external-vocabulary/searches
+
+    st replay xb9BB8
+
+______________________________ POST /vocabularies ______________________________
+1. Test Case ID: e6GYf5
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:7412f09b-79e4-407c-ade7-68bb7e41f623","issues":[{"type":"urn:problem-type:belgif:input-validation:invalidInput","href":"https://www.belgif.be/specification/rest/api-guide/issues/invalidInput.html","title":"Invalid input","detail":"Encountered invalid Turtle syntax: Out of place: [KEY // Output truncated...`
+
+Reproduce with:
+
+    curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=f72dca40bf728cec1e749b5bf23df5fe' -d $'--f72dca40bf728cec1e749b5bf23df5fe\r\nContent-Disposition: form-data; name="name"\r\n\r\nHealthcareVocabulary\r\n--f72dca40bf728cec1e749b5bf23df5fe\r\nContent-Disposition: form-data; name="description"\r\n\r\nVocabulary defining healthcare resource types.\r\n--f72dca40bf728cec1e749b5bf23df5fe\r\nContent-Disposition: form-data; name="changelog"\r\n\r\nInitial version.\r\n--f72dca40bf728cec1e749b5bf23df5fe\r\nContent-Disposition: form-data; name="vocabularyFile"; filename="vocabularyFile.png"\r\n\r\n�PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x00\x00\x00\x00:~�U\x00\x00\x00\nIDATx�c`\x00\x00\x00\x02\x00\x01H��q\x00\x00\x00\x00IEND�B`�\r\n--f72dca40bf728cec1e749b5bf23df5fe--\r\n' http://localhost:8196/v1/vocabularies
+
+    st replay e6GYf5
+
+_________________ POST /vocabularies/{vocabularyName}/versions _________________
+1. Test Case ID: ykvoj3
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:c5f7e18c-6b8f-4a0e-a228-c6a52a0db304","issues":[{"type":"urn:problem-type:belgif:input-validation:schemaViolation","href":"https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html","title":"Input isn't valid with respect to schema","detail":"Field 'changelog' mu // Output truncated...`
+
+Reproduce with:
+
+    curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=fe3ff67ed9ade0655d5049942da75c85' -d $'--fe3ff67ed9ade0655d5049942da75c85\r\nContent-Disposition: form-data; name="changelog"\r\n\r\n\r\n--fe3ff67ed9ade0655d5049942da75c85\r\nContent-Disposition: form-data; name="description"\r\n\r\nDesc2\r\n--fe3ff67ed9ade0655d5049942da75c85\r\nContent-Disposition: form-data; name="vocabularyFile"; filename="vocabularyFile.png"\r\n\r\n�PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x00\x00\x00\x00:~�U\x00\x00\x00\nIDATx�c`\x00\x00\x00\x02\x00\x01H��q\x00\x00\x00\x00IEND�B`�\r\n--fe3ff67ed9ade0655d5049942da75c85--\r\n' http://localhost:8196/v1/vocabularies/A00/versions
+
+    st replay ykvoj3
+
+_______________________ QUERY /content/{vocabularyName} ________________________
+1. Test Case ID: gFHdYr
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:85a7f0c2-10d2-44cb-9088-e1fdd2006645"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' http://localhost:8196/v1/content/A00
+
+    st replay gFHdYr
+
+______________ QUERY /content/{vocabularyName}/versions/{version} ______________
+1. Test Case ID: ZC3Iu3
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:d453b3bf-d877-4f7d-86ea-a75f8ff4f89f"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' http://localhost:8196/v1/content/A00/versions/1
+
+    st replay ZC3Iu3
+
+_________________________ QUERY /external-vocabularies _________________________
+1. Test Case ID: 8ttCiH
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:f9592195-b85f-4e8b-aa34-324e5a2fc72b"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=9435bd3eba576eb29741fcafbe05026c' -d $'--9435bd3eba576eb29741fcafbe05026c\r\nContent-Disposition: form-data; name="vocabularyFile"; filename="vocabularyFile.png"\r\n\r\n�PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x00\x00\x00\x00:~�U\x00\x00\x00\nIDATx�c`\x00\x00\x00\x02\x00\x01H��q\x00\x00\x00\x00IEND�B`�\r\n--9435bd3eba576eb29741fcafbe05026c\r\nContent-Disposition: form-data; name="name"\r\n\r\nDublinCoreTerms\r\n--9435bd3eba576eb29741fcafbe05026c\r\nContent-Disposition: form-data; name="namespaceUri"\r\n\r\nhttp://purl.org/dc/terms/\r\n--9435bd3eba576eb29741fcafbe05026c\r\nContent-Disposition: form-data; name="aliasUris"\r\n\r\nhttps://purl.org/dc/terms/\r\n--9435bd3eba576eb29741fcafbe05026c\r\nContent-Disposition: form-data; name="description"\r\n\r\nCached copy of DCMI Metadata Terms for validation.\r\n--9435bd3eba576eb29741fcafbe05026c\r\nContent-Disposition: form-data; name="sourceUri"\r\n\r\nhttps://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl\r\n--9435bd3eba576eb29741fcafbe05026c--\r\n' http://localhost:8196/v1/external-vocabularies
+
+    st replay 8ttCiH
+
+_____________________ QUERY /external-vocabularies/content _____________________
+1. Test Case ID: BwkOZI
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:e0b426e3-7615-49ba-a2f9-c714355e346d"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"namespaceUri": "http://purl.org/dc/terms/"}' http://localhost:8196/v1/external-vocabularies/content
+
+    st replay BwkOZI
+
+_____________________ QUERY /external-vocabularies/{name} ______________________
+1. Test Case ID: ZlcvYp
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:3cd57df9-206e-406c-acb8-f56e0e7fcfa9"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' http://localhost:8196/v1/external-vocabularies/DublinCoreTerms
+
+    st replay ZlcvYp
+
+_________________ QUERY /external-vocabularies/{name}/content __________________
+1. Test Case ID: P2MHeQ
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:fdeb69ba-ba98-4919-8307-a078820cc9db"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' http://localhost:8196/v1/external-vocabularies/DublinCoreTerms/content
+
+    st replay P2MHeQ
+
+_____________________ QUERY /external-vocabulary/searches ______________________
+1. Test Case ID: hzGZMH
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:4294796a-72de-4798-93f2-b3f60a1d04f0"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"namespaceUri": "http://purl.org/dc/terms"}' http://localhost:8196/v1/external-vocabulary/searches
+
+    st replay hzGZMH
+
+________________________________ QUERY /health _________________________________
+1. Test Case ID: fGhs4W
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:7d242b40-a70e-4a1f-b944-ecd2fe10f684"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' http://localhost:8196/v1/health
+
+    st replay fGhs4W
+
+_____________________________ QUERY /vocabularies ______________________________
+1. Test Case ID: Jbho7Y
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:7e01c2a2-ef69-4948-a872-fa0b3a37d160"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=8fc03239cdcdeffc910693f190750f8a' -d $'--8fc03239cdcdeffc910693f190750f8a\r\nContent-Disposition: form-data; name="vocabularyFile"; filename="vocabularyFile.png"\r\n\r\n�PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x00\x00\x00\x00:~�U\x00\x00\x00\nIDATx�c`\x00\x00\x00\x02\x00\x01H��q\x00\x00\x00\x00IEND�B`�\r\n--8fc03239cdcdeffc910693f190750f8a\r\nContent-Disposition: form-data; name="name"\r\n\r\nHealthcareVocabulary\r\n--8fc03239cdcdeffc910693f190750f8a\r\nContent-Disposition: form-data; name="description"\r\n\r\nVocabulary defining healthcare resource types.\r\n--8fc03239cdcdeffc910693f190750f8a\r\nContent-Disposition: form-data; name="changelog"\r\n\r\nInitial version.\r\n--8fc03239cdcdeffc910693f190750f8a--\r\n' http://localhost:8196/v1/vocabularies
+
+    st replay Jbho7Y
+
+_________________________ QUERY /vocabularies/searches _________________________
+1. Test Case ID: yvTVFn
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:f86a8b2e-8b59-440a-9467-eb52f83022fd"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"items": [{"name": "HealthcareVocabulary"}, {"name": "LegacyVocabulary", "version": 1}]}' http://localhost:8196/v1/vocabularies/searches
+
+    st replay yvTVFn
+
+_____________________ QUERY /vocabularies/{vocabularyName} _____________________
+1. Test Case ID: X5OifT
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:acd89333-b4c5-4a1e-8db7-d8d0410a1a2a"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' http://localhost:8196/v1/vocabularies/HealthcareVocabulary
+
+    st replay X5OifT
+
+________________ QUERY /vocabularies/{vocabularyName}/versions _________________
+1. Test Case ID: dhyzxW
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:c5fcb685-c3aa-488e-a18b-ec3d796efaba"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=3a57f0ca33ab78b690f2f15d066eeb7b' -d $'--3a57f0ca33ab78b690f2f15d066eeb7b\r\nContent-Disposition: form-data; name="vocabularyFile"; filename="vocabularyFile.png"\r\n\r\n�PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x00\x00\x00\x00:~�U\x00\x00\x00\nIDATx�c`\x00\x00\x00\x02\x00\x01H��q\x00\x00\x00\x00IEND�B`�\r\n--3a57f0ca33ab78b690f2f15d066eeb7b\r\nContent-Disposition: form-data; name="description"\r\n\r\nVocabulary defining healthcare resource types with extended diagnostics.\r\n--3a57f0ca33ab78b690f2f15d066eeb7b\r\nContent-Disposition: form-data; name="changelog"\r\n\r\nAdded new concept scheme for diagnostics.\r\n--3a57f0ca33ab78b690f2f15d066eeb7b--\r\n' http://localhost:8196/v1/vocabularies/A00/versions
+
+    st replay dhyzxW
+
+___________ QUERY /vocabularies/{vocabularyName}/versions/{version} ____________
+1. Test Case ID: GCcdGs
+
+- ST204 Wrong response to undeclared method
+
+    Unsupported method QUERY returned 400, expected 405 Method Not Allowed
+
+    Return 405 for methods not listed in the OpenAPI spec
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:bde86c92-1558-4fbe-9b31-728b5e1abbdc"}`
+
+Reproduce with:
+
+    curl -X QUERY -H 'Authorization: [Filtered]' http://localhost:8196/v1/vocabularies/HealthcareVocabulary/versions/2
+
+    st replay GCcdGs
+
+=================================== WARNINGS ===================================
+
+Missing test data: 12 operations repeatedly returned 404 Not Found, preventing tests from reaching your API's core logic
+
+No links point to these operations (2 operations):
+  - GET /content/{vocabularyName}
+  - POST /external-vocabularies/content
+
+💡 Provide realistic parameter values in your config file so tests can access existing resources
+
+No links point to these operations - POST /external-vocabularies appears to supply the data they need (3 operations):
+  - DELETE /external-vocabularies/{name}
+  - GET /external-vocabularies/{name}
+  - GET /external-vocabularies/{name}/content
+
+💡 Add a link from POST /external-vocabularies, or supply the identifiers it returns in your config file
+
+No links point to these operations - POST /vocabularies appears to supply the data they need (4 operations):
+  - GET /vocabularies/{vocabularyName}
+  - GET /vocabularies/{vocabularyName}/versions/{version}
+  - PATCH /vocabularies/{vocabularyName}
+  - PATCH /vocabularies/{vocabularyName}/versions/{version}
+
+💡 Add a link from POST /vocabularies, or supply the identifiers it returns in your config file
+
+No links point to these operations - nothing in the schema appears to supply the data they need (3 operations):
+  - GET /content/{vocabularyName}/versions/{version}
+  - GET /vocabularies/{vocabularyName}/versions
+  - POST /vocabularies/{vocabularyName}/versions
+
+💡 Schemathesis found no operation that creates this data - create it outside the test run and supply the identifiers in your config file
+
+=================================== SUMMARY ====================================
+
+API Operations:
+  Selected: 19/19
+  Tested: 19
+
+Test Phases:
+  ❌ Examples
+  ❌ Coverage
+  ❌ Fuzzing
+  ⏭  Stateful (disabled)
+
+Failures:
+  ❌ ST202 Schema-valid request rejected: 10
+  ❌ ST201 Schema-violating request accepted: 1
+  ❌ ST204 Wrong response to undeclared method: 13
+
+For more information, run `st explain <code>` for ST201, ST202, ST204.
+
+Warnings:
+  ⚠️ Missing test data: 12 operations repeatedly returned 404 responses
+
+Test cases:
+  18387 generated, 24 found 24 unique failures
+
+Seed: 1
+
+====================== 24 failures, 1 warning in 120.01s =======================

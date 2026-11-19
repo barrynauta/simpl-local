@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProblemErrorReportValve.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">ProblemErrorReportValve.java</span></div><h1>ProblemErrorReportValve.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.apache.catalina.valves.ErrorReportValve;
+
+/**
+ * Tomcat error report valve that writes problem+json instead of an HTML page, for errors Tomcat answers before
+ * the request reaches Spring (Tomcat extension point, REUSE-09).
+ */
+<span class="fc" id="L15">public class ProblemErrorReportValve extends ErrorReportValve {</span>
+
+    @Override
+    protected void report(Request request, Response response, Throwable throwable) {
+<span class="nc" id="L19">        int status = response.getStatus();</span>
+<span class="nc bnc" id="L20" title="All 6 branches missed.">        if (status &lt; 400 || response.isCommitted() || response.getContentWritten() &gt; 0) {</span>
+<span class="nc" id="L21">            return;</span>
+        }
+<span class="nc bnc" id="L23" title="All 2 branches missed.">        boolean client = status &lt; 500;</span>
+<span class="nc bnc" id="L24" title="All 2 branches missed.">        String type = client ? &quot;urn:problem-type:belgif:badRequest&quot; : &quot;urn:problem-type:belgif:internalServerError&quot;;</span>
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        String title = client ? &quot;Bad Request&quot; : &quot;Internal Server Error&quot;;</span>
+<span class="nc bnc" id="L26" title="All 2 branches missed.">        String detail = client ? &quot;The input message is incorrect&quot; : &quot;Internal Server Error&quot;;</span>
+<span class="nc" id="L27">        String body = &quot;{\&quot;type\&quot;:\&quot;&quot; + type + &quot;\&quot;,\&quot;title\&quot;:\&quot;&quot; + title + &quot;\&quot;,\&quot;status\&quot;:&quot; + status + &quot;,\&quot;detail\&quot;:\&quot;&quot;</span>
+<span class="nc" id="L28">                + detail + &quot;\&quot;,\&quot;instance\&quot;:\&quot;urn:uuid:&quot; + UUID.randomUUID() + &quot;\&quot;}&quot;;</span>
+        try {
+<span class="nc" id="L30">            response.setContentType(&quot;application/problem+json&quot;);</span>
+<span class="nc" id="L31">            response.setCharacterEncoding(StandardCharsets.UTF_8.name());</span>
+<span class="nc" id="L32">            Writer writer = response.getReporter();</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">            if (writer != null) {</span>
+<span class="nc" id="L34">                writer.write(body);</span>
+<span class="nc" id="L35">                response.finishResponse();</span>
+            }
+<span class="nc" id="L37">        } catch (IOException | IllegalStateException e) {</span>
+<span class="nc" id="L38">            container.getLogger().warn(&quot;Could not write the error body&quot;, e);</span>
+<span class="nc" id="L39">        }</span>
+<span class="nc" id="L40">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

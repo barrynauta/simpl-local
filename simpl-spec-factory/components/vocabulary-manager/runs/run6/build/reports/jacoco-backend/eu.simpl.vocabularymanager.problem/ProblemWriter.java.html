@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProblemWriter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.problem</a> &gt; <span class="el_source">ProblemWriter.java</span></div><h1>ProblemWriter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.problem;
+
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
+
+/** Writes problem bodies as application/problem+json, from controllers and from servlet filters alike. */
+@Component
+public class ProblemWriter {
+
+    /** Media type of every error body (API-45). */
+<span class="fc" id="L17">    public static final MediaType PROBLEM_JSON = MediaType.APPLICATION_PROBLEM_JSON;</span>
+
+    private final ObjectMapper objectMapper;
+
+    /**
+     * Creates the writer.
+     *
+     * @param objectMapper the JSON mapper of the application
+     */
+<span class="fc" id="L26">    public ProblemWriter(ObjectMapper objectMapper) {</span>
+<span class="fc" id="L27">        this.objectMapper = objectMapper;</span>
+<span class="fc" id="L28">    }</span>
+
+    /**
+     * Builds the response entity of a problem. The content type is preset, so content negotiation does not
+     * reject a problem body when the client asked for another type.
+     *
+     * @param problem the problem
+     * @param headers extra headers
+     * @return the response entity
+     */
+    public ResponseEntity&lt;Problem&gt; entity(Problem problem, Map&lt;String, String&gt; headers) {
+<span class="fc" id="L39">        HttpHeaders httpHeaders = new HttpHeaders();</span>
+<span class="fc" id="L40">        headers.forEach(httpHeaders::set);</span>
+<span class="fc" id="L41">        httpHeaders.setContentType(PROBLEM_JSON);</span>
+<span class="fc" id="L42">        return ResponseEntity.status(problem.status()).headers(httpHeaders).body(problem);</span>
+    }
+
+    /**
+     * Writes a problem straight to the servlet response (used outside Spring MVC).
+     *
+     * @param response the servlet response
+     * @param problem the problem
+     * @param headers extra headers
+     * @throws IOException when the response cannot be written
+     */
+    public void write(HttpServletResponse response, Problem problem, Map&lt;String, String&gt; headers) throws IOException {
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        if (response.isCommitted()) {</span>
+<span class="nc" id="L55">            return;</span>
+        }
+<span class="fc" id="L57">        response.resetBuffer();</span>
+<span class="fc" id="L58">        response.setStatus(problem.status());</span>
+<span class="fc" id="L59">        headers.forEach(response::setHeader);</span>
+<span class="fc" id="L60">        response.setContentType(PROBLEM_JSON.toString());</span>
+<span class="fc" id="L61">        response.setCharacterEncoding(&quot;UTF-8&quot;);</span>
+<span class="fc" id="L62">        response.getOutputStream().write(objectMapper.writeValueAsBytes(problem));</span>
+<span class="fc" id="L63">        response.flushBuffer();</span>
+<span class="fc" id="L64">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

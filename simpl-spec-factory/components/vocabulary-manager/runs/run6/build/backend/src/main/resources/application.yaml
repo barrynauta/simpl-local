@@ -1,0 +1,85 @@
+# Every value can be set from the environment (MACH-07, decision E4). Defaults follow decision E2.
+spring:
+  application:
+    name: vocabulary-manager-be
+  main:
+    banner-mode: "off"
+  servlet:
+    multipart:
+      enabled: true
+      # The decided file limit (5 MB, D15) is checked by the controller to give the decided 413 body;
+      # these container limits only stop bodies far above it.
+      max-file-size: 10MB
+      max-request-size: 12MB
+      file-size-threshold: 1MB
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  threads:
+    virtual:
+      enabled: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: never
+    include-message: never
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+  tomcat:
+    max-swallow-size: 16MB
+    # Tomcat applies this limit to the non-file parts of a multipart request too. It equals the request cap, so an
+    # over-long description or changelog gets the D37 400, not a 413.
+    max-http-form-post-size: 12MB
+    threads:
+      max: 100
+    accept-count: 100
+    connection-timeout: 20s
+    max-connections: 2000
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8081}
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  observations:
+    key-values:
+      application: vocabulary-manager-be
+
+logging:
+  structured:
+    format:
+      console: ecs
+  level:
+    root: INFO
+    org.apache.jena: WARN
+
+vm:
+  content-base-url: ${VOCABULARY_CONTENT_BASE_URL:https://authority.example/vocabulary-manager}
+  store:
+    dataset-url: ${STORE_DATASET_URL:http://localhost:3030/vocabulary}
+    connect-timeout: ${STORE_CONNECT_TIMEOUT:2s}
+    response-timeout: ${STORE_RESPONSE_TIMEOUT:10s}
+    health-timeout: ${STORE_HEALTH_TIMEOUT:2s}
+    lock-timeout: ${VOCABULARY_LOCK_TIMEOUT:10s}
+  identity:
+    issuer: ${OIDC_ISSUER:http://localhost:8180/realms/simpl}
+    audience: ${OIDC_AUDIENCE:vocabulary-manager-be}
+    jwk-set-uri: ${OIDC_JWK_SET_URI:http://localhost:8180/realms/simpl/protocol/openid-connect/certs}
+    fetch-timeout: ${OIDC_FETCH_TIMEOUT:2s}
+    refresh-cooldown: ${OIDC_REFRESH_COOLDOWN:5s}
+  limits:
+    max-upload-bytes: ${MAX_UPLOAD_BYTES:5242880}
+    max-json-body-bytes: ${MAX_JSON_BODY_BYTES:262144}
+    max-validation-issues: ${MAX_VALIDATION_ISSUES:1000}

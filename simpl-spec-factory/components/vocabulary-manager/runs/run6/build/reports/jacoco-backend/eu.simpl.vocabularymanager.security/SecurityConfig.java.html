@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.KeySourceException;
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.problem.Problem;
+import eu.simpl.vocabularymanager.problem.ProblemWriter;
+import eu.simpl.vocabularymanager.problem.Problems;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.Clock;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.config.ObjectPostProcessor;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimValidator;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.firewall.RequestRejectedHandler;
+
+/**
+ * Access rules of decisions D16 and D17: the service validates the bearer token (signature, issuer, audience,
+ * expiry, OWT-A07) and the realm roles itself; 401 and 403 come before any body validation.
+ */
+@Configuration
+<span class="fc" id="L45">public class SecurityConfig {</span>
+
+    /** Realm role for read operations. */
+    public static final String VIEWER = &quot;GA_VOCABULARY_VIEWER&quot;;
+
+    /** Realm role for read and write operations. */
+    public static final String ADMIN = &quot;GA_VOCABULARY_ADMIN&quot;;
+
+<span class="fc" id="L53">    private static final Logger SECURITY_LOG = LoggerFactory.getLogger(&quot;security&quot;);</span>
+
+    /**
+     * The realm key source (decision D44).
+     *
+     * @param properties the configuration
+     * @param clock the clock
+     * @return the key source
+     */
+    @Bean
+    public RealmKeySource realmKeySource(AppProperties properties, Clock clock) {
+<span class="fc" id="L64">        return new RealmKeySource(properties.identity(), clock);</span>
+    }
+
+    /**
+     * The JWT decoder: Nimbus with the realm key source, RS256, issuer and audience checks.
+     *
+     * @param keySource the key source
+     * @param properties the configuration
+     * @return the decoder
+     */
+    @Bean
+    public JwtDecoder jwtDecoder(RealmKeySource keySource, AppProperties properties) {
+<span class="fc" id="L76">        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSource(keySource).build();</span>
+<span class="fc" id="L77">        String audience = properties.identity().audience();</span>
+<span class="fc" id="L78">        OAuth2TokenValidator&lt;Jwt&gt; audienceValidator =</span>
+<span class="pc bpc" id="L79" title="1 of 4 branches missed.">                new JwtClaimValidator&lt;Collection&lt;String&gt;&gt;(&quot;aud&quot;, aud -&gt; aud != null &amp;&amp; aud.contains(audience));</span>
+<span class="fc" id="L80">        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator&lt;&gt;(</span>
+<span class="fc" id="L81">                JwtValidators.createDefaultWithIssuer(properties.identity().issuer()), audienceValidator));</span>
+<span class="fc" id="L82">        return decoder;</span>
+    }
+
+    /**
+     * Reads the realm roles from realm_access.roles (decision E1).
+     *
+     * @return the converter
+     */
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+<span class="fc" id="L92">        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();</span>
+<span class="fc" id="L93">        converter.setJwtGrantedAuthoritiesConverter(SecurityConfig::realmRoles);</span>
+<span class="fc" id="L94">        return converter;</span>
+    }
+
+    static Collection&lt;GrantedAuthority&gt; realmRoles(Jwt jwt) {
+<span class="fc" id="L98">        Object realmAccess = jwt.getClaims().get(&quot;realm_access&quot;);</span>
+<span class="pc bpc" id="L99" title="1 of 4 branches missed.">        if (!(realmAccess instanceof Map&lt;?, ?&gt; map) || !(map.get(&quot;roles&quot;) instanceof Collection&lt;?&gt; roles)) {</span>
+<span class="fc" id="L100">            return List.of();</span>
+        }
+<span class="fc" id="L102">        return roles.stream()</span>
+<span class="fc" id="L103">                .filter(String.class::isInstance)</span>
+<span class="fc" id="L104">                .map(role -&gt; (GrantedAuthority) new SimpleGrantedAuthority((String) role))</span>
+<span class="fc" id="L105">                .toList();</span>
+    }
+
+    /**
+     * Health and metrics on the management port (not published outside the container network, NFR-07, NFR-08):
+     * open to the platform probes and the metrics scraper, read-only, no API data.
+     *
+     * @param http the security builder
+     * @param managementPort the management port
+     * @return the chain
+     * @throws Exception when the chain cannot be built
+     */
+    @Bean
+    @org.springframework.core.annotation.Order(0)
+    public SecurityFilterChain managementFilterChain(
+            HttpSecurity http,
+            @org.springframework.beans.factory.annotation.Value(&quot;${management.server.port:8081}&quot;) int managementPort)
+            throws Exception {
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">        http.securityMatcher(request -&gt; request.getLocalPort() == managementPort)</span>
+<span class="fc" id="L124">                .csrf(csrf -&gt; csrf.disable())</span>
+<span class="fc" id="L125">                .httpBasic(basic -&gt; basic.disable())</span>
+<span class="fc" id="L126">                .formLogin(form -&gt; form.disable())</span>
+<span class="fc" id="L127">                .logout(logout -&gt; logout.disable())</span>
+<span class="fc" id="L128">                .sessionManagement(s -&gt; s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
+<span class="fc" id="L129">                .authorizeHttpRequests(auth -&gt; auth.requestMatchers(</span>
+                                HttpMethod.GET, &quot;/actuator/health/**&quot;, &quot;/actuator/health&quot;, &quot;/actuator/prometheus&quot;)
+<span class="fc" id="L131">                        .permitAll()</span>
+<span class="fc" id="L132">                        .anyRequest()</span>
+<span class="fc" id="L133">                        .denyAll());</span>
+<span class="fc" id="L134">        return http.build();</span>
+    }
+
+    /**
+     * The filter chain with the role rules per operation (decision D16).
+     *
+     * @param http the security builder
+     * @param problems the problem writer
+     * @param converter the role converter
+     * @return the chain
+     * @throws Exception when the chain cannot be built
+     */
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http, ProblemWriter problems, JwtAuthenticationConverter converter) throws Exception {
+<span class="fc" id="L149">        http.csrf(csrf -&gt; csrf.disable())</span>
+<span class="fc" id="L150">                .cors(cors -&gt; cors.disable())</span>
+<span class="fc" id="L151">                .httpBasic(basic -&gt; basic.disable())</span>
+<span class="fc" id="L152">                .formLogin(form -&gt; form.disable())</span>
+<span class="fc" id="L153">                .logout(logout -&gt; logout.disable())</span>
+<span class="fc" id="L154">                .requestCache(cache -&gt; cache.disable())</span>
+<span class="fc" id="L155">                .sessionManagement(s -&gt; s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
+<span class="fc" id="L156">                .authorizeHttpRequests(auth -&gt; auth.dispatcherTypeMatchers(DispatcherType.ERROR)</span>
+<span class="fc" id="L157">                        .permitAll()</span>
+<span class="fc" id="L158">                        .requestMatchers(&quot;/v1/health&quot;)</span>
+<span class="fc" id="L159">                        .permitAll()</span>
+<span class="fc" id="L160">                        .requestMatchers(</span>
+                                HttpMethod.POST,
+                                &quot;/v1/vocabularies/searches&quot;,
+                                &quot;/v1/external-vocabulary/searches&quot;,
+                                &quot;/v1/external-vocabularies/content&quot;)
+<span class="fc" id="L165">                        .hasAnyAuthority(VIEWER, ADMIN)</span>
+<span class="fc" id="L166">                        .requestMatchers(HttpMethod.GET, &quot;/v1/**&quot;)</span>
+<span class="fc" id="L167">                        .hasAnyAuthority(VIEWER, ADMIN)</span>
+<span class="fc" id="L168">                        .requestMatchers(HttpMethod.POST, &quot;/v1/**&quot;)</span>
+<span class="fc" id="L169">                        .hasAuthority(ADMIN)</span>
+<span class="fc" id="L170">                        .requestMatchers(HttpMethod.PATCH, &quot;/v1/**&quot;)</span>
+<span class="fc" id="L171">                        .hasAuthority(ADMIN)</span>
+<span class="fc" id="L172">                        .requestMatchers(HttpMethod.DELETE, &quot;/v1/**&quot;)</span>
+<span class="fc" id="L173">                        .hasAuthority(ADMIN)</span>
+<span class="fc" id="L174">                        .anyRequest()</span>
+<span class="fc" id="L175">                        .hasAnyAuthority(VIEWER, ADMIN))</span>
+<span class="fc" id="L176">                .exceptionHandling(ex -&gt; ex.authenticationEntryPoint(</span>
+<span class="fc" id="L177">                                (request, response, e) -&gt; unauthorized(problems, request, response, e))</span>
+<span class="fc" id="L178">                        .accessDeniedHandler((request, response, e) -&gt; forbidden(problems, request, response)))</span>
+<span class="fc" id="L179">                .oauth2ResourceServer(oauth -&gt; oauth.authenticationEntryPoint(</span>
+<span class="nc" id="L180">                                (request, response, e) -&gt; unauthorized(problems, request, response, e))</span>
+<span class="fc" id="L181">                        .jwt(jwt -&gt; jwt.jwtAuthenticationConverter(converter))</span>
+<span class="fc" id="L182">                        .withObjectPostProcessor(new ObjectPostProcessor&lt;BearerTokenAuthenticationFilter&gt;() {</span>
+                            @Override
+                            public &lt;O extends BearerTokenAuthenticationFilter&gt; O postProcess(O filter) {
+<span class="fc" id="L185">                                filter.setAuthenticationFailureHandler(</span>
+<span class="nc" id="L186">                                        (request, response, e) -&gt; tokenFailure(problems, request, response, e));</span>
+<span class="fc" id="L187">                                return filter;</span>
+                            }
+                        }));
+<span class="fc" id="L190">        return http.build();</span>
+    }
+
+    /** Methods the firewall accepts; any other method (for example QUERY) is not declared on any path. */
+<span class="fc" id="L194">    private static final java.util.Set&lt;String&gt; FIREWALL_METHODS =</span>
+<span class="fc" id="L195">            java.util.Set.of(&quot;GET&quot;, &quot;HEAD&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;);</span>
+
+    /**
+     * Writes the problem for requests the firewall rejects: 405 (or 404 outside the API) for a method no path
+     * declares, 400 for anything else (encoded slashes, control characters).
+     *
+     * @param problems the problem writer
+     * @return the handler
+     */
+    @Bean
+    public RequestRejectedHandler requestRejectedHandler(ProblemWriter problems) {
+<span class="fc" id="L206">        return (request, response, e) -&gt; {</span>
+<span class="fc" id="L207">            SECURITY_LOG.warn(&quot;Request rejected by the firewall: {} {}&quot;, request.getMethod(), e.getMessage());</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">            if (!FIREWALL_METHODS.contains(request.getMethod())) {</span>
+<span class="fc" id="L209">                java.util.Optional&lt;eu.simpl.vocabularymanager.web.RouteTable.Route&gt; route =</span>
+<span class="fc" id="L210">                        eu.simpl.vocabularymanager.web.RouteTable.find(path(request));</span>
+<span class="fc bfc" id="L211" title="All 2 branches covered.">                if (route.isPresent()) {</span>
+<span class="fc" id="L212">                    eu.simpl.vocabularymanager.problem.ProblemException notAllowed =</span>
+<span class="fc" id="L213">                            Problems.methodNotAllowed(route.get().allow());</span>
+<span class="fc" id="L214">                    problems.write(response, notAllowed.problem(), notAllowed.headers());</span>
+<span class="fc" id="L215">                } else {</span>
+<span class="fc" id="L216">                    problems.write(response, Problems.unknownPath(), Map.of());</span>
+                }
+<span class="fc" id="L218">                return;</span>
+            }
+<span class="nc" id="L220">            Problem problem = Problems.badRequest(List.of()).problem();</span>
+<span class="nc" id="L221">            problems.write(response, problem, Map.of());</span>
+<span class="nc" id="L222">        };</span>
+    }
+
+    private static void tokenFailure(
+            ProblemWriter problems, HttpServletRequest request, HttpServletResponse response, AuthenticationException e)
+            throws IOException {
+<span class="nc bnc" id="L228" title="All 4 branches missed.">        if (e instanceof AuthenticationServiceException &amp;&amp; causedByKeySource(e)) {</span>
+<span class="nc" id="L229">            SECURITY_LOG.warn(</span>
+<span class="nc" id="L230">                    &quot;Token rejected, identity provider unavailable: {} {}&quot;, request.getMethod(), path(request));</span>
+<span class="nc" id="L231">            problems.write(</span>
+<span class="nc" id="L232">                    response, Problems.serviceUnavailableProblem(Problems.IDP_DOWN_DETAIL), Map.of(&quot;Retry-After&quot;, &quot;5&quot;));</span>
+<span class="nc" id="L233">            return;</span>
+        }
+<span class="nc" id="L235">        unauthorized(problems, request, response, e);</span>
+<span class="nc" id="L236">    }</span>
+
+    private static boolean causedByKeySource(Throwable e) {
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        for (Throwable t = e; t != null; t = t.getCause()) {</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">            if (t instanceof KeySourceException) {</span>
+<span class="nc" id="L241">                return true;</span>
+            }
+        }
+<span class="nc" id="L244">        return false;</span>
+    }
+
+    private static void unauthorized(
+            ProblemWriter problems, HttpServletRequest request, HttpServletResponse response, AuthenticationException e)
+            throws IOException {
+<span class="fc" id="L250">        SECURITY_LOG.warn(</span>
+                &quot;Authentication failed: {} {} ({})&quot;,
+<span class="fc" id="L252">                request.getMethod(),</span>
+<span class="fc" id="L253">                path(request),</span>
+<span class="fc" id="L254">                e.getClass().getSimpleName());</span>
+<span class="fc" id="L255">        problems.write(response, Problems.unauthorized(), Map.of(&quot;WWW-Authenticate&quot;, &quot;Bearer&quot;));</span>
+<span class="fc" id="L256">    }</span>
+
+    private static void forbidden(ProblemWriter problems, HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">        String user = request.getUserPrincipal() == null</span>
+<span class="nc" id="L261">                ? &quot;unknown&quot;</span>
+<span class="fc" id="L262">                : request.getUserPrincipal().getName();</span>
+<span class="fc" id="L263">        SECURITY_LOG.warn(&quot;Access denied: {} {} for subject {}&quot;, request.getMethod(), path(request), user);</span>
+<span class="fc" id="L264">        problems.write(response, Problems.forbidden(), Map.of());</span>
+<span class="fc" id="L265">    }</span>
+
+    private static String path(HttpServletRequest request) {
+<span class="fc" id="L268">        String uri = request.getRequestURI();</span>
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">        return uri.length() &gt; 200 ? uri.substring(0, 200) : uri.replaceAll(&quot;[\\r\\n]&quot;, &quot;_&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,8 +1,8 @@
-# Build profile of the Vocabulary Manager for steps 40 to 70 (run 5, 18 Nov 2026; run 4 used the same profile with compose project vm-factory-run4).
+# Build profile of the Vocabulary Manager for steps 40 to 70 (run 6, 18 Nov 2026; runs 4 and 5 used the same profile with compose projects vm-factory-run4 and vm-factory-run5).
 # The stack is the one of run 1, so the results can be compared; the ports are new, so run 1 can keep its own.
 component: vocabulary-manager
-compose_project: vm-factory-run5
-start: docker compose -p vm-factory-run5 up -d --build --wait
+compose_project: vm-factory-run6
+start: docker compose -p vm-factory-run6 up -d --build --wait
 stack:
   backend: Java 21, Spring Boot 4 (4.1.2 or a newer 4.x patch; upstream uses 4.1.0), Maven (one project, modules allowed)
   store: Apache Jena Fuseki, dataset 'vocabulary' (decision E3)
@@ -31,7 +31,7 @@ finish_line:
   - Trivy scan of the dependencies and every image of the stack; HIGH and CRITICAL fixed or listed with a reason in SECURITY-SCAN.md (Trivy is at /opt/homebrew/bin/trivy)
   - leave the stack running
 compare_with:
-  run: run4 (17 Nov 2026), components/vocabulary-manager/runs/run4, 379 of 386 scenarios, Trivy 17 CRITICAL; run1 (27 Oct 2026), components/vocabulary-manager/generated/run1, 74 of 74 API and 22 of 22 UI scenarios of its own suite
+  run: run5 (18 Nov 2026), components/vocabulary-manager/runs/run5, 463 of 468 cases, Spring Boot 4.1.2, 0 CRITICAL in own targets; run4 (17 Nov 2026), components/vocabulary-manager/runs/run4, 379 of 386 scenarios, Trivy 17 CRITICAL; run1 (27 Oct 2026), components/vocabulary-manager/generated/run1, 74 of 74 API and 22 of 22 UI scenarios of its own suite
 fuzz:             # step 70: property-based API fuzzing with Schemathesis (pipeline/fuzz_api.py)
   openapi: specs/api/vocabulary_openapi-tier1.yaml
   user: ga-admin   # decision E1

@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Representations.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">Representations.java</span></div><h1>Representations.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.ValidationWarning;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import java.time.Instant;
+import java.util.List;
+import org.springframework.stereotype.Component;
+
+/**
+ * Maps domain objects to the wire schemas of the OpenAPI file, with the changes of decision D39 (createdBy on
+ * versions, latestVersionHref always filled, validationWarnings always present). The one place where domain
+ * names meet wire names (DDD-14).
+ */
+@Component
+public class Representations {
+
+    private final String contentBase;
+
+    /**
+     * Creates the mapper.
+     *
+     * @param properties the configuration (content base, decision E2)
+     */
+<span class="fc" id="L29">    public Representations(AppProperties properties) {</span>
+<span class="fc" id="L30">        String base = properties.contentBaseUrl();</span>
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        this.contentBase = base.endsWith(&quot;/&quot;) ? base.substring(0, base.length() - 1) : base;</span>
+<span class="fc" id="L32">    }</span>
+
+    /**
+     * VocabularyCategory: the vocabulary (decision D25).
+     *
+     * @param href relative link
+     * @param contentHref content link
+     * @param name name
+     * @param version latest version number
+     * @param description latest version description
+     * @param status vocabulary status
+     * @param createdBy creator of version 1
+     * @param creationDate creation date
+     * @param lastUpdateDate last update date
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L48">    public record VocabularyDto(</span>
+            String href,
+            String contentHref,
+            String name,
+            int version,
+            String description,
+            String status,
+            String createdBy,
+            String creationDate,
+            String lastUpdateDate) {}
+
+    /**
+     * VocabularyMetadata: a vocabulary version (decision D26).
+     *
+     * @param href relative link
+     * @param contentHref content link
+     * @param latestVersionHref link to the latest version (decision D5)
+     * @param name vocabulary name
+     * @param version version number
+     * @param description description
+     * @param changelog changelog
+     * @param status version status
+     * @param createdBy creator (decision D27)
+     * @param creationDate creation date
+     * @param lastUpdateDate last update date
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L75">    public record VersionDto(</span>
+            String href,
+            String contentHref,
+            String latestVersionHref,
+            String name,
+            int version,
+            String description,
+            String changelog,
+            String status,
+            String createdBy,
+            String creationDate,
+            String lastUpdateDate) {}
+
+    /**
+     * VocabularyVersionMetadataResponse: a created version with its warnings (decision D10).
+     *
+     * @param href relative link, also the Location header
+     * @param contentHref content link
+     * @param name vocabulary name
+     * @param version version number
+     * @param description description
+     * @param changelog changelog
+     * @param status version status
+     * @param createdBy creator
+     * @param creationDate creation date
+     * @param lastUpdateDate last update date
+     * @param validationWarnings warnings, empty array when none
+     */
+<span class="fc" id="L103">    public record CreatedVersionDto(</span>
+            String href,
+            String contentHref,
+            String name,
+            int version,
+            String description,
+            String changelog,
+            String status,
+            String createdBy,
+            String creationDate,
+            String lastUpdateDate,
+            List&lt;ValidationWarning&gt; validationWarnings) {}
+
+    /**
+     * VocabularySearchItem.
+     *
+     * @param href relative link
+     * @param contentHref content link
+     * @param name vocabulary name
+     * @param version version number
+     * @param status status
+     * @param latest true when it came from the latest version
+     */
+<span class="fc" id="L126">    public record SearchItemDto(</span>
+            String href, String contentHref, String name, int version, String status, boolean latest) {}
+
+    /**
+     * ExternalVocabulary.
+     *
+     * @param href relative link
+     * @param name name
+     * @param namespaceUri namespace URI
+     * @param aliasUris alias URIs
+     * @param sourceUri source URI
+     * @param description description
+     * @param createdBy creator
+     * @param creationDate registration date
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L142">    public record ExternalDto(</span>
+            String href,
+            String name,
+            String namespaceUri,
+            List&lt;String&gt; aliasUris,
+            String sourceUri,
+            String description,
+            String createdBy,
+            String creationDate) {}
+
+    /**
+     * Maps a vocabulary.
+     *
+     * @param v the vocabulary
+     * @return the wire object
+     */
+    public VocabularyDto vocabulary(Vocabulary v) {
+<span class="fc" id="L159">        return new VocabularyDto(</span>
+<span class="fc" id="L160">                vocabularyHref(v.name()),</span>
+<span class="fc" id="L161">                contentBase + &quot;/content/&quot; + v.name(),</span>
+<span class="fc" id="L162">                v.name(),</span>
+<span class="fc" id="L163">                v.latestVersion(),</span>
+<span class="fc" id="L164">                v.latestDescription(),</span>
+<span class="fc" id="L165">                v.status().name(),</span>
+<span class="fc" id="L166">                v.createdBy(),</span>
+<span class="fc" id="L167">                time(v.creationDate()),</span>
+<span class="fc" id="L168">                time(v.lastUpdateDate()));</span>
+    }
+
+    /**
+     * Maps a version.
+     *
+     * @param v the version
+     * @param latestVersion the latest version number of its vocabulary
+     * @return the wire object
+     */
+    public VersionDto version(VocabularyVersion v, int latestVersion) {
+<span class="fc" id="L179">        return new VersionDto(</span>
+<span class="fc" id="L180">                versionHref(v.name(), v.version()),</span>
+<span class="fc" id="L181">                versionContentHref(v.name(), v.version()),</span>
+<span class="fc" id="L182">                versionHref(v.name(), latestVersion),</span>
+<span class="fc" id="L183">                v.name(),</span>
+<span class="fc" id="L184">                v.version(),</span>
+<span class="fc" id="L185">                v.description(),</span>
+<span class="fc" id="L186">                v.changelog(),</span>
+<span class="fc" id="L187">                v.status().name(),</span>
+<span class="fc" id="L188">                v.createdBy(),</span>
+<span class="fc" id="L189">                time(v.creationDate()),</span>
+<span class="fc" id="L190">                time(v.lastUpdateDate()));</span>
+    }
+
+    /**
+     * Maps a created version.
+     *
+     * @param created the created version and warnings
+     * @return the wire object
+     */
+    public CreatedVersionDto created(VocabularyService.Created created) {
+<span class="fc" id="L200">        VocabularyVersion v = created.version();</span>
+<span class="fc" id="L201">        return new CreatedVersionDto(</span>
+<span class="fc" id="L202">                versionHref(v.name(), v.version()),</span>
+<span class="fc" id="L203">                versionContentHref(v.name(), v.version()),</span>
+<span class="fc" id="L204">                v.name(),</span>
+<span class="fc" id="L205">                v.version(),</span>
+<span class="fc" id="L206">                v.description(),</span>
+<span class="fc" id="L207">                v.changelog(),</span>
+<span class="fc" id="L208">                v.status().name(),</span>
+<span class="fc" id="L209">                v.createdBy(),</span>
+<span class="fc" id="L210">                time(v.creationDate()),</span>
+<span class="fc" id="L211">                time(v.lastUpdateDate()),</span>
+<span class="fc" id="L212">                List.copyOf(created.warnings()));</span>
+    }
+
+    /**
+     * Maps a search result (decision D38).
+     *
+     * @param r the result
+     * @return the wire object
+     */
+    public SearchItemDto searchItem(VocabularyService.SearchResult r) {
+<span class="fc bfc" id="L222" title="All 2 branches covered.">        if (r.latest()) {</span>
+<span class="fc" id="L223">            return new SearchItemDto(</span>
+<span class="fc" id="L224">                    vocabularyHref(r.name()),</span>
+<span class="fc" id="L225">                    contentBase + &quot;/content/&quot; + r.name(),</span>
+<span class="fc" id="L226">                    r.name(),</span>
+<span class="fc" id="L227">                    r.version(),</span>
+<span class="fc" id="L228">                    r.status().name(),</span>
+                    true);
+        }
+<span class="fc" id="L231">        return new SearchItemDto(</span>
+<span class="fc" id="L232">                versionHref(r.name(), r.version()),</span>
+<span class="fc" id="L233">                versionContentHref(r.name(), r.version()),</span>
+<span class="fc" id="L234">                r.name(),</span>
+<span class="fc" id="L235">                r.version(),</span>
+<span class="fc" id="L236">                r.status().name(),</span>
+                false);
+    }
+
+    /**
+     * Maps an external vocabulary.
+     *
+     * @param e the external vocabulary
+     * @return the wire object
+     */
+    public ExternalDto external(ExternalVocabulary e) {
+<span class="fc" id="L247">        return new ExternalDto(</span>
+<span class="fc" id="L248">                externalHref(e.name()),</span>
+<span class="fc" id="L249">                e.name(),</span>
+<span class="fc" id="L250">                e.namespaceUri(),</span>
+<span class="fc" id="L251">                e.aliasUris(),</span>
+<span class="fc" id="L252">                e.sourceUri(),</span>
+<span class="fc" id="L253">                e.description(),</span>
+<span class="fc" id="L254">                e.createdBy(),</span>
+<span class="fc" id="L255">                time(e.creationDate()));</span>
+    }
+
+    /**
+     * Relative link of a vocabulary.
+     *
+     * @param name the name
+     * @return the link
+     */
+    public static String vocabularyHref(String name) {
+<span class="fc" id="L265">        return &quot;/vocabularies/&quot; + name;</span>
+    }
+
+    /**
+     * Relative link of a version.
+     *
+     * @param name the vocabulary name
+     * @param version the version number
+     * @return the link
+     */
+    public static String versionHref(String name, int version) {
+<span class="fc" id="L276">        return &quot;/vocabularies/&quot; + name + &quot;/versions/&quot; + version;</span>
+    }
+
+    /**
+     * Relative link of an external vocabulary.
+     *
+     * @param name the name
+     * @return the link
+     */
+    public static String externalHref(String name) {
+<span class="fc" id="L286">        return &quot;/external-vocabularies/&quot; + name;</span>
+    }
+
+    private String versionContentHref(String name, int version) {
+<span class="fc" id="L290">        return contentBase + &quot;/content/&quot; + name + &quot;/versions/&quot; + version;</span>
+    }
+
+    private static String time(Instant instant) {
+<span class="fc" id="L294">        return instant.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

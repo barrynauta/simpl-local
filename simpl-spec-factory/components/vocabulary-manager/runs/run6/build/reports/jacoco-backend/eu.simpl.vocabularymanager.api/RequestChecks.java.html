@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestChecks.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">RequestChecks.java</span></div><h1>RequestChecks.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.problem.Issue;
+import eu.simpl.vocabularymanager.problem.Problems;
+import jakarta.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
+
+/**
+ * Request checks shared by the operations, in the order of decision D51: media types (406, 415) and request shape
+ * (400) for query parameters, path values and field rules.
+ */
+public final class RequestChecks {
+
+    /** Vocabulary and external vocabulary name pattern (decision D37). */
+<span class="fc" id="L26">    public static final Pattern NAME = Pattern.compile(&quot;^[A-Z][a-zA-Z0-9]*$&quot;);</span>
+
+<span class="fc" id="L28">    private static final Pattern POSITIVE_INTEGER = Pattern.compile(&quot;^[0-9]+$&quot;);</span>
+
+    /** Longest description and changelog, in characters after trimming (decision D37). */
+    public static final int MAX_TEXT = 1000;
+
+    private RequestChecks() {}
+
+    /**
+     * Checks the Accept header against the media type the operation produces (406).
+     *
+     * @param request the request
+     * @param produced the media type of a successful response
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 406
+     */
+    public static void requireAcceptable(HttpServletRequest request, MediaType produced) {
+<span class="fc" id="L43">        String accept = request.getHeader(HttpHeaders.ACCEPT);</span>
+<span class="pc bpc" id="L44" title="1 of 4 branches missed.">        if (accept == null || accept.isBlank()) {</span>
+<span class="fc" id="L45">            return;</span>
+        }
+        List&lt;MediaType&gt; accepted;
+        try {
+<span class="fc" id="L49">            accepted = MediaType.parseMediaTypes(accept);</span>
+<span class="nc" id="L50">        } catch (InvalidMediaTypeException e) {</span>
+<span class="nc" id="L51">            return;</span>
+<span class="fc" id="L52">        }</span>
+<span class="pc bpc" id="L53" title="3 of 4 branches missed.">        boolean ok = accepted.stream().anyMatch(m -&gt; m.isCompatibleWith(produced) &amp;&amp; m.getQualityValue() &gt; 0);</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        if (!ok) {</span>
+<span class="fc" id="L55">            throw Problems.notAcceptable();</span>
+        }
+<span class="nc" id="L57">    }</span>
+
+    /**
+     * Requires a multipart/form-data body (415, decision D15).
+     *
+     * @param request the request
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 415
+     */
+    public static void requireMultipart(HttpServletRequest request) {
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (!hasContentType(request, MediaType.MULTIPART_FORM_DATA)) {</span>
+<span class="fc" id="L67">            throw Problems.unsupportedMediaType();</span>
+        }
+<span class="fc" id="L69">    }</span>
+
+    /**
+     * Requires an application/json body (415, decision D15).
+     *
+     * @param request the request
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 415
+     */
+    public static void requireJson(HttpServletRequest request) {
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (!hasContentType(request, MediaType.APPLICATION_JSON)) {</span>
+<span class="nc" id="L79">            throw Problems.unsupportedMediaType();</span>
+        }
+<span class="fc" id="L81">    }</span>
+
+    private static boolean hasContentType(HttpServletRequest request, MediaType wanted) {
+<span class="fc" id="L84">        String contentType = request.getContentType();</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">        if (contentType == null) {</span>
+<span class="nc" id="L86">            return false;</span>
+        }
+        try {
+<span class="fc" id="L89">            MediaType given = MediaType.parseMediaType(contentType);</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">            return given.getType().equalsIgnoreCase(wanted.getType())</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">                    &amp;&amp; given.getSubtype().equalsIgnoreCase(wanted.getSubtype());</span>
+<span class="nc" id="L92">        } catch (InvalidMediaTypeException e) {</span>
+<span class="nc" id="L93">            return false;</span>
+        }
+    }
+
+    /**
+     * Parses the query string: names and decoded values, in order.
+     *
+     * @param request the request
+     * @param issues where problems with the query string go
+     * @return the parameters
+     */
+    public static MultiValueMap&lt;String, String&gt; queryParameters(HttpServletRequest request, List&lt;Issue&gt; issues) {
+<span class="fc" id="L105">        String query = request.getQueryString();</span>
+<span class="fc" id="L106">        MultiValueMap&lt;String, String&gt; raw = UriComponentsBuilder.newInstance()</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">                .query(query == null ? &quot;&quot; : query)</span>
+<span class="fc" id="L108">                .build()</span>
+<span class="fc" id="L109">                .getQueryParams();</span>
+<span class="fc" id="L110">        MultiValueMap&lt;String, String&gt; decoded = new org.springframework.util.LinkedMultiValueMap&lt;&gt;();</span>
+<span class="fc" id="L111">        raw.forEach((name, values) -&gt; {</span>
+            try {
+<span class="fc" id="L113">                String decodedName = UriUtils.decode(name, StandardCharsets.UTF_8);</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">                for (String value : values) {</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">                    decoded.add(decodedName, value == null ? &quot;&quot; : UriUtils.decode(value, StandardCharsets.UTF_8));</span>
+<span class="fc" id="L116">                }</span>
+<span class="nc" id="L117">            } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L118">                issues.add(Issue.schemaViolation(Issue.IN_QUERY, name, &quot;Query parameter is not correctly encoded.&quot;));</span>
+<span class="fc" id="L119">            }</span>
+<span class="fc" id="L120">        });</span>
+<span class="fc" id="L121">        return decoded;</span>
+    }
+
+    /**
+     * Adds an issue for every unknown or repeated query parameter (decisions D21, D52).
+     *
+     * @param parameters the parsed parameters
+     * @param allowed the parameters the operation defines
+     * @param issues the issue list
+     */
+    public static void checkQueryNames(
+            MultiValueMap&lt;String, String&gt; parameters, Set&lt;String&gt; allowed, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        for (Map.Entry&lt;String, List&lt;String&gt;&gt; entry : parameters.entrySet()) {</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">            if (!allowed.contains(entry.getKey())) {</span>
+<span class="fc" id="L135">                issues.add(Issue.unknownInput(Issue.IN_QUERY, entry.getKey()));</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">            } else if (entry.getValue().size() &gt; 1) {</span>
+<span class="fc" id="L137">                issues.add(Issue.schemaViolation(</span>
+                        Issue.IN_QUERY,
+<span class="fc" id="L139">                        entry.getKey(),</span>
+<span class="fc" id="L140">                        &quot;Query parameter '&quot; + entry.getKey() + &quot;' is given more than once.&quot;));</span>
+            }
+<span class="fc" id="L142">        }</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Rejects any query parameter on POST, PATCH and DELETE (decision D52), throwing at once.
+     *
+     * @param request the request
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 400
+     */
+    public static void requireNoQuery(HttpServletRequest request) {
+<span class="nc" id="L152">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L153">        MultiValueMap&lt;String, String&gt; parameters = queryParameters(request, issues);</span>
+<span class="nc" id="L154">        checkQueryNames(parameters, Set.of(), issues);</span>
+<span class="nc" id="L155">        throwIfAny(issues);</span>
+<span class="nc" id="L156">    }</span>
+
+    /**
+     * Checks a name path value against the name rules (decision D49).
+     *
+     * @param parameter the path parameter name
+     * @param value the value
+     * @param issues the issue list
+     */
+    public static void checkPathName(String parameter, String value, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L166" title="All 2 branches covered.">        if (!validName(value)) {</span>
+<span class="fc" id="L167">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_PATH,
+                    parameter,
+                    &quot;Path parameter '&quot; + parameter + &quot;' must be 3 to 64 characters and match ^[A-Z][a-zA-Z0-9]*$.&quot;));
+        }
+<span class="fc" id="L172">    }</span>
+
+    /**
+     * Checks a version path value: a positive integer (decision D49).
+     *
+     * @param value the value
+     * @param issues the issue list
+     */
+    public static void checkPathVersion(String value, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L181" title="All 6 branches covered.">        if (!POSITIVE_INTEGER.matcher(value).matches() || value.chars().allMatch(c -&gt; c == '0')) {</span>
+<span class="fc" id="L182">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_PATH, &quot;version&quot;, &quot;Path parameter 'version' must be a positive integer.&quot;));
+        }
+<span class="fc" id="L185">    }</span>
+
+    /**
+     * Tells whether a name follows the rules of decision D37.
+     *
+     * @param value the name
+     * @return true when valid
+     */
+    public static boolean validName(String value) {
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">        return value != null</span>
+<span class="fc bfc" id="L195" title="All 2 branches covered.">                &amp;&amp; value.length() &gt;= 3</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">                &amp;&amp; value.length() &lt;= 64</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">                &amp;&amp; NAME.matcher(value).matches();</span>
+    }
+
+    /**
+     * Checks a required text field and returns it trimmed (decision D37).
+     *
+     * @param field the field name
+     * @param value the raw value, may be null
+     * @param issues the issue list
+     * @return the trimmed value, or null when invalid
+     */
+    public static String requiredText(String field, String value, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L209" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L210">            issues.add(Issue.schemaViolation(Issue.IN_BODY, field, &quot;Field '&quot; + field + &quot;' is required.&quot;));</span>
+<span class="fc" id="L211">            return null;</span>
+        }
+<span class="fc" id="L213">        String trimmed = value.strip();</span>
+<span class="fc" id="L214">        int length = trimmed.codePointCount(0, trimmed.length());</span>
+<span class="fc bfc" id="L215" title="All 4 branches covered.">        if (length &lt; 1 || length &gt; MAX_TEXT) {</span>
+<span class="fc" id="L216">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_BODY, field, &quot;Field '&quot; + field + &quot;' must be 1 to &quot; + MAX_TEXT + &quot; characters.&quot;));
+<span class="fc" id="L218">            return null;</span>
+        }
+<span class="fc" id="L220">        return trimmed;</span>
+    }
+
+    /**
+     * Throws a 400 when issues were found.
+     *
+     * @param issues the issues
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 400
+     */
+    public static void throwIfAny(List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L230" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L231">            throw Problems.badRequest(issues);</span>
+        }
+<span class="fc" id="L233">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

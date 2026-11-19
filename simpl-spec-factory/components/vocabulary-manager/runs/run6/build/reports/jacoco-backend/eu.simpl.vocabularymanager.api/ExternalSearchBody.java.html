@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalSearchBody.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">ExternalSearchBody.java</span></div><h1>ExternalSearchBody.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.problem.Issue;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import tools.jackson.databind.JsonNode;
+
+/**
+ * ExternalVocabularySearchRequest (decision D38): exactly one oneOf branch must match, either namespaceUri, or
+ * aliasUri, or a batch of namespaceUris and/or aliasUris (each array at least 1 entry, at most 100 URIs in total).
+ */
+final class ExternalSearchBody {
+
+<span class="fc" id="L15">    private static final Set&lt;String&gt; PROPERTIES = Set.of(&quot;namespaceUri&quot;, &quot;aliasUri&quot;, &quot;namespaceUris&quot;, &quot;aliasUris&quot;);</span>
+
+    private ExternalSearchBody() {}
+
+    /**
+     * Reads the URIs to search, namespace URIs before alias URIs.
+     *
+     * @param body the JSON body
+     * @param maxUris the most URIs in total
+     * @param issues the issue list
+     * @return the URIs in search order
+     */
+    static List&lt;String&gt; read(JsonNode body, int maxUris, List&lt;Issue&gt; issues) {
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">        if (!JsonBodyReader.checkObject(body, &quot;&quot;, PROPERTIES, issues)) {</span>
+<span class="nc" id="L29">            return List.of();</span>
+        }
+<span class="fc" id="L31">        boolean single = body.has(&quot;namespaceUri&quot;);</span>
+<span class="fc" id="L32">        boolean alias = body.has(&quot;aliasUri&quot;);</span>
+<span class="pc bpc" id="L33" title="1 of 4 branches missed.">        boolean batch = body.has(&quot;namespaceUris&quot;) || body.has(&quot;aliasUris&quot;);</span>
+<span class="fc bfc" id="L34" title="All 6 branches covered.">        int branches = (single ? 1 : 0) + (alias ? 1 : 0) + (batch ? 1 : 0);</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (branches != 1) {</span>
+<span class="fc" id="L36">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_BODY,
+                    &quot;body&quot;,
+                    &quot;Give exactly one of namespaceUri, aliasUri, or namespaceUris and/or aliasUris.&quot;));
+<span class="fc" id="L40">            return List.of();</span>
+        }
+<span class="fc" id="L42">        List&lt;String&gt; uris = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        if (single) {</span>
+<span class="nc" id="L44">            readUri(body.get(&quot;namespaceUri&quot;), &quot;namespaceUri&quot;, uris, issues);</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">        } else if (alias) {</span>
+<span class="nc" id="L46">            readUri(body.get(&quot;aliasUri&quot;), &quot;aliasUri&quot;, uris, issues);</span>
+        } else {
+<span class="fc" id="L48">            readArray(body.get(&quot;namespaceUris&quot;), &quot;namespaceUris&quot;, uris, issues);</span>
+<span class="fc" id="L49">            readArray(body.get(&quot;aliasUris&quot;), &quot;aliasUris&quot;, uris, issues);</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">            if (uris.size() &gt; maxUris) {</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">                String name = body.has(&quot;aliasUris&quot;) ? &quot;aliasUris&quot; : &quot;namespaceUris&quot;;</span>
+<span class="nc" id="L52">                issues.add(Issue.schemaViolation(</span>
+                        Issue.IN_BODY, name, &quot;At most &quot; + maxUris + &quot; URIs in total are allowed.&quot;));
+            }
+        }
+<span class="fc" id="L56">        return uris;</span>
+    }
+
+    private static void readUri(JsonNode node, String name, List&lt;String&gt; uris, List&lt;Issue&gt; issues) {
+<span class="nc bnc" id="L60" title="All 6 branches missed.">        if (node == null || !node.isString() || !UriValues.isAbsoluteUri(node.asString())) {</span>
+<span class="nc" id="L61">            issues.add(Issue.schemaViolation(Issue.IN_BODY, name, &quot;Field '&quot; + name + &quot;' must be an absolute URI.&quot;));</span>
+<span class="nc" id="L62">            return;</span>
+        }
+<span class="nc" id="L64">        uris.add(node.asString());</span>
+<span class="nc" id="L65">    }</span>
+
+    private static void readArray(JsonNode node, String name, List&lt;String&gt; uris, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (node == null) {</span>
+<span class="fc" id="L69">            return;</span>
+        }
+<span class="pc bpc" id="L71" title="2 of 4 branches missed.">        if (!node.isArray() || node.isEmpty()) {</span>
+<span class="nc" id="L72">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_BODY, name, &quot;Field '&quot; + name + &quot;' must be an array with at least 1 URI.&quot;));
+<span class="nc" id="L74">            return;</span>
+        }
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        for (JsonNode item : node) {</span>
+<span class="pc bpc" id="L77" title="2 of 4 branches missed.">            if (!item.isString() || !UriValues.isAbsoluteUri(item.asString())) {</span>
+<span class="nc" id="L78">                issues.add(Issue.schemaViolation(</span>
+                        Issue.IN_BODY, name, &quot;Every entry of '&quot; + name + &quot;' must be an absolute URI.&quot;));
+<span class="nc" id="L80">                return;</span>
+            }
+<span class="fc" id="L82">            uris.add(item.asString());</span>
+<span class="fc" id="L83">        }</span>
+<span class="fc" id="L84">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

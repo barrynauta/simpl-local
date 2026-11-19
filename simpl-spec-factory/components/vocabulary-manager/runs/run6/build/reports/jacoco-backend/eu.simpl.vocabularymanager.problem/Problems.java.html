@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Problems.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.problem</a> &gt; <span class="el_source">Problems.java</span></div><h1>Problems.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.problem;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Factory for every problem the API returns. Types follow decision D48: belgif types for 400, 404, 500 and
+ * 503; simpl types for 401, 403, 405, 406, 409, 413 and 415.
+ */
+public final class Problems {
+
+    private static final String BELGIF_PROBLEMS = &quot;https://www.belgif.be/specification/rest/api-guide/problems/&quot;;
+
+    /** Maximum upload size text of the UploadTooLargeResponse (decision D15). */
+    public static final String TOO_LARGE_DETAIL = &quot;Uploaded vocabulary file is too large. The maximum allowed upload&quot;
+            + &quot; size is 5 MB. Please upload a smaller Turtle file.&quot;;
+
+    public static final String STORE_DOWN_DETAIL = &quot;The vocabulary store is not available. Retry later.&quot;;
+    public static final String IDP_DOWN_DETAIL = &quot;The identity provider is not available. Retry later.&quot;;
+
+    private Problems() {}
+
+    /**
+     * 400 with input validation issues.
+     *
+     * @param issues the issues, at least one
+     * @return the exception
+     */
+    public static ProblemException badRequest(List&lt;Issue&gt; issues) {
+<span class="fc" id="L30">        return new ProblemException(Problem.of(</span>
+                &quot;urn:problem-type:belgif:badRequest&quot;,
+                BELGIF_PROBLEMS + &quot;badRequest.html&quot;,
+                &quot;Bad Request&quot;,
+                400,
+                &quot;The input message is incorrect&quot;,
+                issues));
+    }
+
+    /**
+     * 400 with one issue.
+     *
+     * @param issue the issue
+     * @return the exception
+     */
+    public static ProblemException badRequest(Issue issue) {
+<span class="fc" id="L46">        return badRequest(List.of(issue));</span>
+    }
+
+    /**
+     * 401 for a missing or invalid token (decision D17).
+     *
+     * @return the problem
+     */
+    public static Problem unauthorized() {
+<span class="fc" id="L55">        return Problem.of(</span>
+                &quot;urn:problem-type:simpl:unauthorized&quot;,
+                null,
+                &quot;Unauthorized&quot;,
+                401,
+                &quot;A valid bearer token is required to access this resource.&quot;,
+                null);
+    }
+
+    /**
+     * 403 for a valid token without the needed role (decision D17).
+     *
+     * @return the problem
+     */
+    public static Problem forbidden() {
+<span class="fc" id="L70">        return Problem.of(</span>
+                &quot;urn:problem-type:simpl:forbidden&quot;,
+                null,
+                &quot;Forbidden&quot;,
+                403,
+                &quot;You do not have the role needed for this operation.&quot;,
+                null);
+    }
+
+    /**
+     * 404 for an unknown vocabulary (VocabularyNotFoundResponse).
+     *
+     * @param name the vocabulary name
+     * @return the exception
+     */
+    public static ProblemException vocabularyNotFound(String name) {
+<span class="fc" id="L86">        String detail = &quot;Vocabulary with name '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L87">        return notFound(detail, Issue.plain(Issue.IN_PATH, &quot;vocabularyName&quot;, detail));</span>
+    }
+
+    /**
+     * 404 for an unknown version of a known vocabulary (decision D55).
+     *
+     * @param name the vocabulary name
+     * @param version the version number as given
+     * @return the exception
+     */
+    public static ProblemException versionNotFound(String name, String version) {
+<span class="fc" id="L98">        String detail = &quot;Version &quot; + version + &quot; of vocabulary '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L99">        return notFound(detail, Issue.plain(Issue.IN_PATH, &quot;version&quot;, detail));</span>
+    }
+
+    /**
+     * 404 for an unknown external vocabulary name (decision D41).
+     *
+     * @param name the external vocabulary name
+     * @return the exception
+     */
+    public static ProblemException externalNotFound(String name) {
+<span class="fc" id="L109">        String detail = &quot;External vocabulary with name '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L110">        return notFound(detail, Issue.plain(Issue.IN_PATH, &quot;name&quot;, detail));</span>
+    }
+
+    /**
+     * 404 for an unknown external namespace (ExternalVocabularyNotFoundResponse).
+     *
+     * @param namespaceUri the namespace URI as given
+     * @return the exception
+     */
+    public static ProblemException externalNamespaceNotFound(String namespaceUri) {
+<span class="fc" id="L120">        String detail = &quot;External vocabulary with namespaceUri '&quot; + namespaceUri + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L121">        return notFound(detail, Issue.plain(Issue.IN_BODY, &quot;namespaceUri&quot;, detail));</span>
+    }
+
+    /**
+     * 404 for a path that is not part of the API (decision D55).
+     *
+     * @return the problem
+     */
+    public static Problem unknownPath() {
+<span class="fc" id="L130">        return Problem.of(</span>
+                &quot;urn:problem-type:belgif:resourceNotFound&quot;,
+                BELGIF_PROBLEMS + &quot;resourceNotFound.html&quot;,
+                &quot;Resource Not Found&quot;,
+                404,
+                &quot;No resource exists at this path.&quot;,
+                null);
+    }
+
+    private static ProblemException notFound(String detail, Issue issue) {
+<span class="fc" id="L140">        return new ProblemException(Problem.of(</span>
+                &quot;urn:problem-type:belgif:resourceNotFound&quot;,
+                BELGIF_PROBLEMS + &quot;resourceNotFound.html&quot;,
+                &quot;Resource Not Found&quot;,
+                404,
+                detail,
+<span class="fc" id="L146">                List.of(issue)));</span>
+    }
+
+    /**
+     * 405 for a method the path does not declare (decision D55).
+     *
+     * @param allow the methods the path declares
+     * @return the exception
+     */
+    public static ProblemException methodNotAllowed(String allow) {
+<span class="fc" id="L156">        return new ProblemException(</span>
+<span class="fc" id="L157">                Problem.of(</span>
+                        &quot;urn:problem-type:simpl:methodNotAllowed&quot;,
+                        null,
+                        &quot;Method Not Allowed&quot;,
+                        405,
+                        &quot;The method is not allowed on this resource.&quot;,
+                        null),
+<span class="fc" id="L164">                Map.of(&quot;Allow&quot;, allow));</span>
+    }
+
+    /**
+     * 406 when the requested response media type cannot be served.
+     *
+     * @return the exception
+     */
+    public static ProblemException notAcceptable() {
+<span class="fc" id="L173">        return new ProblemException(Problem.of(</span>
+                &quot;urn:problem-type:simpl:notAcceptable&quot;,
+                null,
+                &quot;Not Acceptable&quot;,
+                406,
+                &quot;Requested media type cannot be served.&quot;,
+                null));
+    }
+
+    /**
+     * 409 conflict (decisions D4, D15, D30, D46, D55).
+     *
+     * @param detail the decided detail text
+     * @return the exception
+     */
+    public static ProblemException conflict(String detail) {
+<span class="fc" id="L189">        return new ProblemException(Problem.of(&quot;urn:problem-type:simpl:conflict&quot;, null, &quot;Conflict&quot;, 409, detail, null));</span>
+    }
+
+    /**
+     * 413 for an upload above the limit (decision D15).
+     *
+     * @param field the form field that is too large
+     * @return the exception
+     */
+    public static ProblemException payloadTooLarge(String field) {
+<span class="fc" id="L199">        return new ProblemException(Problem.of(</span>
+                &quot;urn:problem-type:simpl:payloadTooLarge&quot;,
+                null,
+                &quot;Payload Too Large&quot;,
+                413,
+                TOO_LARGE_DETAIL,
+<span class="fc" id="L205">                List.of(Issue.invalidInput(field, TOO_LARGE_DETAIL, null))));</span>
+    }
+
+    /**
+     * 413 for a JSON body above the limit (NFR-04).
+     *
+     * @return the exception
+     */
+    public static ProblemException bodyTooLarge() {
+<span class="nc" id="L214">        return new ProblemException(Problem.of(</span>
+                &quot;urn:problem-type:simpl:payloadTooLarge&quot;,
+                null,
+                &quot;Payload Too Large&quot;,
+                413,
+                &quot;The request body is too large.&quot;,
+                null));
+    }
+
+    /**
+     * 415 for an unsupported request media type (decision D15).
+     *
+     * @return the exception
+     */
+    public static ProblemException unsupportedMediaType() {
+<span class="fc" id="L229">        return new ProblemException(Problem.of(</span>
+                &quot;urn:problem-type:simpl:unsupportedMediaType&quot;,
+                null,
+                &quot;Unsupported Media Type&quot;,
+                415,
+                &quot;Request content type is not supported.&quot;,
+                null));
+    }
+
+    /**
+     * 500 with a body that reveals no internals.
+     *
+     * @return the problem
+     */
+    public static Problem internalError() {
+<span class="nc" id="L244">        return Problem.of(</span>
+                &quot;urn:problem-type:belgif:internalServerError&quot;,
+                BELGIF_PROBLEMS + &quot;internalServerError.html&quot;,
+                &quot;Internal Server Error&quot;,
+                500,
+                &quot;Internal Server Error&quot;,
+                null);
+    }
+
+    /**
+     * 503 when a dependency is down (decision D44).
+     *
+     * @param detail which dependency, one of the two decided texts
+     * @return the exception
+     */
+    public static ProblemException serviceUnavailable(String detail) {
+<span class="fc" id="L260">        return new ProblemException(serviceUnavailableProblem(detail), Map.of(&quot;Retry-After&quot;, &quot;5&quot;));</span>
+    }
+
+    /**
+     * 503 body (decision D44).
+     *
+     * @param detail the decided detail text
+     * @return the problem
+     */
+    public static Problem serviceUnavailableProblem(String detail) {
+<span class="fc" id="L270">        return Problem.of(</span>
+                &quot;urn:problem-type:belgif:serviceUnavailable&quot;,
+                BELGIF_PROBLEMS + &quot;serviceUnavailable.html&quot;,
+                &quot;Service Unavailable&quot;,
+                503,
+                detail,
+                null);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RealmKeySource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">RealmKeySource.java</span></div><h1>RealmKeySource.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.KeySourceException;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSelector;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
+import eu.simpl.vocabularymanager.config.AppProperties;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.text.ParseException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Source of the realm signing keys for the Nimbus JWT processor, with the behaviour of decision D44: keys are
+ * fetched at start and again when a token names an unknown key id (timeout 2 s, no retry inside a request);
+ * cached keys keep working while Keycloak is down; an unknown key id that cannot be fetched fails closed with
+ * {@link IdentityProviderUnavailableException}. Signature checking itself stays in Nimbus (REUSE-01).
+ */
+public class RealmKeySource implements JWKSource&lt;SecurityContext&gt; {
+
+<span class="fc" id="L31">    private static final Logger LOG = LoggerFactory.getLogger(RealmKeySource.class);</span>
+
+    private final HttpClient httpClient;
+    private final URI jwkSetUri;
+    private final Duration fetchTimeout;
+    private final Duration cooldown;
+    private final Clock clock;
+
+<span class="fc" id="L39">    private volatile JWKSet keys = new JWKSet();</span>
+<span class="fc" id="L40">    private volatile Instant lastAttempt = Instant.EPOCH;</span>
+    private volatile boolean lastAttemptFailed;
+
+    /** The keys are needed and the identity provider does not answer. */
+    public static final class IdentityProviderUnavailableException extends KeySourceException {
+
+        private static final long serialVersionUID = 1L;
+
+        /**
+         * Creates the exception.
+         *
+         * @param message what failed
+         */
+        public IdentityProviderUnavailableException(String message) {
+<span class="fc" id="L54">            super(message);</span>
+<span class="fc" id="L55">        }</span>
+    }
+
+    /**
+     * Creates the key source.
+     *
+     * @param identity the identity provider settings
+     * @param clock the clock
+     */
+<span class="fc" id="L64">    public RealmKeySource(AppProperties.Identity identity, Clock clock) {</span>
+<span class="fc" id="L65">        this.httpClient = HttpClient.newBuilder()</span>
+<span class="fc" id="L66">                .connectTimeout(identity.fetchTimeout())</span>
+<span class="fc" id="L67">                .followRedirects(HttpClient.Redirect.NEVER)</span>
+<span class="fc" id="L68">                .build();</span>
+<span class="fc" id="L69">        this.jwkSetUri = URI.create(identity.jwkSetUri());</span>
+<span class="fc" id="L70">        this.fetchTimeout = identity.fetchTimeout();</span>
+<span class="fc" id="L71">        this.cooldown = identity.refreshCooldown();</span>
+<span class="fc" id="L72">        this.clock = clock;</span>
+<span class="fc" id="L73">    }</span>
+
+    @Override
+    public List&lt;JWK&gt; get(JWKSelector selector, SecurityContext context) throws KeySourceException {
+<span class="fc" id="L77">        List&lt;JWK&gt; matches = selector.select(keys);</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        if (!matches.isEmpty()) {</span>
+<span class="fc" id="L79">            return matches;</span>
+        }
+<span class="fc" id="L81">        boolean inCooldown = clock.instant().isBefore(lastAttempt.plus(cooldown));</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (!inCooldown) {</span>
+<span class="fc" id="L83">            refresh();</span>
+        }
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        if (lastAttemptFailed) {</span>
+<span class="fc" id="L86">            throw new IdentityProviderUnavailableException(&quot;Realm keys could not be fetched&quot;);</span>
+        }
+<span class="fc" id="L88">        return selector.select(keys);</span>
+    }
+
+    /**
+     * Fetches the realm keys now. Failures are logged and remembered, never thrown.
+     *
+     * @return true when the keys were fetched
+     */
+    public synchronized boolean refresh() {
+<span class="fc" id="L97">        lastAttempt = clock.instant();</span>
+        try {
+<span class="fc" id="L99">            HttpRequest request = HttpRequest.newBuilder(jwkSetUri)</span>
+<span class="fc" id="L100">                    .timeout(fetchTimeout)</span>
+<span class="fc" id="L101">                    .header(&quot;Accept&quot;, &quot;application/json&quot;)</span>
+<span class="fc" id="L102">                    .GET()</span>
+<span class="fc" id="L103">                    .build();</span>
+<span class="fc" id="L104">            HttpResponse&lt;String&gt; response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">            if (response.statusCode() != 200) {</span>
+<span class="nc" id="L106">                LOG.warn(&quot;Realm key fetch answered HTTP {}&quot;, response.statusCode());</span>
+<span class="nc" id="L107">                lastAttemptFailed = true;</span>
+<span class="nc" id="L108">                return false;</span>
+            }
+<span class="fc" id="L110">            keys = JWKSet.parse(response.body());</span>
+<span class="fc" id="L111">            lastAttemptFailed = false;</span>
+<span class="fc" id="L112">            LOG.info(&quot;Realm keys fetched: {} key(s)&quot;, keys.getKeys().size());</span>
+<span class="fc" id="L113">            return true;</span>
+<span class="fc" id="L114">        } catch (IOException | ParseException e) {</span>
+<span class="fc" id="L115">            LOG.warn(&quot;Realm key fetch failed: {}&quot;, e.toString());</span>
+<span class="nc" id="L116">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L117">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L118">            LOG.warn(&quot;Realm key fetch interrupted&quot;);</span>
+<span class="fc" id="L119">        }</span>
+<span class="fc" id="L120">        lastAttemptFailed = true;</span>
+<span class="fc" id="L121">        return false;</span>
+    }
+
+    /**
+     * Tells whether realm keys are cached.
+     *
+     * @return true when at least one key is loaded
+     */
+    public boolean hasKeys() {
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        return !keys.getKeys().isEmpty();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContentValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">ContentValidator.java</span></div><h1>ContentValidator.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.domain.ValidationWarning;
+import eu.simpl.vocabularymanager.problem.Issue;
+import eu.simpl.vocabularymanager.store.VocabularyStore;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.stereotype.Component;
+
+/**
+ * Runs the two validation steps of decision D9 on uploaded content: syntax, then (only when syntax passes)
+ * semantic validation with every rule. Errors block (400); warnings do not (decision D10).
+ */
+@Component
+public class ContentValidator {
+
+    /** Form field that carries the content. */
+    public static final String FIELD = &quot;vocabularyFile&quot;;
+
+    private final TurtleParser parser;
+    private final SemanticRules semanticRules;
+    private final ReferenceChecker referenceChecker;
+    private final String contentBase;
+    private final int maxIssues;
+
+    /**
+     * Outcome of validation.
+     *
+     * @param errors validation errors as problem issues; empty when the content passed
+     * @param warnings validation warnings
+     */
+<span class="fc" id="L33">    public record Outcome(List&lt;Issue&gt; errors, List&lt;ValidationWarning&gt; warnings) {</span>
+
+        /**
+         * Tells whether validation passed.
+         *
+         * @return true when there are no errors
+         */
+        public boolean passed() {
+<span class="fc" id="L41">            return errors.isEmpty();</span>
+        }
+    }
+
+    /**
+     * Creates the validator.
+     *
+     * @param parser the Turtle parser
+     * @param semanticRules rules S1 to S6
+     * @param store the store, for references
+     * @param properties the configuration
+     */
+    public ContentValidator(
+<span class="fc" id="L54">            TurtleParser parser, SemanticRules semanticRules, VocabularyStore store, AppProperties properties) {</span>
+<span class="fc" id="L55">        this.parser = parser;</span>
+<span class="fc" id="L56">        this.semanticRules = semanticRules;</span>
+<span class="fc" id="L57">        this.contentBase = trimSlash(properties.contentBaseUrl());</span>
+<span class="fc" id="L58">        this.referenceChecker = new ReferenceChecker(store, contentBase);</span>
+<span class="fc" id="L59">        this.maxIssues = properties.limits().maxValidationIssues();</span>
+<span class="fc" id="L60">    }</span>
+
+    /**
+     * Validates content of an internal vocabulary version: syntax, then semantic rules S1 to S7.
+     *
+     * @param content the uploaded bytes
+     * @param name the vocabulary name
+     * @param version the number the new version will get
+     * @return the outcome
+     */
+    public Outcome validateVersion(byte[] content, String name, int version) {
+<span class="fc" id="L71">        String base = contentBase + &quot;/content/&quot; + name + &quot;/versions/&quot; + version;</span>
+        TurtleParser.Parsed parsed;
+        try {
+<span class="fc" id="L74">            parsed = parser.parse(content, base);</span>
+<span class="fc" id="L75">        } catch (TurtleParser.SyntaxError e) {</span>
+<span class="fc" id="L76">            return new Outcome(List.of(syntaxIssue(e)), List.of());</span>
+<span class="fc" id="L77">        }</span>
+<span class="fc" id="L78">        List&lt;Issue&gt; errors = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L79">        semanticRules.check(parsed.graph()).forEach(f -&gt; errors.add(issue(f)));</span>
+<span class="fc" id="L80">        ReferenceChecker.Result references = referenceChecker.check(parsed.prefixes(), parsed.graph(), name);</span>
+<span class="fc" id="L81">        references.errors().forEach(f -&gt; errors.add(issue(f)));</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        List&lt;Issue&gt; capped = errors.size() &gt; maxIssues ? errors.subList(0, maxIssues) : errors;</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        return new Outcome(List.copyOf(capped), errors.isEmpty() ? references.warnings() : List.of());</span>
+    }
+
+    /**
+     * Validates content of an external vocabulary: syntax only (decision D30).
+     *
+     * @param content the uploaded bytes
+     * @param name the external vocabulary name
+     * @return the outcome, never with warnings
+     */
+    public Outcome validateSyntaxOnly(byte[] content, String name) {
+        try {
+<span class="fc" id="L95">            parser.parse(content, contentBase + &quot;/external-vocabularies/&quot; + name);</span>
+<span class="fc" id="L96">            return new Outcome(List.of(), List.of());</span>
+<span class="fc" id="L97">        } catch (TurtleParser.SyntaxError e) {</span>
+<span class="fc" id="L98">            return new Outcome(List.of(syntaxIssue(e)), List.of());</span>
+        }
+    }
+
+    private static Issue syntaxIssue(TurtleParser.SyntaxError e) {
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        String message = e.getMessage() == null ? &quot;&quot; : &quot;: &quot; + e.getMessage();</span>
+<span class="fc" id="L104">        return Issue.invalidInput(</span>
+<span class="fc" id="L105">                FIELD, &quot;Encountered invalid Turtle syntax&quot; + message, &quot;line &quot; + e.line() + &quot;, column &quot; + e.column());</span>
+    }
+
+    private static Issue issue(SemanticRules.Finding finding) {
+<span class="fc" id="L109">        return Issue.invalidInput(FIELD, finding.detail(), finding.location());</span>
+    }
+
+    private static String trimSlash(String url) {
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">        return url.endsWith(&quot;/&quot;) ? url.substring(0, url.length() - 1) : url;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

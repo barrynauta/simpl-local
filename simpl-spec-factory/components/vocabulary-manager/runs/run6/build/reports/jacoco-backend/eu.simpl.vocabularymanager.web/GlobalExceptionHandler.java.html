@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.problem.Issue;
+import eu.simpl.vocabularymanager.problem.Problem;
+import eu.simpl.vocabularymanager.problem.ProblemException;
+import eu.simpl.vocabularymanager.problem.ProblemWriter;
+import eu.simpl.vocabularymanager.problem.Problems;
+import eu.simpl.vocabularymanager.store.StoreFailureException;
+import eu.simpl.vocabularymanager.store.StoreUnavailableException;
+import eu.simpl.vocabularymanager.validation.ContentValidator;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+/**
+ * One exception strategy for the whole component (CODE-34 to CODE-36): every exception maps to a defined problem;
+ * unexpected ones give 500 without internals and are logged with their stack trace.
+ */
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+<span class="fc" id="L32">    private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);</span>
+
+    private final ProblemWriter problems;
+
+    /**
+     * Creates the handler.
+     *
+     * @param problems the problem writer
+     */
+<span class="fc" id="L41">    public GlobalExceptionHandler(ProblemWriter problems) {</span>
+<span class="fc" id="L42">        this.problems = problems;</span>
+<span class="fc" id="L43">    }</span>
+
+    /**
+     * Expected failures with a defined problem.
+     *
+     * @param e the exception
+     * @return the problem response
+     */
+    @ExceptionHandler(ProblemException.class)
+    public ResponseEntity&lt;Problem&gt; problem(ProblemException e) {
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (e.status() &gt;= 500) {</span>
+<span class="nc" id="L54">            LOG.warn(&quot;Request failed with {}: {}&quot;, e.status(), e.problem().detail());</span>
+        } else {
+<span class="fc" id="L56">            LOG.info(&quot;Request rejected with {}: {}&quot;, e.status(), e.problem().title());</span>
+        }
+<span class="fc" id="L58">        return problems.entity(e.problem(), e.headers());</span>
+    }
+
+    /**
+     * The store is unreachable or timed out (decision D44).
+     *
+     * @param e the exception
+     * @return 503 with Retry-After
+     */
+    @ExceptionHandler(StoreUnavailableException.class)
+    public ResponseEntity&lt;Problem&gt; storeUnavailable(StoreUnavailableException e) {
+<span class="fc" id="L69">        LOG.warn(&quot;Store unavailable: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L70">        ProblemException problem = Problems.serviceUnavailable(Problems.STORE_DOWN_DETAIL);</span>
+<span class="fc" id="L71">        return problems.entity(problem.problem(), problem.headers());</span>
+    }
+
+    /**
+     * The store answered with an error (decision D44: stays 500).
+     *
+     * @param e the exception
+     * @return 500
+     */
+    @ExceptionHandler(StoreFailureException.class)
+    public ResponseEntity&lt;Problem&gt; storeFailure(StoreFailureException e) {
+<span class="nc" id="L82">        LOG.error(&quot;Store failure&quot;, e);</span>
+<span class="nc" id="L83">        return problems.entity(Problems.internalError(), Map.of());</span>
+    }
+
+    /**
+     * Upload above the multipart limits (decision D15).
+     *
+     * @param e the exception
+     * @return 413
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity&lt;Problem&gt; tooLarge(MaxUploadSizeExceededException e) {
+<span class="nc" id="L94">        LOG.info(&quot;Upload too large: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L95">        return problems.entity(Problems.payloadTooLarge(ContentValidator.FIELD).problem(), Map.of());</span>
+    }
+
+    /**
+     * A multipart body that cannot be read.
+     *
+     * @param e the exception
+     * @return 400, or 413 when the cause is a size limit
+     */
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity&lt;Problem&gt; badMultipart(MultipartException e) {
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        for (Throwable t = e; t != null; t = t.getCause()) {</span>
+<span class="nc" id="L107">            String name = t.getClass().getSimpleName();</span>
+<span class="nc bnc" id="L108" title="All 4 branches missed.">            if (name.contains(&quot;SizeLimitExceeded&quot;) || name.contains(&quot;SizeException&quot;)) {</span>
+<span class="nc" id="L109">                return tooLarge(new MaxUploadSizeExceededException(-1, e));</span>
+            }
+        }
+<span class="nc" id="L112">        LOG.info(&quot;Unreadable multipart body: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L113">        return problems.entity(</span>
+<span class="nc" id="L114">                Problems.badRequest(Issue.schemaViolation(</span>
+                                Issue.IN_BODY, &quot;body&quot;, &quot;The multipart/form-data body cannot be read.&quot;))
+<span class="nc" id="L116">                        .problem(),</span>
+<span class="nc" id="L117">                Map.of());</span>
+    }
+
+    /**
+     * Unsupported request media type.
+     *
+     * @param e the exception
+     * @return 415
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity&lt;Problem&gt; unsupported(HttpMediaTypeNotSupportedException e) {
+<span class="nc" id="L128">        return problems.entity(Problems.unsupportedMediaType().problem(), Map.of());</span>
+    }
+
+    /**
+     * Response media type that cannot be served.
+     *
+     * @param e the exception
+     * @return 406
+     */
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity&lt;Problem&gt; notAcceptable(HttpMediaTypeNotAcceptableException e) {
+<span class="nc" id="L139">        return problems.entity(Problems.notAcceptable().problem(), Map.of());</span>
+    }
+
+    /**
+     * Method not declared for the path.
+     *
+     * @param e the exception
+     * @return 405
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity&lt;Problem&gt; methodNotAllowed(HttpRequestMethodNotSupportedException e) {
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        String allow = e.getSupportedHttpMethods() == null</span>
+<span class="nc" id="L151">                ? &quot;&quot;</span>
+<span class="nc" id="L152">                : String.join(</span>
+                        &quot;, &quot;,
+<span class="nc" id="L154">                        e.getSupportedHttpMethods().stream()</span>
+<span class="nc" id="L155">                                .map(Object::toString)</span>
+<span class="nc" id="L156">                                .toList());</span>
+<span class="nc" id="L157">        ProblemException problem = Problems.methodNotAllowed(allow);</span>
+<span class="nc" id="L158">        return problems.entity(problem.problem(), problem.headers());</span>
+    }
+
+    /**
+     * Path outside the API.
+     *
+     * @param e the exception
+     * @return 404
+     */
+    @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})
+    public ResponseEntity&lt;Problem&gt; unknownPath(Exception e) {
+<span class="nc" id="L169">        return problems.entity(Problems.unknownPath(), Map.of());</span>
+    }
+
+    /**
+     * Anything else: 500 without internals, logged with the stack trace (CODE-29).
+     *
+     * @param e the exception
+     * @return 500
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;Problem&gt; unexpected(Exception e) {
+<span class="nc" id="L180">        LOG.error(&quot;Unexpected error&quot;, e);</span>
+<span class="nc" id="L181">        return problems.entity(Problems.internalError(), Map.of());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

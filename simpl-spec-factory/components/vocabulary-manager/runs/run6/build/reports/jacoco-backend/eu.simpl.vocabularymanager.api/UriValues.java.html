@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UriValues.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">UriValues.java</span></div><h1>UriValues.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
+/** Checks of format: uri values (RFC 3986 absolute URI, parsed with java.net.URI). */
+final class UriValues {
+
+    private static final int MAX_LENGTH = 2048;
+
+    private UriValues() {}
+
+    static boolean isAbsoluteUri(String value) {
+<span class="pc bpc" id="L14" title="3 of 6 branches missed.">        if (value == null || value.isEmpty() || value.length() &gt; MAX_LENGTH) {</span>
+<span class="nc" id="L15">            return false;</span>
+        }
+        try {
+<span class="fc" id="L18">            return new URI(value).isAbsolute();</span>
+<span class="fc" id="L19">        } catch (URISyntaxException e) {</span>
+<span class="fc" id="L20">            return false;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

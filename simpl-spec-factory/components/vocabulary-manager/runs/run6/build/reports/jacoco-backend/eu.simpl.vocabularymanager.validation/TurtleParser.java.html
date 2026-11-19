@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TurtleParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">TurtleParser.java</span></div><h1>TurtleParser.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RiotException;
+import org.apache.jena.riot.RiotParseException;
+import org.apache.jena.riot.system.ErrorHandler;
+import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFLib;
+import org.apache.jena.riot.system.StreamRDFWrapper;
+import org.apache.jena.sparql.graph.GraphFactory;
+import org.springframework.stereotype.Component;
+
+/**
+ * Parses Turtle (RDF 1.1) with Apache Jena RIOT (REUSE-02) and keeps the prefix declarations, which are the
+ * vocabulary references of decision D12. The first error stops parsing (decision D9).
+ */
+@Component
+<span class="fc" id="L25">public class TurtleParser {</span>
+
+    /**
+     * A declared prefix.
+     *
+     * @param prefix the prefix label, empty for the default prefix
+     * @param namespace the namespace IRI, resolved against the base
+     */
+<span class="fc" id="L33">    public record PrefixDeclaration(String prefix, String namespace) {}</span>
+
+    /**
+     * Result of a successful parse.
+     *
+     * @param graph the triples
+     * @param prefixes the prefix declarations in order, without exact repeats
+     */
+<span class="fc" id="L41">    public record Parsed(Graph graph, List&lt;PrefixDeclaration&gt; prefixes) {}</span>
+
+    /** The content is not valid Turtle. */
+    public static final class SyntaxError extends Exception {
+
+        private static final long serialVersionUID = 1L;
+
+        private final long line;
+        private final long column;
+
+        /**
+         * Creates the error.
+         *
+         * @param message parser message
+         * @param line line, 1-based
+         * @param column column, 1-based
+         */
+        public SyntaxError(String message, long line, long column) {
+<span class="fc" id="L59">            super(message);</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">            this.line = line &lt; 1 ? 1 : line;</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">            this.column = column &lt; 1 ? 1 : column;</span>
+<span class="fc" id="L62">        }</span>
+
+        public long line() {
+<span class="fc" id="L65">            return line;</span>
+        }
+
+        public long column() {
+<span class="fc" id="L69">            return column;</span>
+        }
+    }
+
+    /**
+     * Parses the content.
+     *
+     * @param content the uploaded bytes
+     * @param baseIri the base for relative IRIs (decision D57)
+     * @return the graph and the prefix declarations
+     * @throws SyntaxError on the first syntax error
+     */
+    public Parsed parse(byte[] content, String baseIri) throws SyntaxError {
+<span class="fc" id="L82">        Graph graph = GraphFactory.createDefaultGraph();</span>
+<span class="fc" id="L83">        Set&lt;PrefixDeclaration&gt; prefixes = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L84">        StreamRDF sink = new StreamRDFWrapper(StreamRDFLib.graph(graph)) {</span>
+            @Override
+            public void prefix(String prefix, String iri) {
+<span class="fc" id="L87">                prefixes.add(new PrefixDeclaration(prefix, iri));</span>
+<span class="fc" id="L88">            }</span>
+        };
+        try {
+<span class="fc" id="L91">            RDFParser.create()</span>
+<span class="fc" id="L92">                    .source(new ByteArrayInputStream(content))</span>
+<span class="fc" id="L93">                    .lang(Lang.TURTLE)</span>
+<span class="fc" id="L94">                    .base(baseIri)</span>
+<span class="fc" id="L95">                    .errorHandler(new FailOnError())</span>
+<span class="fc" id="L96">                    .parse(sink);</span>
+<span class="fc" id="L97">        } catch (RiotParseException e) {</span>
+<span class="fc" id="L98">            throw new SyntaxError(e.getOriginalMessage(), e.getLine(), e.getCol());</span>
+<span class="nc" id="L99">        } catch (RiotException e) {</span>
+<span class="nc" id="L100">            throw new SyntaxError(e.getMessage(), 1, 1);</span>
+<span class="fc" id="L101">        } catch (StackOverflowError e) {</span>
+<span class="fc" id="L102">            throw new SyntaxError(&quot;Nesting is too deep&quot;, 1, 1);</span>
+<span class="fc" id="L103">        }</span>
+<span class="fc" id="L104">        return new Parsed(graph, new ArrayList&lt;&gt;(prefixes));</span>
+    }
+
+    /** Turns parser errors into exceptions and ignores warnings (they do not make the content invalid). */
+    private static final class FailOnError implements ErrorHandler {
+
+        @Override
+        public void warning(String message, long line, long col) {
+            // Warnings such as unusual IRIs do not make the Turtle invalid.
+<span class="nc" id="L113">        }</span>
+
+        @Override
+        public void error(String message, long line, long col) {
+<span class="nc" id="L117">            throw new RiotParseException(message, line, col);</span>
+        }
+
+        @Override
+        public void fatal(String message, long line, long col) {
+<span class="fc" id="L122">            throw new RiotParseException(message, line, col);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

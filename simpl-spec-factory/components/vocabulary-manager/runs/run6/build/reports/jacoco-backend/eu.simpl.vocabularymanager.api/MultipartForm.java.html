@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MultipartForm.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">MultipartForm.java</span></div><h1>MultipartForm.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.problem.Issue;
+import eu.simpl.vocabularymanager.problem.Problems;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.web.multipart.MultipartException;
+
+/**
+ * The parts of a multipart/form-data request, read through the Servlet API (the container parses the multipart
+ * format, REUSE-02). Checks size (413) before shape (400), as decision D51 orders them.
+ */
+public final class MultipartForm {
+
+    private static final int MAX_TEXT_PART_BYTES = 64 * 1024;
+
+    private final Map&lt;String, List&lt;Part&gt;&gt; parts;
+
+<span class="fc" id="L28">    private MultipartForm(Map&lt;String, List&lt;Part&gt;&gt; parts) {</span>
+<span class="fc" id="L29">        this.parts = parts;</span>
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * Reads the parts of the request.
+     *
+     * @param request the request, already checked to be multipart/form-data
+     * @return the form
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 400 when the body is not valid multipart
+     */
+    public static MultipartForm read(HttpServletRequest request) {
+<span class="fc" id="L40">        Map&lt;String, List&lt;Part&gt;&gt; byName = new LinkedHashMap&lt;&gt;();</span>
+        try {
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            for (Part part : request.getParts()) {</span>
+<span class="fc" id="L43">                byName.computeIfAbsent(part.getName(), n -&gt; new ArrayList&lt;&gt;()).add(part);</span>
+<span class="fc" id="L44">            }</span>
+<span class="nc" id="L45">        } catch (IOException | ServletException | IllegalStateException | MultipartException e) {</span>
+<span class="nc" id="L46">            throw Problems.badRequest(</span>
+<span class="nc" id="L47">                    Issue.schemaViolation(Issue.IN_BODY, &quot;body&quot;, &quot;The multipart/form-data body cannot be read.&quot;));</span>
+<span class="fc" id="L48">        }</span>
+<span class="fc" id="L49">        return new MultipartForm(byName);</span>
+    }
+
+    /**
+     * Checks that the file field is not larger than the limit (413, decision D15).
+     *
+     * @param field the file field
+     * @param maxBytes the limit
+     * @throws eu.simpl.vocabularymanager.problem.ProblemException 413
+     */
+    public void checkFileSize(String field, long maxBytes) {
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        for (Part part : parts.getOrDefault(field, List.of())) {</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">            if (part.getSize() &gt; maxBytes) {</span>
+<span class="fc" id="L62">                throw Problems.payloadTooLarge(field);</span>
+            }
+<span class="fc" id="L64">        }</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * Adds issues for unknown fields (decision D52) and for fields given more than once.
+     *
+     * @param allowed the fields the operation defines
+     * @param repeatable the fields that may repeat
+     * @param issues the issue list
+     */
+    public void checkNames(Set&lt;String&gt; allowed, Set&lt;String&gt; repeatable, List&lt;Issue&gt; issues) {
+<span class="fc" id="L75">        parts.forEach((name, list) -&gt; {</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc" id="L77">                issues.add(Issue.unknownInput(Issue.IN_BODY, name));</span>
+<span class="pc bpc" id="L78" title="3 of 4 branches missed.">            } else if (list.size() &gt; 1 &amp;&amp; !repeatable.contains(name)) {</span>
+<span class="nc" id="L79">                issues.add(Issue.schemaViolation(</span>
+                        Issue.IN_BODY, name, &quot;Form field '&quot; + name + &quot;' is given more than once.&quot;));
+            }
+<span class="fc" id="L82">        });</span>
+<span class="fc" id="L83">    }</span>
+
+    /**
+     * Tells whether a field is present.
+     *
+     * @param name the field
+     * @return true when at least one part has this name
+     */
+    public boolean has(String name) {
+<span class="fc" id="L92">        return parts.containsKey(name);</span>
+    }
+
+    /**
+     * Reads a text field.
+     *
+     * @param name the field
+     * @param issues the issue list, for a field that is too long
+     * @return the value, or null when absent or unreadable
+     */
+    public String text(String name, List&lt;Issue&gt; issues) {
+<span class="fc" id="L103">        List&lt;Part&gt; list = parts.get(name);</span>
+<span class="pc bpc" id="L104" title="1 of 4 branches missed.">        if (list == null || list.isEmpty()) {</span>
+<span class="fc" id="L105">            return null;</span>
+        }
+<span class="fc" id="L107">        return textOf(list.get(0), name, issues);</span>
+    }
+
+    /**
+     * Reads every value of a repeatable text field.
+     *
+     * @param name the field
+     * @param issues the issue list
+     * @return the values in order, empty when absent
+     */
+    public List&lt;String&gt; texts(String name, List&lt;Issue&gt; issues) {
+<span class="fc" id="L118">        List&lt;String&gt; values = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        for (Part part : parts.getOrDefault(name, List.of())) {</span>
+<span class="fc" id="L120">            String value = textOf(part, name, issues);</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">            if (value != null) {</span>
+<span class="fc" id="L122">                values.add(value);</span>
+            }
+<span class="fc" id="L124">        }</span>
+<span class="fc" id="L125">        return values;</span>
+    }
+
+    /**
+     * Reads the bytes of the file field (a file part or a text part).
+     *
+     * @param name the field
+     * @param issues the issue list, for a missing field
+     * @return the bytes, or null when absent
+     */
+    public byte[] file(String name, List&lt;Issue&gt; issues) {
+<span class="fc" id="L136">        List&lt;Part&gt; list = parts.get(name);</span>
+<span class="pc bpc" id="L137" title="1 of 4 branches missed.">        if (list == null || list.isEmpty()) {</span>
+<span class="fc" id="L138">            issues.add(Issue.schemaViolation(Issue.IN_BODY, name, &quot;Field '&quot; + name + &quot;' is required.&quot;));</span>
+<span class="fc" id="L139">            return null;</span>
+        }
+<span class="fc" id="L141">        try (InputStream in = list.get(0).getInputStream()) {</span>
+<span class="fc" id="L142">            return in.readAllBytes();</span>
+<span class="nc" id="L143">        } catch (IOException e) {</span>
+<span class="nc" id="L144">            issues.add(Issue.schemaViolation(Issue.IN_BODY, name, &quot;Field '&quot; + name + &quot;' cannot be read.&quot;));</span>
+<span class="nc" id="L145">            return null;</span>
+        }
+    }
+
+    private static String textOf(Part part, String name, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        if (part.getSize() &gt; MAX_TEXT_PART_BYTES) {</span>
+<span class="fc" id="L151">            issues.add(Issue.schemaViolation(Issue.IN_BODY, name, &quot;Field '&quot; + name + &quot;' is too long.&quot;));</span>
+<span class="fc" id="L152">            return null;</span>
+        }
+<span class="fc" id="L154">        try (InputStream in = part.getInputStream()) {</span>
+<span class="fc" id="L155">            return new String(in.readAllBytes(), StandardCharsets.UTF_8);</span>
+<span class="nc" id="L156">        } catch (IOException e) {</span>
+<span class="nc" id="L157">            issues.add(Issue.schemaViolation(Issue.IN_BODY, name, &quot;Field '&quot; + name + &quot;' cannot be read.&quot;));</span>
+<span class="nc" id="L158">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

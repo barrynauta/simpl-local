@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">VocabularyController.java</span></div><h1>VocabularyController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.domain.Page;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.problem.Issue;
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import eu.simpl.vocabularymanager.store.InstantRange;
+import eu.simpl.vocabularymanager.store.SortOrder;
+import eu.simpl.vocabularymanager.store.VocabularyQuery;
+import eu.simpl.vocabularymanager.validation.ContentValidator;
+import jakarta.servlet.http.HttpServletRequest;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+
+/** Vocabulary management operations of the OpenAPI file (tag &quot;Vocabulary management&quot;). */
+@RestController
+@RequestMapping(&quot;/v1&quot;)
+public class VocabularyController {
+
+<span class="fc" id="L39">    private static final Set&lt;String&gt; CREATE_FIELDS = Set.of(&quot;vocabularyFile&quot;, &quot;name&quot;, &quot;description&quot;, &quot;changelog&quot;);</span>
+<span class="fc" id="L40">    private static final Set&lt;String&gt; VERSION_FIELDS = Set.of(&quot;vocabularyFile&quot;, &quot;description&quot;, &quot;changelog&quot;);</span>
+    private static final int MAX_SEARCH_ITEMS = 100;
+
+    private final VocabularyService service;
+    private final Representations representations;
+    private final JsonBodyReader jsonReader;
+    private final long maxUploadBytes;
+
+    /**
+     * Creates the controller.
+     *
+     * @param service the vocabulary service
+     * @param representations the wire mapper
+     * @param jsonReader the JSON body reader
+     * @param properties the configuration
+     */
+    public VocabularyController(
+            VocabularyService service,
+            Representations representations,
+            JsonBodyReader jsonReader,
+<span class="fc" id="L60">            AppProperties properties) {</span>
+<span class="fc" id="L61">        this.service = service;</span>
+<span class="fc" id="L62">        this.representations = representations;</span>
+<span class="fc" id="L63">        this.jsonReader = jsonReader;</span>
+<span class="fc" id="L64">        this.maxUploadBytes = properties.limits().maxUploadBytes();</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * GET /vocabularies (getVocabularies).
+     *
+     * @param request the request
+     * @return the page of vocabularies
+     */
+    @GetMapping(&quot;/vocabularies&quot;)
+    public ResponseEntity&lt;PageDto&lt;Representations.VocabularyDto&gt;&gt; list(HttpServletRequest request) {
+<span class="fc" id="L75">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L76">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L77">        MultiValueMap&lt;String, String&gt; parameters = RequestChecks.queryParameters(request, issues);</span>
+<span class="fc" id="L78">        RequestChecks.checkQueryNames(parameters, ListParameters.VOCABULARY_LIST, issues);</span>
+<span class="fc" id="L79">        String name = ListParameters.nameFilter(parameters, issues);</span>
+<span class="fc" id="L80">        VocabularyStatus status = ListParameters.statusFilter(parameters, issues);</span>
+<span class="fc" id="L81">        InstantRange created = ListParameters.dateFilter(parameters, &quot;creationDate&quot;, issues);</span>
+<span class="fc" id="L82">        InstantRange updated = ListParameters.dateFilter(parameters, &quot;lastUpdated&quot;, issues);</span>
+<span class="fc" id="L83">        SortOrder sort = ListParameters.vocabularySort(parameters, issues);</span>
+<span class="fc" id="L84">        Paging paging = Paging.from(parameters, issues);</span>
+<span class="fc" id="L85">        RequestChecks.throwIfAny(issues);</span>
+<span class="fc" id="L86">        Page&lt;Vocabulary&gt; page = service.listVocabularies(</span>
+<span class="fc" id="L87">                new VocabularyQuery(name, status, created, updated, sort, paging.offset(), paging.pageSize()));</span>
+<span class="fc" id="L88">        return json(paging.response(</span>
+                &quot;/vocabularies&quot;,
+<span class="fc" id="L90">                ListParameters.linkParameters(</span>
+<span class="fc" id="L91">                        parameters, List.of(&quot;name&quot;, &quot;status&quot;, &quot;creationDate&quot;, &quot;lastUpdated&quot;, &quot;sort&quot;)),</span>
+<span class="fc" id="L92">                page.total(),</span>
+<span class="fc" id="L93">                page.items().stream().map(representations::vocabulary).toList()));</span>
+    }
+
+    /**
+     * POST /vocabularies (createVocabulary).
+     *
+     * @param request the multipart request
+     * @param jwt the caller's token
+     * @return 201 with the created version 1
+     */
+    @PostMapping(&quot;/vocabularies&quot;)
+    public ResponseEntity&lt;Representations.CreatedVersionDto&gt; create(
+            HttpServletRequest request, @AuthenticationPrincipal Jwt jwt) {
+<span class="fc" id="L106">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L107">        RequestChecks.requireMultipart(request);</span>
+<span class="fc" id="L108">        MultipartForm form = MultipartForm.read(request);</span>
+<span class="fc" id="L109">        form.checkFileSize(ContentValidator.FIELD, maxUploadBytes);</span>
+<span class="fc" id="L110">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L111">        MultiValueMap&lt;String, String&gt; query = RequestChecks.queryParameters(request, issues);</span>
+<span class="fc" id="L112">        RequestChecks.checkQueryNames(query, Set.of(), issues);</span>
+<span class="fc" id="L113">        form.checkNames(CREATE_FIELDS, Set.of(), issues);</span>
+<span class="fc" id="L114">        String name = form.text(&quot;name&quot;, issues);</span>
+<span class="pc bpc" id="L115" title="1 of 4 branches missed.">        if (name == null &amp;&amp; !form.has(&quot;name&quot;)) {</span>
+<span class="fc" id="L116">            issues.add(Issue.schemaViolation(Issue.IN_BODY, &quot;name&quot;, &quot;Field 'name' is required.&quot;));</span>
+<span class="pc bpc" id="L117" title="2 of 4 branches missed.">        } else if (name != null &amp;&amp; !RequestChecks.validName(name)) {</span>
+<span class="nc" id="L118">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_BODY, &quot;name&quot;, &quot;Field 'name' must be 3 to 64 characters and match ^[A-Z][a-zA-Z0-9]*$.&quot;));
+        }
+<span class="fc" id="L121">        String description = RequestChecks.requiredText(&quot;description&quot;, form.text(&quot;description&quot;, issues), issues);</span>
+<span class="fc" id="L122">        String changelog = RequestChecks.requiredText(&quot;changelog&quot;, form.text(&quot;changelog&quot;, issues), issues);</span>
+<span class="fc" id="L123">        byte[] content = form.file(ContentValidator.FIELD, issues);</span>
+<span class="fc" id="L124">        RequestChecks.throwIfAny(issues);</span>
+<span class="fc" id="L125">        VocabularyService.Created created =</span>
+<span class="fc" id="L126">                service.createVocabulary(name, description, changelog, content, Callers.creator(jwt));</span>
+<span class="fc" id="L127">        return createdResponse(created);</span>
+    }
+
+    /**
+     * POST /vocabularies/searches (searchVocabularies), decision D38.
+     *
+     * @param request the JSON request
+     * @return the results, unpaged
+     */
+    @PostMapping(&quot;/vocabularies/searches&quot;)
+    public ResponseEntity&lt;PageDto&lt;Representations.SearchItemDto&gt;&gt; search(HttpServletRequest request) {
+<span class="fc" id="L138">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L139">        RequestChecks.requireJson(request);</span>
+<span class="fc" id="L140">        JsonNode body = jsonReader.read(request);</span>
+<span class="fc" id="L141">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L142">        MultiValueMap&lt;String, String&gt; query = RequestChecks.queryParameters(request, issues);</span>
+<span class="fc" id="L143">        RequestChecks.checkQueryNames(query, Set.of(), issues);</span>
+<span class="fc" id="L144">        List&lt;VocabularyService.SearchReference&gt; references = searchReferences(body, issues);</span>
+<span class="fc" id="L145">        RequestChecks.throwIfAny(issues);</span>
+<span class="fc" id="L146">        List&lt;Representations.SearchItemDto&gt; items = service.search(references).stream()</span>
+<span class="fc" id="L147">                .map(representations::searchItem)</span>
+<span class="fc" id="L148">                .toList();</span>
+<span class="fc" id="L149">        return json(PageDto.unpaged(items));</span>
+    }
+
+    private static List&lt;VocabularyService.SearchReference&gt; searchReferences(JsonNode body, List&lt;Issue&gt; issues) {
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">        if (!JsonBodyReader.checkObject(body, &quot;&quot;, Set.of(&quot;items&quot;), issues)) {</span>
+<span class="nc" id="L154">            return List.of();</span>
+        }
+<span class="fc" id="L156">        JsonNode items = body.get(&quot;items&quot;);</span>
+<span class="pc bpc" id="L157" title="3 of 8 branches missed.">        if (items == null || !items.isArray() || items.isEmpty() || items.size() &gt; MAX_SEARCH_ITEMS) {</span>
+<span class="fc" id="L158">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_BODY, &quot;items&quot;, &quot;Field 'items' must be an array of 1 to &quot; + MAX_SEARCH_ITEMS + &quot; items.&quot;));
+<span class="fc" id="L160">            return List.of();</span>
+        }
+<span class="fc" id="L162">        LinkedHashSet&lt;VocabularyService.SearchReference&gt; references = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        for (int i = 0; i &lt; items.size(); i++) {</span>
+<span class="fc" id="L164">            JsonNode item = items.get(i);</span>
+<span class="fc" id="L165">            String path = &quot;items[&quot; + i + &quot;]&quot;;</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">            if (!JsonBodyReader.checkObject(item, path, Set.of(&quot;name&quot;, &quot;version&quot;), issues)) {</span>
+<span class="nc" id="L167">                continue;</span>
+            }
+<span class="fc" id="L169">            JsonNode name = item.get(&quot;name&quot;);</span>
+<span class="fc" id="L170">            JsonNode version = item.get(&quot;version&quot;);</span>
+<span class="fc" id="L171">            boolean ok = true;</span>
+<span class="pc bpc" id="L172" title="3 of 6 branches missed.">            if (name == null || !name.isString() || !RequestChecks.validName(name.asString())) {</span>
+<span class="nc" id="L173">                issues.add(</span>
+<span class="nc" id="L174">                        Issue.schemaViolation(Issue.IN_BODY, path + &quot;.name&quot;, &quot;A valid vocabulary name is required.&quot;));</span>
+<span class="nc" id="L175">                ok = false;</span>
+            }
+<span class="fc" id="L177">            Long versionNumber = null;</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">            if (version != null) {</span>
+<span class="pc bpc" id="L179" title="2 of 4 branches missed.">                if (!version.isIntegralNumber() || version.bigIntegerValue().signum() &lt;= 0) {</span>
+<span class="nc" id="L180">                    issues.add(Issue.schemaViolation(</span>
+                            Issue.IN_BODY, path + &quot;.version&quot;, &quot;Field 'version' must be an integer of at least 1.&quot;));
+<span class="nc" id="L182">                    ok = false;</span>
+                } else {
+<span class="fc" id="L184">                    BigInteger big = version.bigIntegerValue();</span>
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">                    versionNumber = big.bitLength() &lt; 63 ? big.longValue() : Long.MAX_VALUE;</span>
+                }
+            }
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">            if (ok) {</span>
+<span class="fc" id="L189">                references.add(new VocabularyService.SearchReference(name.asString(), versionNumber));</span>
+            }
+        }
+<span class="fc" id="L192">        return List.copyOf(references);</span>
+    }
+
+    /**
+     * GET /vocabularies/{vocabularyName} (getVocabulary).
+     *
+     * @param vocabularyName the name
+     * @param request the request
+     * @return the vocabulary
+     */
+    @GetMapping(&quot;/vocabularies/{vocabularyName}&quot;)
+    public ResponseEntity&lt;Representations.VocabularyDto&gt; get(
+            @PathVariable String vocabularyName, HttpServletRequest request) {
+<span class="fc" id="L205">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L206">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L207">        RequestChecks.checkQueryNames(RequestChecks.queryParameters(request, issues), Set.of(), issues);</span>
+<span class="fc" id="L208">        RequestChecks.checkPathName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc" id="L209">        RequestChecks.throwIfAny(issues);</span>
+<span class="nc" id="L210">        return json(representations.vocabulary(service.getVocabulary(vocabularyName)));</span>
+    }
+
+    /**
+     * PATCH /vocabularies/{vocabularyName} (updateVocabularyStatus).
+     *
+     * @param vocabularyName the name
+     * @param request the JSON request
+     * @param jwt the caller's token
+     * @return the vocabulary after the change
+     */
+    @PatchMapping(&quot;/vocabularies/{vocabularyName}&quot;)
+    public ResponseEntity&lt;Representations.VocabularyDto&gt; changeStatus(
+            @PathVariable String vocabularyName, HttpServletRequest request, @AuthenticationPrincipal Jwt jwt) {
+<span class="fc" id="L224">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L225">        RequestChecks.requireJson(request);</span>
+<span class="fc" id="L226">        JsonNode body = jsonReader.read(request);</span>
+<span class="fc" id="L227">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L228">        RequestChecks.checkQueryNames(RequestChecks.queryParameters(request, issues), Set.of(), issues);</span>
+<span class="fc" id="L229">        RequestChecks.checkPathName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc" id="L230">        VocabularyStatus status = StatusBody.read(body, issues);</span>
+<span class="fc" id="L231">        RequestChecks.throwIfAny(issues);</span>
+<span class="fc" id="L232">        Vocabulary changed = service.changeVocabularyStatus(vocabularyName, status, Callers.creator(jwt));</span>
+<span class="fc" id="L233">        return json(representations.vocabulary(changed));</span>
+    }
+
+    /**
+     * GET /vocabularies/{vocabularyName}/versions (getVocabularyVersions).
+     *
+     * @param vocabularyName the name
+     * @param request the request
+     * @return the page of versions
+     */
+    @GetMapping(&quot;/vocabularies/{vocabularyName}/versions&quot;)
+    public ResponseEntity&lt;PageDto&lt;Representations.VersionDto&gt;&gt; versions(
+            @PathVariable String vocabularyName, HttpServletRequest request) {
+<span class="fc" id="L246">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L247">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L248">        MultiValueMap&lt;String, String&gt; parameters = RequestChecks.queryParameters(request, issues);</span>
+<span class="fc" id="L249">        RequestChecks.checkQueryNames(parameters, ListParameters.VERSION_LIST, issues);</span>
+<span class="fc" id="L250">        RequestChecks.checkPathName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc" id="L251">        SortOrder sort = ListParameters.versionSort(parameters, issues);</span>
+<span class="fc" id="L252">        Paging paging = Paging.from(parameters, issues);</span>
+<span class="fc" id="L253">        RequestChecks.throwIfAny(issues);</span>
+<span class="fc" id="L254">        Vocabulary vocabulary = service.getVocabulary(vocabularyName);</span>
+<span class="fc" id="L255">        Page&lt;VocabularyVersion&gt; page = service.listVersions(vocabularyName, sort, paging.offset(), paging.pageSize());</span>
+<span class="fc" id="L256">        return json(paging.response(</span>
+                &quot;/vocabularies/&quot; + vocabularyName + &quot;/versions&quot;,
+<span class="fc" id="L258">                ListParameters.linkParameters(parameters, List.of(&quot;sort&quot;)),</span>
+<span class="fc" id="L259">                page.total(),</span>
+<span class="fc" id="L260">                page.items().stream()</span>
+<span class="fc" id="L261">                        .map(v -&gt; representations.version(v, vocabulary.latestVersion()))</span>
+<span class="fc" id="L262">                        .toList()));</span>
+    }
+
+    /**
+     * POST /vocabularies/{vocabularyName}/versions (createVocabularyVersion).
+     *
+     * @param vocabularyName the name
+     * @param request the multipart request
+     * @param jwt the caller's token
+     * @return 201 with the created version
+     */
+    @PostMapping(&quot;/vocabularies/{vocabularyName}/versions&quot;)
+    public ResponseEntity&lt;Representations.CreatedVersionDto&gt; createVersion(
+            @PathVariable String vocabularyName, HttpServletRequest request, @AuthenticationPrincipal Jwt jwt) {
+<span class="fc" id="L276">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L277">        RequestChecks.requireMultipart(request);</span>
+<span class="fc" id="L278">        MultipartForm form = MultipartForm.read(request);</span>
+<span class="fc" id="L279">        form.checkFileSize(ContentValidator.FIELD, maxUploadBytes);</span>
+<span class="fc" id="L280">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L281">        RequestChecks.checkQueryNames(RequestChecks.queryParameters(request, issues), Set.of(), issues);</span>
+<span class="fc" id="L282">        RequestChecks.checkPathName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc bfc" id="L283" title="All 2 branches covered.">        if (form.has(&quot;version&quot;)) {</span>
+<span class="fc" id="L284">            issues.add(Issue.schemaViolation(</span>
+                    Issue.IN_BODY, &quot;version&quot;, &quot;The version number is assigned automatically; do not send 'version'.&quot;));
+        }
+<span class="fc" id="L287">        form.checkNames(VERSION_FIELDS, Set.of(), issues);</span>
+<span class="pc bpc" id="L288" title="1 of 4 branches missed.">        issues.removeIf(i -&gt; &quot;version&quot;.equals(i.name()) &amp;&amp; i.type().endsWith(&quot;unknownInput&quot;));</span>
+<span class="fc" id="L289">        String description = RequestChecks.requiredText(&quot;description&quot;, form.text(&quot;description&quot;, issues), issues);</span>
+<span class="fc" id="L290">        String changelog = RequestChecks.requiredText(&quot;changelog&quot;, form.text(&quot;changelog&quot;, issues), issues);</span>
+<span class="fc" id="L291">        byte[] content = form.file(ContentValidator.FIELD, issues);</span>
+<span class="fc" id="L292">        RequestChecks.throwIfAny(issues);</span>
+<span class="fc" id="L293">        VocabularyService.Created created =</span>
+<span class="fc" id="L294">                service.createVersion(vocabularyName, description, changelog, content, Callers.creator(jwt));</span>
+<span class="fc" id="L295">        return createdResponse(created);</span>
+    }
+
+    /**
+     * GET /vocabularies/{vocabularyName}/versions/{version} (getVocabularyVersion).
+     *
+     * @param vocabularyName the name
+     * @param version the version number
+     * @param request the request
+     * @return the version
+     */
+    @GetMapping(&quot;/vocabularies/{vocabularyName}/versions/{version}&quot;)
+    public ResponseEntity&lt;Representations.VersionDto&gt; getVersion(
+            @PathVariable String vocabularyName, @PathVariable String version, HttpServletRequest request) {
+<span class="fc" id="L309">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L310">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L311">        RequestChecks.checkQueryNames(RequestChecks.queryParameters(request, issues), Set.of(), issues);</span>
+<span class="fc" id="L312">        RequestChecks.checkPathName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc" id="L313">        RequestChecks.checkPathVersion(version, issues);</span>
+<span class="nc" id="L314">        RequestChecks.throwIfAny(issues);</span>
+<span class="nc" id="L315">        Vocabulary vocabulary = service.getVocabulary(vocabularyName);</span>
+<span class="nc" id="L316">        VocabularyVersion found = service.getVersion(vocabularyName, version);</span>
+<span class="nc" id="L317">        return json(representations.version(found, vocabulary.latestVersion()));</span>
+    }
+
+    /**
+     * PATCH /vocabularies/{vocabularyName}/versions/{version} (updateVocabularyVersionStatus).
+     *
+     * @param vocabularyName the name
+     * @param version the version number
+     * @param request the JSON request
+     * @param jwt the caller's token
+     * @return the version after the change
+     */
+    @PatchMapping(&quot;/vocabularies/{vocabularyName}/versions/{version}&quot;)
+    public ResponseEntity&lt;Representations.VersionDto&gt; changeVersionStatus(
+            @PathVariable String vocabularyName,
+            @PathVariable String version,
+            HttpServletRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+<span class="fc" id="L335">        RequestChecks.requireAcceptable(request, MediaType.APPLICATION_JSON);</span>
+<span class="fc" id="L336">        RequestChecks.requireJson(request);</span>
+<span class="fc" id="L337">        JsonNode body = jsonReader.read(request);</span>
+<span class="fc" id="L338">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L339">        RequestChecks.checkQueryNames(RequestChecks.queryParameters(request, issues), Set.of(), issues);</span>
+<span class="fc" id="L340">        RequestChecks.checkPathName(&quot;vocabularyName&quot;, vocabularyName, issues);</span>
+<span class="fc" id="L341">        RequestChecks.checkPathVersion(version, issues);</span>
+<span class="fc" id="L342">        VocabularyStatus status = StatusBody.read(body, issues);</span>
+<span class="fc" id="L343">        RequestChecks.throwIfAny(issues);</span>
+<span class="nc" id="L344">        VocabularyVersion changed = service.changeVersionStatus(vocabularyName, version, status, Callers.creator(jwt));</span>
+<span class="nc" id="L345">        Vocabulary vocabulary = service.getVocabulary(vocabularyName);</span>
+<span class="nc" id="L346">        return json(representations.version(changed, vocabulary.latestVersion()));</span>
+    }
+
+    private ResponseEntity&lt;Representations.CreatedVersionDto&gt; createdResponse(VocabularyService.Created created) {
+<span class="fc" id="L350">        String location = Representations.versionHref(</span>
+<span class="fc" id="L351">                created.version().name(), created.version().version());</span>
+<span class="fc" id="L352">        return ResponseEntity.status(HttpStatus.CREATED)</span>
+<span class="fc" id="L353">                .header(&quot;Location&quot;, location)</span>
+<span class="fc" id="L354">                .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L355">                .body(representations.created(created));</span>
+    }
+
+    private static &lt;T&gt; ResponseEntity&lt;T&gt; json(T body) {
+<span class="fc" id="L359">        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>
