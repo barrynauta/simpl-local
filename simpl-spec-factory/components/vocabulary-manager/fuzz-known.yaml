@@ -33,3 +33,14 @@ known:
      reason: "namespaceUri, aliasUris and sourceUri must be absolute URIs"}
   - {operation: "*", check: ST202, detail_contains: "must be an integer", decision: D91,
      reason: "integers are 32-bit, 1 to 2147483647; larger values give 400"}
+  # Field names, not wording: the server's words change with every build (run 10).
+  - {operation: "*", check: ST202, detail_contains: "'version'", decision: D91,
+     reason: "integers are 32-bit, 1 to 2147483647 (D91, D112)"}
+  - {operation: "*", check: ST202, detail_contains: "'pageSize'", decision: D22,
+     reason: "pageSize 1 to 100; integers 32-bit (D91)"}
+  - {operation: "*", check: ST202, detail_contains: "'page'", decision: D22,
+     reason: "page at least 1; integers 32-bit (D91)"}
+  - {operation: "*", check: ST202, detail_contains: "'creationDate'", decision: D20,
+     reason: "a value matching the pattern but not a valid date returns 400"}
+  - {operation: "*", check: ST202, detail_contains: "'lastUpdated'", decision: D20,
+     reason: "a value matching the pattern but not a valid date returns 400"}

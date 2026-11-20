@@ -331,6 +331,65 @@ Earlier decisions changed by these:
 - D79: refined by D116, D116 formats added.
 - D97: refined by D117, model differences with the CDM listed.
 
+## Feedback from run 10 (added 20 Nov 2026)
+
+Run 10 raised 24 owner questions (R-125 to R-148, report section 6). All 24 are decided here.
+
+| Id | Topic | Decision | Status | Closes |
+|---|---|---|---|---|
+| D118 | Latest version link | The whole text 'Latest ACTIVE version: <n>' is one link to that version. | provisional | R-125 |
+| D119 | Parallel writes in the D43 test | D92 stays: a fifth upload on one instance gets 503. The D43 test sends at most 4 parallel new versions. | provisional | R-126 |
+| D120 | Management port with replicas | The management port may sit on the front network when it is published on no host port and the proxy never forwards /actuator. Step 70 reads metrics from inside the stack. | provisional | R-127 |
+| D121 | Part with an empty name | The 400 for a part with an empty name is dropped from D70. The container ignores such a part; the request is judged without it. No own multipart parser. | provisional | R-128 |
+| D122 | Front proxy answers | The proxy's body limit is 7 MB, above D76, so the service decides on sizes. Where the proxy answers itself (TRACE, malformed request, above 7 MB) it returns problem+json with the D48 type and status (405, 400, 413). | provisional | R-129 |
+| D123 | Content-Security-Policy | The UI sends Content-Security-Policy: default-src 'self'; connect-src 'self' and the identity provider URL; no inline scripts or styles; frame-ancestors 'none'. UI tests run axe with the browser's CSP bypass. | provisional | R-130 |
+| D124 | Base IRI of external files | For an external vocabulary file the namespace URI is the base for relative IRIs. | provisional | R-131 |
+| D125 | Size of the validation report | The validation report holds at most 1000 issues. When there are more, it holds the first 1000 in file order and the problem body has "truncated": true. Added to D79. | provisional | R-132 |
+| D126 | HEAD and OPTIONS | HEAD and OPTIONS on declared paths get 405 with an Allow header, like other undeclared methods (D67). The UI is same-origin through the proxy, so no CORS. | provisional | R-133 |
+| D127 | Accept ranges | application/* is accepted like */*; the response uses the operation's normal media type. | provisional | R-134 |
+| D128 | Status sort order | Status sorts alphabetically: ACTIVE before DEPRECATED ascending. This is also the business order. | provisional | R-135 |
+| D129 | Unknown key after a failed fetch | Inside the 10 s window after a failed key fetch, an unknown key id gives 503 (keys not available, D44). After a successful fetch it gives 401 (D88). | provisional | R-136 |
+| D130 | Date-time offsets | An offset beyond plus or minus 18:00 gives 400, like any invalid date (D20). | provisional | R-137 |
+| D131 | Start command | The build profile names bash stack.sh up as the start command; stack.sh creates the local secrets. The .env file is never committed. | provisional | R-138 |
+| D132 | Token claim checks | Issuer, audience, expiry and not-before are checked with Nimbus DefaultJWTClaimsVerifier or Spring Security JwtValidators. Own code only for the key fetch timing of D88. | provisional | R-139 |
+| D133 | Routing and negotiation | Requests are routed with Spring MVC mappings that declare produces and consumes; query parameters are bound by the framework, with the strict checks of D52 on top. An own test fixes the order 404, 405, 406, 415. | provisional | R-140 |
+| D134 | Breaker failures and health | A store 5xx and a timeout count as breaker failures; a 4xx from the store does not. GET /v1/health never fetches keys; it reports the cached key state and checks the store with one bounded call. | provisional | R-141 |
+| D135 | Interfaces for single implementations | No interface for a class with one implementation; CODE-11 is a recorded deviation with this decision as reason. | provisional | R-142 |
+| D136 | Q1 per operation | The read p95 of Q1 holds per operation, including the paged list at the full D99 seed. | provisional | R-143 |
+| D137 | Issue name for an empty array | The issue is named after the array (namespaceUris or aliasUris), in body. | provisional | R-144 |
+| D138 | Repeated query parameter | Exactly one issue, in query, named after the parameter. | provisional | R-145 |
+| D139 | Known method on a declared path | A known method that the path does not declare (for example PUT /vocabularies) gets 405 with Allow, with or without a token. 405 comes before 401 (D67). | provisional | R-146 |
+| D140 | Literal in S1 locations | The literal is given in N-Triples form: the lexical form in double quotes, followed by @lang or ^^<datatype> when present. | provisional | R-147 |
+| D141 | Required fields | Every required field has aria-required="true" and a visible '*' after its label; the label text stays as D60. | provisional | R-148 |
+
+Earlier decisions changed by these:
+
+- D36: refined by D118, whole text is the link.
+- D43: refined by D119, test with at most 4 parallel writes.
+- D98: refined by D120, front network allowed when unpublished and not proxied.
+- D70: refined by D121, empty part name no longer 400.
+- D79: refined by D121, empty part name dropped from the list.
+- D48: refined by D122, proxy errors also problem+json.
+- D57: refined by D124, also for external files.
+- D9: refined by D125, at most 1000 issues.
+- D79: refined by D125, truncated field.
+- D67: refined by D126, HEAD and OPTIONS also 405.
+- D63: refined by D127, application/* accepted.
+- D23: refined by D128, status sort alphabetical.
+- D88: refined by D129, 503 after a failed fetch.
+- D20: refined by D130, offset limit 18:00.
+- E2: refined by D131, start via stack.sh.
+- D108: refined by D132, claims via library.
+- D93: refined by D133, framework routing.
+- D103: refined by D134, store 5xx counts.
+- D44: refined by D134, health does not fetch keys.
+- Q1: refined by D136, per operation.
+- D38: refined by D137, issue named after the array.
+- D52: refined by D138, one issue per repeated parameter.
+- D84: refined by D139, 405 before 401 and 404.
+- D65: refined by D140, literal in N-Triples form.
+- D60: refined by D141, required markers.
+
 ## Environment choices
 
 | Id | Topic | Choice |
