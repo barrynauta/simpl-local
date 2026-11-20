@@ -390,6 +390,70 @@ Earlier decisions changed by these:
 - D65: refined by D140, literal in N-Triples form.
 - D60: refined by D141, required markers.
 
+## Feedback from run 11 (added 20 Nov 2026)
+
+Run 11 raised 26 owner questions (R-149 to R-174, report section 6). All 26 are decided here.
+
+| Id | Topic | Decision | Status | Closes |
+|---|---|---|---|---|
+| D142 | Language tags in S4 | Language tags are compared case-insensitively (BCP 47): @EN and @en are the same language and give one S4 issue. The location writes the tag in lower case. | provisional | R-149 |
+| D143 | S5 granularity | One S5 issue per resource, whatever the number of disjoint pairs. The location stays resource '<IRI>' (D65). | provisional | R-150 |
+| D144 | S3 position | One S3 issue per property. The location is resource '<property IRI>' as D65, with no line, so the order of the declarations does not matter. | provisional | R-151 |
+| D145 | Prefix declared twice | Each distinct namespace IRI is checked once. The same IRI declared under two prefixes, or twice under one prefix, gives one result, with the location of its first declaration. | provisional | R-152 |
+| D146 | Other paths under an internal name | D12's 'followed by /' covers any further path: <contentBase>/content/<Name>/<anything else> is an internal reference to the latest version of <Name>. It is S7 only when <Name> does not exist. Only /versions/<v> selects a version (D69 stays for a bad <v>). | provisional | R-153 |
+| D147 | External name conflict | Checks run in this order and stop at the first conflict: name, namespace URI, then alias URIs in request order. The name text is "An external vocabulary with name '<Name>' is already registered."; namespace and alias keep the text of D55. | provisional | R-154 |
+| D148 | Blank optional external description | A description that is blank after trimming is treated as absent: it is not stored and the response has no description. | provisional | R-155 |
+| D149 | Query parameters on GET /health | D21 applies to GET /health as to every GET operation: an unknown query parameter gives 400. The container health check sends none (D152). | provisional | R-156 |
+| D150 | JSON body over 1 MB | 413 with the UploadTooLargeResponse type of D15, detail 'The request body is larger than 1 MB.', and no issues. Tests check status, type and detail. | provisional | R-157 |
+| D151 | Accept problem+json on JSON operations | Accepted, as D63 says. A success carries application/json; only errors carry application/problem+json. | provisional | R-158 |
+| D152 | Container health check | The container health check uses the liveness probe on the management port (/actuator/health/liveness), which does not check the store or the identity provider. GET /v1/health stays the readiness view of D44 and D134. A backend stays running and healthy while the store is down. | provisional | R-159 |
+| D153 | Search result paging fields | Search results carry no paging links. page is 1, pageSize 100, total the number of items; totalPages is 1 when there are results and 0 when there are none. | provisional | R-160 |
+| D154 | Version list sort by name | Confirmed: for both sort=name and sort=-name the tie-break is version descending (D23), so both give the default order. | provisional | R-161 |
+| D155 | Proxy internal paths | Proxy internal paths are not reachable from outside. A request to one is handled like any unknown path: 401 without a token, 404 with one, both problem+json (D67). | provisional | R-162 |
+| D156 | TDB2 compaction | The build ships a compaction script using the Fuseki online compact (/$/compact, delete old) and an example weekly schedule, run after the daily backup of Q3. No downtime is planned; operations own the schedule in production. | provisional | R-163 |
+| D157 | Retry backoff for conditional writes | Retries of D82 wait 50, 100, 200, 400 and 800 ms, each with up to 50 % random jitter, inside the D71 budget. Content validation is never repeated on a retry (D92 stays). | provisional | R-164 |
+| D158 | Rejections by the HTTP server | Every answer of the backend is problem+json, also when its HTTP server refuses the request before routing. Bad encoding and too many parameters: 400, type urn:problem-type:belgif:badRequest, no issues. URL too long: 414; headers too large: 431; their type is free (D55). The build raises the server limits so the service's own checks (D21, D138) see normal requests. | provisional | R-165 |
+| D159 | Latest version column | The list gets a column 'Latest version' between Status and Description, showing the number of the latest version (D5). D100's order becomes: Name, Status, Latest version, Description, Creator, Date created, Last updated, Actions. The column is not sortable. | provisional | R-166 |
+| D160 | Version lastUpdateDate | A PATCH that changes a version's status sets that version's lastUpdateDate and the vocabulary's lastUpdateDate to the time of the change. A same-status request (409, D4) changes nothing. | provisional | R-167 |
+| D161 | 409 on the forms | The alert shows the problem detail as the API sends it, as for 413 (D15) and the 400 report. The form stays open with the values entered. | provisional | R-168 |
+| D162 | Order of checks on reads | Reads run their checks in this order and stop at the first failure: 401, 403, 406 (D63), 400 for path and query values (D21, D49), then the store: 404 or 503. A query error is reported without touching the store; 403 comes before 404. | provisional | R-169 |
+| D163 | UI selection and sort markers | A version is selected by its version number, a link to /vocabularies/<Name>/versions/<n>; the selected row has aria-current="true". A sortable column header holds a button; the th carries aria-sort ascending, descending or none, and an arrow shows the direction. | provisional | R-170 |
+| D164 | Failed-token limiting | Limiting repeated token failures belongs to the Tier 1 gateway in production. The local stack does not limit them; the build records OWT-A07 as a deviation with this decision as reason. | provisional | R-171 |
+| D165 | createdBy as personal data | createdBy stays the email (D27); viewers may see it, as all users are Governance Authority staff. The logical model and the CDM differences mark it as personal data. It is not written to logs. Encryption at rest belongs to the platform, recorded with the API-25 deviation. | provisional | R-172 |
+| D166 | TRACE inside the network | The backend refuses TRACE itself with 405 and Allow (D67); allowTrace stays off. | provisional | R-173 |
+| D167 | UI component library | E6 wins: the UI uses PrimeVue in unstyled mode with TailwindCSS from npm. build.yaml is aligned. The participant-fe-components library itself stays out, because it is not available to the factory. | provisional | R-174 |
+
+Earlier decisions changed by these:
+
+- D65: refined by D142, tags compared case-insensitively, written lower case.
+- D65: refined by D143, one S5 issue per resource.
+- D12: refined by D145, each distinct namespace checked once.
+- D12: refined by D146, any further path under <Name> is the latest version.
+- D55: refined by D147, external name conflict text and check order.
+- D56: refined by D148, blank description is absent.
+- D21: refined by D149, also GET /health.
+- D110: refined by D150, 413 text for JSON bodies.
+- D63: refined by D151, 200 stays application/json.
+- D44: refined by D152, container uses liveness, not GET /health.
+- D38: refined by D153, no links, totalPages 0 for an empty result.
+- D122: refined by D155, internal paths behave as unknown paths.
+- Q3: refined by D156, weekly compaction after the backup.
+- D82: refined by D157, backoff fixed.
+- D48: refined by D158, server-level refusals also problem+json.
+- D122: refined by D158, same for the backend's own server.
+- D100: refined by D159, Latest version column added.
+- D4: refined by D160, manual PATCH also sets lastUpdateDate.
+- D25: refined by D160, version PATCH updates the vocabulary's date.
+- D37: refined by D161, 409 alert shows the API detail.
+- D46: refined by D161, same.
+- D51: refined by D162, read order added.
+- D35: refined by D163, selection by version link.
+- D23: refined by D163, sort markers.
+- D17: refined by D164, failed-token limiting is the gateway's.
+- D27: refined by D165, marked as personal data, not logged.
+- D67: refined by D166, backend refuses TRACE itself.
+- E6: refined by D167, PrimeVue and Tailwind from npm, build.yaml aligned.
+
 ## Environment choices
 
 | Id | Topic | Choice |
