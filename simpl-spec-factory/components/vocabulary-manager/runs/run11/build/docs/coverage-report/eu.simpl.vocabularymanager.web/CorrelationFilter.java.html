@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CorrelationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">CorrelationFilter.java</span></div><h1>CorrelationFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.config.TraceHeaders;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.UUID;
+import java.util.regex.Pattern;
+import org.slf4j.MDC;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Reads or creates X-Correlation-Id, returns it, and puts it and the operationId in the log
+ * context (D86, D96, MSV-09). The trace id comes from Micrometer Tracing.
+ */
+<span class="fc" id="L18">public class CorrelationFilter extends OncePerRequestFilter {</span>
+
+<span class="fc" id="L20">    private static final Pattern SAFE = Pattern.compile(&quot;[A-Za-z0-9._:-]{1,128}&quot;);</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L25">        String given = request.getHeader(TraceHeaders.CORRELATION_HEADER);</span>
+<span class="pc bpc" id="L26" title="3 of 4 branches missed.">        String correlationId = given != null &amp;&amp; SAFE.matcher(given).matches()</span>
+<span class="nc" id="L27">                ? given</span>
+<span class="fc" id="L28">                : UUID.randomUUID().toString();</span>
+<span class="fc" id="L29">        MDC.put(TraceHeaders.CORRELATION_MDC, correlationId);</span>
+<span class="fc" id="L30">        ApiRoutes.relative(request.getRequestURI())</span>
+<span class="fc" id="L31">                .flatMap(path -&gt; ApiRoutes.find(request.getMethod(), path))</span>
+<span class="fc" id="L32">                .ifPresent(route -&gt; MDC.put(&quot;operationId&quot;, route.operationId()));</span>
+<span class="fc" id="L33">        response.setHeader(TraceHeaders.CORRELATION_HEADER, correlationId);</span>
+        try {
+<span class="fc" id="L35">            chain.doFilter(request, response);</span>
+        } finally {
+<span class="fc" id="L37">            MDC.remove(TraceHeaders.CORRELATION_MDC);</span>
+<span class="fc" id="L38">            MDC.remove(&quot;operationId&quot;);</span>
+<span class="fc" id="L39">            MDC.remove(&quot;userId&quot;);</span>
+<span class="fc" id="L40">            MDC.remove(&quot;vocabularyName&quot;);</span>
+<span class="fc" id="L41">            MDC.remove(&quot;version&quot;);</span>
+        }
+<span class="fc" id="L43">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

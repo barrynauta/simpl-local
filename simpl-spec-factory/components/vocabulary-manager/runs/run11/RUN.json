@@ -1,0 +1,191 @@
+{
+ "project": "Simpl-Open",
+ "component": "vocabulary-manager",
+ "run": "run11",
+ "engine": "48020bf",
+ "project_root": "~/src/simpl-local/simpl-spec-factory",
+ "rules": 405,
+ "build_profile": {
+  "component": "vocabulary-manager",
+  "compose_project": "vm-factory-run11",
+  "start": "bash stack.sh up",
+  "stack": {
+   "backend": "Java 21, Spring Boot 4 (4.1.2 or a newer 4.x patch; upstream uses 4.1.0), Maven (one project, modules allowed)",
+   "store": "Apache Jena Fuseki, dataset 'vocabulary' (decision E3)",
+   "identity_provider": "Keycloak with the realm, clients and users of decision E1, imported at startup; password grant enabled for a public test client 'vocabulary-tests'",
+   "ui": "Vue 3 + Vite + TypeScript, plain component library, served by nginx that also proxies the API"
+  },
+  "ports": {
+   "api": 8196,
+   "ui": 4433,
+   "keycloak": 8193,
+   "api_store_down": 8199
+  },
+  "tests": {
+   "harness": "Python 3, behave, requests; Playwright for Python for the UI steps of step 60",
+   "environment": {
+    "API_URL": "http://localhost:8196/v1",
+    "TOKEN_URL": "http://localhost:8193/realms/simpl/protocol/openid-connect/token",
+    "TOKEN_CLIENT": "vocabulary-tests",
+    "TOKEN_CLIENT_NOAUD": "vocabulary-tests-noaud",
+    "TOKEN_URL_OTHER": "http://localhost:8193/realms/simpl-other/protocol/openid-connect/token",
+    "UI_URL": "http://localhost:4433",
+    "STORE_DOWN_API_URL": "http://localhost:8199/v1"
+   },
+   "users": "from decision E1 (ga-admin, ga-viewer, ga-norole, password 'Password1!')",
+   "reset": "tests may not reset the store; every scenario creates its own data with a unique run id"
+  },
+  "finish_line": [
+   "the start command succeeds from a clean state",
+   {
+    "smoke.sh": "token for ga-admin, create a vocabulary, create a new version, list, download, search; ga-viewer gets 403 on create; no token gets 401"
+   },
+   "mvn verify green, with a JaCoCo report",
+   "Trivy scan of the dependencies and every image of the stack; HIGH and CRITICAL fixed or listed with a reason in SECURITY-SCAN.md (Trivy is at /opt/homebrew/bin/trivy)",
+   "leave the stack running"
+  ],
+  "compare_with": {
+   "run": "run10 (20 Nov 2026), components/vocabulary-manager/runs/run10, 527 of 530 cases after the API rerun, two backends, 3 build bugs (D121 drops one); run9 (19 Nov 2026), components/vocabulary-manager/runs/run9, 476 of 479 cases, Q1 met at the D99 load, 2 UI failures (D100, D101 now); run8 (19 Nov 2026), components/vocabulary-manager/runs/run8, 463 of 465 cases, 1 UI failure on the report role (D90 now), Q1 throughput missed (D99 now); run7 (19 Nov 2026), components/vocabulary-manager/runs/run7, 420 of 424 cases, Q1 met at Q4 design load, design review gaps now decided (D82 to D87); run6 (19 Nov 2026), components/vocabulary-manager/runs/run6, 428 of 432 cases, first orchestrated run, failures at the 5 MB store write (D71 now); run5 (18 Nov 2026), components/vocabulary-manager/runs/run5, 463 of 468 cases, Spring Boot 4.1.2, 0 CRITICAL in own targets; run4 (17 Nov 2026), components/vocabulary-manager/runs/run4, 379 of 386 scenarios, Trivy 17 CRITICAL; run1 (27 Oct 2026), components/vocabulary-manager/generated/run1, 74 of 74 API and 22 of 22 UI scenarios of its own suite"
+  },
+  "fuzz": {
+   "openapi": "specs/api/vocabulary_openapi-tier1.yaml",
+   "user": "ga-admin",
+   "password": "Password1!",
+   "max_examples": 30,
+   "seed": 1,
+   "max_time": 300
+  }
+ },
+ "steps": {
+  "prepare": {
+   "start": "2026-11-20T13:25:27",
+   "status": "done",
+   "end": "2026-11-20T13:25:27",
+   "seconds": 0
+  },
+  "write": {
+   "status": "done",
+   "start": "2026-11-20T13:25:27",
+   "write_tests": {
+    "model": "default",
+    "cost_usd": 9.774586799999998,
+    "turns": 1,
+    "seconds": 2166,
+    "session_id": "7172f6ab-b76a-4385-847c-4d524230cc1b",
+    "is_error": false
+   },
+   "write_code": {
+    "model": "default",
+    "cost_usd": 25.766424599999993,
+    "turns": 225,
+    "seconds": 3676,
+    "session_id": "6685f66e-bc6f-498f-82a8-95a5973829e3",
+    "is_error": false
+   },
+   "end": "2026-11-20T14:26:43",
+   "seconds": 3676
+  },
+  "review": {
+   "status": "done",
+   "start": "2026-11-20T14:26:43",
+   "review_45a": {
+    "model": "default",
+    "cost_usd": 4.161022,
+    "turns": 34,
+    "seconds": 428,
+    "session_id": "70ef6808-46be-4fb5-834f-b7ddff49d569",
+    "is_error": false
+   },
+   "fix_45b": {
+    "model": "default",
+    "cost_usd": 10.678847799999998,
+    "turns": 8,
+    "seconds": 68,
+    "session_id": "7172f6ab-b76a-4385-847c-4d524230cc1b",
+    "is_error": false
+   },
+   "end": "2026-11-20T14:35:00",
+   "seconds": 497
+  },
+  "stack": {
+   "status": "done",
+   "start": "2026-11-20T14:35:00",
+   "end": "2026-11-20T14:35:02",
+   "seconds": 3
+  },
+  "suite": {
+   "status": "done",
+   "start": "2026-11-20T14:35:02",
+   "end": "2026-11-20T14:35:03",
+   "seconds": 0
+  },
+  "ui": {
+   "status": "done",
+   "start": "2026-11-20T14:35:03",
+   "end": "2026-11-20T15:14:28",
+   "seconds": 2366
+  },
+  "store_down": {
+   "status": "done",
+   "start": "2026-11-20T15:14:28",
+   "end": "2026-11-20T15:14:37",
+   "seconds": 9
+  },
+  "scans": {
+   "status": "done",
+   "start": "2026-11-20T15:14:37",
+   "end": "2026-11-20T15:14:41",
+   "seconds": 4
+  },
+  "fuzz": {
+   "status": "done",
+   "start": "2026-11-20T15:14:41",
+   "end": "2026-11-20T15:19:42",
+   "seconds": 301
+  },
+  "load": {
+   "status": "done",
+   "start": "2026-11-20T15:19:42",
+   "end": "2026-11-20T15:33:10",
+   "seconds": 808
+  },
+  "verify": {
+   "status": "done",
+   "start": "2026-11-20T15:33:10",
+   "end": "2026-11-20T15:33:10",
+   "seconds": 0
+  },
+  "design": {
+   "status": "done",
+   "start": "2026-11-20T15:33:10",
+   "design_70c": {
+    "model": "default",
+    "cost_usd": 2.993002,
+    "turns": 32,
+    "seconds": 356,
+    "session_id": "41268fda-c2f4-4f22-9539-48e1abb628a2",
+    "is_error": false
+   },
+   "end": "2026-11-20T15:39:06",
+   "seconds": 356
+  },
+  "report": {
+   "status": "done",
+   "start": "2026-11-20T15:39:06",
+   "report_70b": {
+    "model": "default",
+    "cost_usd": 2.1978236,
+    "turns": 24,
+    "seconds": 219,
+    "session_id": "27303094-38d0-4e3b-853e-73441051c40d",
+    "is_error": false
+   },
+   "end": "2026-11-20T15:42:45",
+   "seconds": 219
+  },
+  "export": {
+   "status": "running",
+   "start": "2026-11-20T15:42:45"
+  }
+ }
+}

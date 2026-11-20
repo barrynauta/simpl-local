@@ -1,0 +1,26 @@
+# Fuseki configuration of the Vocabulary Manager store (E3, D83).
+# No anonymous access: the read user may query, only the update user may update, and only the
+# backup user may read the whole dataset as N-Quads (backup script). Admin endpoints are off
+# (the server runs as FusekiServerPlainCmd); only /$/ping is on for the health check.
+PREFIX fuseki: <http://jena.apache.org/fuseki#>
+PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX tdb2:   <http://jena.apache.org/2016/tdb#>
+PREFIX ja:     <http://jena.hpl.hp.com/2005/11/Assembler#>
+
+[] rdf:type fuseki:Server ;
+   fuseki:passwd "/fuseki/run/passwd" ;
+   fuseki:auth "basic" .
+
+<#service> rdf:type fuseki:Service ;
+    fuseki:name "vocabulary" ;
+    fuseki:endpoint [ fuseki:operation fuseki:query ;  fuseki:name "query" ;
+                      fuseki:allowedUsers "reader", "updater", "backup" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:update ; fuseki:name "update" ;
+                      fuseki:allowedUsers "updater" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:gsp-r ;  fuseki:name "data" ;
+                      fuseki:allowedUsers "backup" ] ;
+    fuseki:dataset <#dataset> .
+
+<#dataset> rdf:type tdb2:DatasetTDB2 ;
+    tdb2:location "/fuseki/databases/vocabulary" ;
+    ja:context [ ja:cxtName "arq:queryTimeout" ; ja:cxtValue "15000" ] .

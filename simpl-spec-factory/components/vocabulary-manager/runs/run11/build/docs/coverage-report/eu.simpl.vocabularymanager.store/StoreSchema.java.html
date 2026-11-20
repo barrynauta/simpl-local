@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StoreSchema.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">StoreSchema.java</span></div><h1>StoreSchema.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.query.ParameterizedSparqlString;
+
+/**
+ * The physical model in the RDF store: named graphs, IRIs and properties. docs/physical-model.ttl
+ * holds the SHACL shapes of each named graph; an own test runs them against stored data (D87).
+ */
+public final class StoreSchema {
+
+    public static final String NS = &quot;https://w3id.org/simpl/vocabulary-manager#&quot;;
+    public static final String GRAPH_INTERNAL = &quot;urn:simpl:vm:graph:internal&quot;;
+    public static final String GRAPH_INTERNAL_CONTENT = &quot;urn:simpl:vm:graph:internal-content&quot;;
+    public static final String GRAPH_EXTERNAL = &quot;urn:simpl:vm:graph:external&quot;;
+    public static final String GRAPH_EXTERNAL_CONTENT = &quot;urn:simpl:vm:graph:external-content&quot;;
+
+    public static final String PREFIXES = &quot;PREFIX vm: &lt;&quot; + NS + &quot;&gt;\n&quot;
+            + &quot;PREFIX xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;\n&quot;
+            + &quot;PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;\n&quot;;
+
+    private StoreSchema() {}
+
+    public static String vocabularyIri(String name) {
+<span class="fc" id="L29">        return &quot;urn:simpl:vm:vocabulary:&quot; + name;</span>
+    }
+
+    public static String versionIri(String name, int version) {
+<span class="fc" id="L33">        return vocabularyIri(name) + &quot;:version:&quot; + version;</span>
+    }
+
+    public static String externalIri(String name) {
+<span class="fc" id="L37">        return &quot;urn:simpl:vm:external:&quot; + name;</span>
+    }
+
+    /** A new query or update text with the prefixes and the graph IRIs bound. */
+    public static ParameterizedSparqlString sparql(String body) {
+<span class="fc" id="L42">        ParameterizedSparqlString pss = new ParameterizedSparqlString(PREFIXES + body);</span>
+<span class="fc" id="L43">        pss.setIri(&quot;gInternal&quot;, GRAPH_INTERNAL);</span>
+<span class="fc" id="L44">        pss.setIri(&quot;gContent&quot;, GRAPH_INTERNAL_CONTENT);</span>
+<span class="fc" id="L45">        pss.setIri(&quot;gExternal&quot;, GRAPH_EXTERNAL);</span>
+<span class="fc" id="L46">        pss.setIri(&quot;gExternalContent&quot;, GRAPH_EXTERNAL_CONTENT);</span>
+<span class="fc" id="L47">        return pss;</span>
+    }
+
+    /** Times are stored to the second in UTC (D58). */
+    public static Instant now() {
+<span class="fc" id="L52">        return Instant.now().truncatedTo(ChronoUnit.SECONDS);</span>
+    }
+
+    public static void setTime(ParameterizedSparqlString pss, String variable, Instant time) {
+<span class="fc" id="L56">        pss.setLiteral(variable, format(time), XSDDatatype.XSDdateTime);</span>
+<span class="fc" id="L57">    }</span>
+
+    public static String format(Instant time) {
+<span class="fc" id="L60">        return DateTimeFormatter.ISO_INSTANT.format(time.truncatedTo(ChronoUnit.SECONDS));</span>
+    }
+
+    public static Instant instant(Node node) {
+<span class="fc" id="L64">        return Instant.parse(node.getLiteralLexicalForm());</span>
+    }
+
+    public static int integer(Node node) {
+<span class="fc" id="L68">        return Integer.parseInt(node.getLiteralLexicalForm());</span>
+    }
+
+    public static String text(Node node) {
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        return node == null ? null : node.getLiteralLexicalForm();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

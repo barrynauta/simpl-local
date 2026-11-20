@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InfrastructureConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">InfrastructureConfig.java</span></div><h1>InfrastructureConfig.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import eu.simpl.vocabularymanager.store.StoreCallException;
+import eu.simpl.vocabularymanager.web.CorrelationFilter;
+import eu.simpl.vocabularymanager.web.MethodGuardFilter;
+import eu.simpl.vocabularymanager.web.NegotiationFilter;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.micrometer.core.instrument.MeterRegistry;
+import java.net.http.HttpClient;
+import java.time.Clock;
+import java.time.Duration;
+import org.apache.tomcat.util.buf.EncodedSolidusHandling;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+
+/** Wiring of filters, outgoing HTTP clients, circuit breakers and the Tomcat connector. */
+@Configuration
+@EnableConfigurationProperties(AppProperties.class)
+<span class="fc" id="L27">public class InfrastructureConfig {</span>
+
+    /** Spring Security's filter chain runs at order -100; these filters sit around it. */
+    private static final int SECURITY_ORDER = -100;
+
+    @Bean
+    Clock clock() {
+<span class="fc" id="L34">        return Clock.systemUTC();</span>
+    }
+
+    @Bean
+    FilterRegistrationBean&lt;CorrelationFilter&gt; correlationFilter() {
+<span class="fc" id="L39">        FilterRegistrationBean&lt;CorrelationFilter&gt; bean = new FilterRegistrationBean&lt;&gt;(new CorrelationFilter());</span>
+<span class="fc" id="L40">        bean.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);</span>
+<span class="fc" id="L41">        return bean;</span>
+    }
+
+    @Bean
+    FilterRegistrationBean&lt;MethodGuardFilter&gt; methodGuardFilter(ProblemWriter problems) {
+<span class="fc" id="L46">        FilterRegistrationBean&lt;MethodGuardFilter&gt; bean = new FilterRegistrationBean&lt;&gt;(new MethodGuardFilter(problems));</span>
+<span class="fc" id="L47">        bean.setOrder(Ordered.HIGHEST_PRECEDENCE + 20);</span>
+<span class="fc" id="L48">        return bean;</span>
+    }
+
+    @Bean
+    FilterRegistrationBean&lt;NegotiationFilter&gt; negotiationFilter(ProblemWriter problems, AppProperties properties) {
+<span class="fc" id="L53">        FilterRegistrationBean&lt;NegotiationFilter&gt; bean =</span>
+                new FilterRegistrationBean&lt;&gt;(new NegotiationFilter(problems, properties));
+<span class="fc" id="L55">        bean.setOrder(SECURITY_ORDER + 10);</span>
+<span class="fc" id="L56">        return bean;</span>
+    }
+
+    /** Paths with encoded slashes reach the firewall, which answers 400 problem+json (D67). */
+    @Bean
+    TomcatConnectorCustomizer connectorCustomizer() {
+<span class="fc" id="L62">        return connector -&gt; {</span>
+<span class="fc" id="L63">            connector.setAllowTrace(true);</span>
+<span class="fc" id="L64">            connector.setEncodedSolidusHandling(EncodedSolidusHandling.PASS_THROUGH.getValue());</span>
+<span class="fc" id="L65">            connector.setProperty(&quot;relaxedPathChars&quot;, &quot;[]|{}^`\&quot;&lt;&gt;&quot;);</span>
+<span class="fc" id="L66">            connector.setProperty(&quot;relaxedQueryChars&quot;, &quot;[]|{}^`\&quot;&lt;&gt;&quot;);</span>
+<span class="fc" id="L67">        };</span>
+    }
+
+    @Bean
+    HttpClient storeHttpClient(AppProperties properties) {
+<span class="fc" id="L72">        return HttpClient.newBuilder()</span>
+<span class="fc" id="L73">                .version(HttpClient.Version.HTTP_1_1)</span>
+<span class="fc" id="L74">                .connectTimeout(properties.store().connectTimeout())</span>
+<span class="fc" id="L75">                .followRedirects(HttpClient.Redirect.NEVER)</span>
+<span class="fc" id="L76">                .build();</span>
+    }
+
+    @Bean
+    HttpClient identityHttpClient(AppProperties properties) {
+<span class="fc" id="L81">        return HttpClient.newBuilder()</span>
+<span class="fc" id="L82">                .version(HttpClient.Version.HTTP_1_1)</span>
+<span class="fc" id="L83">                .connectTimeout(properties.security().jwksTimeout())</span>
+<span class="fc" id="L84">                .followRedirects(HttpClient.Redirect.NEVER)</span>
+<span class="fc" id="L85">                .build();</span>
+    }
+
+    /** D103: open at 50 % failures of the last 20 calls (at least 10), 10 s open, 3 probes. */
+    @Bean
+    CircuitBreakerRegistry circuitBreakerRegistry(MeterRegistry meters) {
+<span class="fc" id="L91">        CircuitBreakerConfig config = CircuitBreakerConfig.custom()</span>
+<span class="fc" id="L92">                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)</span>
+<span class="fc" id="L93">                .slidingWindowSize(20)</span>
+<span class="fc" id="L94">                .minimumNumberOfCalls(10)</span>
+<span class="fc" id="L95">                .failureRateThreshold(50)</span>
+<span class="fc" id="L96">                .waitDurationInOpenState(Duration.ofSeconds(10))</span>
+<span class="fc" id="L97">                .permittedNumberOfCallsInHalfOpenState(3)</span>
+<span class="fc" id="L98">                .automaticTransitionFromOpenToHalfOpenEnabled(false)</span>
+<span class="fc" id="L99">                .recordException(InfrastructureConfig::isFailure)</span>
+<span class="fc" id="L100">                .build();</span>
+<span class="fc" id="L101">        CircuitBreakerRegistry registry = CircuitBreakerRegistry.of(config);</span>
+<span class="fc" id="L102">        TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(registry).bindTo(meters);</span>
+<span class="fc" id="L103">        return registry;</span>
+    }
+
+    @Bean
+    CircuitBreaker storeCircuitBreaker(CircuitBreakerRegistry registry) {
+<span class="fc" id="L108">        return registry.circuitBreaker(&quot;store&quot;);</span>
+    }
+
+    @Bean
+    CircuitBreaker identityCircuitBreaker(CircuitBreakerRegistry registry) {
+<span class="fc" id="L113">        return registry.circuitBreaker(&quot;identityProvider&quot;);</span>
+    }
+
+    /** A store 5xx and a timeout count; a store 4xx does not (D134). */
+    static boolean isFailure(Throwable ex) {
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if (ex instanceof StoreCallException call) {</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">            return call.kind() != StoreCallException.Kind.CLIENT_ERROR;</span>
+        }
+<span class="fc" id="L121">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

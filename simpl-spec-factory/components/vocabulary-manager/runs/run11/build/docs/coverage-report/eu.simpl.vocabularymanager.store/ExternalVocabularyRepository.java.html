@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalVocabularyRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">ExternalVocabularyRepository.java</span></div><h1>ExternalVocabularyRepository.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import static eu.simpl.vocabularymanager.store.StoreSchema.instant;
+import static eu.simpl.vocabularymanager.store.StoreSchema.integer;
+import static eu.simpl.vocabularymanager.store.StoreSchema.sparql;
+import static eu.simpl.vocabularymanager.store.StoreSchema.text;
+
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.Page;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.sparql.engine.binding.Binding;
+import org.springframework.stereotype.Repository;
+
+/**
+ * Data access for external vocabularies (D30, D41, D56, D73). The namespace URI and the alias URIs
+ * are stored as sent; their normalised forms are stored as lookup keys.
+ */
+@Repository
+public class ExternalVocabularyRepository {
+
+    private static final String SELECT_FIELDS = &quot;SELECT ?name ?ns ?source ?desc ?createdBy ?created ?aliasIndex ?alias&quot;;
+    private static final String PATTERN = &quot;&quot;&quot;
+            ?e a vm:ExternalVocabulary ; vm:name ?name ; vm:namespaceUri ?ns ; vm:createdBy ?createdBy ;
+               vm:creationDate ?created .
+            OPTIONAL { ?e vm:sourceUri ?source }
+            OPTIONAL { ?e vm:description ?desc }
+            OPTIONAL { ?e vm:alias ?a . ?a vm:index ?aliasIndex ; vm:uri ?alias }
+            &quot;&quot;&quot;;
+
+    private final SparqlClient client;
+
+<span class="fc" id="L42">    public ExternalVocabularyRepository(SparqlClient client) {</span>
+<span class="fc" id="L43">        this.client = client;</span>
+<span class="fc" id="L44">    }</span>
+
+    /** Removes one trailing '#' or '/' (D30). */
+    public static String normalise(String uri) {
+<span class="fc bfc" id="L48" title="All 4 branches covered.">        if (uri.endsWith(&quot;#&quot;) || uri.endsWith(&quot;/&quot;)) {</span>
+<span class="fc" id="L49">            return uri.substring(0, uri.length() - 1);</span>
+        }
+<span class="fc" id="L51">        return uri;</span>
+    }
+
+    /**
+     * The external vocabulary with this exact name.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ApiException on store failure
+     */
+    public Optional&lt;ExternalVocabulary&gt; find(String name) {
+<span class="fc" id="L60">        ParameterizedSparqlString pss = sparql(</span>
+                SELECT_FIELDS + &quot; WHERE { GRAPH ?gExternal { &quot; + PATTERN + &quot; } }&quot; + &quot; ORDER BY ?aliasIndex LIMIT 21&quot;);
+<span class="fc" id="L62">        pss.setIri(&quot;e&quot;, StoreSchema.externalIri(name));</span>
+<span class="fc" id="L63">        List&lt;ExternalVocabulary&gt; found = group(client.select(pss.toString()));</span>
+<span class="fc" id="L64">        return found.stream().findFirst();</span>
+    }
+
+    /**
+     * True when an external name is taken, case-insensitively (D56).
+     *
+     * @throws eu.simpl.vocabularymanager.error.ApiException on store failure
+     */
+    public boolean nameTaken(String name) {
+<span class="fc" id="L73">        ParameterizedSparqlString pss = sparql(&quot;ASK { GRAPH ?gExternal { ?e vm:nameKey ?key } }&quot;);</span>
+<span class="fc" id="L74">        pss.setLiteral(&quot;key&quot;, name.toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L75">        return client.ask(pss.toString());</span>
+    }
+
+    /**
+     * The registered lookup keys among the given normalised keys.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ApiException on store failure
+     */
+    public List&lt;String&gt; takenKeys(List&lt;String&gt; keys) {
+<span class="fc" id="L84">        ParameterizedSparqlString pss = sparql(&quot;SELECT DISTINCT ?key WHERE { VALUES ?key { &quot; + literals(keys) + &quot; }&quot;</span>
+                + &quot; GRAPH ?gExternal { ?e vm:lookupKey ?key } } LIMIT 101&quot;);
+<span class="fc" id="L86">        return client.select(pss.toString()).stream()</span>
+<span class="fc" id="L87">                .map(b -&gt; text(b.get(&quot;key&quot;)))</span>
+<span class="fc" id="L88">                .toList();</span>
+    }
+
+    /**
+     * One page of external vocabularies, name ascending (D41, D85).
+     *
+     * @throws eu.simpl.vocabularymanager.error.ApiException on store failure
+     */
+    public Page&lt;ExternalVocabulary&gt; list(long page, int size) {
+<span class="fc" id="L97">        ParameterizedSparqlString count =</span>
+<span class="fc" id="L98">                sparql(&quot;SELECT (COUNT(?e) AS ?n) WHERE { GRAPH ?gExternal { ?e a vm:ExternalVocabulary } }&quot;);</span>
+<span class="fc" id="L99">        long total = Long.parseLong(text(client.select(count.toString()).get(0).get(&quot;n&quot;)));</span>
+<span class="fc" id="L100">        long offset = (page - 1) * size;</span>
+<span class="pc bpc" id="L101" title="2 of 4 branches missed.">        if (total == 0 || offset &gt;= total) {</span>
+<span class="nc" id="L102">            return new Page&lt;&gt;(List.of(), total);</span>
+        }
+<span class="fc" id="L104">        ParameterizedSparqlString names = sparql(&quot;SELECT ?e WHERE { GRAPH ?gExternal { ?e a vm:ExternalVocabulary ;&quot;</span>
+                + &quot; vm:name ?name } } ORDER BY ASC(?name) LIMIT &quot; + size + &quot; OFFSET &quot; + offset);
+<span class="fc" id="L106">        List&lt;String&gt; iris = client.select(names.toString()).stream()</span>
+<span class="fc" id="L107">                .map(b -&gt; b.get(&quot;e&quot;).getURI())</span>
+<span class="fc" id="L108">                .toList();</span>
+<span class="fc" id="L109">        return new Page&lt;&gt;(byIris(iris), total);</span>
+    }
+
+    /**
+     * The external vocabularies whose namespace or alias key is one of the keys, in key order
+     * (D38). At most 100 keys.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ApiException on store failure
+     */
+    public List&lt;ExternalVocabulary&gt; findByKeys(List&lt;String&gt; keys) {
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        if (keys.isEmpty()) {</span>
+<span class="nc" id="L120">            return List.of();</span>
+        }
+<span class="fc" id="L122">        ParameterizedSparqlString pss = sparql(&quot;SELECT ?key ?e WHERE { VALUES ?key { &quot; + literals(keys) + &quot; }&quot;</span>
+                + &quot; GRAPH ?gExternal { ?e vm:lookupKey ?key } } LIMIT 101&quot;);
+<span class="fc" id="L124">        Map&lt;String, String&gt; byKey = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">        for (Binding row : client.select(pss.toString())) {</span>
+<span class="fc" id="L126">            byKey.putIfAbsent(text(row.get(&quot;key&quot;)), row.get(&quot;e&quot;).getURI());</span>
+<span class="fc" id="L127">        }</span>
+<span class="fc" id="L128">        List&lt;String&gt; ordered = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        for (String key : keys) {</span>
+<span class="fc" id="L130">            String iri = byKey.get(key);</span>
+<span class="pc bpc" id="L131" title="1 of 4 branches missed.">            if (iri != null &amp;&amp; !ordered.contains(iri)) {</span>
+<span class="fc" id="L132">                ordered.add(iri);</span>
+            }
+<span class="fc" id="L134">        }</span>
+<span class="fc" id="L135">        return byIris(ordered);</span>
+    }
+
+    /**
+     * The name of the external vocabulary that matches one namespace key.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ApiException on store failure
+     */
+    public Optional&lt;String&gt; nameByKey(String key) {
+<span class="fc" id="L144">        ParameterizedSparqlString pss =</span>
+<span class="fc" id="L145">                sparql(&quot;SELECT ?name WHERE { GRAPH ?gExternal { ?e vm:lookupKey ?key ; vm:name ?name } } LIMIT 1&quot;);</span>
+<span class="fc" id="L146">        pss.setLiteral(&quot;key&quot;, key);</span>
+<span class="fc" id="L147">        return client.select(pss.toString()).stream().findFirst().map(b -&gt; text(b.get(&quot;name&quot;)));</span>
+    }
+
+    /**
+     * The stored content bytes.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ApiException on store failure
+     */
+    public Optional&lt;byte[]&gt; content(String name) {
+<span class="fc" id="L156">        ParameterizedSparqlString pss =</span>
+<span class="fc" id="L157">                sparql(&quot;SELECT ?content WHERE { GRAPH ?gExternalContent { ?e vm:content ?content } } LIMIT 1&quot;);</span>
+<span class="fc" id="L158">        pss.setIri(&quot;e&quot;, StoreSchema.externalIri(name));</span>
+<span class="fc" id="L159">        return client.select(pss.toString()).stream()</span>
+<span class="fc" id="L160">                .findFirst()</span>
+<span class="fc" id="L161">                .map(b -&gt; Base64.getDecoder().decode(text(b.get(&quot;content&quot;))));</span>
+    }
+
+    /**
+     * Registers an external vocabulary when neither its name nor any of its keys is taken (D30,
+     * D82). One store transaction.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ApiException on store failure
+     */
+    public void create(ExternalVocabulary data, byte[] content, String writeId) {
+<span class="fc" id="L171">        List&lt;String&gt; keys = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L172">        keys.add(normalise(data.namespaceUri()));</span>
+<span class="fc" id="L173">        data.aliasUris().forEach(a -&gt; keys.add(normalise(a)));</span>
+<span class="fc" id="L174">        StringBuilder aliases = new StringBuilder();</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        for (int i = 0; i &lt; data.aliasUris().size(); i++) {</span>
+<span class="fc" id="L176">            ParameterizedSparqlString one =</span>
+                    new ParameterizedSparqlString(&quot;?e vm:alias [ vm:index ?i ; vm:uri ?u ] . ?e vm:lookupKey ?k . &quot;);
+<span class="fc" id="L178">            one.setLiteral(&quot;i&quot;, i);</span>
+<span class="fc" id="L179">            one.setLiteral(&quot;u&quot;, data.aliasUris().get(i));</span>
+<span class="fc" id="L180">            one.setLiteral(&quot;k&quot;, normalise(data.aliasUris().get(i)));</span>
+<span class="fc" id="L181">            aliases.append(one.toString());</span>
+        }
+<span class="fc bfc" id="L183" title="All 2 branches covered.">        String optional = (data.sourceUri() == null ? &quot;&quot; : &quot; ?e vm:sourceUri ?source . &quot;)</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">                + (data.description() == null ? &quot;&quot; : &quot; ?e vm:description ?desc . &quot;);</span>
+<span class="fc" id="L185">        ParameterizedSparqlString pss = sparql(&quot;INSERT { GRAPH ?gExternal {&quot;</span>
+                + &quot; ?e a vm:ExternalVocabulary ; vm:name ?name ; vm:nameKey ?nameKey ; vm:namespaceUri ?ns ;&quot;
+                + &quot; vm:lookupKey ?nsKey ; vm:createdBy ?createdBy ; vm:creationDate ?now ; vm:writeId ?writeId . &quot;
+                + aliases + optional + &quot; }&quot;
+                + &quot; GRAPH ?gExternalContent { ?e vm:content ?content ; vm:contentLength ?length . } }&quot;
+                + &quot; WHERE { FILTER NOT EXISTS { GRAPH ?gExternal { ?x vm:nameKey ?nameKey } }&quot;
+<span class="fc" id="L191">                + &quot; FILTER NOT EXISTS { VALUES ?anyKey { &quot; + literals(keys) + &quot; }&quot;</span>
+                + &quot; GRAPH ?gExternal { ?y vm:lookupKey ?anyKey } } }&quot;);
+<span class="fc" id="L193">        pss.setIri(&quot;e&quot;, StoreSchema.externalIri(data.name()));</span>
+<span class="fc" id="L194">        pss.setLiteral(&quot;name&quot;, data.name());</span>
+<span class="fc" id="L195">        pss.setLiteral(&quot;nameKey&quot;, data.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L196">        pss.setLiteral(&quot;ns&quot;, data.namespaceUri());</span>
+<span class="fc" id="L197">        pss.setLiteral(&quot;nsKey&quot;, normalise(data.namespaceUri()));</span>
+<span class="fc" id="L198">        pss.setLiteral(&quot;createdBy&quot;, data.createdBy());</span>
+<span class="fc" id="L199">        pss.setLiteral(&quot;writeId&quot;, writeId);</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">        if (data.sourceUri() != null) {</span>
+<span class="fc" id="L201">            pss.setLiteral(&quot;source&quot;, data.sourceUri());</span>
+        }
+<span class="fc bfc" id="L203" title="All 2 branches covered.">        if (data.description() != null) {</span>
+<span class="fc" id="L204">            pss.setLiteral(&quot;desc&quot;, data.description());</span>
+        }
+<span class="fc" id="L206">        pss.setLiteral(&quot;content&quot;, Base64.getEncoder().encodeToString(content), XSDDatatype.XSDbase64Binary);</span>
+<span class="fc" id="L207">        pss.setLiteral(&quot;length&quot;, content.length);</span>
+<span class="fc" id="L208">        StoreSchema.setTime(pss, &quot;now&quot;, data.creationDate());</span>
+<span class="fc" id="L209">        client.update(pss.toString());</span>
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * True when the registration with this write id is stored.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ApiException on store failure
+     */
+    public boolean writeApplied(String name, String writeId) {
+<span class="fc" id="L218">        ParameterizedSparqlString pss = sparql(&quot;ASK { GRAPH ?gExternal { ?e vm:writeId ?writeId } }&quot;);</span>
+<span class="fc" id="L219">        pss.setIri(&quot;e&quot;, StoreSchema.externalIri(name));</span>
+<span class="fc" id="L220">        pss.setLiteral(&quot;writeId&quot;, writeId);</span>
+<span class="fc" id="L221">        return client.ask(pss.toString());</span>
+    }
+
+    /**
+     * Hard delete of metadata and content (D41). One store transaction.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ApiException on store failure
+     */
+    public void delete(String name) {
+<span class="fc" id="L230">        ParameterizedSparqlString pss = sparql(&quot;&quot;&quot;</span>
+                DELETE { GRAPH ?gExternal { ?a ?ap ?ao } } WHERE { GRAPH ?gExternal { ?e vm:alias ?a . ?a ?ap ?ao } } ;
+                DELETE WHERE { GRAPH ?gExternal { ?e ?p ?o } } ;
+                DELETE WHERE { GRAPH ?gExternalContent { ?e ?cp ?co } }
+                &quot;&quot;&quot;);
+<span class="fc" id="L235">        pss.setIri(&quot;e&quot;, StoreSchema.externalIri(name));</span>
+<span class="fc" id="L236">        client.update(pss.toString());</span>
+<span class="fc" id="L237">    }</span>
+
+    private List&lt;ExternalVocabulary&gt; byIris(List&lt;String&gt; iris) {
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">        if (iris.isEmpty()) {</span>
+<span class="nc" id="L241">            return List.of();</span>
+        }
+<span class="fc" id="L243">        StringBuilder values = new StringBuilder();</span>
+<span class="fc bfc" id="L244" title="All 2 branches covered.">        for (String iri : iris) {</span>
+<span class="fc" id="L245">            values.append('&lt;').append(iri).append(&quot;&gt; &quot;);</span>
+<span class="fc" id="L246">        }</span>
+<span class="fc" id="L247">        ParameterizedSparqlString pss = sparql(SELECT_FIELDS + &quot; ?e WHERE { VALUES ?e { &quot; + values + &quot; }&quot;</span>
+                + &quot; GRAPH ?gExternal { &quot; + PATTERN + &quot; } } ORDER BY ?e ?aliasIndex LIMIT 2200&quot;);
+<span class="fc" id="L249">        List&lt;ExternalVocabulary&gt; found = group(client.select(pss.toString()));</span>
+<span class="fc" id="L250">        Map&lt;String, ExternalVocabulary&gt; byName = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L251">        found.forEach(e -&gt; byName.put(StoreSchema.externalIri(e.name()), e));</span>
+<span class="fc" id="L252">        return iris.stream().map(byName::get).filter(java.util.Objects::nonNull).toList();</span>
+    }
+
+    private static List&lt;ExternalVocabulary&gt; group(List&lt;Binding&gt; rows) {
+<span class="fc" id="L256">        Map&lt;String, List&lt;Binding&gt;&gt; byName = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L257" title="All 2 branches covered.">        for (Binding row : rows) {</span>
+<span class="fc" id="L258">            byName.computeIfAbsent(text(row.get(&quot;name&quot;)), k -&gt; new ArrayList&lt;&gt;())</span>
+<span class="fc" id="L259">                    .add(row);</span>
+<span class="fc" id="L260">        }</span>
+<span class="fc" id="L261">        List&lt;ExternalVocabulary&gt; result = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">        for (List&lt;Binding&gt; group : byName.values()) {</span>
+<span class="fc" id="L263">            Binding first = group.get(0);</span>
+<span class="fc" id="L264">            TreeMap&lt;Integer, String&gt; aliases = new TreeMap&lt;&gt;();</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">            for (Binding row : group) {</span>
+<span class="fc bfc" id="L266" title="All 2 branches covered.">                if (row.get(&quot;alias&quot;) != null) {</span>
+<span class="fc" id="L267">                    aliases.put(integer(row.get(&quot;aliasIndex&quot;)), text(row.get(&quot;alias&quot;)));</span>
+                }
+<span class="fc" id="L269">            }</span>
+<span class="fc" id="L270">            result.add(new ExternalVocabulary(</span>
+<span class="fc" id="L271">                    text(first.get(&quot;name&quot;)),</span>
+<span class="fc" id="L272">                    text(first.get(&quot;ns&quot;)),</span>
+<span class="fc" id="L273">                    new ArrayList&lt;&gt;(aliases.values()),</span>
+<span class="fc" id="L274">                    text(first.get(&quot;source&quot;)),</span>
+<span class="fc" id="L275">                    text(first.get(&quot;desc&quot;)),</span>
+<span class="fc" id="L276">                    text(first.get(&quot;createdBy&quot;)),</span>
+<span class="fc" id="L277">                    instant(first.get(&quot;created&quot;))));</span>
+<span class="fc" id="L278">        }</span>
+<span class="fc" id="L279">        return result;</span>
+    }
+
+    private static String literals(List&lt;String&gt; values) {
+<span class="fc" id="L283">        StringBuilder out = new StringBuilder();</span>
+<span class="fc bfc" id="L284" title="All 2 branches covered.">        for (String value : values) {</span>
+<span class="fc" id="L285">            ParameterizedSparqlString one = new ParameterizedSparqlString(&quot;?x&quot;);</span>
+<span class="fc" id="L286">            one.setLiteral(&quot;x&quot;, value);</span>
+<span class="fc" id="L287">            out.append(one.toString()).append(' ');</span>
+<span class="fc" id="L288">        }</span>
+<span class="fc" id="L289">        return out.toString();</span>
+    }
+
+    /** Visible for the service: creation time helper. */
+    public static Instant now() {
+<span class="fc" id="L294">        return StoreSchema.now();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

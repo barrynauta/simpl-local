@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RouteRuleCheck.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">RouteRuleCheck.java</span></div><h1>RouteRuleCheck.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+/**
+ * Default deny (D84): the application fails to start when a handler exists without a route rule,
+ * or a route rule has no handler.
+ */
+@Component
+public class RouteRuleCheck implements SmartInitializingSingleton {
+
+<span class="fc" id="L19">    private static final Set&lt;String&gt; INFRASTRUCTURE = Set.of(&quot;/error&quot;);</span>
+
+    private final RequestMappingHandlerMapping mapping;
+
+<span class="fc" id="L23">    public RouteRuleCheck(RequestMappingHandlerMapping requestMappingHandlerMapping) {</span>
+<span class="fc" id="L24">        this.mapping = requestMappingHandlerMapping;</span>
+<span class="fc" id="L25">    }</span>
+
+    @Override
+    public void afterSingletonsInstantiated() {
+<span class="fc" id="L29">        List&lt;String&gt; problems = check(mapping.getHandlerMethods().keySet());</span>
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">        if (!problems.isEmpty()) {</span>
+<span class="nc" id="L31">            throw new IllegalStateException(&quot;Handlers and route rules differ: &quot; + problems);</span>
+        }
+<span class="fc" id="L33">    }</span>
+
+    /** The differences between the handler mappings and the route table. */
+    static List&lt;String&gt; check(Set&lt;RequestMappingInfo&gt; infos) {
+<span class="fc" id="L37">        List&lt;String&gt; problems = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L38">        List&lt;String&gt; handled = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        for (RequestMappingInfo info : infos) {</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">            for (String pattern : info.getPatternValues()) {</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">                if (INFRASTRUCTURE.contains(pattern)) {</span>
+<span class="fc" id="L42">                    continue;</span>
+                }
+<span class="fc" id="L44">                Set&lt;RequestMethod&gt; methods = info.getMethodsCondition().getMethods();</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">                if (methods.isEmpty()) {</span>
+<span class="fc" id="L46">                    problems.add(&quot;handler without method: &quot; + pattern);</span>
+                }
+<span class="fc bfc" id="L48" title="All 2 branches covered.">                for (RequestMethod method : methods) {</span>
+<span class="fc" id="L49">                    String key = method.name() + &quot; &quot; + pattern;</span>
+<span class="fc" id="L50">                    handled.add(key);</span>
+<span class="fc" id="L51">                    boolean ruled = ApiRoutes.all().stream()</span>
+<span class="fc" id="L52">                            .anyMatch(r -&gt; (r.method() + &quot; &quot; + ApiRoutes.BASE + r.template()).equals(key));</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">                    if (!ruled) {</span>
+<span class="fc" id="L54">                        problems.add(&quot;handler without rule: &quot; + key);</span>
+                    }
+<span class="fc" id="L56">                }</span>
+<span class="fc" id="L57">            }</span>
+<span class="fc" id="L58">        }</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        for (ApiRoutes.Route route : ApiRoutes.all()) {</span>
+<span class="fc" id="L60">            String key = route.method() + &quot; &quot; + ApiRoutes.BASE + route.template();</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">            if (!handled.contains(key)) {</span>
+<span class="fc" id="L62">                problems.add(&quot;rule without handler: &quot; + key);</span>
+            }
+<span class="fc" id="L64">        }</span>
+<span class="fc" id="L65">        return problems;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,155 @@
+{
+  "realm": "simpl",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 900,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "GA_VOCABULARY_ADMIN",
+        "description": "Vocabulary management: read and write (D16)"
+      },
+      {
+        "name": "GA_VOCABULARY_VIEWER",
+        "description": "Vocabulary management: read only (D16)"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "vocabulary-manager-be",
+      "enabled": true,
+      "bearerOnly": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "vocabulary-manager-ui",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "audience-vocabulary-manager-be",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "vocabulary-manager-be",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ],
+      "redirectUris": [
+        "http://localhost:4433/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4433"
+      ],
+      "rootUrl": "http://localhost:4433",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:4433/*"
+      }
+    },
+    {
+      "clientId": "vocabulary-tests",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "audience-vocabulary-manager-be",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "vocabulary-manager-be",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "vocabulary-tests-noaud",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "protocolMappers": []
+    }
+  ],
+  "users": [
+    {
+      "username": "ga-admin",
+      "email": "ga-admin@example.com",
+      "firstName": "ga-admin",
+      "lastName": "Test",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GA_VOCABULARY_ADMIN"
+      ]
+    },
+    {
+      "username": "ga-viewer",
+      "email": "ga-viewer@example.com",
+      "firstName": "ga-viewer",
+      "lastName": "Test",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GA_VOCABULARY_VIEWER"
+      ]
+    },
+    {
+      "username": "ga-norole",
+      "email": "ga-norole@example.com",
+      "firstName": "ga-norole",
+      "lastName": "Test",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": []
+    }
+  ]
+}

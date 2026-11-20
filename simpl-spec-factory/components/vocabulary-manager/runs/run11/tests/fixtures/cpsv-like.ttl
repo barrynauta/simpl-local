@@ -1,0 +1,37 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix cpsv: <${NS:Cpsv}> .
+
+# A small vocabulary in the style of the Core Public Service Vocabulary (CPSV).
+cpsv:PublicService a owl:Class ;
+    rdfs:label "Public Service"@en ;
+    rdfs:comment "A set of deeds and acts performed by or on behalf of a public organisation."@en .
+
+cpsv:Evidence a owl:Class ;
+    rdfs:label "Evidence"@en .
+
+cpsv:Channel a owl:Class ;
+    rdfs:label "Channel"@en .
+
+cpsv:hasInput a owl:ObjectProperty ;
+    rdfs:label "has input"@en ;
+    rdfs:domain cpsv:PublicService ;
+    rdfs:range cpsv:Evidence .
+
+cpsv:hasChannel a owl:ObjectProperty ;
+    rdfs:domain cpsv:PublicService ;
+    rdfs:range cpsv:Channel .
+
+cpsv:processingTime a owl:DatatypeProperty ;
+    rdfs:domain cpsv:PublicService ;
+    rdfs:range xsd:duration .
+
+cpsv:ServiceTypes a skos:ConceptScheme ;
+    skos:prefLabel "Service types"@en , "Types de service"@fr .
+
+cpsv:Registration a skos:Concept ;
+    skos:inScheme cpsv:ServiceTypes ;
+    skos:prefLabel "Registration"@en .

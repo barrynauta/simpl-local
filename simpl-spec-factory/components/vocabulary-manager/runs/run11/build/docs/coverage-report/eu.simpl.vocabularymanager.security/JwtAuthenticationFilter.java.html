@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">JwtAuthenticationFilter.java</span></div><h1>JwtAuthenticationFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import eu.simpl.vocabularymanager.web.ApiRoutes;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Reads the bearer token and sets the authenticated user (D17). Invalid tokens get 401 at once;
+ * when the realm keys cannot be fetched the request fails closed with 503 (D44). GET /health is
+ * outside the access rules and is not checked.
+ */
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    public static final String IDP_UNAVAILABLE = &quot;The identity provider is not available. Retry later.&quot;;
+<span class="fc" id="L29">    private static final Logger LOG = LoggerFactory.getLogger(JwtAuthenticationFilter.class);</span>
+    private static final String BEARER = &quot;bearer &quot;;
+
+    private final TokenVerifier verifier;
+    private final ProblemWriter problems;
+
+<span class="fc" id="L35">    public JwtAuthenticationFilter(TokenVerifier verifier, ProblemWriter problems) {</span>
+<span class="fc" id="L36">        this.verifier = verifier;</span>
+<span class="fc" id="L37">        this.problems = problems;</span>
+<span class="fc" id="L38">    }</span>
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+<span class="fc" id="L42">        return (ApiRoutes.BASE + &quot;/health&quot;).equals(request.getRequestURI());</span>
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L48">        String header = request.getHeader(&quot;Authorization&quot;);</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (header == null) {</span>
+<span class="fc" id="L50">            chain.doFilter(request, response);</span>
+<span class="fc" id="L51">            return;</span>
+        }
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (!header.regionMatches(true, 0, BEARER, 0, BEARER.length())</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">                || header.substring(BEARER.length()).isBlank()) {</span>
+<span class="nc" id="L55">            reject(response, &quot;authorization header is not a bearer token&quot;);</span>
+<span class="nc" id="L56">            return;</span>
+        }
+<span class="fc" id="L58">        TokenVerifier.Result result =</span>
+<span class="fc" id="L59">                verifier.verify(header.substring(BEARER.length()).trim());</span>
+<span class="pc bpc" id="L60" title="1 of 3 branches missed.">        switch (result) {</span>
+<span class="fc" id="L61">            case TokenVerifier.Valid valid -&gt; {</span>
+<span class="fc" id="L62">                AuthenticatedUser user = valid.user();</span>
+<span class="fc" id="L63">                List&lt;SimpleGrantedAuthority&gt; authorities = user.roles().stream()</span>
+<span class="fc" id="L64">                        .map(role -&gt; new SimpleGrantedAuthority(&quot;ROLE_&quot; + role))</span>
+<span class="fc" id="L65">                        .toList();</span>
+<span class="fc" id="L66">                SecurityContextHolder.getContext()</span>
+<span class="fc" id="L67">                        .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, authorities));</span>
+<span class="fc" id="L68">                MDC.put(&quot;userId&quot;, user.subject());</span>
+<span class="fc" id="L69">                chain.doFilter(request, response);</span>
+<span class="fc" id="L70">            }</span>
+<span class="nc" id="L71">            case TokenVerifier.KeysUnavailable unavailable -&gt; {</span>
+<span class="nc" id="L72">                LOG.warn(&quot;Token not checked: realm keys unavailable&quot;);</span>
+<span class="nc" id="L73">                problems.write(response, ApiException.unavailable(IDP_UNAVAILABLE));</span>
+<span class="nc" id="L74">            }</span>
+<span class="fc" id="L75">            case TokenVerifier.Invalid invalid -&gt; reject(response, invalid.reason());</span>
+        }
+<span class="fc" id="L77">    }</span>
+
+    private void reject(HttpServletResponse response, String reason) throws IOException {
+<span class="fc" id="L80">        LOG.warn(&quot;Authentication failed: {}&quot;, reason);</span>
+<span class="fc" id="L81">        problems.write(</span>
+                response, new ApiException(ProblemType.UNAUTHORIZED, &quot;The bearer token is missing or not valid.&quot;));
+<span class="fc" id="L83">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

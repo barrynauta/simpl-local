@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UploadLimiter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">UploadLimiter.java</span></div><h1>UploadLimiter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.error.ApiException;
+import java.util.concurrent.Semaphore;
+import org.springframework.stereotype.Component;
+
+/** At most 4 create or new-version requests at the same time per instance (D92, bulkhead). */
+@Component
+public class UploadLimiter {
+
+    public static final String BUSY = &quot;Too many uploads in progress. Retry later.&quot;;
+
+    private final Semaphore permits;
+
+<span class="fc" id="L16">    public UploadLimiter(AppProperties properties) {</span>
+<span class="fc" id="L17">        this.permits = new Semaphore(properties.limits().maxParallelUploads());</span>
+<span class="fc" id="L18">    }</span>
+
+    /** A permit, released with close(). */
+    public interface Permit extends AutoCloseable {
+        @Override
+        void close();
+    }
+
+    /**
+     * Takes a permit without waiting.
+     *
+     * @throws ApiException 503 when all permits are taken
+     */
+    public Permit acquire() {
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        if (!permits.tryAcquire()) {</span>
+<span class="fc" id="L33">            throw ApiException.unavailable(BUSY);</span>
+        }
+<span class="fc" id="L35">        return permits::release;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

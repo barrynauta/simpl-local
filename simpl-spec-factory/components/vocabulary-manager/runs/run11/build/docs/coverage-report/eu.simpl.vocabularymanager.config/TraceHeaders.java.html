@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TraceHeaders.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">TraceHeaders.java</span></div><h1>TraceHeaders.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import io.micrometer.tracing.TraceContext;
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.propagation.Propagator;
+import java.net.http.HttpRequest;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
+
+/**
+ * Adds the W3C trace context and the correlation id to outgoing calls (D86), through Micrometer
+ * Tracing (D94).
+ */
+@Component
+public class TraceHeaders {
+
+    public static final String CORRELATION_HEADER = &quot;X-Correlation-Id&quot;;
+    public static final String CORRELATION_MDC = &quot;correlationId&quot;;
+
+    private final Tracer tracer;
+    private final Propagator propagator;
+
+<span class="fc" id="L23">    public TraceHeaders(Tracer tracer, Propagator propagator) {</span>
+<span class="fc" id="L24">        this.tracer = tracer;</span>
+<span class="fc" id="L25">        this.propagator = propagator;</span>
+<span class="fc" id="L26">    }</span>
+
+    public HttpRequest.Builder apply(HttpRequest.Builder builder) {
+<span class="fc" id="L29">        String correlationId = MDC.get(CORRELATION_MDC);</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (correlationId != null) {</span>
+<span class="fc" id="L31">            builder.header(CORRELATION_HEADER, correlationId);</span>
+        }
+<span class="fc" id="L33">        TraceContext context = tracer.currentTraceContext().context();</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        if (context != null) {</span>
+<span class="fc" id="L35">            propagator.inject(context, builder, (b, key, value) -&gt; b.header(key, value));</span>
+        }
+<span class="fc" id="L37">        return builder;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Representations.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">Representations.java</span></div><h1>Representations.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.content.ValidationWarning;
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.store.StoreSchema;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.springframework.stereotype.Component;
+
+/**
+ * Wire format of the decided contract (D25, D26, D27, D5, D10, D38, D78, D110, D111). Field names
+ * stay as in the OpenAPI; hrefs are relative to the API base (E2).
+ */
+@Component
+public class Representations {
+
+    private final String contentBase;
+
+<span class="fc" id="L26">    public Representations(AppProperties properties) {</span>
+<span class="fc" id="L27">        this.contentBase = properties.contentBaseTrimmed();</span>
+<span class="fc" id="L28">    }</span>
+
+    /** VocabularyCategory: the vocabulary (D25). */
+    public Map&lt;String, Object&gt; vocabulary(Vocabulary v) {
+<span class="fc" id="L32">        Map&lt;String, Object&gt; out = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L33">        out.put(&quot;href&quot;, &quot;/vocabularies/&quot; + v.name());</span>
+<span class="fc" id="L34">        out.put(&quot;contentHref&quot;, contentBase + &quot;/content/&quot; + v.name());</span>
+<span class="fc" id="L35">        out.put(&quot;name&quot;, v.name());</span>
+<span class="fc" id="L36">        out.put(&quot;version&quot;, v.latestVersion());</span>
+<span class="fc" id="L37">        out.put(&quot;description&quot;, v.description());</span>
+<span class="fc" id="L38">        out.put(&quot;status&quot;, v.status().name());</span>
+<span class="fc" id="L39">        out.put(&quot;createdBy&quot;, v.createdBy());</span>
+<span class="fc" id="L40">        out.put(&quot;creationDate&quot;, StoreSchema.format(v.creationDate()));</span>
+<span class="fc" id="L41">        out.put(&quot;lastUpdateDate&quot;, StoreSchema.format(v.lastUpdateDate()));</span>
+<span class="fc" id="L42">        return out;</span>
+    }
+
+    /** VocabularyMetadata: the vocabulary version (D26, D27, D5). */
+    public Map&lt;String, Object&gt; version(VocabularyVersion v) {
+<span class="fc" id="L47">        Map&lt;String, Object&gt; out = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L48">        out.put(&quot;href&quot;, versionHref(v.name(), v.version()));</span>
+<span class="fc" id="L49">        out.put(&quot;contentHref&quot;, contentBase + &quot;/content/&quot; + v.name() + &quot;/versions/&quot; + v.version());</span>
+<span class="fc" id="L50">        out.put(&quot;latestVersionHref&quot;, versionHref(v.name(), v.latestVersion()));</span>
+<span class="fc" id="L51">        out.put(&quot;name&quot;, v.name());</span>
+<span class="fc" id="L52">        out.put(&quot;version&quot;, v.version());</span>
+<span class="fc" id="L53">        out.put(&quot;description&quot;, v.description());</span>
+<span class="fc" id="L54">        out.put(&quot;changelog&quot;, v.changelog());</span>
+<span class="fc" id="L55">        out.put(&quot;status&quot;, v.status().name());</span>
+<span class="fc" id="L56">        out.put(&quot;createdBy&quot;, v.createdBy());</span>
+<span class="fc" id="L57">        out.put(&quot;creationDate&quot;, StoreSchema.format(v.creationDate()));</span>
+<span class="fc" id="L58">        out.put(&quot;lastUpdateDate&quot;, StoreSchema.format(v.lastUpdateDate()));</span>
+<span class="fc" id="L59">        return out;</span>
+    }
+
+    /** VocabularyVersionMetadataResponse: the version plus validationWarnings, always present (D10). */
+    public Map&lt;String, Object&gt; created(VocabularyVersion v, List&lt;ValidationWarning&gt; warnings) {
+<span class="fc" id="L64">        Map&lt;String, Object&gt; out = version(v);</span>
+<span class="fc" id="L65">        out.put(</span>
+                &quot;validationWarnings&quot;,
+<span class="fc" id="L67">                warnings.stream()</span>
+<span class="fc" id="L68">                        .map(w -&gt; {</span>
+<span class="fc" id="L69">                            Map&lt;String, Object&gt; one = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L70">                            one.put(&quot;code&quot;, w.code());</span>
+<span class="fc" id="L71">                            one.put(&quot;description&quot;, w.description());</span>
+<span class="fc" id="L72">                            one.put(&quot;location&quot;, w.location());</span>
+<span class="fc" id="L73">                            return one;</span>
+                        })
+<span class="fc" id="L75">                        .toList());</span>
+<span class="fc" id="L76">        return out;</span>
+    }
+
+    /** VocabularySearchItem (D38). */
+    public Map&lt;String, Object&gt; searchItem(String name, int version, VocabularyStatus status, boolean latest) {
+<span class="fc" id="L81">        Map&lt;String, Object&gt; out = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        out.put(&quot;href&quot;, latest ? &quot;/vocabularies/&quot; + name : versionHref(name, version));</span>
+<span class="fc" id="L83">        out.put(</span>
+                &quot;contentHref&quot;,
+<span class="fc bfc" id="L85" title="All 2 branches covered.">                latest ? contentBase + &quot;/content/&quot; + name : contentBase + &quot;/content/&quot; + name + &quot;/versions/&quot; + version);</span>
+<span class="fc" id="L86">        out.put(&quot;name&quot;, name);</span>
+<span class="fc" id="L87">        out.put(&quot;version&quot;, version);</span>
+<span class="fc" id="L88">        out.put(&quot;status&quot;, status.name());</span>
+<span class="fc" id="L89">        out.put(&quot;latest&quot;, latest);</span>
+<span class="fc" id="L90">        return out;</span>
+    }
+
+    /** ExternalVocabulary; aliasUris always present (D110). */
+    public Map&lt;String, Object&gt; external(ExternalVocabulary e) {
+<span class="fc" id="L95">        Map&lt;String, Object&gt; out = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L96">        out.put(&quot;href&quot;, &quot;/external-vocabularies/&quot; + e.name());</span>
+<span class="fc" id="L97">        out.put(&quot;name&quot;, e.name());</span>
+<span class="fc" id="L98">        out.put(&quot;namespaceUri&quot;, e.namespaceUri());</span>
+<span class="fc" id="L99">        out.put(&quot;aliasUris&quot;, e.aliasUris());</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        if (e.sourceUri() != null) {</span>
+<span class="fc" id="L101">            out.put(&quot;sourceUri&quot;, e.sourceUri());</span>
+        }
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        if (e.description() != null) {</span>
+<span class="fc" id="L104">            out.put(&quot;description&quot;, e.description());</span>
+        }
+<span class="fc" id="L106">        out.put(&quot;createdBy&quot;, e.createdBy());</span>
+<span class="fc" id="L107">        out.put(&quot;creationDate&quot;, StoreSchema.format(e.creationDate()));</span>
+<span class="fc" id="L108">        return out;</span>
+    }
+
+    /** A paged collection with links (D22, D59, D78, D110, D111). */
+    public Map&lt;String, Object&gt; page(
+            String path, Map&lt;String, String&gt; query, long page, int pageSize, long total, List&lt;?&gt; items) {
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        long totalPages = total == 0 ? 0 : (total + pageSize - 1) / pageSize;</span>
+<span class="fc" id="L115">        Map&lt;String, Object&gt; out = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L116">        out.put(&quot;page&quot;, page);</span>
+<span class="fc" id="L117">        out.put(&quot;totalPages&quot;, totalPages);</span>
+<span class="fc" id="L118">        out.put(&quot;total&quot;, total);</span>
+<span class="fc" id="L119">        out.put(&quot;pageSize&quot;, pageSize);</span>
+<span class="fc" id="L120">        out.put(&quot;self&quot;, link(path, query, page, pageSize));</span>
+<span class="fc" id="L121">        out.put(&quot;first&quot;, link(path, query, 1, pageSize));</span>
+<span class="fc bfc" id="L122" title="All 4 branches covered.">        if (total &gt; 0 &amp;&amp; page &gt; 1) {</span>
+<span class="fc" id="L123">            out.put(&quot;prev&quot;, link(path, query, Math.min(page - 1, totalPages), pageSize));</span>
+        }
+<span class="fc bfc" id="L125" title="All 2 branches covered.">        if (page &lt; totalPages) {</span>
+<span class="fc" id="L126">            out.put(&quot;next&quot;, link(path, query, page + 1, pageSize));</span>
+        }
+<span class="fc bfc" id="L128" title="All 2 branches covered.">        if (total &gt; 0) {</span>
+<span class="fc" id="L129">            out.put(&quot;last&quot;, link(path, query, totalPages, pageSize));</span>
+        }
+<span class="fc" id="L131">        out.put(&quot;items&quot;, items);</span>
+<span class="fc" id="L132">        return out;</span>
+    }
+
+    /** A search result: not paged (D38). */
+    public Map&lt;String, Object&gt; searchResult(List&lt;?&gt; items) {
+<span class="fc" id="L137">        Map&lt;String, Object&gt; out = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L138">        out.put(&quot;page&quot;, 1);</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">        out.put(&quot;totalPages&quot;, items.isEmpty() ? 0 : 1);</span>
+<span class="fc" id="L140">        out.put(&quot;total&quot;, items.size());</span>
+<span class="fc" id="L141">        out.put(&quot;pageSize&quot;, 100);</span>
+<span class="fc" id="L142">        out.put(&quot;items&quot;, items);</span>
+<span class="fc" id="L143">        return out;</span>
+    }
+
+    static String link(String path, Map&lt;String, String&gt; query, long page, int pageSize) {
+<span class="fc" id="L147">        StringBuilder out = new StringBuilder(path)</span>
+<span class="fc" id="L148">                .append(&quot;?page=&quot;)</span>
+<span class="fc" id="L149">                .append(page)</span>
+<span class="fc" id="L150">                .append(&quot;&amp;pageSize=&quot;)</span>
+<span class="fc" id="L151">                .append(pageSize);</span>
+<span class="fc" id="L152">        query.forEach((name, value) -&gt; {</span>
+<span class="fc bfc" id="L153" title="All 4 branches covered.">            if (!&quot;page&quot;.equals(name) &amp;&amp; !&quot;pageSize&quot;.equals(name)) {</span>
+<span class="fc" id="L154">                out.append('&amp;')</span>
+<span class="fc" id="L155">                        .append(URLEncoder.encode(name, StandardCharsets.UTF_8))</span>
+<span class="fc" id="L156">                        .append('=')</span>
+<span class="fc" id="L157">                        .append(URLEncoder.encode(value, StandardCharsets.UTF_8));</span>
+            }
+<span class="fc" id="L159">        });</span>
+<span class="fc" id="L160">        return out.toString();</span>
+    }
+
+    private static String versionHref(String name, int version) {
+<span class="fc" id="L164">        return &quot;/vocabularies/&quot; + name + &quot;/versions/&quot; + version;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

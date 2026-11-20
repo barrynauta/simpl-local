@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestChecks.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">RequestChecks.java</span></div><h1>RequestChecks.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.validation.Names;
+import eu.simpl.vocabularymanager.validation.QueryParameters;
+import eu.simpl.vocabularymanager.validation.UriRules;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.slf4j.MDC;
+import tools.jackson.databind.JsonNode;
+
+/** Collects the 400 issues of one request (D49, D51, D52, D37) and throws them together. */
+<span class="fc" id="L16">public final class RequestChecks {</span>
+
+<span class="fc" id="L18">    private final List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+
+    public static RequestChecks start() {
+<span class="fc" id="L21">        return new RequestChecks();</span>
+    }
+
+    /** A vocabulary or external vocabulary name in the path (D49). */
+    public RequestChecks pathName(String parameter, String value) {
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (!Names.isVocabularyName(value)) {</span>
+<span class="fc" id="L27">            issues.add(Issue.schema(</span>
+                    &quot;path&quot;,
+                    parameter,
+                    &quot;Path parameter '&quot; + parameter + &quot;' must match ^[A-Z][a-zA-Z0-9]*$ (3 to 64 characters).&quot;));
+<span class="pc bpc" id="L31" title="1 of 4 branches missed.">        } else if (&quot;vocabularyName&quot;.equals(parameter) || &quot;name&quot;.equals(parameter)) {</span>
+<span class="fc" id="L32">            MDC.put(&quot;vocabularyName&quot;, value);</span>
+        }
+<span class="fc" id="L34">        return this;</span>
+    }
+
+    /** A version in the path: digits only, 1 to 2147483647 (D49, D91, D112). Returns -1 when invalid. */
+    public int pathVersion(String value) {
+<span class="fc" id="L39">        long parsed = Names.positiveInt(value, Integer.MAX_VALUE);</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (parsed &lt; 0) {</span>
+<span class="fc" id="L41">            issues.add(Issue.schema(</span>
+                    &quot;path&quot;, &quot;version&quot;, &quot;Path parameter 'version' must be an integer from 1 to 2147483647.&quot;));
+<span class="fc" id="L43">            return -1;</span>
+        }
+<span class="fc" id="L45">        MDC.put(&quot;version&quot;, Long.toString(parsed));</span>
+<span class="fc" id="L46">        return (int) parsed;</span>
+    }
+
+    /** No query parameters on POST, PATCH and DELETE (D52). */
+    public RequestChecks noQuery(String rawQuery) {
+        try {
+<span class="fc" id="L52">            QueryParameters.parse(rawQuery, Set.of());</span>
+<span class="fc" id="L53">        } catch (ApiException ex) {</span>
+<span class="fc" id="L54">            issues.addAll(ex.issues());</span>
+<span class="fc" id="L55">        }</span>
+<span class="fc" id="L56">        return this;</span>
+    }
+
+    public RequestChecks add(Issue issue) {
+<span class="fc" id="L60">        issues.add(issue);</span>
+<span class="fc" id="L61">        return this;</span>
+    }
+
+    public RequestChecks addAll(List&lt;Issue&gt; more) {
+<span class="fc" id="L65">        issues.addAll(more);</span>
+<span class="fc" id="L66">        return this;</span>
+    }
+
+    /** Required text, 1 to 1000 characters after trimming (D37). Returns the trimmed value. */
+    public String requiredText(String field, String value) {
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L72">            issues.add(Issue.schema(&quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' is required.&quot;));</span>
+<span class="fc" id="L73">            return null;</span>
+        }
+<span class="fc" id="L75">        int length = Names.trimmedLength(value);</span>
+<span class="fc bfc" id="L76" title="All 4 branches covered.">        if (length &lt; 1 || length &gt; Names.TEXT_MAX) {</span>
+<span class="fc" id="L77">            issues.add(Issue.schema(</span>
+                    &quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' must have 1 to 1000 characters after trimming.&quot;));
+<span class="fc" id="L79">            return null;</span>
+        }
+<span class="fc" id="L81">        return value.strip();</span>
+    }
+
+    /** Optional text, at most 1000 characters after trimming (D56). Empty counts as absent. */
+    public String optionalText(String field, String value) {
+<span class="pc bpc" id="L86" title="1 of 4 branches missed.">        if (value == null || value.isBlank()) {</span>
+<span class="fc" id="L87">            return null;</span>
+        }
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">        if (Names.trimmedLength(value) &gt; Names.TEXT_MAX) {</span>
+<span class="nc" id="L90">            issues.add(Issue.schema(</span>
+                    &quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' must have at most 1000 characters after trimming.&quot;));
+<span class="nc" id="L92">            return null;</span>
+        }
+<span class="fc" id="L94">        return value.strip();</span>
+    }
+
+    /** A vocabulary name field (D37). */
+    public String name(String field, String value) {
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L100">            issues.add(Issue.schema(&quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' is required.&quot;));</span>
+<span class="fc" id="L101">            return null;</span>
+        }
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        if (!Names.isVocabularyName(value)) {</span>
+<span class="nc" id="L104">            issues.add(Issue.schema(</span>
+                    &quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' must match ^[A-Z][a-zA-Z0-9]*$ (3 to 64 characters).&quot;));
+<span class="nc" id="L106">            return null;</span>
+        }
+<span class="fc" id="L108">        return value;</span>
+    }
+
+    /** An absolute URI field (D73). */
+    public String uri(String field, String value, boolean required) {
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">            if (required) {</span>
+<span class="nc" id="L115">                issues.add(Issue.schema(&quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' is required.&quot;));</span>
+            }
+<span class="fc" id="L117">            return null;</span>
+        }
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        if (!UriRules.isAbsoluteUri(value)) {</span>
+<span class="fc" id="L120">            issues.add(Issue.schema(&quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' must be an absolute URI.&quot;));</span>
+<span class="fc" id="L121">            return null;</span>
+        }
+<span class="fc" id="L123">        return value;</span>
+    }
+
+    /** The status of a PATCH body (D4, D52). */
+    public VocabularyStatus status(JsonNode body) {
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        for (String unknown : JsonBody.unknownProperties(body, Set.of(&quot;status&quot;))) {</span>
+<span class="nc" id="L129">            issues.add(Issue.schema(&quot;body&quot;, unknown, &quot;Property '&quot; + unknown + &quot;' is not supported.&quot;));</span>
+<span class="nc" id="L130">        }</span>
+<span class="fc" id="L131">        JsonNode value = body.get(&quot;status&quot;);</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">        if (value == null) {</span>
+<span class="nc" id="L133">            issues.add(Issue.schema(&quot;body&quot;, &quot;status&quot;, &quot;Property 'status' is required.&quot;));</span>
+<span class="nc" id="L134">            return null;</span>
+        }
+<span class="pc bpc" id="L136" title="1 of 4 branches missed.">        if (!value.isString() || VocabularyStatus.parse(value.asString()).isEmpty()) {</span>
+<span class="fc" id="L137">            issues.add(Issue.schema(&quot;body&quot;, &quot;status&quot;, &quot;Property 'status' must be one of [ACTIVE, DEPRECATED].&quot;));</span>
+<span class="fc" id="L138">            return null;</span>
+        }
+<span class="fc" id="L140">        return VocabularyStatus.parse(value.asString()).orElseThrow();</span>
+    }
+
+    public boolean hasIssues() {
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        return !issues.isEmpty();</span>
+    }
+
+    /**
+     * Throws the collected issues.
+     *
+     * @throws ApiException 400 when there is at least one issue
+     */
+    public void throwIfAny() {
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L154">            throw ApiException.badRequest(issues);</span>
+        }
+<span class="fc" id="L156">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

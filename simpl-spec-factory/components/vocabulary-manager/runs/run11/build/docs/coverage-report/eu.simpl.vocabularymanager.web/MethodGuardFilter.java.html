@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MethodGuardFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">MethodGuardFilter.java</span></div><h1>MethodGuardFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Rejects methods before anything else (D67, D126, D139): a method the server does not know gets
+ * 405 on any path; a known method that a declared path does not declare (HEAD and OPTIONS
+ * included) gets 405 with Allow, with or without a token.
+ */
+public class MethodGuardFilter extends OncePerRequestFilter {
+
+<span class="fc" id="L23">    private static final Set&lt;String&gt; KNOWN =</span>
+<span class="fc" id="L24">            Set.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;, &quot;HEAD&quot;, &quot;OPTIONS&quot;, &quot;TRACE&quot;);</span>
+
+    private final ProblemWriter problems;
+
+<span class="fc" id="L28">    public MethodGuardFilter(ProblemWriter problems) {</span>
+<span class="fc" id="L29">        this.problems = problems;</span>
+<span class="fc" id="L30">    }</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L35">        String method = request.getMethod();</span>
+<span class="fc" id="L36">        List&lt;ApiRoutes.Route&gt; routes = ApiRoutes.relative(request.getRequestURI())</span>
+<span class="fc" id="L37">                .map(ApiRoutes::matching)</span>
+<span class="fc" id="L38">                .orElse(List.of());</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        boolean declaredPath = !routes.isEmpty();</span>
+<span class="fc" id="L40">        boolean declaredMethod = routes.stream().anyMatch(r -&gt; r.method().equals(method));</span>
+<span class="fc bfc" id="L41" title="All 6 branches covered.">        if (!KNOWN.contains(method) || (declaredPath &amp;&amp; !declaredMethod)) {</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            Map&lt;String, String&gt; headers = declaredPath ? Map.of(&quot;Allow&quot;, ApiRoutes.allow(routes)) : Map.of();</span>
+<span class="fc" id="L43">            problems.write(</span>
+                    response,
+                    new ApiException(
+                            ProblemType.METHOD_NOT_ALLOWED,
+<span class="fc" id="L47">                            &quot;Method &quot; + safe(method) + &quot; is not allowed on this resource.&quot;,</span>
+<span class="fc" id="L48">                            List.of(),</span>
+                            headers,
+                            false));
+<span class="fc" id="L51">            return;</span>
+        }
+<span class="fc" id="L53">        chain.doFilter(request, response);</span>
+<span class="fc" id="L54">    }</span>
+
+    private static String safe(String method) {
+<span class="pc bpc" id="L57" title="2 of 4 branches missed.">        return method.length() &gt; 20 || !method.matches(&quot;[A-Z]+&quot;) ? &quot;used&quot; : method;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,102 @@
+spring:
+  application:
+    name: vocabulary-manager-be
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: false
+  servlet:
+    multipart:
+      enabled: true
+      # D15 and D76: 5 MB per file part, 6 MB per request (binary MB as 5 242 880 bytes)
+      max-file-size: ${VM_MAX_FILE_BYTES:5242880}B
+      max-request-size: ${VM_MAX_MULTIPART_BYTES:6291456}B
+      file-size-threshold: 1MB
+      resolve-lazily: true
+  web:
+    resources:
+      add-mappings: false
+  mvc:
+    problemdetails:
+      enabled: false
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: never
+    include-message: never
+  tomcat:
+    max-swallow-size: 16MB
+    max-part-count: 64
+    max-http-form-post-size: 2MB
+    threads:
+      max: 100
+    accept-count: 100
+    connection-timeout: 20s
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8081}
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type: w3c
+  metrics:
+    tags:
+      application: vocabulary-manager-be
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+logging:
+  structured:
+    format:
+      console: logstash
+  level:
+    root: INFO
+    org.apache.jena: WARN
+
+spring.lifecycle.timeout-per-shutdown-phase: 30s
+
+vm:
+  content-base: ${VOCABULARY_CONTENT_BASE_URL:https://authority.example/vocabulary-manager}
+  security:
+    issuer-uri: ${ISSUER_URI:http://localhost:8193/realms/simpl}
+    audience: ${TOKEN_AUDIENCE:vocabulary-manager-be}
+    jwks-uri: ${JWKS_URI:http://localhost:8193/realms/simpl/protocol/openid-connect/certs}
+    jwks-timeout: 2s
+    jwks-refetch-interval: 10s
+  store:
+    url: ${FUSEKI_URL:http://localhost:3030/vocabulary}
+    read-user: ${FUSEKI_READ_USER:reader}
+    read-password: ${FUSEKI_READ_PASSWORD:}
+    update-user: ${FUSEKI_UPDATE_USER:updater}
+    update-password: ${FUSEKI_UPDATE_PASSWORD:}
+    connect-timeout: 2s
+    read-timeout: 10s
+    update-timeout: 45s
+    health-timeout: 2s
+    conditional-retries: 5
+  limits:
+    max-file-bytes: ${VM_MAX_FILE_BYTES:5242880}
+    max-multipart-bytes: ${VM_MAX_MULTIPART_BYTES:6291456}
+    max-json-bytes: 1048576
+    max-parallel-uploads: ${VM_MAX_PARALLEL_UPLOADS:4}
+    write-budget: 30s
+    max-issues: 1000

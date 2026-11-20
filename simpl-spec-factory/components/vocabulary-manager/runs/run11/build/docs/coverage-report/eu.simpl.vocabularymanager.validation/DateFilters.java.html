@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DateFilters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">DateFilters.java</span></div><h1>DateFilters.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import eu.simpl.vocabularymanager.store.ListQuery;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
+/**
+ * Date filters of D20, D110 and D130: a date matches its whole UTC day, a date-time its second; a
+ * date-time without offset is UTC; offsets beyond plus or minus 18:00 are invalid.
+ */
+public final class DateFilters {
+
+<span class="fc" id="L20">    private static final Pattern SHAPE = Pattern.compile(&quot;\\d{4}-\\d{2}-\\d{2}(T.*)?&quot;);</span>
+
+    private DateFilters() {}
+
+    /** The UTC range for the value, or empty when the value is not a valid date or date-time. */
+    public static Optional&lt;ListQuery.TimeRange&gt; parse(String value) {
+<span class="pc bpc" id="L26" title="1 of 6 branches missed.">        if (value == null || value.length() &gt; 40 || !SHAPE.matcher(value).matches()) {</span>
+<span class="fc" id="L27">            return Optional.empty();</span>
+        }
+        try {
+<span class="fc bfc" id="L30" title="All 2 branches covered.">            if (value.length() == 10) {</span>
+<span class="fc" id="L31">                Instant start =</span>
+<span class="fc" id="L32">                        LocalDate.parse(value).atStartOfDay(ZoneOffset.UTC).toInstant();</span>
+<span class="fc" id="L33">                return Optional.of(new ListQuery.TimeRange(start, start.plus(1, ChronoUnit.DAYS)));</span>
+            }
+<span class="fc" id="L35">            Instant at = parseDateTime(value).truncatedTo(ChronoUnit.SECONDS);</span>
+<span class="fc" id="L36">            return Optional.of(new ListQuery.TimeRange(at, at.plusSeconds(1)));</span>
+<span class="fc" id="L37">        } catch (DateTimeParseException | ArithmeticException ex) {</span>
+<span class="fc" id="L38">            return Optional.empty();</span>
+        }
+    }
+
+    private static Instant parseDateTime(String value) {
+        try {
+<span class="fc" id="L44">            return OffsetDateTime.parse(value).toInstant();</span>
+<span class="fc" id="L45">        } catch (DateTimeParseException ex) {</span>
+<span class="fc" id="L46">            return LocalDateTime.parse(value).toInstant(ZoneOffset.UTC);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

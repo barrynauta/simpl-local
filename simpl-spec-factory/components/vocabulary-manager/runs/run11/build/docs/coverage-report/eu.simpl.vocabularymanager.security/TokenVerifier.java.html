@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TokenVerifier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">TokenVerifier.java</span></div><h1>TokenVerifier.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.JWSVerificationKeySelector;
+import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
+import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+import eu.simpl.vocabularymanager.config.AppProperties;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.stereotype.Component;
+
+/**
+ * Validates bearer tokens (D17, D44, D88, D132, OWT-A07): signature with the realm keys, issuer,
+ * audience, expiry and not-before through the Nimbus library. No own cryptography (REUSE-01).
+ */
+@Component
+public class TokenVerifier {
+
+<span class="fc" id="L28">    private static final Set&lt;JWSAlgorithm&gt; ALGORITHMS = Set.of(</span>
+            JWSAlgorithm.RS256,
+            JWSAlgorithm.RS384,
+            JWSAlgorithm.RS512,
+            JWSAlgorithm.PS256,
+            JWSAlgorithm.PS384,
+            JWSAlgorithm.PS512,
+            JWSAlgorithm.ES256,
+            JWSAlgorithm.ES384,
+            JWSAlgorithm.ES512);
+
+    private final RealmKeys realmKeys;
+    private final DefaultJWTClaimsVerifier&lt;SecurityContext&gt; claimsVerifier;
+
+<span class="fc" id="L42">    public TokenVerifier(AppProperties properties, RealmKeys realmKeys) {</span>
+<span class="fc" id="L43">        this.realmKeys = realmKeys;</span>
+<span class="fc" id="L44">        this.claimsVerifier = new DefaultJWTClaimsVerifier&lt;&gt;(</span>
+<span class="fc" id="L45">                properties.security().audience(),</span>
+                new JWTClaimsSet.Builder()
+<span class="fc" id="L47">                        .issuer(properties.security().issuerUri())</span>
+<span class="fc" id="L48">                        .build(),</span>
+<span class="fc" id="L49">                Set.of(&quot;exp&quot;, &quot;sub&quot;, &quot;iss&quot;));</span>
+<span class="fc" id="L50">    }</span>
+
+    /** The result of a token check. */
+    public sealed interface Result permits Valid, Invalid, KeysUnavailable {}
+
+    /** A valid token and its user. */
+<span class="fc" id="L56">    public record Valid(AuthenticatedUser user) implements Result {}</span>
+
+    /** An invalid token (401) with the reason for the log. */
+<span class="fc" id="L59">    public record Invalid(String reason) implements Result {}</span>
+
+    /** The realm keys could not be fetched (503, D44). */
+<span class="fc" id="L62">    public record KeysUnavailable() implements Result {}</span>
+
+    public Result verify(String token) {
+        SignedJWT jwt;
+        try {
+<span class="fc" id="L67">            jwt = SignedJWT.parse(token);</span>
+<span class="fc" id="L68">        } catch (ParseException | RuntimeException ex) {</span>
+<span class="fc" id="L69">            return new Invalid(&quot;not a signed JWT&quot;);</span>
+<span class="fc" id="L70">        }</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        if (!ALGORITHMS.contains(jwt.getHeader().getAlgorithm())) {</span>
+<span class="nc" id="L72">            return new Invalid(&quot;algorithm not allowed&quot;);</span>
+        }
+<span class="fc" id="L74">        RealmKeys.Lookup lookup = realmKeys.lookup(jwt.getHeader().getKeyID());</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (lookup instanceof RealmKeys.Unavailable) {</span>
+<span class="fc" id="L76">            return new KeysUnavailable();</span>
+        }
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        if (!(lookup instanceof RealmKeys.Found found)) {</span>
+<span class="fc" id="L79">            return new Invalid(&quot;unknown key id&quot;);</span>
+        }
+<span class="fc" id="L81">        DefaultJWTProcessor&lt;SecurityContext&gt; processor = new DefaultJWTProcessor&lt;&gt;();</span>
+<span class="fc" id="L82">        processor.setJWSKeySelector(</span>
+<span class="fc" id="L83">                new JWSVerificationKeySelector&lt;&gt;(ALGORITHMS, new ImmutableJWKSet&lt;&gt;(new JWKSet(found.key()))));</span>
+<span class="fc" id="L84">        processor.setJWTClaimsSetVerifier(claimsVerifier);</span>
+        try {
+<span class="fc" id="L86">            JWTClaimsSet claims = processor.process(jwt, null);</span>
+<span class="fc" id="L87">            return new Valid(user(claims));</span>
+<span class="fc" id="L88">        } catch (BadJOSEException | com.nimbusds.jose.JOSEException ex) {</span>
+<span class="fc" id="L89">            return new Invalid(ex.getClass().getSimpleName());</span>
+<span class="nc" id="L90">        } catch (ParseException | RuntimeException ex) {</span>
+<span class="nc" id="L91">            return new Invalid(&quot;claims could not be read&quot;);</span>
+        }
+    }
+
+    private static AuthenticatedUser user(JWTClaimsSet claims) throws ParseException {
+<span class="fc" id="L96">        List&lt;String&gt; roles = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L97">        Map&lt;String, Object&gt; realmAccess = claims.getJSONObjectClaim(&quot;realm_access&quot;);</span>
+<span class="pc bpc" id="L98" title="2 of 4 branches missed.">        if (realmAccess != null &amp;&amp; realmAccess.get(&quot;roles&quot;) instanceof List&lt;?&gt; list) {</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">            for (Object role : list) {</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">                if (role instanceof String text) {</span>
+<span class="fc" id="L101">                    roles.add(text);</span>
+                }
+<span class="fc" id="L103">            }</span>
+        }
+<span class="fc" id="L105">        String email = claims.getStringClaim(&quot;email&quot;);</span>
+<span class="fc" id="L106">        String username = claims.getStringClaim(&quot;preferred_username&quot;);</span>
+<span class="pc bpc" id="L107" title="2 of 4 branches missed.">        String creator = email != null &amp;&amp; !email.isBlank() ? email : username;</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        return new AuthenticatedUser(claims.getSubject(), creator == null ? claims.getSubject() : creator, roles);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

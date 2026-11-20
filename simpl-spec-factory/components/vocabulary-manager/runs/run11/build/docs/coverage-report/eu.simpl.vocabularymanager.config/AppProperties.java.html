@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">AppProperties.java</span></div><h1>AppProperties.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import java.time.Duration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * Runtime configuration, all from the environment (MACH-07, E2, E4).
+ *
+ * @param contentBase base URL of vocabulary content (VOCABULARY_CONTENT_BASE_URL, E2)
+ * @param security token validation settings (E1, E5, D44, D88)
+ * @param store RDF store settings (E3, D44, D71, D83)
+ * @param limits component limits (D15, D71, D76, D92)
+ */
+@ConfigurationProperties(prefix = &quot;vm&quot;)
+<span class="fc" id="L15">public record AppProperties(String contentBase, Security security, Store store, Limits limits) {</span>
+
+    /** Token settings. */
+<span class="fc" id="L18">    public record Security(</span>
+            String issuerUri, String audience, String jwksUri, Duration jwksTimeout, Duration jwksRefetchInterval) {}
+
+    /** Store settings. */
+<span class="fc" id="L22">    public record Store(</span>
+            String url,
+            String readUser,
+            String readPassword,
+            String updateUser,
+            String updatePassword,
+            Duration connectTimeout,
+            Duration readTimeout,
+            Duration updateTimeout,
+            Duration healthTimeout,
+            int conditionalRetries) {}
+
+    /** Limits. */
+<span class="fc" id="L35">    public record Limits(</span>
+            long maxFileBytes,
+            long maxMultipartBytes,
+            long maxJsonBytes,
+            int maxParallelUploads,
+            Duration writeBudget,
+            int maxIssues) {}
+
+    /** The content base without a trailing slash. */
+    public String contentBaseTrimmed() {
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">        return contentBase.endsWith(&quot;/&quot;) ? contentBase.substring(0, contentBase.length() - 1) : contentBase;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

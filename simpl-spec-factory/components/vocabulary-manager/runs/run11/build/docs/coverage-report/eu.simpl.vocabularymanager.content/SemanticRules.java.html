@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SemanticRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.content</a> &gt; <span class="el_source">SemanticRules.java</span></div><h1>SemanticRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.content;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.riot.out.NodeFmtLib;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.SKOS;
+import org.springframework.stereotype.Component;
+
+/**
+ * Semantic validation rules S1 to S6 of D9 (refined by D53, D65, D140). All rules run and every
+ * error is returned. S7 (internal references) needs the store and runs in {@link ReferenceChecker}.
+ */
+@Component
+<span class="fc" id="L24">public class SemanticRules {</span>
+
+    static final String S1 = &quot;Literal value for object property&quot;;
+    static final String S2 = &quot;Resource value for datatype property&quot;;
+    static final String S3 = &quot;Property declared as both object and datatype property&quot;;
+    static final String S4 = &quot;Duplicate preferred label for the same language&quot;;
+    static final String S5 = &quot;Resource is an instance of disjoint classes&quot;;
+    static final String S6 = &quot;Vocabulary contains no statements&quot;;
+
+    /** Runs S1 to S6 and returns the errors in file order. */
+    public List&lt;ContentIssue&gt; check(TurtleDocument document) {
+<span class="fc" id="L35">        List&lt;Triple&gt; triples = document.triples();</span>
+<span class="fc" id="L36">        List&lt;ContentIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (triples.isEmpty()) {</span>
+<span class="fc" id="L38">            issues.add(new ContentIssue(S6, &quot;document&quot;, 0));</span>
+<span class="fc" id="L39">            return issues;</span>
+        }
+<span class="fc" id="L41">        Map&lt;Node, Integer&gt; objectProperties = declared(triples, OWL.ObjectProperty.asNode());</span>
+<span class="fc" id="L42">        Map&lt;Node, Integer&gt; datatypeProperties = declared(triples, OWL.DatatypeProperty.asNode());</span>
+<span class="fc" id="L43">        Map&lt;Integer, Integer&gt; sequenceOfTriple = sequences(document);</span>
+
+<span class="fc" id="L45">        checkPropertyValues(triples, objectProperties, datatypeProperties, sequenceOfTriple, issues);</span>
+<span class="fc" id="L46">        checkDoubleDeclarations(objectProperties, datatypeProperties, sequenceOfTriple, issues);</span>
+<span class="fc" id="L47">        checkPreferredLabels(triples, sequenceOfTriple, issues);</span>
+<span class="fc" id="L48">        checkDisjointTypes(triples, sequenceOfTriple, issues);</span>
+<span class="fc" id="L49">        issues.sort((a, b) -&gt; Integer.compare(a.sequence(), b.sequence()));</span>
+<span class="fc" id="L50">        return issues;</span>
+    }
+
+    private static void checkPropertyValues(
+            List&lt;Triple&gt; triples,
+            Map&lt;Node, Integer&gt; objectProperties,
+            Map&lt;Node, Integer&gt; datatypeProperties,
+            Map&lt;Integer, Integer&gt; sequenceOfTriple,
+            List&lt;ContentIssue&gt; issues) {
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        for (int i = 0; i &lt; triples.size(); i++) {</span>
+<span class="fc" id="L60">            Triple t = triples.get(i);</span>
+<span class="fc" id="L61">            Node p = t.getPredicate();</span>
+<span class="fc" id="L62">            Node o = t.getObject();</span>
+<span class="pc bpc" id="L63" title="1 of 4 branches missed.">            if (objectProperties.containsKey(p) &amp;&amp; o.isLiteral()) {</span>
+<span class="fc" id="L64">                issues.add(new ContentIssue(S1, statement(t), sequenceOfTriple.get(i)));</span>
+            }
+<span class="pc bpc" id="L66" title="3 of 6 branches missed.">            if (datatypeProperties.containsKey(p) &amp;&amp; (o.isURI() || o.isBlank())) {</span>
+<span class="fc" id="L67">                issues.add(new ContentIssue(S2, statement(t), sequenceOfTriple.get(i)));</span>
+            }
+        }
+<span class="fc" id="L70">    }</span>
+
+    private static void checkDoubleDeclarations(
+            Map&lt;Node, Integer&gt; objectProperties,
+            Map&lt;Node, Integer&gt; datatypeProperties,
+            Map&lt;Integer, Integer&gt; sequenceOfTriple,
+            List&lt;ContentIssue&gt; issues) {
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        for (Map.Entry&lt;Node, Integer&gt; entry : objectProperties.entrySet()) {</span>
+<span class="fc" id="L78">            Integer other = datatypeProperties.get(entry.getKey());</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">            if (other != null) {</span>
+<span class="fc" id="L80">                int at = Math.max(entry.getValue(), other);</span>
+<span class="fc" id="L81">                issues.add(new ContentIssue(S3, resource(entry.getKey()), sequenceOfTriple.get(at)));</span>
+            }
+<span class="fc" id="L83">        }</span>
+<span class="fc" id="L84">    }</span>
+
+    private static void checkPreferredLabels(
+            List&lt;Triple&gt; triples, Map&lt;Integer, Integer&gt; sequenceOfTriple, List&lt;ContentIssue&gt; issues) {
+<span class="fc" id="L88">        Map&lt;List&lt;Object&gt;, Integer&gt; seen = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        for (int i = 0; i &lt; triples.size(); i++) {</span>
+<span class="fc" id="L90">            Triple t = triples.get(i);</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">            if (!t.getPredicate().equals(SKOS.prefLabel.asNode())</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">                    || !t.getObject().isLiteral()) {</span>
+<span class="nc" id="L93">                continue;</span>
+            }
+<span class="fc" id="L95">            String language = t.getObject().getLiteralLanguage();</span>
+<span class="pc bpc" id="L96" title="1 of 4 branches missed.">            String key = language == null || language.isEmpty() ? &quot;&quot; : language.toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L97">            List&lt;Object&gt; slot = List.of(t.getSubject(), key);</span>
+<span class="fc" id="L98">            int count = seen.merge(slot, 1, Integer::sum);</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">            if (count == 2) {</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">                String shown = key.isEmpty() ? &quot;none&quot; : language;</span>
+<span class="fc" id="L101">                issues.add(new ContentIssue(</span>
+<span class="fc" id="L102">                        S4, resource(t.getSubject()) + &quot;, language '&quot; + shown + &quot;'&quot;, sequenceOfTriple.get(i)));</span>
+            }
+        }
+<span class="fc" id="L105">    }</span>
+
+    private static void checkDisjointTypes(
+            List&lt;Triple&gt; triples, Map&lt;Integer, Integer&gt; sequenceOfTriple, List&lt;ContentIssue&gt; issues) {
+<span class="fc" id="L109">        Set&lt;List&lt;Node&gt;&gt; disjoint = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        for (Triple t : triples) {</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">            if (t.getPredicate().equals(OWL.disjointWith.asNode())) {</span>
+<span class="fc" id="L112">                disjoint.add(List.of(t.getSubject(), t.getObject()));</span>
+<span class="fc" id="L113">                disjoint.add(List.of(t.getObject(), t.getSubject()));</span>
+            }
+<span class="fc" id="L115">        }</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">        if (disjoint.isEmpty()) {</span>
+<span class="fc" id="L117">            return;</span>
+        }
+<span class="fc" id="L119">        Map&lt;Node, List&lt;Node&gt;&gt; types = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L120">        Set&lt;List&lt;Node&gt;&gt; reported = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        for (int i = 0; i &lt; triples.size(); i++) {</span>
+<span class="fc" id="L122">            Triple t = triples.get(i);</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">            if (!t.getPredicate().equals(RDF.type.asNode())) {</span>
+<span class="fc" id="L124">                continue;</span>
+            }
+<span class="fc" id="L126">            List&lt;Node&gt; known = types.computeIfAbsent(t.getSubject(), k -&gt; new ArrayList&lt;&gt;());</span>
+<span class="fc bfc" id="L127" title="All 2 branches covered.">            for (Node earlier : known) {</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">                if (disjoint.contains(List.of(earlier, t.getObject()))</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">                        &amp;&amp; reported.add(List.of(t.getSubject(), earlier, t.getObject()))) {</span>
+<span class="fc" id="L130">                    issues.add(new ContentIssue(S5, resource(t.getSubject()), sequenceOfTriple.get(i)));</span>
+                }
+<span class="fc" id="L132">            }</span>
+<span class="fc" id="L133">            known.add(t.getObject());</span>
+        }
+<span class="fc" id="L135">    }</span>
+
+    /** Properties declared with the given owl type, with the index of the first declaration. */
+    private static Map&lt;Node, Integer&gt; declared(List&lt;Triple&gt; triples, Node type) {
+<span class="fc" id="L139">        Map&lt;Node, Integer&gt; found = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        for (int i = 0; i &lt; triples.size(); i++) {</span>
+<span class="fc" id="L141">            Triple t = triples.get(i);</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">            if (t.getPredicate().equals(RDF.type.asNode())</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">                    &amp;&amp; t.getObject().equals(type)</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">                    &amp;&amp; (t.getSubject().isURI())) {</span>
+<span class="fc" id="L145">                found.putIfAbsent(t.getSubject(), i);</span>
+            }
+        }
+<span class="fc" id="L148">        return found;</span>
+    }
+
+    /** Maps the index of each triple to its sequence number in file order (prefixes interleaved). */
+    private static Map&lt;Integer, Integer&gt; sequences(TurtleDocument document) {
+<span class="fc" id="L153">        Map&lt;Integer, Integer&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L154">        int prefixIndex = 0;</span>
+<span class="fc" id="L155">        int sequence = 0;</span>
+<span class="fc" id="L156">        List&lt;TurtleDocument.PrefixDeclaration&gt; prefixes = document.prefixes();</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        for (int i = 0; i &lt; document.triples().size(); i++) {</span>
+<span class="pc bpc" id="L158" title="1 of 4 branches missed.">            while (prefixIndex &lt; prefixes.size() &amp;&amp; prefixes.get(prefixIndex).sequence() == sequence) {</span>
+<span class="fc" id="L159">                prefixIndex++;</span>
+<span class="fc" id="L160">                sequence++;</span>
+            }
+<span class="fc" id="L162">            map.put(i, sequence);</span>
+<span class="fc" id="L163">            sequence++;</span>
+        }
+<span class="fc" id="L165">        return map;</span>
+    }
+
+    /** Location of S1 and S2: full IRIs, the literal in N-Triples form (D65, D140). */
+    static String statement(Triple t) {
+<span class="fc" id="L170">        return &quot;statement '&quot; + term(t.getSubject()) + &quot; &quot; + term(t.getPredicate()) + &quot; &quot; + term(t.getObject()) + &quot;'&quot;;</span>
+    }
+
+    static String resource(Node node) {
+<span class="fc" id="L174">        return &quot;resource '&quot; + term(node) + &quot;'&quot;;</span>
+    }
+
+    static String term(Node node) {
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if (node.isURI()) {</span>
+<span class="fc" id="L179">            return node.getURI();</span>
+        }
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        if (node.isBlank()) {</span>
+<span class="fc" id="L182">            return &quot;_:&quot; + node.getBlankNodeLabel();</span>
+        }
+<span class="fc" id="L184">        return NodeFmtLib.strNT(node);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

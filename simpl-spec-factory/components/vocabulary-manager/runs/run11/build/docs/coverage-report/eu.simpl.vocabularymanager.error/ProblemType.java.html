@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProblemType.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.error</a> &gt; <span class="el_source">ProblemType.java</span></div><h1>ProblemType.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.error;
+
+/**
+ * The problem types of the component (D48, D104). They serve as error codes: one value per error
+ * category, with the HTTP status, the type URN, the title and the Belgif documentation link.
+ */
+<span class="fc" id="L7">public enum ProblemType {</span>
+<span class="fc" id="L8">    BAD_REQUEST(</span>
+            400,
+            &quot;urn:problem-type:belgif:badRequest&quot;,
+            &quot;Bad Request&quot;,
+            &quot;https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html&quot;),
+<span class="fc" id="L13">    UNAUTHORIZED(401, &quot;urn:problem-type:simpl:unauthorized&quot;, &quot;Unauthorized&quot;, null),</span>
+<span class="fc" id="L14">    FORBIDDEN(403, &quot;urn:problem-type:simpl:forbidden&quot;, &quot;Forbidden&quot;, null),</span>
+<span class="fc" id="L15">    NOT_FOUND(</span>
+            404,
+            &quot;urn:problem-type:belgif:resourceNotFound&quot;,
+            &quot;Resource Not Found&quot;,
+            &quot;https://www.belgif.be/specification/rest/api-guide/problems/resourceNotFound.html&quot;),
+<span class="fc" id="L20">    METHOD_NOT_ALLOWED(405, &quot;urn:problem-type:simpl:methodNotAllowed&quot;, &quot;Method Not Allowed&quot;, null),</span>
+<span class="fc" id="L21">    NOT_ACCEPTABLE(406, &quot;urn:problem-type:simpl:notAcceptable&quot;, &quot;Not Acceptable&quot;, null),</span>
+<span class="fc" id="L22">    CONFLICT(409, &quot;urn:problem-type:simpl:conflict&quot;, &quot;Conflict&quot;, null),</span>
+<span class="fc" id="L23">    PAYLOAD_TOO_LARGE(413, &quot;urn:problem-type:simpl:payloadTooLarge&quot;, &quot;Payload Too Large&quot;, null),</span>
+<span class="fc" id="L24">    UNSUPPORTED_MEDIA_TYPE(415, &quot;urn:problem-type:simpl:unsupportedMediaType&quot;, &quot;Unsupported Media Type&quot;, null),</span>
+<span class="fc" id="L25">    INTERNAL_SERVER_ERROR(</span>
+            500,
+            &quot;urn:problem-type:belgif:internalServerError&quot;,
+            &quot;Internal Server Error&quot;,
+            &quot;https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html&quot;),
+<span class="fc" id="L30">    SERVICE_UNAVAILABLE(</span>
+            503,
+            &quot;urn:problem-type:belgif:serviceUnavailable&quot;,
+            &quot;Service Unavailable&quot;,
+            &quot;https://www.belgif.be/specification/rest/api-guide/problems/serviceUnavailable.html&quot;);
+
+    private final int status;
+    private final String type;
+    private final String title;
+    private final String href;
+
+<span class="fc" id="L41">    ProblemType(int status, String type, String title, String href) {</span>
+<span class="fc" id="L42">        this.status = status;</span>
+<span class="fc" id="L43">        this.type = type;</span>
+<span class="fc" id="L44">        this.title = title;</span>
+<span class="fc" id="L45">        this.href = href;</span>
+<span class="fc" id="L46">    }</span>
+
+    public int status() {
+<span class="fc" id="L49">        return status;</span>
+    }
+
+    public String type() {
+<span class="fc" id="L53">        return type;</span>
+    }
+
+    public String title() {
+<span class="fc" id="L57">        return title;</span>
+    }
+
+    public String href() {
+<span class="fc" id="L61">        return href;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

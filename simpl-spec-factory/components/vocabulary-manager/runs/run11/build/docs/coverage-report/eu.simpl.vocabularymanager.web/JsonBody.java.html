@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonBody.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">JsonBody.java</span></div><h1>JsonBody.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
+/**
+ * Reads a JSON request body with Jackson (REUSE-02): at most 1 MB (D110), no duplicate keys, no
+ * trailing content, a JSON object at the top (BLG-evo-object).
+ */
+@Component
+public class JsonBody {
+
+    private final JsonMapper strict;
+    private final long maxBytes;
+
+<span class="fc" id="L27">    public JsonBody(eu.simpl.vocabularymanager.config.AppProperties properties) {</span>
+<span class="fc" id="L28">        this.strict = JsonMapper.builder()</span>
+<span class="fc" id="L29">                .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)</span>
+<span class="fc" id="L30">                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)</span>
+<span class="fc" id="L31">                .build();</span>
+<span class="fc" id="L32">        this.maxBytes = properties.limits().maxJsonBytes();</span>
+<span class="fc" id="L33">    }</span>
+
+    /**
+     * Reads the body as a JSON object.
+     *
+     * @throws ApiException 413 above 1 MB, 400 when the body is not one JSON object
+     */
+    public JsonNode readObject(HttpServletRequest request) {
+        byte[] raw;
+<span class="fc" id="L42">        try (InputStream in = request.getInputStream()) {</span>
+<span class="fc" id="L43">            raw = in.readNBytes((int) maxBytes + 1);</span>
+<span class="nc" id="L44">        } catch (IOException ex) {</span>
+<span class="nc" id="L45">            throw ApiException.badRequest(&quot;body&quot;, &quot;body&quot;, &quot;The request body could not be read.&quot;);</span>
+<span class="fc" id="L46">        }</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        if (raw.length &gt; maxBytes) {</span>
+<span class="nc" id="L48">            throw ApiException.tooLarge(&quot;body&quot;, &quot;The request body is larger than 1 MB.&quot;);</span>
+        }
+        JsonNode node;
+        try {
+<span class="fc" id="L52">            node = strict.readTree(raw);</span>
+<span class="fc" id="L53">        } catch (JacksonException ex) {</span>
+<span class="fc" id="L54">            throw ApiException.badRequest(&quot;body&quot;, &quot;body&quot;, &quot;The request body is not valid JSON.&quot;);</span>
+<span class="fc" id="L55">        }</span>
+<span class="pc bpc" id="L56" title="1 of 4 branches missed.">        if (node == null || !node.isObject()) {</span>
+<span class="fc" id="L57">            throw ApiException.badRequest(&quot;body&quot;, &quot;body&quot;, &quot;The request body must be a JSON object.&quot;);</span>
+        }
+<span class="fc" id="L59">        return node;</span>
+    }
+
+    /** One issue name per property the schema does not define (D52). */
+    public static List&lt;String&gt; unknownProperties(JsonNode object, Set&lt;String&gt; allowed) {
+<span class="fc" id="L64">        List&lt;String&gt; unknown = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        for (String name : object.propertyNames()) {</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc" id="L67">                unknown.add(name);</span>
+            }
+<span class="fc" id="L69">        }</span>
+<span class="fc" id="L70">        return unknown;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

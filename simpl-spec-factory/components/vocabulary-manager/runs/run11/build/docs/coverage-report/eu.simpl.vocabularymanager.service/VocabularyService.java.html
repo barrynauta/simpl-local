@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">VocabularyService.java</span></div><h1>VocabularyService.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.content.ContentValidator;
+import eu.simpl.vocabularymanager.content.ValidationWarning;
+import eu.simpl.vocabularymanager.domain.Page;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import eu.simpl.vocabularymanager.store.ListQuery;
+import eu.simpl.vocabularymanager.store.NewVersion;
+import eu.simpl.vocabularymanager.store.SparqlClient;
+import eu.simpl.vocabularymanager.store.StoreSchema;
+import eu.simpl.vocabularymanager.store.VocabularyRepository;
+import eu.simpl.vocabularymanager.store.VocabularyRepository.WriteKind;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+/**
+ * The vocabulary lifecycle (D3 to D8, D43, D46, D82): creation, new versions with automatic
+ * deprecation, status changes, and reads. Writes are conditional store updates, retried at most 5
+ * times within the write budget (D71, D82); no lock state in the service.
+ */
+@Service
+public class VocabularyService {
+
+<span class="fc" id="L36">    private static final Logger LOG = LoggerFactory.getLogger(VocabularyService.class);</span>
+
+    private final VocabularyRepository repository;
+    private final ContentValidator validator;
+    private final AppProperties properties;
+    private final Clock clock;
+
+    public VocabularyService(
+<span class="fc" id="L44">            VocabularyRepository repository, ContentValidator validator, AppProperties properties, Clock clock) {</span>
+<span class="fc" id="L45">        this.repository = repository;</span>
+<span class="fc" id="L46">        this.validator = validator;</span>
+<span class="fc" id="L47">        this.properties = properties;</span>
+<span class="fc" id="L48">        this.clock = clock;</span>
+<span class="fc" id="L49">    }</span>
+
+    /** A created version and its validation warnings. */
+<span class="fc" id="L52">    public record Created(VocabularyVersion version, List&lt;ValidationWarning&gt; warnings) {}</span>
+
+    /** What the create and new version requests carry, after the field checks. */
+<span class="fc" id="L55">    public record Submission(String name, String description, String changelog, byte[] content, String creator) {}</span>
+
+    /**
+     * Creates a vocabulary with version 1 ACTIVE (SIMPL-18170, D6, D7). Order after the field
+     * checks: 409 duplicate name, then content validation (D51).
+     *
+     * @throws ApiException 409, 400 validation report, 503
+     */
+    public Created create(Submission submission) {
+<span class="fc" id="L64">        String name = submission.name();</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (repository.nameTaken(name)) {</span>
+<span class="fc" id="L66">            throw duplicate(name);</span>
+        }
+<span class="fc" id="L68">        List&lt;ValidationWarning&gt; warnings = validator.validate(submission.content(), contentUrl(name, 1), name);</span>
+<span class="fc" id="L69">        String writeId = UUID.randomUUID().toString();</span>
+<span class="fc" id="L70">        Instant now = StoreSchema.now();</span>
+<span class="fc" id="L71">        repository.create(newVersion(submission, now), writeId);</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (!repository.writeApplied(StoreSchema.vocabularyIri(name), WriteKind.CREATION, writeId)) {</span>
+<span class="nc" id="L73">            throw duplicate(name);</span>
+        }
+<span class="fc" id="L75">        LOG.info(&quot;Vocabulary created&quot;);</span>
+<span class="fc" id="L76">        return new Created(versionOrFail(name, 1), warnings);</span>
+    }
+
+    /**
+     * Creates the next version (SIMPL-18173, D4, D7, D46, D82). Order after the field checks: 404,
+     * 409 identical version, then content validation, then the conditional write.
+     *
+     * @throws ApiException 404, 409, 400 validation report, 503
+     */
+    public Created addVersion(Submission submission) {
+<span class="fc" id="L86">        String name = submission.name();</span>
+<span class="fc" id="L87">        Vocabulary vocabulary = repository.find(name).orElseThrow(() -&gt; vocabularyNotFound(name));</span>
+<span class="fc" id="L88">        int latest = vocabulary.latestVersion();</span>
+<span class="fc" id="L89">        rejectIdenticalVersion(submission, latest);</span>
+<span class="fc" id="L90">        List&lt;ValidationWarning&gt; warnings = validator.validate(submission.content(), contentUrl(name, latest + 1), name);</span>
+<span class="fc" id="L91">        long deadline = clock.millis() + properties.limits().writeBudget().toMillis();</span>
+<span class="fc" id="L92">        String writeId = UUID.randomUUID().toString();</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">        for (int attempt = 0; attempt &lt; properties.store().conditionalRetries(); attempt++) {</span>
+<span class="fc" id="L94">            Instant now = StoreSchema.now();</span>
+<span class="fc" id="L95">            repository.addVersion(newVersion(submission, now), latest, writeId);</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (repository.writeApplied(StoreSchema.versionIri(name, latest + 1), WriteKind.CREATION, writeId)) {</span>
+<span class="fc" id="L97">                LOG.info(&quot;Vocabulary version created&quot;);</span>
+<span class="fc" id="L98">                return new Created(versionOrFail(name, latest + 1), warnings);</span>
+            }
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">            if (clock.millis() &gt; deadline) {</span>
+<span class="nc" id="L101">                break;</span>
+            }
+<span class="fc" id="L103">            pause(attempt);</span>
+<span class="fc" id="L104">            latest = repository</span>
+<span class="fc" id="L105">                    .find(name)</span>
+<span class="pc" id="L106">                    .orElseThrow(() -&gt; vocabularyNotFound(name))</span>
+<span class="fc" id="L107">                    .latestVersion();</span>
+        }
+<span class="nc" id="L109">        LOG.warn(&quot;Version creation gave up after conditional write retries&quot;);</span>
+<span class="nc" id="L110">        throw ApiException.unavailable(SparqlClient.STORE_UNAVAILABLE);</span>
+    }
+
+    /**
+     * Sets the vocabulary status (SIMPL-18175, D3, D4).
+     *
+     * @throws ApiException 404, 409 same status, 503
+     */
+    public Vocabulary setStatus(String name, VocabularyStatus target) {
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        for (int attempt = 0; attempt &lt; properties.store().conditionalRetries(); attempt++) {</span>
+<span class="pc" id="L120">            Vocabulary current = repository.find(name).orElseThrow(() -&gt; vocabularyNotFound(name));</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">            if (current.status() == target) {</span>
+<span class="fc" id="L122">                throw ApiException.conflict(&quot;Vocabulary is already in status &quot; + target.name());</span>
+            }
+<span class="fc" id="L124">            String writeId = UUID.randomUUID().toString();</span>
+<span class="fc" id="L125">            repository.setStatus(name, current.status(), target, StoreSchema.now(), writeId);</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">            if (repository.writeApplied(StoreSchema.vocabularyIri(name), WriteKind.STATUS, writeId)) {</span>
+<span class="fc" id="L127">                LOG.info(&quot;Vocabulary status changed to {}&quot;, target);</span>
+<span class="pc" id="L128">                return repository.find(name).orElseThrow(() -&gt; vocabularyNotFound(name));</span>
+            }
+<span class="nc" id="L130">            pause(attempt);</span>
+        }
+<span class="nc" id="L132">        throw ApiException.unavailable(SparqlClient.STORE_UNAVAILABLE);</span>
+    }
+
+    /**
+     * Sets a version status (D4, D41).
+     *
+     * @throws ApiException 404, 409 same status, 503
+     */
+    public VocabularyVersion setVersionStatus(String name, int version, VocabularyStatus target) {
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">        for (int attempt = 0; attempt &lt; properties.store().conditionalRetries(); attempt++) {</span>
+<span class="fc" id="L142">            VocabularyVersion current = version(name, version);</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">            if (current.status() == target) {</span>
+<span class="fc" id="L144">                throw ApiException.conflict(&quot;Vocabulary version is already in status &quot; + target.name());</span>
+            }
+<span class="fc" id="L146">            String writeId = UUID.randomUUID().toString();</span>
+<span class="fc" id="L147">            repository.setVersionStatus(name, version, current.status(), target, StoreSchema.now(), writeId);</span>
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">            if (repository.writeApplied(StoreSchema.versionIri(name, version), WriteKind.STATUS, writeId)) {</span>
+<span class="fc" id="L149">                LOG.info(&quot;Vocabulary version status changed to {}&quot;, target);</span>
+<span class="fc" id="L150">                return version(name, version);</span>
+            }
+<span class="nc" id="L152">            pause(attempt);</span>
+        }
+<span class="nc" id="L154">        throw ApiException.unavailable(SparqlClient.STORE_UNAVAILABLE);</span>
+    }
+
+    /**
+     * The vocabulary.
+     *
+     * @throws ApiException 404
+     */
+    public Vocabulary vocabulary(String name) {
+<span class="fc" id="L163">        return repository.find(name).orElseThrow(() -&gt; vocabularyNotFound(name));</span>
+    }
+
+    /** The state of the named vocabularies and all their versions, in one store query (D38). */
+    public eu.simpl.vocabularymanager.store.ReferenceState searchState(List&lt;String&gt; names) {
+<span class="fc" id="L168">        return repository.references(names, List.of());</span>
+    }
+
+    public Page&lt;Vocabulary&gt; list(ListQuery query) {
+<span class="fc" id="L172">        return repository.list(query);</span>
+    }
+
+    /**
+     * The versions of a vocabulary.
+     *
+     * @throws ApiException 404 when the vocabulary does not exist
+     */
+    public Page&lt;VocabularyVersion&gt; versions(String name, String sortField, boolean ascending, long page, int size) {
+<span class="fc" id="L181">        Page&lt;VocabularyVersion&gt; result = repository.listVersions(name, sortField, ascending, page, size);</span>
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">        if (result.total() == 0) {</span>
+<span class="nc" id="L183">            throw vocabularyNotFound(name);</span>
+        }
+<span class="fc" id="L185">        return result;</span>
+    }
+
+    /**
+     * One version.
+     *
+     * @throws ApiException 404 for an unknown vocabulary or version
+     */
+    public VocabularyVersion version(String name, int version) {
+<span class="fc" id="L194">        return repository.findVersion(name, version).orElseThrow(() -&gt; {</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">            if (repository.find(name).isEmpty()) {</span>
+<span class="nc" id="L196">                return vocabularyNotFound(name);</span>
+            }
+<span class="fc" id="L198">            return versionNotFound(name, version);</span>
+        });
+    }
+
+    /**
+     * Content of a version, or of the latest version when version is null (D5, D29).
+     *
+     * @throws ApiException 404
+     */
+    public byte[] content(String name, Integer version) {
+<span class="fc bfc" id="L208" title="All 2 branches covered.">        int number = version == null ? vocabulary(name).latestVersion() : version;</span>
+<span class="fc" id="L209">        return repository.content(name, number).orElseThrow(() -&gt; {</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            if (repository.find(name).isEmpty()) {</span>
+<span class="nc" id="L211">                return vocabularyNotFound(name);</span>
+            }
+<span class="nc" id="L213">            return versionNotFound(name, number);</span>
+        });
+    }
+
+    public String contentUrl(String name, int version) {
+<span class="fc" id="L218">        return properties.contentBaseTrimmed() + &quot;/content/&quot; + name + &quot;/versions/&quot; + version;</span>
+    }
+
+    public static ApiException vocabularyNotFound(String name) {
+<span class="fc" id="L222">        String detail = &quot;Vocabulary with name '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L223">        return new ApiException(ProblemType.NOT_FOUND, detail, List.of(Issue.plain(&quot;path&quot;, &quot;vocabularyName&quot;, detail)));</span>
+    }
+
+    public static ApiException versionNotFound(String name, int version) {
+<span class="fc" id="L227">        String detail = &quot;Version &quot; + version + &quot; of vocabulary '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L228">        return new ApiException(ProblemType.NOT_FOUND, detail, List.of(Issue.plain(&quot;path&quot;, &quot;version&quot;, detail)));</span>
+    }
+
+    private void rejectIdenticalVersion(Submission submission, int latest) {
+<span class="fc" id="L232">        VocabularyVersion latestVersion = versionOrFail(submission.name(), latest);</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">        if (!latestVersion.description().equals(submission.description())) {</span>
+<span class="fc" id="L234">            return;</span>
+        }
+<span class="fc" id="L236">        byte[] stored = repository.content(submission.name(), latest).orElse(new byte[0]);</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">        if (Arrays.equals(stored, submission.content())) {</span>
+<span class="fc" id="L238">            throw ApiException.conflict(&quot;Version &quot; + latest + &quot; of vocabulary '&quot; + submission.name()</span>
+                    + &quot;' already has this content and description.&quot;);
+        }
+<span class="nc" id="L241">    }</span>
+
+    private VocabularyVersion versionOrFail(String name, int version) {
+<span class="fc" id="L244">        return repository</span>
+<span class="fc" id="L245">                .findVersion(name, version)</span>
+<span class="pc" id="L246">                .orElseThrow(() -&gt; new ApiException(ProblemType.INTERNAL_SERVER_ERROR, &quot;Internal Server Error&quot;));</span>
+    }
+
+    private static NewVersion newVersion(Submission submission, Instant now) {
+<span class="fc" id="L250">        return new NewVersion(</span>
+<span class="fc" id="L251">                submission.name(),</span>
+<span class="fc" id="L252">                submission.description(),</span>
+<span class="fc" id="L253">                submission.changelog(),</span>
+<span class="fc" id="L254">                submission.creator(),</span>
+<span class="fc" id="L255">                submission.content(),</span>
+                now);
+    }
+
+    private static ApiException duplicate(String name) {
+<span class="fc" id="L260">        return ApiException.conflict(&quot;Vocabulary with name '&quot; + name + &quot;' already exists.&quot;);</span>
+    }
+
+    private static void pause(int attempt) {
+        try {
+<span class="fc" id="L265">            Thread.sleep(20L + (long) (Math.random() * 50 * (attempt + 1)));</span>
+<span class="nc" id="L266">        } catch (InterruptedException ex) {</span>
+<span class="nc" id="L267">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L268">            throw ApiException.unavailable(SparqlClient.STORE_UNAVAILABLE);</span>
+<span class="fc" id="L269">        }</span>
+<span class="fc" id="L270">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

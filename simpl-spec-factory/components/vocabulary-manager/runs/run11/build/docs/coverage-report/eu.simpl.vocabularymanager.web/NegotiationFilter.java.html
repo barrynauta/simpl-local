@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NegotiationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">NegotiationFilter.java</span></div><h1>NegotiationFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Media type and size checks after authentication (D51, D63, D127): 406 for an Accept header the
+ * operation cannot serve, then 415 for a wrong Content-Type, then 413 for a declared body size
+ * above the limit (D76, D110). The Accept header is then set to the operation's media type, so the
+ * response always has its normal media type.
+ */
+public class NegotiationFilter extends OncePerRequestFilter {
+
+<span class="fc" id="L29">    private static final MediaType TURTLE = MediaType.parseMediaType(&quot;text/turtle&quot;);</span>
+<span class="fc" id="L30">    private static final MediaType PROBLEM = MediaType.parseMediaType(ProblemWriter.PROBLEM_JSON);</span>
+<span class="fc" id="L31">    private static final MediaType APPLICATION_ANY = MediaType.parseMediaType(&quot;application/*&quot;);</span>
+
+    private final ProblemWriter problems;
+    private final AppProperties.Limits limits;
+
+<span class="fc" id="L36">    public NegotiationFilter(ProblemWriter problems, AppProperties properties) {</span>
+<span class="fc" id="L37">        this.problems = problems;</span>
+<span class="fc" id="L38">        this.limits = properties.limits();</span>
+<span class="fc" id="L39">    }</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L44">        Optional&lt;ApiRoutes.Route&gt; found =</span>
+<span class="fc" id="L45">                ApiRoutes.relative(request.getRequestURI()).flatMap(path -&gt; ApiRoutes.find(request.getMethod(), path));</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if (found.isEmpty()) {</span>
+<span class="fc" id="L47">            chain.doFilter(request, response);</span>
+<span class="fc" id="L48">            return;</span>
+        }
+<span class="fc" id="L50">        ApiRoutes.Route route = found.get();</span>
+        try {
+<span class="fc" id="L52">            checkAccept(request, route);</span>
+<span class="fc" id="L53">            checkContentType(request, route);</span>
+<span class="fc" id="L54">            checkLength(request, route);</span>
+<span class="fc" id="L55">        } catch (ApiException ex) {</span>
+<span class="fc" id="L56">            problems.write(response, ex);</span>
+<span class="fc" id="L57">            return;</span>
+<span class="fc" id="L58">        }</span>
+<span class="fc" id="L59">        chain.doFilter(</span>
+                new FixedAccept(
+<span class="fc bfc" id="L61" title="All 2 branches covered.">                        request, route.produces() == ApiRoutes.Produces.TURTLE ? &quot;text/turtle&quot; : &quot;application/json&quot;),</span>
+                response);
+<span class="fc" id="L63">    }</span>
+
+    static void checkAccept(HttpServletRequest request, ApiRoutes.Route route) {
+<span class="fc" id="L66">        Enumeration&lt;String&gt; headers = request.getHeaders(&quot;Accept&quot;);</span>
+<span class="pc bpc" id="L67" title="1 of 4 branches missed.">        if (headers == null || !headers.hasMoreElements()) {</span>
+<span class="fc" id="L68">            return;</span>
+        }
+<span class="fc" id="L70">        String joined = String.join(&quot;,&quot;, Collections.list(headers));</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        if (joined.isBlank()) {</span>
+<span class="nc" id="L72">            return;</span>
+        }
+        List&lt;MediaType&gt; accepted;
+        try {
+<span class="fc" id="L76">            accepted = MediaType.parseMediaTypes(joined);</span>
+<span class="nc" id="L77">        } catch (IllegalArgumentException ex) {</span>
+<span class="nc" id="L78">            throw notAcceptable();</span>
+<span class="fc" id="L79">        }</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        List&lt;MediaType&gt; served = route.produces() == ApiRoutes.Produces.TURTLE</span>
+<span class="fc" id="L81">                ? List.of(TURTLE)</span>
+<span class="fc" id="L82">                : List.of(MediaType.APPLICATION_JSON, PROBLEM);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        for (MediaType type : accepted) {</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">            if (type.getQualityValue() &lt;= 0) {</span>
+<span class="nc" id="L85">                continue;</span>
+            }
+<span class="pc bpc" id="L87" title="1 of 4 branches missed.">            if (type.isWildcardType() || type.equalsTypeAndSubtype(APPLICATION_ANY)) {</span>
+<span class="fc" id="L88">                return;</span>
+            }
+<span class="fc bfc" id="L90" title="All 2 branches covered.">            for (MediaType candidate : served) {</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">                if (type.equalsTypeAndSubtype(candidate)) {</span>
+<span class="fc" id="L92">                    return;</span>
+                }
+<span class="fc" id="L94">            }</span>
+<span class="fc" id="L95">        }</span>
+<span class="fc" id="L96">        throw notAcceptable();</span>
+    }
+
+    static void checkContentType(HttpServletRequest request, ApiRoutes.Route route) {
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        if (route.consumes() == ApiRoutes.Consumes.NONE) {</span>
+<span class="fc" id="L101">            return;</span>
+        }
+        MediaType type;
+        try {
+<span class="fc" id="L105">            String header = request.getContentType();</span>
+<span class="pc bpc" id="L106" title="2 of 4 branches missed.">            if (header == null || header.isBlank()) {</span>
+<span class="nc" id="L107">                throw unsupported();</span>
+            }
+<span class="fc" id="L109">            type = MediaType.parseMediaType(header);</span>
+<span class="nc" id="L110">        } catch (InvalidMediaTypeException ex) {</span>
+<span class="nc" id="L111">            throw unsupported();</span>
+<span class="fc" id="L112">        }</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        boolean ok = route.consumes() == ApiRoutes.Consumes.JSON</span>
+<span class="fc" id="L114">                ? type.equalsTypeAndSubtype(MediaType.APPLICATION_JSON)</span>
+<span class="pc bpc" id="L115" title="1 of 4 branches missed.">                : type.equalsTypeAndSubtype(MediaType.MULTIPART_FORM_DATA) &amp;&amp; type.getParameter(&quot;boundary&quot;) != null;</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">        if (!ok) {</span>
+<span class="fc" id="L117">            throw unsupported();</span>
+        }
+<span class="fc" id="L119">    }</span>
+
+    void checkLength(HttpServletRequest request, ApiRoutes.Route route) {
+<span class="fc" id="L122">        long length = request.getContentLengthLong();</span>
+<span class="fc bfc" id="L123" title="All 4 branches covered.">        if (route.consumes() == ApiRoutes.Consumes.JSON &amp;&amp; length &gt; limits.maxJsonBytes()) {</span>
+<span class="fc" id="L124">            throw ApiException.tooLarge(&quot;body&quot;, &quot;The request body is larger than 1 MB.&quot;);</span>
+        }
+<span class="pc bpc" id="L126" title="1 of 4 branches missed.">        if (route.consumes() == ApiRoutes.Consumes.MULTIPART &amp;&amp; length &gt; limits.maxMultipartBytes()) {</span>
+<span class="nc" id="L127">            throw ApiException.tooLarge(MultipartForm.ContentField.FILE, MultipartForm.TOO_LARGE);</span>
+        }
+<span class="fc" id="L129">    }</span>
+
+    private static ApiException notAcceptable() {
+<span class="fc" id="L132">        return new ApiException(ProblemType.NOT_ACCEPTABLE, &quot;Requested media type cannot be served.&quot;);</span>
+    }
+
+    private static ApiException unsupported() {
+<span class="fc" id="L136">        return new ApiException(ProblemType.UNSUPPORTED_MEDIA_TYPE, &quot;Request content type is not supported.&quot;);</span>
+    }
+
+    /** Presents the operation's normal media type as the Accept header. */
+    static final class FixedAccept extends HttpServletRequestWrapper {
+        private final String accept;
+
+        FixedAccept(HttpServletRequest request, String accept) {
+<span class="fc" id="L144">            super(request);</span>
+<span class="fc" id="L145">            this.accept = accept;</span>
+<span class="fc" id="L146">        }</span>
+
+        @Override
+        public String getHeader(String name) {
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">            return &quot;Accept&quot;.equalsIgnoreCase(name) ? accept : super.getHeader(name);</span>
+        }
+
+        @Override
+        public Enumeration&lt;String&gt; getHeaders(String name) {
+<span class="fc bfc" id="L155" title="All 2 branches covered.">            return &quot;Accept&quot;.equalsIgnoreCase(name) ? Collections.enumeration(List.of(accept)) : super.getHeaders(name);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

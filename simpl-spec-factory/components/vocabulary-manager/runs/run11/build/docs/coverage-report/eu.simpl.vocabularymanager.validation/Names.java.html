@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Names.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">Names.java</span></div><h1>Names.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import java.util.regex.Pattern;
+
+/** Field rules of D37, D19, D49, D56 and D112. */
+public final class Names {
+
+    public static final int NAME_MIN = 3;
+    public static final int NAME_MAX = 64;
+    public static final int TEXT_MAX = 1000;
+
+<span class="fc" id="L12">    private static final Pattern NAME = Pattern.compile(&quot;[A-Z][a-zA-Z0-9]*&quot;);</span>
+<span class="fc" id="L13">    private static final Pattern NAME_FILTER = Pattern.compile(&quot;[A-Za-z0-9]{1,64}&quot;);</span>
+<span class="fc" id="L14">    private static final Pattern DIGITS = Pattern.compile(&quot;[0-9]+&quot;);</span>
+
+    private Names() {}
+
+    /** Vocabulary and external vocabulary names: 3 to 64 characters, ^[A-Z][a-zA-Z0-9]*$. */
+    public static boolean isVocabularyName(String value) {
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">        return value != null</span>
+<span class="fc bfc" id="L21" title="All 2 branches covered.">                &amp;&amp; value.length() &gt;= NAME_MIN</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">                &amp;&amp; value.length() &lt;= NAME_MAX</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">                &amp;&amp; NAME.matcher(value).matches();</span>
+    }
+
+    /** The relaxed list name filter (D19). */
+    public static boolean isNameFilter(String value) {
+<span class="pc bpc" id="L28" title="1 of 4 branches missed.">        return value != null &amp;&amp; NAME_FILTER.matcher(value).matches();</span>
+    }
+
+    /**
+     * An integer in a path or query: digits only, 1 to max (D91, D112). Returns -1 when invalid.
+     */
+    public static long positiveInt(String value, long max) {
+<span class="pc bpc" id="L35" title="1 of 6 branches missed.">        if (value == null || value.length() &gt; 12 || !DIGITS.matcher(value).matches()) {</span>
+<span class="fc" id="L36">            return -1;</span>
+        }
+<span class="fc" id="L38">        long parsed = Long.parseLong(value);</span>
+<span class="fc bfc" id="L39" title="All 4 branches covered.">        return parsed &gt;= 1 &amp;&amp; parsed &lt;= max ? parsed : -1;</span>
+    }
+
+    /** Number of characters (code points) after trimming. */
+    public static int trimmedLength(String value) {
+<span class="fc" id="L44">        String trimmed = value.strip();</span>
+<span class="fc" id="L45">        return trimmed.codePointCount(0, trimmed.length());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>
