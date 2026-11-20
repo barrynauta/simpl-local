@@ -1,0 +1,11 @@
+# SHACL shapes of each content graph urn:simpl:vocabulary-manager:content:<Name>:<n> and
+# urn:simpl:vocabulary-manager:external-content:<Name> (physical model, D87): the uploaded bytes in base64 chunks.
+@prefix sh:  <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix vm:  <https://simpl-programme.ec.europa.eu/ns/vocabulary-manager#> .
+
+vm:ContentChunkShape a sh:NodeShape ;
+    sh:targetSubjectsOf vm:chunkOf ;
+    sh:property [ sh:path vm:chunkOf ; sh:nodeKind sh:IRI ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:index ; sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path vm:data ; sh:datatype xsd:base64Binary ; sh:minCount 1 ; sh:maxCount 1 ] .

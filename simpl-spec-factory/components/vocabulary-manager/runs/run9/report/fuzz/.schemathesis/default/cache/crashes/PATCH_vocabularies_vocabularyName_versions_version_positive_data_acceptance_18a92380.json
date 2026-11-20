@@ -1,0 +1,116 @@
+{
+  "operation": "PATCH /vocabularies/{vocabularyName}/versions/{version}",
+  "method": "PATCH",
+  "path_template": "/vocabularies/{vocabularyName}/versions/{version}",
+  "fingerprint": "18a92380",
+  "case_id": "S9YXrj",
+  "code_sample": "curl -X PATCH -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{\"status\": \"ACTIVE\"}' http://localhost:8196/v1/vocabularies/HealthcareVocabulary/versions/9223372036854775808",
+  "sequence": [
+    {
+      "method": "PATCH",
+      "url": "http://localhost:8196/v1/vocabularies/HealthcareVocabulary/versions/9223372036854775808",
+      "url_template": "http://localhost:8196/v1/vocabularies/{vocabularyName}/versions/{version}",
+      "headers": {
+        "User-Agent": "schemathesis/4.33.4",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "S9YXrj",
+        "Content-Type": "application/json",
+        "Content-Length": "20"
+      },
+      "response": {
+        "status_code": 400,
+        "headers": {
+          "x-correlation-id": "777a9d1c-acfe-409d-922b-4e945a48b5e8",
+          "vary": "Accept",
+          "x-content-type-options": "nosniff",
+          "x-xss-protection": "0",
+          "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+          "pragma": "no-cache",
+          "expires": "0",
+          "x-frame-options": "DENY",
+          "content-type": "application/problem+json",
+          "content-length": "620",
+          "date": "Thu, 19 Nov 2026 18:10:27 GMT",
+          "connection": "close"
+        },
+        "body": "{\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"The input message is incorrect\",\"instance\":\"urn:uuid:a1b5846c-28c0-4360-a041-3449ce8da478\",\"issues\":[{\"type\":\"urn:problem-type:belgif:input-validation:schemaViolation\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html\",\"title\":\"Input isn't valid with respect to schema\",\"detail\":\"Path parameter 'version' must be an integer from 1 to 2147483647.\",\"in\":\"path\",\"name\":\"version\",\"value\":\"9223372036854775808\"}]}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "positive_data_acceptance",
+          "status": "failure",
+          "message": "Schema-valid request rejected\n\nValid data should have been accepted\nExpected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 2.6665860787034035e-05,
+          "mode": "positive"
+        },
+        "components": {
+          "PATH": "positive",
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Number beyond common integer widths",
+            "location": null,
+            "parameter": "version",
+            "parameter_location": "PATH",
+            "scenario": "large_number"
+          }
+        },
+        "pool_draws": [
+          {
+            "location": "path",
+            "parameter_name": "vocabularyName",
+            "resource_name": "VocabularyVersionMetadataResponse",
+            "resource_field": "name",
+            "source_operation": "POST /vocabularies/{vocabularyName}/versions",
+            "source_status": 201,
+            "source_identity": null,
+            "source_input": false,
+            "source_query": null
+          }
+        ],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "PATH": {
+            "vocabularyName": "HealthcareVocabulary",
+            "version": 9223372036854775808
+          }
+        }
+      },
+      "path": "/vocabularies/{vocabularyName}/versions/{version}",
+      "path_parameters": {
+        "vocabularyName": "HealthcareVocabulary",
+        "version": "9223372036854775808"
+      },
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "status": "ACTIVE"
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null,
+      "auth_identity": null,
+      "operation": "PATCH /vocabularies/{vocabularyName}/versions/{version}"
+    }
+  ],
+  "aliases": []
+}

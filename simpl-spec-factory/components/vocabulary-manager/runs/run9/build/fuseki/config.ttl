@@ -1,0 +1,30 @@
+# Fuseki Main configuration of the vocabulary store (E3, D83).
+# No anonymous access: the read user may query, the update user may query and update, the admin user
+# (backup and restore scripts only) may also read and replace the whole dataset through the graph store protocol.
+# Fuseki Main has no admin endpoints and no UI; only /$/ping is on.
+PREFIX fuseki: <http://jena.apache.org/fuseki#>
+PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX tdb2:   <http://jena.apache.org/2016/tdb#>
+
+[] rdf:type fuseki:Server .
+
+<#vocabulary> rdf:type fuseki:Service ;
+    fuseki:name "vocabulary" ;
+    fuseki:endpoint [ fuseki:operation fuseki:query ;  fuseki:name "query" ;  fuseki:allowedUsers "vmread", "vmupdate", "vmadmin" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:update ; fuseki:name "update" ; fuseki:allowedUsers "vmupdate", "vmadmin" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:gsp-rw ; fuseki:name "data" ;   fuseki:allowedUsers "vmadmin" ] ;
+    fuseki:dataset <#vocabularyData> .
+
+<#vocabularyData> rdf:type tdb2:DatasetTDB2 ;
+    tdb2:location "/fuseki/databases/vocabulary" .
+
+# Staging dataset of the restore procedure (Q3): a backup is loaded and counted here before the live dataset is replaced.
+<#restore> rdf:type fuseki:Service ;
+    fuseki:name "vocabulary-restore" ;
+    fuseki:endpoint [ fuseki:operation fuseki:query ;  fuseki:name "query" ;  fuseki:allowedUsers "vmadmin" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:update ; fuseki:name "update" ; fuseki:allowedUsers "vmadmin" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:gsp-rw ; fuseki:name "data" ;   fuseki:allowedUsers "vmadmin" ] ;
+    fuseki:dataset <#restoreData> .
+
+<#restoreData> rdf:type tdb2:DatasetTDB2 ;
+    tdb2:location "/fuseki/databases/vocabulary-restore" .

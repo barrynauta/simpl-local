@@ -1,0 +1,45 @@
+# Vocabulary Manager UI: static files plus a proxy of the public API (MACH-04: same API as any client).
+server_tokens off;
+client_max_body_size 7m;
+
+server {
+    listen 8080;
+    server_name _;
+    root /usr/share/nginx/html;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "no-referrer" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ${KEYCLOAK_URL}; frame-src ${KEYCLOAK_URL}; frame-ancestors 'none'; base-uri 'self'; form-action 'self' ${KEYCLOAK_URL}" always;
+
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok";
+    }
+
+    location = /config.json {
+        default_type application/json;
+        add_header Cache-Control "no-store" always;
+        return 200 '{"keycloakUrl":"${KEYCLOAK_URL}","realm":"${KEYCLOAK_REALM}","clientId":"${KEYCLOAK_CLIENT_ID}"}';
+    }
+
+    location /v1/ {
+        proxy_pass http://backend:8080/v1/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 90s;
+        proxy_send_timeout 90s;
+    }
+
+    location /assets/ {
+        try_files $uri =404;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+    }
+
+    location / {
+        try_files $uri /index.html;
+    }
+}

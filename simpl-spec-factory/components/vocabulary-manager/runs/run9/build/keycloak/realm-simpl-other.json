@@ -1,0 +1,122 @@
+{
+  "realm": "simpl-other",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "bruteForceProtected": true,
+  "failureFactor": 20,
+  "permanentLockout": false,
+  "waitIncrementSeconds": 30,
+  "maxFailureWaitSeconds": 300,
+  "quickLoginCheckMilliSeconds": 1000,
+  "minimumQuickLoginWaitSeconds": 60,
+  "roles": {
+    "realm": [
+      {
+        "name": "GA_VOCABULARY_ADMIN",
+        "description": "Vocabulary management: read and write (D16)"
+      },
+      {
+        "name": "GA_VOCABULARY_VIEWER",
+        "description": "Vocabulary management: read only (D16)"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "vocabulary-manager-be",
+      "enabled": true,
+      "bearerOnly": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    },
+    {
+      "clientId": "vocabulary-tests",
+      "name": "Vocabulary Manager test client",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "audience-vocabulary-manager-be",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "vocabulary-manager-be",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true",
+            "lightweight.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "ga-admin",
+      "enabled": true,
+      "email": "ga-admin@example.com",
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GA_VOCABULARY_ADMIN",
+        "default-roles-simpl-other"
+      ],
+      "requiredActions": []
+    },
+    {
+      "username": "ga-viewer",
+      "enabled": true,
+      "email": "ga-viewer@example.com",
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "Viewer",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GA_VOCABULARY_VIEWER",
+        "default-roles-simpl-other"
+      ],
+      "requiredActions": []
+    },
+    {
+      "username": "ga-norole",
+      "enabled": true,
+      "email": "ga-norole@example.com",
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "Norole",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-simpl-other"
+      ],
+      "requiredActions": []
+    }
+  ]
+}

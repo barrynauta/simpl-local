@@ -1,0 +1,22 @@
+# SHACL shapes of the named graph urn:simpl:vocabulary-manager:graph:external-vocabularies (physical model, D87).
+@prefix sh:  <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix vm:  <https://simpl-programme.ec.europa.eu/ns/vocabulary-manager#> .
+
+vm:ExternalVocabularyShape a sh:NodeShape ;
+    sh:targetClass vm:ExternalVocabulary ;
+    sh:property [ sh:path vm:name ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ; sh:pattern "^[A-Z][a-zA-Z0-9]*$" ] ;
+    sh:property [ sh:path vm:nameKey ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:namespaceUri ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:namespaceKey ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:sourceUri ; sh:datatype xsd:string ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:description ; sh:datatype xsd:string ; sh:maxCount 1 ; sh:maxLength 1000 ] ;
+    sh:property [ sh:path vm:createdBy ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:creationDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:contentGraph ; sh:nodeKind sh:IRI ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:alias ; sh:node vm:AliasShape ; sh:maxCount 20 ] .
+
+vm:AliasShape a sh:NodeShape ;
+    sh:property [ sh:path vm:uri ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:key ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:index ; sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ; sh:minInclusive 0 ] .

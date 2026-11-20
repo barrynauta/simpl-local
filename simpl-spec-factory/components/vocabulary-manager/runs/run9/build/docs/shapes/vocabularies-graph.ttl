@@ -1,0 +1,29 @@
+# SHACL shapes of the named graph urn:simpl:vocabulary-manager:graph:vocabularies (physical model, D87).
+@prefix sh:  <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix vm:  <https://simpl-programme.ec.europa.eu/ns/vocabulary-manager#> .
+
+vm:VocabularyShape a sh:NodeShape ;
+    sh:targetClass vm:Vocabulary ;
+    sh:property [ sh:path vm:name ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:pattern "^[A-Z][a-zA-Z0-9]*$" ; sh:minLength 3 ; sh:maxLength 64 ] ;
+    sh:property [ sh:path vm:nameKey ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:status ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "ACTIVE" "DEPRECATED" ) ] ;
+    sh:property [ sh:path vm:latestVersion ; sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ; sh:minInclusive 1 ] ;
+    sh:property [ sh:path vm:createdBy ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:creationDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:lastUpdateDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+vm:VocabularyVersionShape a sh:NodeShape ;
+    sh:targetClass vm:VocabularyVersion ;
+    sh:property [ sh:path vm:ofVocabulary ; sh:class vm:Vocabulary ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:version ; sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ; sh:minInclusive 1 ] ;
+    sh:property [ sh:path vm:description ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ; sh:minLength 1 ; sh:maxLength 1000 ] ;
+    sh:property [ sh:path vm:changelog ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ; sh:minLength 1 ; sh:maxLength 1000 ] ;
+    sh:property [ sh:path vm:status ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "ACTIVE" "DEPRECATED" ) ] ;
+    sh:property [ sh:path vm:createdBy ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:creationDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:lastUpdateDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path vm:contentSha256 ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ; sh:pattern "^[0-9a-f]{64}$" ] ;
+    sh:property [ sh:path vm:contentLength ; sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ; sh:maxInclusive 5242880 ] ;
+    sh:property [ sh:path vm:contentGraph ; sh:nodeKind sh:IRI ; sh:minCount 1 ; sh:maxCount 1 ] .

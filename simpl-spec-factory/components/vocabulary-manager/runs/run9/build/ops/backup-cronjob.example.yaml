@@ -1,0 +1,27 @@
+# Example Kubernetes CronJob (D89): daily backup through the store's graph store endpoint with the admin user,
+# copied to an object store outside the cluster. Image and secret names are placeholders of the deployment.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: vocabulary-store-backup
+spec:
+  schedule: "30 2 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: vm-factory-run9/vocabulary-store:1.0.0
+              command: ["sh", "-c", "java -cp /opt/fuseki/ops StoreOps backup /backup/vocabulary-$(date -u +%Y%m%dT%H%M%SZ).nq"]
+              env:
+                - name: STORE_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef: { name: vocabulary-store, key: admin-password }
+              volumeMounts:
+                - { name: backup, mountPath: /backup }
+          volumes:
+            - name: backup
+              persistentVolumeClaim: { claimName: vocabulary-store-backups }

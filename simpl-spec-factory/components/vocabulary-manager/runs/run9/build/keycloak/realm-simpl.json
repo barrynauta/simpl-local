@@ -1,0 +1,168 @@
+{
+  "realm": "simpl",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "bruteForceProtected": true,
+  "failureFactor": 20,
+  "permanentLockout": false,
+  "waitIncrementSeconds": 30,
+  "maxFailureWaitSeconds": 300,
+  "quickLoginCheckMilliSeconds": 1000,
+  "minimumQuickLoginWaitSeconds": 60,
+  "roles": {
+    "realm": [
+      {
+        "name": "GA_VOCABULARY_ADMIN",
+        "description": "Vocabulary management: read and write (D16)"
+      },
+      {
+        "name": "GA_VOCABULARY_VIEWER",
+        "description": "Vocabulary management: read only (D16)"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "vocabulary-manager-be",
+      "name": "Vocabulary Manager backend (audience)",
+      "enabled": true,
+      "bearerOnly": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "implicitFlowEnabled": false
+    },
+    {
+      "clientId": "vocabulary-manager-ui",
+      "name": "Vocabulary Manager UI",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:4433/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4433"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:4433/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-vocabulary-manager-be",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "vocabulary-manager-be",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true",
+            "lightweight.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "vocabulary-tests",
+      "name": "Vocabulary Manager test client",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "audience-vocabulary-manager-be",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "vocabulary-manager-be",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true",
+            "lightweight.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "vocabulary-tests-noaud",
+      "name": "Test client without audience (E7)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "ga-admin",
+      "enabled": true,
+      "email": "ga-admin@example.com",
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GA_VOCABULARY_ADMIN",
+        "default-roles-simpl"
+      ],
+      "requiredActions": []
+    },
+    {
+      "username": "ga-viewer",
+      "enabled": true,
+      "email": "ga-viewer@example.com",
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "Viewer",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GA_VOCABULARY_VIEWER",
+        "default-roles-simpl"
+      ],
+      "requiredActions": []
+    },
+    {
+      "username": "ga-norole",
+      "enabled": true,
+      "email": "ga-norole@example.com",
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "Norole",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-simpl"
+      ],
+      "requiredActions": []
+    }
+  ]
+}

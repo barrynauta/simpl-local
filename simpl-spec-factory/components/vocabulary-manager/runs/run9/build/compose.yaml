@@ -1,0 +1,175 @@
+# Vocabulary Manager local stack (build profile run 9). Start: ./stack.sh up
+# (docker compose -p vm-factory-run9 up -d --build --wait). Secrets come from .env, which stack.sh creates with
+# random values when it is missing (MACH-07). Limits are variables with the current values as defaults (D98).
+name: vm-factory-run9
+
+x-backend-env: &backend-env
+  VOCABULARY_CONTENT_BASE_URL: ${VOCABULARY_CONTENT_BASE_URL:-https://authority.example/vocabulary-manager}
+  STORE_READ_USER: vmread
+  STORE_READ_PASSWORD: ${STORE_READ_PASSWORD:?run ./stack.sh up to create .env}
+  STORE_UPDATE_USER: vmupdate
+  STORE_UPDATE_PASSWORD: ${STORE_UPDATE_PASSWORD:?run ./stack.sh up to create .env}
+  ISSUER_URI: ${ISSUER_URI:-http://localhost:8193/realms/simpl}
+  JWK_SET_URI: http://keycloak:8080/realms/simpl/protocol/openid-connect/certs
+  TOKEN_AUDIENCE: vocabulary-manager-be
+  MANAGEMENT_PORT: "8081"
+
+services:
+  fuseki:
+    build: ./fuseki
+    image: vm-factory-run9/vocabulary-store:1.0.0
+    environment:
+      STORE_READ_PASSWORD: ${STORE_READ_PASSWORD:?run ./stack.sh up to create .env}
+      STORE_UPDATE_PASSWORD: ${STORE_UPDATE_PASSWORD:?run ./stack.sh up to create .env}
+      STORE_ADMIN_PASSWORD: ${STORE_ADMIN_PASSWORD:?run ./stack.sh up to create .env}
+    volumes:
+      - store-data:/fuseki/databases
+      - store-backups:/fuseki/backups
+    networks:
+      internal:
+        ipv4_address: 10.209.9.20
+    read_only: true
+    tmpfs:
+      - /fuseki/run:uid=10001,gid=10001,mode=0700
+      - /tmp:uid=10001,gid=10001
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    mem_limit: ${STORE_MEM_LIMIT:-1g}
+    cpus: ${STORE_CPUS:-2}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:3030/$$/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2@sha256:7e66a96e4739239070aeaf72e4c5decf0f7f682cfc725b9f7ea2b336eaba38b3
+    command: ["start-dev", "--import-realm", "--http-port=8080"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:-kcadmin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?run ./stack.sh up to create .env}
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+    volumes:
+      - ./keycloak/realm-simpl.json:/opt/keycloak/data/import/realm-simpl.json:ro
+      - ./keycloak/realm-simpl-other.json:/opt/keycloak/data/import/realm-simpl-other.json:ro
+    ports:
+      - "127.0.0.1:${KEYCLOAK_PORT:-8193}:8080"
+    networks: [front]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: ${KEYCLOAK_MEM_LIMIT:-1g}
+    cpus: ${KEYCLOAK_CPUS:-2}
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"UP\"' <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 20s
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    image: vm-factory-run9/vocabulary-manager-be:1.0.0
+    environment:
+      <<: *backend-env
+      STORE_QUERY_URL: http://fuseki:3030/vocabulary/query
+      STORE_UPDATE_URL: http://fuseki:3030/vocabulary/update
+      MANAGEMENT_ADDRESS: 10.209.9.10
+    ports:
+      - "${API_PORT:-8196}:8080"
+    networks:
+      front: {}
+      internal:
+        ipv4_address: 10.209.9.10
+    depends_on:
+      fuseki:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    mem_limit: ${BACKEND_MEM_LIMIT:-1g}
+    cpus: ${BACKEND_CPUS:-2}
+    stop_grace_period: 35s
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8080/v1/health"]
+      interval: 5s
+      timeout: 4s
+      retries: 40
+      start_period: 15s
+    restart: unless-stopped
+
+  backend-store-down:
+    profiles: ["store-down"]
+    image: vm-factory-run9/vocabulary-manager-be:1.0.0
+    environment:
+      <<: *backend-env
+      STORE_QUERY_URL: http://127.0.0.1:3999/vocabulary/query
+      STORE_UPDATE_URL: http://127.0.0.1:3999/vocabulary/update
+    ports:
+      - "${API_STORE_DOWN_PORT:-8199}:8080"
+    networks: [front]
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    mem_limit: ${BACKEND_MEM_LIMIT:-1g}
+    cpus: ${BACKEND_CPUS:-2}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8081/actuator/health/liveness"]
+      interval: 5s
+      timeout: 4s
+      retries: 40
+      start_period: 15s
+
+  ui:
+    build: ./ui
+    image: vm-factory-run9/vocabulary-manager-ui:1.0.0
+    environment:
+      KEYCLOAK_URL: ${UI_KEYCLOAK_URL:-http://localhost:8193}
+      KEYCLOAK_REALM: simpl
+      KEYCLOAK_CLIENT_ID: vocabulary-manager-ui
+    ports:
+      - "${UI_PORT:-4433}:8080"
+    networks: [front]
+    depends_on:
+      backend:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx:uid=101,gid=101
+      - /etc/nginx/conf.d:uid=101,gid=101
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    mem_limit: ${UI_MEM_LIMIT:-128m}
+    cpus: ${UI_CPUS:-1}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+networks:
+  front: {}
+  internal:
+    internal: true
+    ipam:
+      config:
+        - subnet: 10.209.9.0/24
+
+volumes:
+  store-data: {}
+  store-backups: {}
