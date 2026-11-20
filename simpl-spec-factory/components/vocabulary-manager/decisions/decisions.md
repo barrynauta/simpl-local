@@ -283,6 +283,54 @@ Earlier decisions changed by these:
 - Q1: refined by D99, throughput as offered rate, 5 MB writes measured apart.
 - Q4: refined by D99, seed 1000 by 20 versions.
 
+## Feedback from run 9 (added 20 Nov 2026)
+
+Run 9 raised 19 owner questions (R-106 to R-124, report section 6). All 19 are decided here.
+
+| Id | Topic | Decision | Status | Closes |
+|---|---|---|---|---|
+| D100 | List columns | The vocabulary list has these columns, in this order, with these headers: Name, Status, Description, Creator, Date created, Last updated, Actions. Creator shows createdBy of version 1 (D27); Description the description of the latest version. Sortable columns stay as D23. | provisional | R-106 |
+| D101 | Errors on Submit | A click on Submit checks every field, touched or not, including an empty Vocabulary file, and shows every error under its field; nothing is sent and the focus moves to the first field with an error (D62). Error texts have reserved space, so an error that appears on blur never moves Submit away from the pointer. | provisional | R-107 |
+| D102 | Two backend instances | Q4's sentence on one instance is replaced by D82: the delivered stack must work with two backend instances on one store. The finish line runs the stack with two backends (for example docker compose up --scale backend=2) behind the UI proxy and passes smoke.sh on it. Nothing in the stack fixes a container name or host port per backend. | provisional | R-108 |
+| D103 | Circuit breaking | Resilience4j circuit breakers around the store calls and the key fetch. Each opens when at least half of the last 20 calls failed (at least 10 calls), stays open 10 s, then lets 3 probe calls through. While open the caller gets 503 as D44 at once, without waiting for a timeout. Breaker state is in the metrics (D86). | provisional | R-109 |
+| D104 | Exception model | No shared Simpl exception library is used. The problem types of D48 are the error codes: the build has one exception base class carrying the problem type, title and status, and one handler that maps it to problem+json. | provisional | R-110 |
+| D105 | Simpl log format | The Simpl log format (LogWrapper) and log shipping are out of scope for the factory's builds, because the library is not in the build input. The JSON lines of D96 are the format. The build records CODE-21, CODE-52 and SEC-11 as deviations with this decision as reason. | provisional | R-111 |
+| D106 | Where file bytes live | The uploaded file stays in the RDF store, next to its metadata, so one store transaction holds both (D8). The build may store it as one literal or in chunks. Object storage is not used: at 5 MB per file and the Q4 load it adds a second store without need. | provisional | R-112 |
+| D107 | No host port for the store | D83 wins: the store publishes no host port, also not for debugging. The build profile drops the Fuseki port; debugging goes through docker exec or the backup scripts. | provisional | R-113 |
+| D108 | Realm keys: library and first fetch | D94 is changed for keys: the build uses Nimbus JWKSet and JWSVerifier with its own fetch timing, so D88's cooldown and outcomes hold. The first fetch may be lazy, on the first token; until then GET /health reports UP when the store answers, and DEGRADED only after a fetch failed. | provisional | R-114, R-115 |
+| D109 | Counts in report texts | Errors line: '1 error found' or '<n> errors found', role alert. Warnings line: '1 warning found' or '<n> warnings found', role status, as the first line of the region 'Validation warnings'. | provisional | R-116 |
+| D110 | Open contract details | Decided as run 9 built them: a JSON body over 1 MB gives 413; more than 64 multipart parts give 400; a date-time without an offset is read as UTC; the 201 body carries createdBy and latestVersionHref; aliasUris is always present in responses (empty list allowed); a bad element of a search array is named '<array>[<index>]' in the issue; paging links put page and pageSize first, then the other parameters in request order. These are added to the D79 list. | provisional | R-117 |
+| D111 | Paging links always complete | Every paging link (self, first, prev, next, last) carries page and pageSize, also when the request did not send them, with the values used. | provisional | R-118 |
+| D112 | What an integer is | The text decides: an integer in a path or query is one or more digits, nothing else ('2.0', '1e1', '+2' and ' 2' give 400). In a JSON body it is a JSON number without fraction or exponent. | provisional | R-119 |
+| D113 | After a new version | After a successful new version from the Update form, the UI opens the details page of that vocabulary with the new version's panel open, and shows the D14 notification and warnings there, as D72 does after a create. | provisional | R-120 |
+| D114 | One alert per event | A load error or a failed status change shows one element with role alert that holds the decided text followed by the problem detail. | provisional | R-121 |
+| D115 | Page controls and banner | The list has buttons 'Previous page' and 'Next page' and the text 'Page <n> of <m>'. The deprecation banner on the details page has role status and the D36 text. | provisional | R-122 |
+| D116 | More contract formats | Added to the D79 list and to openapi-decided.yaml: format date or date-time on the date filters (D20), the Turtle media type text/turtle on vocabularyFile (D9), and minimum 1 on the version in paths (D49). | provisional | R-123 |
+| D117 | CDM findings | The CDM findings go to the CDM owner; the build does not wait for them. The logical model of D87 and D97 uses typed attributes, leaves search request classes out of the domain model, names timestamps creationDate and lastUpdateDate (glossary), and lists each difference with the CDM. | provisional | R-124 |
+
+Earlier decisions changed by these:
+
+- D23: refined by D100, full column list.
+- D62: refined by D101, all fields checked on Submit, no layout shift.
+- Q4: refined by D102, two instances on the finish line, D81 sentence replaced.
+- D44: refined by D103, circuit breakers, open gives 503 at once.
+- D48: refined by D104, problem types serve as error codes.
+- D96: refined by D105, stays the log format, Simpl LogWrapper out of scope.
+- E3: refined by D106, file bytes in the store.
+- D83: refined by D107, also no debug port.
+- D94: refined by D108, own fetch timing around Nimbus for keys.
+- D44: refined by D108, lazy first key fetch allowed.
+- D90: refined by D109, singular forms and warnings line.
+- D79: refined by D110, D110 details added.
+- D78: refined by D111, page and pageSize always present.
+- D91: refined by D112, text form decides.
+- D72: refined by D113, also after a new version.
+- D72: refined by D114, one alert element per event.
+- D36: refined by D115, banner role status.
+- D34: refined by D115, page control names.
+- D79: refined by D116, D116 formats added.
+- D97: refined by D117, model differences with the CDM listed.
+
 ## Environment choices
 
 | Id | Topic | Choice |
