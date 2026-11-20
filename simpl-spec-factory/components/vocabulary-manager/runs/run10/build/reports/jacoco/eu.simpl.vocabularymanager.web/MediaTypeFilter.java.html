@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MediaTypeFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">MediaTypeFilter.java</span></div><h1>MediaTypeFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.error.ProblemException;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import eu.simpl.vocabularymanager.error.Problems;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Set;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Runs after authentication and authorisation (D51, D63, D67, D84): a request that matches no declared operation gets
+ * 404 and never reaches a handler; then the Accept header (406) and the request media type (415) are checked.
+ */
+<span class="fc" id="L24">public class MediaTypeFilter extends OncePerRequestFilter {</span>
+
+<span class="fc" id="L26">    private static final Set&lt;String&gt; JSON_ACCEPT = Set.of(&quot;application/json&quot;, &quot;application/problem+json&quot;, &quot;*/*&quot;);</span>
+<span class="fc" id="L27">    private static final Set&lt;String&gt; TURTLE_ACCEPT = Set.of(&quot;text/turtle&quot;, &quot;*/*&quot;);</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L32">        ApiOperation operation = RoutingFilter.operationOf(request);</span>
+        try {
+<span class="fc bfc" id="L34" title="All 2 branches covered.">            if (operation == null) {</span>
+<span class="fc" id="L35">                throw Problems.pathNotFound();</span>
+            }
+<span class="fc" id="L37">            checkAccept(operation, request.getHeaders(&quot;Accept&quot;));</span>
+<span class="fc" id="L38">            checkContentType(operation, request.getContentType());</span>
+<span class="fc" id="L39">        } catch (ProblemException problem) {</span>
+<span class="fc" id="L40">            ProblemWriter.write(response, problem);</span>
+<span class="fc" id="L41">            return;</span>
+<span class="fc" id="L42">        }</span>
+<span class="fc" id="L43">        chain.doFilter(new AcceptStrippedRequest(request), response);</span>
+<span class="fc" id="L44">    }</span>
+
+    static void checkAccept(ApiOperation operation, Enumeration&lt;String&gt; headers) {
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        List&lt;String&gt; values = headers == null ? List.of() : Collections.list(headers);</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        if (values.isEmpty()) {</span>
+<span class="fc" id="L49">            return;</span>
+        }
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        Set&lt;String&gt; acceptable = operation.produces() == ApiOperation.Produces.TURTLE ? TURTLE_ACCEPT : JSON_ACCEPT;</span>
+        List&lt;MediaType&gt; ranges;
+        try {
+<span class="fc" id="L54">            ranges = MediaType.parseMediaTypes(values);</span>
+<span class="fc" id="L55">        } catch (InvalidMediaTypeException e) {</span>
+<span class="fc" id="L56">            throw Problems.notAcceptable();</span>
+<span class="fc" id="L57">        }</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">        if (ranges.isEmpty()) {</span>
+<span class="nc" id="L59">            return;</span>
+        }
+<span class="fc" id="L61">        boolean ok = ranges.stream()</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">                .filter(range -&gt; range.getQualityValue() &gt; 0)</span>
+<span class="fc" id="L63">                .anyMatch(range -&gt; acceptable.contains(range.getType() + &quot;/&quot; + range.getSubtype()));</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (!ok) {</span>
+<span class="fc" id="L65">            throw Problems.notAcceptable();</span>
+        }
+<span class="fc" id="L67">    }</span>
+
+    static void checkContentType(ApiOperation operation, String contentType) {
+<span class="fc bfc" id="L70" title="All 3 branches covered.">        switch (operation.bodyKind()) {</span>
+<span class="fc" id="L71">            case JSON -&gt; requireType(contentType, &quot;application&quot;, &quot;json&quot;);</span>
+<span class="fc" id="L72">            case MULTIPART -&gt; requireType(contentType, &quot;multipart&quot;, &quot;form-data&quot;);</span>
+            case NONE -&gt; {
+                // No body is declared; a body that is sent is ignored.
+            }
+        }
+<span class="fc" id="L77">    }</span>
+
+    private static void requireType(String contentType, String type, String subtype) {
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (contentType == null) {</span>
+<span class="fc" id="L81">            throw Problems.unsupportedMediaType();</span>
+        }
+        try {
+<span class="fc" id="L84">            MediaType mediaType = MediaType.parseMediaType(contentType);</span>
+<span class="pc bpc" id="L85" title="1 of 4 branches missed.">            if (!mediaType.getType().equals(type) || !mediaType.getSubtype().equals(subtype)) {</span>
+<span class="fc" id="L86">                throw Problems.unsupportedMediaType();</span>
+            }
+<span class="fc" id="L88">        } catch (InvalidMediaTypeException e) {</span>
+<span class="fc" id="L89">            throw Problems.unsupportedMediaType();</span>
+<span class="fc" id="L90">        }</span>
+<span class="fc" id="L91">    }</span>
+
+    /** Hides the Accept header from Spring MVC once it has been checked, so the handler decides the media type. */
+    static final class AcceptStrippedRequest extends HttpServletRequestWrapper {
+
+        AcceptStrippedRequest(HttpServletRequest request) {
+<span class="fc" id="L97">            super(request);</span>
+<span class="fc" id="L98">        }</span>
+
+        @Override
+        public String getHeader(String name) {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">            return &quot;accept&quot;.equalsIgnoreCase(name) ? null : super.getHeader(name);</span>
+        }
+
+        @Override
+        public Enumeration&lt;String&gt; getHeaders(String name) {
+<span class="fc bfc" id="L107" title="All 2 branches covered.">            return &quot;accept&quot;.equalsIgnoreCase(name) ? Collections.emptyEnumeration() : super.getHeaders(name);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

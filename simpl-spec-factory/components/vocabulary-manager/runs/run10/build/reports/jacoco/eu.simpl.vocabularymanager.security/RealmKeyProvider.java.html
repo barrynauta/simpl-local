@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RealmKeyProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">RealmKeyProvider.java</span></div><h1>RealmKeyProvider.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.error.Problems;
+import eu.simpl.vocabularymanager.web.OutboundHeaders;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Realm keys of the identity provider (D44, D88, D108). Keys are parsed with Nimbus JWKSet; the fetch timing is our
+ * own so the decided cooldown holds: a token with an unknown key id causes at most one fetch per cooldown window.
+ * Cached keys keep working while the identity provider is down.
+ */
+public class RealmKeyProvider {
+
+<span class="fc" id="L29">    private static final Logger LOG = LoggerFactory.getLogger(RealmKeyProvider.class);</span>
+
+    private final AppProperties.Security settings;
+    private final HttpClient httpClient;
+    private final CircuitBreaker breaker;
+    private final OutboundHeaders outboundHeaders;
+    private final Clock clock;
+
+<span class="fc" id="L37">    private volatile JWKSet keys = new JWKSet();</span>
+    private volatile Instant lastFetch;
+    private volatile boolean lastFetchFailed;
+
+    public RealmKeyProvider(
+            AppProperties.Security settings,
+            HttpClient httpClient,
+            CircuitBreaker breaker,
+            OutboundHeaders outboundHeaders,
+<span class="fc" id="L46">            Clock clock) {</span>
+<span class="fc" id="L47">        this.settings = settings;</span>
+<span class="fc" id="L48">        this.httpClient = httpClient;</span>
+<span class="fc" id="L49">        this.breaker = breaker;</span>
+<span class="fc" id="L50">        this.outboundHeaders = outboundHeaders;</span>
+<span class="fc" id="L51">        this.clock = clock;</span>
+<span class="fc" id="L52">    }</span>
+
+    /**
+     * Returns the key with the given id.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ProblemException 401 when the key id stays unknown, 503 when the keys
+     *     cannot be fetched
+     */
+    public JWK keyFor(String keyId) {
+<span class="fc" id="L61">        JWK key = keys.getKeyByKeyId(keyId);</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        if (key != null) {</span>
+<span class="fc" id="L63">            return key;</span>
+        }
+<span class="fc" id="L65">        synchronized (this) {</span>
+<span class="fc" id="L66">            key = keys.getKeyByKeyId(keyId);</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">            if (key != null) {</span>
+<span class="nc" id="L68">                return key;</span>
+            }
+<span class="fc" id="L70">            Instant now = clock.instant();</span>
+<span class="fc bfc" id="L71" title="All 4 branches covered.">            boolean inCooldown = lastFetch != null &amp;&amp; now.isBefore(lastFetch.plus(settings.keyRefetchCooldown()));</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (inCooldown) {</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">                if (lastFetchFailed) {</span>
+<span class="fc" id="L74">                    throw Problems.serviceUnavailable(Problems.IDP_UNAVAILABLE);</span>
+                }
+<span class="fc" id="L76">                throw Problems.unauthorized(&quot;The access token is not valid.&quot;);</span>
+            }
+<span class="fc bfc" id="L78" title="All 2 branches covered.">            if (!refresh()) {</span>
+<span class="fc" id="L79">                throw Problems.serviceUnavailable(Problems.IDP_UNAVAILABLE);</span>
+            }
+<span class="fc" id="L81">            key = keys.getKeyByKeyId(keyId);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">            if (key == null) {</span>
+<span class="fc" id="L83">                throw Problems.unauthorized(&quot;The access token is not valid.&quot;);</span>
+            }
+<span class="fc" id="L85">            return key;</span>
+        }
+    }
+
+    /** Fetches the realm keys once; returns false when they could not be fetched. */
+    public synchronized boolean refresh() {
+<span class="fc" id="L91">        lastFetch = clock.instant();</span>
+<span class="fc" id="L92">        Supplier&lt;JWKSet&gt; fetch = CircuitBreaker.decorateSupplier(breaker, this::fetch);</span>
+        try {
+<span class="fc" id="L94">            keys = fetch.get();</span>
+<span class="fc" id="L95">            lastFetchFailed = false;</span>
+<span class="fc" id="L96">            return true;</span>
+<span class="nc" id="L97">        } catch (CallNotPermittedException e) {</span>
+<span class="nc" id="L98">            LOG.warn(&quot;Realm key fetch skipped: circuit breaker is open&quot;);</span>
+<span class="fc" id="L99">        } catch (KeyFetchException e) {</span>
+<span class="fc" id="L100">            LOG.warn(&quot;Realm key fetch failed: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L101">        }</span>
+<span class="fc" id="L102">        lastFetchFailed = true;</span>
+<span class="fc" id="L103">        return false;</span>
+    }
+
+    /** True when at least one realm key is cached. */
+    public boolean hasKeys() {
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        return !keys.getKeys().isEmpty();</span>
+    }
+
+    /** True when the last fetch failed (D108: health is DEGRADED only after a failed fetch). */
+    public boolean lastFetchFailed() {
+<span class="fc" id="L113">        return lastFetchFailed;</span>
+    }
+
+    private JWKSet fetch() {
+        try {
+<span class="fc" id="L118">            HttpRequest.Builder request = HttpRequest.newBuilder(URI.create(settings.jwksUri()))</span>
+<span class="fc" id="L119">                    .timeout(settings.keyFetchTimeout())</span>
+<span class="fc" id="L120">                    .header(&quot;Accept&quot;, &quot;application/json&quot;)</span>
+<span class="fc" id="L121">                    .GET();</span>
+<span class="fc" id="L122">            outboundHeaders.current().forEach(request::header);</span>
+<span class="fc" id="L123">            HttpResponse&lt;String&gt; response = httpClient.send(request.build(), HttpResponse.BodyHandlers.ofString());</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">            if (response.statusCode() != 200) {</span>
+<span class="fc" id="L125">                throw new KeyFetchException(&quot;status &quot; + response.statusCode());</span>
+            }
+<span class="fc" id="L127">            return JWKSet.parse(response.body());</span>
+<span class="fc" id="L128">        } catch (IOException | java.text.ParseException e) {</span>
+<span class="fc" id="L129">            throw new KeyFetchException(e.getClass().getSimpleName() + &quot;: &quot; + e.getMessage());</span>
+<span class="nc" id="L130">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L131">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L132">            throw new KeyFetchException(&quot;interrupted&quot;);</span>
+        }
+    }
+
+    /** Creates the HTTP client used for the key fetch, with the decided connect timeout. */
+    public static HttpClient httpClient(Duration timeout) {
+<span class="fc" id="L138">        return HttpClient.newBuilder()</span>
+<span class="fc" id="L139">                .connectTimeout(timeout)</span>
+<span class="fc" id="L140">                .followRedirects(HttpClient.Redirect.NEVER)</span>
+<span class="fc" id="L141">                .build();</span>
+    }
+
+    /** The key fetch failed (connection, timeout, bad status or bad document). */
+    static final class KeyFetchException extends RuntimeException {
+        KeyFetchException(String message) {
+<span class="fc" id="L147">            super(message);</span>
+<span class="fc" id="L148">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContentValidation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">ContentValidation.java</span></div><h1>ContentValidation.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.domain.ValidationWarning;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.Problems;
+import eu.simpl.vocabularymanager.store.Rdf;
+import eu.simpl.vocabularymanager.store.VocabularyRepository;
+import eu.simpl.vocabularymanager.validation.ParsedContent;
+import eu.simpl.vocabularymanager.validation.ReferenceChecker;
+import eu.simpl.vocabularymanager.validation.SemanticValidator;
+import eu.simpl.vocabularymanager.validation.TurtleSyntaxValidator;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.jena.query.QuerySolution;
+
+/**
+ * The two validation steps of D9 on every create and new version: syntax first (stops on failure), then semantic
+ * rules S1 to S6 and the reference check S7, all errors in one response. Warnings come back for the 201 body.
+ */
+public class ContentValidation {
+
+    private final TurtleSyntaxValidator syntax;
+    private final SemanticValidator semantic;
+    private final ReferenceChecker references;
+    private final VocabularyRepository repository;
+    private final String contentBase;
+
+    public ContentValidation(
+            TurtleSyntaxValidator syntax,
+            SemanticValidator semantic,
+            ReferenceChecker references,
+            VocabularyRepository repository,
+<span class="fc" id="L38">            String contentBase) {</span>
+<span class="fc" id="L39">        this.syntax = syntax;</span>
+<span class="fc" id="L40">        this.semantic = semantic;</span>
+<span class="fc" id="L41">        this.references = references;</span>
+<span class="fc" id="L42">        this.repository = repository;</span>
+<span class="fc" id="L43">        this.contentBase = contentBase;</span>
+<span class="fc" id="L44">    }</span>
+
+    /**
+     * Validates the content of version {@code version} of vocabulary {@code name}.
+     *
+     * @return the validation warnings
+     * @throws eu.simpl.vocabularymanager.error.ProblemException 400 with the validation report
+     */
+    public List&lt;ValidationWarning&gt; validate(byte[] content, String name, int version) {
+<span class="fc" id="L53">        String base = contentBase + &quot;/content/&quot; + name + &quot;/versions/&quot; + version;</span>
+<span class="fc" id="L54">        ParsedContent parsed = syntax.parse(content, base);</span>
+<span class="fc" id="L55">        List&lt;Issue&gt; errors = new ArrayList&lt;&gt;(semantic.validate(parsed.graph()));</span>
+<span class="fc" id="L56">        ReferenceChecker.Result result = references.check(parsed, name, this::lookup);</span>
+<span class="fc" id="L57">        errors.addAll(result.errors());</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (!errors.isEmpty()) {</span>
+<span class="fc" id="L59">            throw Problems.badRequest(</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">                    errors.size() &gt; SemanticValidator.MAX_ISSUES</span>
+<span class="nc" id="L61">                            ? errors.subList(0, SemanticValidator.MAX_ISSUES)</span>
+<span class="fc" id="L62">                            : errors);</span>
+        }
+<span class="fc" id="L64">        return result.warnings();</span>
+    }
+
+    private ReferenceChecker.ReferenceData lookup(Set&lt;String&gt; names, Set&lt;String&gt; keys) {
+<span class="fc" id="L68">        Map&lt;String, ReferenceChecker.InternalState&gt; internal = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L69">        Set&lt;String&gt; registered = new HashSet&lt;&gt;();</span>
+<span class="pc bpc" id="L70" title="1 of 4 branches missed.">        if (names.isEmpty() &amp;&amp; keys.isEmpty()) {</span>
+<span class="nc" id="L71">            return new ReferenceChecker.ReferenceData(internal, registered);</span>
+        }
+<span class="fc" id="L73">        Map&lt;String, Map&lt;Integer, VocabularyStatus&gt;&gt; versions = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        for (QuerySolution row : repository.referenceData(names, keys)) {</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">            if (&quot;external&quot;.equals(Rdf.string(row, &quot;kind&quot;))) {</span>
+<span class="fc" id="L76">                registered.add(Rdf.string(row, &quot;key&quot;));</span>
+<span class="fc" id="L77">                continue;</span>
+            }
+<span class="fc" id="L79">            String name = Rdf.string(row, &quot;name&quot;);</span>
+<span class="fc" id="L80">            Map&lt;Integer, VocabularyStatus&gt; byVersion = versions.computeIfAbsent(name, key -&gt; new HashMap&lt;&gt;());</span>
+<span class="fc" id="L81">            byVersion.put(Rdf.integer(row, &quot;version&quot;), VocabularyStatus.valueOf(Rdf.string(row, &quot;versionStatus&quot;)));</span>
+<span class="fc" id="L82">            internal.put(</span>
+                    name,
+                    new ReferenceChecker.InternalState(
+<span class="fc" id="L85">                            VocabularyStatus.valueOf(Rdf.string(row, &quot;vstatus&quot;)),</span>
+<span class="fc" id="L86">                            Rdf.integer(row, &quot;latest&quot;),</span>
+                            byVersion));
+<span class="fc" id="L88">        }</span>
+<span class="fc" id="L89">        return new ReferenceChecker.ReferenceData(internal, registered);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

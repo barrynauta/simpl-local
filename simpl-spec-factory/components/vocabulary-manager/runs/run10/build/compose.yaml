@@ -1,0 +1,184 @@
+# Vocabulary Manager stack (build profile, run 10). Start: docker compose -p vm-factory-run10 up -d --build --wait
+# (or ./stack.sh up, which also creates the local secrets file .env on the first run).
+# Published host ports: API 8196, UI 4433, Keycloak 8193 (127.0.0.1 only, D98). The store and the backend management
+# port publish nothing (D83, D107). CPU and memory limits are variables with the current values as defaults (D98).
+
+name: vm-factory-run10
+
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+x-backend-env: &backend-env
+  VOCABULARY_CONTENT_BASE_URL: ${VOCABULARY_CONTENT_BASE_URL:-https://authority.example/vocabulary-manager}
+  ISSUER_URI: ${ISSUER_URI:-http://localhost:8193/realms/simpl}
+  JWKS_URI: http://keycloak:8080/realms/simpl/protocol/openid-connect/certs
+  TOKEN_AUDIENCE: vocabulary-manager-be
+  STORE_URL: http://fuseki:3030/vocabulary
+  STORE_READ_USER: reader
+  STORE_READ_PASSWORD: ${STORE_READ_PASSWORD:?run ./stack.sh up to create .env}
+  STORE_UPDATE_USER: writer
+  STORE_UPDATE_PASSWORD: ${STORE_UPDATE_PASSWORD:?run ./stack.sh up to create .env}
+  MAX_CONCURRENT_UPLOADS: ${MAX_CONCURRENT_UPLOADS:-4}
+  JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError -Djava.io.tmpdir=/tmp
+
+services:
+  fuseki:
+    build: ./fuseki
+    image: vm-factory-run10/fuseki:1.0.0
+    <<: *hardening
+    read_only: true
+    environment:
+      STORE_READ_PASSWORD: ${STORE_READ_PASSWORD:?run ./stack.sh up to create .env}
+      STORE_UPDATE_PASSWORD: ${STORE_UPDATE_PASSWORD:?run ./stack.sh up to create .env}
+      STORE_ADMIN_PASSWORD: ${STORE_ADMIN_PASSWORD:?run ./stack.sh up to create .env}
+      JAVA_OPTS: -Xmx${FUSEKI_HEAP:-768m}
+    volumes:
+      - fuseki-data:/fuseki/databases
+    tmpfs:
+      - /fuseki/run:mode=0700,uid=10001,gid=10001
+      - /tmp:uid=10001,gid=10001
+    networks:
+      - store
+    deploy:
+      resources:
+        limits:
+          cpus: "${FUSEKI_CPUS:-2.0}"
+          memory: ${FUSEKI_MEMORY:-1536m}
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2@sha256:7e66a96e4739239070aeaf72e4c5decf0f7f682cfc725b9f7ea2b336eaba38b3
+    command: ["start-dev", "--import-realm"]
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?run ./stack.sh up to create .env}
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8193}
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import:ro
+    ports:
+      - "127.0.0.1:${KEYCLOAK_PORT:-8193}:8080"
+    networks:
+      - idp
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"UP\"' <&3"]
+      interval: 5s
+      timeout: 5s
+      start_period: 60s
+      retries: 30
+    deploy:
+      resources:
+        limits:
+          cpus: "${KEYCLOAK_CPUS:-2.0}"
+          memory: ${KEYCLOAK_MEMORY:-1g}
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    image: vm-factory-run10/backend:1.0.0
+    <<: *hardening
+    read_only: true
+    environment: *backend-env
+    tmpfs:
+      - /tmp:uid=10001,gid=10001,size=128m
+    networks:
+      - front
+      - store
+      - idp
+    depends_on:
+      fuseki:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/v1/health"]
+      interval: 5s
+      timeout: 3s
+      start_period: 40s
+      retries: 24
+    stop_grace_period: 35s
+    deploy:
+      replicas: ${BACKEND_REPLICAS:-2}
+      resources:
+        limits:
+          cpus: "${BACKEND_CPUS:-1.5}"
+          memory: ${BACKEND_MEMORY:-1g}
+    restart: unless-stopped
+
+  proxy:
+    build: ./ui
+    image: vm-factory-run10/ui-proxy:1.0.0
+    <<: *hardening
+    environment:
+      BACKEND_HOST: backend
+      DNS_RESOLVER: 127.0.0.11
+      KEYCLOAK_PUBLIC_URL: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8193}
+      KEYCLOAK_REALM: simpl
+      UI_CLIENT_ID: vocabulary-manager-ui
+    ports:
+      - "${API_PORT:-8196}:8196"
+      - "${UI_PORT:-4433}:4433"
+    networks:
+      - front
+    depends_on:
+      backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "${PROXY_CPUS:-0.5}"
+          memory: ${PROXY_MEMORY:-128m}
+    restart: unless-stopped
+
+  # A second backend whose store is unreachable (D44 tests): ./stack.sh store-down-up / store-down-down.
+  backend-store-down:
+    image: vm-factory-run10/backend:1.0.0
+    profiles: ["store-down"]
+    <<: *hardening
+    read_only: true
+    environment:
+      <<: *backend-env
+      STORE_URL: http://127.0.0.1:9/vocabulary
+    tmpfs:
+      - /tmp:uid=10001,gid=10001,size=64m
+    ports:
+      - "${API_STORE_DOWN_PORT:-8199}:8080"
+    networks:
+      - idp
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8081/actuator/health/liveness"]
+      interval: 5s
+      timeout: 3s
+      start_period: 40s
+      retries: 24
+    deploy:
+      resources:
+        limits:
+          cpus: "${BACKEND_CPUS:-1.5}"
+          memory: ${BACKEND_MEMORY:-1g}
+
+  # Store tools for backup and restore (Q3, D89); never started by `up`, run by scripts/backup.sh and restore.sh.
+  store-tools:
+    build: ./tools
+    image: vm-factory-run10/store-tools:1.0.0
+    profiles: ["tools"]
+    <<: *hardening
+    read_only: true
+    networks:
+      - store
+
+networks:
+  front: {}
+  idp: {}
+  store:
+    internal: true
+
+volumes:
+  fuseki-data: {}

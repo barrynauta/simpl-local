@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">VocabularyService.java</span></div><h1>VocabularyService.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.domain.ValidationWarning;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.error.Problems;
+import eu.simpl.vocabularymanager.store.ListQuery;
+import eu.simpl.vocabularymanager.store.VocabularyRepository;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+/**
+ * The vocabulary lifecycle (D3 to D8, D43, D46, D82): create, new version, status changes and reads. Each write is a
+ * conditional store update; when the condition fails because of a concurrent change the service reads again and
+ * retries, at most {@link #MAX_RETRIES} times, then answers 503.
+ */
+public class VocabularyService {
+
+    static final int MAX_RETRIES = 5;
+<span class="fc" id="L31">    private static final Logger LOG = LoggerFactory.getLogger(VocabularyService.class);</span>
+
+    private final VocabularyRepository repository;
+    private final ContentValidation validation;
+    private final Clock clock;
+
+<span class="fc" id="L37">    public VocabularyService(VocabularyRepository repository, ContentValidation validation, Clock clock) {</span>
+<span class="fc" id="L38">        this.repository = repository;</span>
+<span class="fc" id="L39">        this.validation = validation;</span>
+<span class="fc" id="L40">        this.clock = clock;</span>
+<span class="fc" id="L41">    }</span>
+
+    /** A created version, with the warnings of its validation. */
+<span class="fc" id="L44">    public record Created(VocabularyVersion version, List&lt;ValidationWarning&gt; warnings) {}</span>
+
+    /** Data of a create or new-version request after the field checks. */
+<span class="fc" id="L47">    public record Upload(String description, String changelog, byte[] content, String createdBy) {}</span>
+
+    /**
+     * Creates a vocabulary with version 1 (D6, D8, D51).
+     *
+     * @throws eu.simpl.vocabularymanager.error.ProblemException 409 duplicate name, 400 validation report
+     */
+    public Created create(String name, Upload upload) {
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        if (repository.existsIgnoreCase(name)) {</span>
+<span class="fc" id="L56">            throw duplicate(name);</span>
+        }
+<span class="fc" id="L58">        List&lt;ValidationWarning&gt; warnings = validation.validate(upload.content(), name, 1);</span>
+<span class="fc" id="L59">        VocabularyRepository.NewVersion data = newVersion(name, 1, upload);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (!repository.insertVocabulary(data, UUID.randomUUID().toString())) {</span>
+<span class="fc" id="L61">            throw duplicate(name);</span>
+        }
+<span class="fc" id="L63">        MDC.put(&quot;vocabularyName&quot;, name);</span>
+<span class="fc" id="L64">        MDC.put(&quot;version&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L65">        LOG.info(&quot;Vocabulary created: vocabularyName={} version=1&quot;, name);</span>
+<span class="fc" id="L66">        return new Created(toVersion(data), warnings);</span>
+    }
+
+    /**
+     * Creates the next version of a vocabulary and deprecates every older ACTIVE version (D4, D7, D46).
+     *
+     * @throws eu.simpl.vocabularymanager.error.ProblemException 404, 409 identical version, 400 validation report,
+     *     503 when concurrent changes keep winning
+     */
+    public Created createVersion(String name, Upload upload) {
+<span class="fc" id="L76">        Vocabulary vocabulary = repository.find(name).orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+<span class="fc" id="L77">        repository.findVersion(name, vocabulary.latestVersion()).ifPresent(latest -&gt; {</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">            if (sha256(upload.content()).equals(latest.contentSha256())</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">                    &amp;&amp; upload.description().equals(latest.description())) {</span>
+<span class="fc" id="L80">                throw Problems.conflict(&quot;Version &quot; + latest.version() + &quot; of vocabulary '&quot; + name</span>
+                        + &quot;' already has this content and description.&quot;);
+            }
+<span class="fc" id="L83">        });</span>
+<span class="fc" id="L84">        List&lt;ValidationWarning&gt; warnings = validation.validate(upload.content(), name, vocabulary.latestVersion() + 1);</span>
+<span class="fc" id="L85">        int latest = vocabulary.latestVersion();</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        for (int attempt = 0; attempt &lt;= MAX_RETRIES; attempt++) {</span>
+<span class="fc" id="L87">            VocabularyRepository.NewVersion data = newVersion(name, latest + 1, upload);</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">            if (repository.insertVersion(data, latest, UUID.randomUUID().toString())) {</span>
+<span class="fc" id="L89">                MDC.put(&quot;version&quot;, Integer.toString(data.version()));</span>
+<span class="fc" id="L90">                LOG.info(&quot;Vocabulary version created: vocabularyName={} version={}&quot;, name, data.version());</span>
+<span class="fc" id="L91">                return new Created(toVersion(data), warnings);</span>
+            }
+<span class="fc" id="L93">            latest = repository</span>
+<span class="fc" id="L94">                    .find(name)</span>
+<span class="pc" id="L95">                    .orElseThrow(() -&gt; Problems.vocabularyNotFound(name))</span>
+<span class="fc" id="L96">                    .latestVersion();</span>
+        }
+<span class="fc" id="L98">        throw Problems.serviceUnavailable(Problems.STORE_UNAVAILABLE);</span>
+    }
+
+    /**
+     * Sets the vocabulary status (D3, D4).
+     *
+     * @throws eu.simpl.vocabularymanager.error.ProblemException 404, 409 same status
+     */
+    public Vocabulary changeStatus(String name, VocabularyStatus target) {
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        for (int attempt = 0; attempt &lt;= MAX_RETRIES; attempt++) {</span>
+<span class="pc" id="L108">            Vocabulary vocabulary = repository.find(name).orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">            if (vocabulary.status() == target) {</span>
+<span class="fc" id="L110">                throw Problems.conflict(&quot;Vocabulary is already in status &quot; + target.name());</span>
+            }
+<span class="fc bfc" id="L112" title="All 2 branches covered.">            if (repository.updateVocabularyStatus(</span>
+<span class="fc" id="L113">                    name, vocabulary.status(), target, now(), UUID.randomUUID().toString())) {</span>
+<span class="fc" id="L114">                LOG.info(&quot;Vocabulary status changed: vocabularyName={} status={}&quot;, name, target);</span>
+<span class="pc" id="L115">                return repository.find(name).orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+            }
+        }
+<span class="fc" id="L118">        throw Problems.serviceUnavailable(Problems.STORE_UNAVAILABLE);</span>
+    }
+
+    /**
+     * Sets one version's status (D4); the vocabulary status is not touched.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ProblemException 404, 409 same status
+     */
+    public VersionView changeVersionStatus(String name, int version, VocabularyStatus target) {
+<span class="fc bfc" id="L127" title="All 2 branches covered.">        for (int attempt = 0; attempt &lt;= MAX_RETRIES; attempt++) {</span>
+<span class="pc" id="L128">            Vocabulary vocabulary = repository.find(name).orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+<span class="fc" id="L129">            VocabularyVersion current =</span>
+<span class="fc" id="L130">                    repository.findVersion(name, version).orElseThrow(() -&gt; Problems.versionNotFound(name, version));</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">            if (current.status() == target) {</span>
+<span class="fc" id="L132">                throw Problems.conflict(&quot;Vocabulary version is already in status &quot; + target.name());</span>
+            }
+<span class="fc bfc" id="L134" title="All 2 branches covered.">            if (repository.updateVersionStatus(</span>
+                    name,
+                    version,
+<span class="fc" id="L137">                    current.status(),</span>
+                    target,
+<span class="fc" id="L139">                    now(),</span>
+<span class="fc" id="L140">                    UUID.randomUUID().toString())) {</span>
+<span class="fc" id="L141">                LOG.info(&quot;Version status changed: vocabularyName={} version={} status={}&quot;, name, version, target);</span>
+<span class="fc" id="L142">                VocabularyVersion updated = repository</span>
+<span class="fc" id="L143">                        .findVersion(name, version)</span>
+<span class="pc" id="L144">                        .orElseThrow(() -&gt; Problems.versionNotFound(name, version));</span>
+<span class="fc" id="L145">                return new VersionView(updated, vocabulary.latestVersion());</span>
+            }
+        }
+<span class="fc" id="L148">        throw Problems.serviceUnavailable(Problems.STORE_UNAVAILABLE);</span>
+    }
+
+    /** A version with the latest version number of its vocabulary (for latestVersionHref, D5). */
+<span class="fc" id="L152">    public record VersionView(VocabularyVersion version, int latestVersion) {}</span>
+
+    public Vocabulary get(String name) {
+<span class="fc" id="L155">        return repository.find(name).orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+    }
+
+    public VersionView getVersion(String name, int version) {
+<span class="fc" id="L159">        Vocabulary vocabulary = get(name);</span>
+<span class="fc" id="L160">        VocabularyVersion found =</span>
+<span class="fc" id="L161">                repository.findVersion(name, version).orElseThrow(() -&gt; Problems.versionNotFound(name, version));</span>
+<span class="fc" id="L162">        return new VersionView(found, vocabulary.latestVersion());</span>
+    }
+
+    /** A page of a list with its total. */
+<span class="fc" id="L166">    public record Page&lt;T&gt;(List&lt;T&gt; items, long total) {}</span>
+
+    public Page&lt;Vocabulary&gt; list(ListQuery query) {
+<span class="fc" id="L169">        long total = repository.count(query);</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">        List&lt;Vocabulary&gt; items = query.offset() &gt;= total ? List.of() : repository.list(query);</span>
+<span class="fc" id="L171">        return new Page&lt;&gt;(items, total);</span>
+    }
+
+    /** Versions of a vocabulary; the total is the latest version number, as versions are 1 to n (D7). */
+    public Page&lt;VocabularyVersion&gt; versions(String name, String sort, long offset, int limit) {
+<span class="fc" id="L176">        Vocabulary vocabulary = get(name);</span>
+<span class="fc" id="L177">        long total = vocabulary.latestVersion();</span>
+        List&lt;VocabularyVersion&gt; items =
+<span class="fc bfc" id="L179" title="All 2 branches covered.">                offset &gt;= total ? List.of() : repository.listVersions(name, sort, offset, limit);</span>
+<span class="fc" id="L180">        return new Page&lt;&gt;(items, total);</span>
+    }
+
+    /** The content of the latest version (D5, D29). */
+    public byte[] latestContent(String name) {
+<span class="fc" id="L185">        Vocabulary vocabulary = get(name);</span>
+<span class="fc" id="L186">        return repository</span>
+<span class="fc" id="L187">                .content(name, vocabulary.latestVersion())</span>
+<span class="fc" id="L188">                .orElseThrow(() -&gt; Problems.vocabularyNotFound(name));</span>
+    }
+
+    public byte[] content(String name, int version) {
+<span class="fc" id="L192">        Optional&lt;byte[]&gt; content = repository.content(name, version);</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">        if (content.isPresent()) {</span>
+<span class="fc" id="L194">            return content.get();</span>
+        }
+<span class="fc" id="L196">        get(name);</span>
+<span class="fc" id="L197">        throw Problems.versionNotFound(name, version);</span>
+    }
+
+    private VocabularyRepository.NewVersion newVersion(String name, int version, Upload upload) {
+<span class="fc" id="L201">        return new VocabularyRepository.NewVersion(</span>
+                name,
+                version,
+<span class="fc" id="L204">                upload.description(),</span>
+<span class="fc" id="L205">                upload.changelog(),</span>
+<span class="fc" id="L206">                upload.createdBy(),</span>
+<span class="fc" id="L207">                now(),</span>
+<span class="fc" id="L208">                upload.content(),</span>
+<span class="fc" id="L209">                sha256(upload.content()));</span>
+    }
+
+    private static VocabularyVersion toVersion(VocabularyRepository.NewVersion data) {
+<span class="fc" id="L213">        return new VocabularyVersion(</span>
+<span class="fc" id="L214">                data.name(),</span>
+<span class="fc" id="L215">                data.version(),</span>
+<span class="fc" id="L216">                data.description(),</span>
+<span class="fc" id="L217">                data.changelog(),</span>
+                VocabularyStatus.ACTIVE,
+<span class="fc" id="L219">                data.createdBy(),</span>
+<span class="fc" id="L220">                data.now(),</span>
+<span class="fc" id="L221">                data.now(),</span>
+<span class="fc" id="L222">                data.sha256());</span>
+    }
+
+    private Instant now() {
+<span class="fc" id="L226">        return clock.instant().truncatedTo(ChronoUnit.SECONDS);</span>
+    }
+
+    private static RuntimeException duplicate(String name) {
+<span class="fc" id="L230">        return Problems.conflict(&quot;Vocabulary with name '&quot; + name + &quot;' already exists.&quot;);</span>
+    }
+
+    static String sha256(byte[] content) {
+        try {
+<span class="fc" id="L235">            return HexFormat.of().formatHex(MessageDigest.getInstance(&quot;SHA-256&quot;).digest(content));</span>
+<span class="nc" id="L236">        } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L237">            throw new IllegalStateException(&quot;SHA-256 is not available&quot;, e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

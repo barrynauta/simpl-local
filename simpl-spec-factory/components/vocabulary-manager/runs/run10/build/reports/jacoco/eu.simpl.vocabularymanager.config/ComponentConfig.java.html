@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ComponentConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">ComponentConfig.java</span></div><h1>ComponentConfig.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import eu.simpl.vocabularymanager.api.Representations;
+import eu.simpl.vocabularymanager.security.RealmKeyProvider;
+import eu.simpl.vocabularymanager.service.ContentValidation;
+import eu.simpl.vocabularymanager.service.ExternalVocabularyService;
+import eu.simpl.vocabularymanager.service.SearchService;
+import eu.simpl.vocabularymanager.service.UploadLimiter;
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import eu.simpl.vocabularymanager.store.ExternalVocabularyRepository;
+import eu.simpl.vocabularymanager.store.SparqlStore;
+import eu.simpl.vocabularymanager.store.VocabularyRepository;
+import eu.simpl.vocabularymanager.validation.ReferenceChecker;
+import eu.simpl.vocabularymanager.validation.SemanticValidator;
+import eu.simpl.vocabularymanager.validation.TurtleSyntaxValidator;
+import eu.simpl.vocabularymanager.web.CorrelationFilter;
+import eu.simpl.vocabularymanager.web.OutboundHeaders;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Clock;
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.Ordered;
+
+/** Wiring of the component: store, repositories, validation, services and the correlation filter. */
+@Configuration
+@EnableConfigurationProperties(AppProperties.class)
+<span class="fc" id="L36">public class ComponentConfig {</span>
+
+    @Bean
+    Clock clock() {
+<span class="fc" id="L40">        return Clock.systemUTC();</span>
+    }
+
+    /** Circuit breakers of D103: open at 50 % failures of the last 20 calls (at least 10), 10 s open, 3 probes. */
+    @Bean
+    CircuitBreakerRegistry circuitBreakerRegistry(MeterRegistry meters) {
+<span class="fc" id="L46">        CircuitBreakerConfig config = CircuitBreakerConfig.custom()</span>
+<span class="fc" id="L47">                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)</span>
+<span class="fc" id="L48">                .slidingWindowSize(20)</span>
+<span class="fc" id="L49">                .minimumNumberOfCalls(10)</span>
+<span class="fc" id="L50">                .failureRateThreshold(50)</span>
+<span class="fc" id="L51">                .waitDurationInOpenState(Duration.ofSeconds(10))</span>
+<span class="fc" id="L52">                .permittedNumberOfCallsInHalfOpenState(3)</span>
+<span class="fc" id="L53">                .automaticTransitionFromOpenToHalfOpenEnabled(false)</span>
+<span class="fc" id="L54">                .ignoreExceptions(SparqlStore.StoreFailureException.class)</span>
+<span class="fc" id="L55">                .build();</span>
+<span class="fc" id="L56">        CircuitBreakerRegistry registry = CircuitBreakerRegistry.of(config);</span>
+<span class="fc" id="L57">        TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(registry).bindTo(meters);</span>
+<span class="fc" id="L58">        registry.circuitBreaker(&quot;store&quot;);</span>
+<span class="fc" id="L59">        registry.circuitBreaker(&quot;realmKeys&quot;);</span>
+<span class="fc" id="L60">        return registry;</span>
+    }
+
+    @Bean
+    SparqlStore sparqlStore(AppProperties properties, CircuitBreakerRegistry breakers, OutboundHeaders headers) {
+<span class="fc" id="L65">        AppProperties.Store settings = properties.store();</span>
+<span class="fc" id="L66">        return new SparqlStore(</span>
+<span class="fc" id="L67">                settings, SparqlStore.httpClient(settings.connectTimeout()), breakers.circuitBreaker(&quot;store&quot;), headers);</span>
+    }
+
+    @Bean
+    VocabularyRepository vocabularyRepository(SparqlStore store) {
+<span class="fc" id="L72">        return new VocabularyRepository(store);</span>
+    }
+
+    @Bean
+    ExternalVocabularyRepository externalVocabularyRepository(SparqlStore store) {
+<span class="fc" id="L77">        return new ExternalVocabularyRepository(store);</span>
+    }
+
+    @Bean
+    TurtleSyntaxValidator turtleSyntaxValidator() {
+<span class="fc" id="L82">        return new TurtleSyntaxValidator();</span>
+    }
+
+    @Bean
+    ContentValidation contentValidation(
+            TurtleSyntaxValidator syntax, VocabularyRepository repository, AppProperties properties) {
+<span class="fc" id="L88">        return new ContentValidation(</span>
+                syntax,
+                new SemanticValidator(),
+<span class="fc" id="L91">                new ReferenceChecker(properties.contentBase()),</span>
+                repository,
+<span class="fc" id="L93">                properties.contentBase());</span>
+    }
+
+    @Bean
+    VocabularyService vocabularyService(VocabularyRepository repository, ContentValidation validation, Clock clock) {
+<span class="fc" id="L98">        return new VocabularyService(repository, validation, clock);</span>
+    }
+
+    @Bean
+    ExternalVocabularyService externalVocabularyService(
+            ExternalVocabularyRepository repository, TurtleSyntaxValidator syntax, Clock clock) {
+<span class="fc" id="L104">        return new ExternalVocabularyService(repository, syntax, clock);</span>
+    }
+
+    @Bean
+    SearchService searchService(VocabularyRepository vocabularies, ExternalVocabularyRepository externals) {
+<span class="fc" id="L109">        return new SearchService(vocabularies, externals);</span>
+    }
+
+    @Bean
+    UploadLimiter uploadLimiter(AppProperties properties) {
+<span class="fc" id="L114">        return new UploadLimiter(properties.uploads().maxConcurrent());</span>
+    }
+
+    @Bean
+    Representations representations(AppProperties properties) {
+<span class="fc" id="L119">        return new Representations(properties.contentBase());</span>
+    }
+
+    @Bean
+    FilterRegistrationBean&lt;CorrelationFilter&gt; correlationFilter() {
+<span class="fc" id="L124">        FilterRegistrationBean&lt;CorrelationFilter&gt; registration = new FilterRegistrationBean&lt;&gt;(new CorrelationFilter());</span>
+<span class="fc" id="L125">        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);</span>
+<span class="fc" id="L126">        return registration;</span>
+    }
+
+    /** Fetches the realm keys once at start, in the background; a failure only marks health DEGRADED (D108). */
+    @EventListener(ApplicationReadyEvent.class)
+    public void fetchRealmKeys(ApplicationReadyEvent event) {
+<span class="fc" id="L132">        RealmKeyProvider keys = event.getApplicationContext().getBean(RealmKeyProvider.class);</span>
+<span class="fc" id="L133">        CompletableFuture.runAsync(keys::refresh);</span>
+<span class="fc" id="L134">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiOperation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">ApiOperation.java</span></div><h1>ApiOperation.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+/**
+ * Every operation of the decided contract with its explicit access rule (D16, D84), request body kind and response
+ * media type. This table is the single source for routing (405), authorisation, the Accept check (D63) and the
+ * Content-Type check (D15).
+ */
+<span class="fc" id="L15">public enum ApiOperation {</span>
+<span class="fc" id="L16">    GET_HEALTH(&quot;getHealth&quot;, &quot;GET&quot;, &quot;/v1/health&quot;, Access.PUBLIC, BodyKind.NONE, Produces.JSON),</span>
+<span class="fc" id="L17">    GET_VOCABULARIES(&quot;getVocabularies&quot;, &quot;GET&quot;, &quot;/v1/vocabularies&quot;, Access.READ, BodyKind.NONE, Produces.JSON),</span>
+<span class="fc" id="L18">    CREATE_VOCABULARY(&quot;createVocabulary&quot;, &quot;POST&quot;, &quot;/v1/vocabularies&quot;, Access.WRITE, BodyKind.MULTIPART, Produces.JSON),</span>
+<span class="fc" id="L19">    SEARCH_VOCABULARIES(</span>
+            &quot;searchVocabularies&quot;, &quot;POST&quot;, &quot;/v1/vocabularies/searches&quot;, Access.READ, BodyKind.JSON, Produces.JSON),
+<span class="fc" id="L21">    GET_VOCABULARY(</span>
+            &quot;getVocabulary&quot;, &quot;GET&quot;, &quot;/v1/vocabularies/{vocabularyName}&quot;, Access.READ, BodyKind.NONE, Produces.JSON),
+<span class="fc" id="L23">    UPDATE_VOCABULARY_STATUS(</span>
+            &quot;updateVocabularyStatus&quot;,
+            &quot;PATCH&quot;,
+            &quot;/v1/vocabularies/{vocabularyName}&quot;,
+            Access.WRITE,
+            BodyKind.JSON,
+            Produces.JSON),
+<span class="fc" id="L30">    GET_VOCABULARY_VERSIONS(</span>
+            &quot;getVocabularyVersions&quot;,
+            &quot;GET&quot;,
+            &quot;/v1/vocabularies/{vocabularyName}/versions&quot;,
+            Access.READ,
+            BodyKind.NONE,
+            Produces.JSON),
+<span class="fc" id="L37">    CREATE_VOCABULARY_VERSION(</span>
+            &quot;createVocabularyVersion&quot;,
+            &quot;POST&quot;,
+            &quot;/v1/vocabularies/{vocabularyName}/versions&quot;,
+            Access.WRITE,
+            BodyKind.MULTIPART,
+            Produces.JSON),
+<span class="fc" id="L44">    GET_VOCABULARY_VERSION(</span>
+            &quot;getVocabularyVersion&quot;,
+            &quot;GET&quot;,
+            &quot;/v1/vocabularies/{vocabularyName}/versions/{version}&quot;,
+            Access.READ,
+            BodyKind.NONE,
+            Produces.JSON),
+<span class="fc" id="L51">    UPDATE_VOCABULARY_VERSION_STATUS(</span>
+            &quot;updateVocabularyVersionStatus&quot;,
+            &quot;PATCH&quot;,
+            &quot;/v1/vocabularies/{vocabularyName}/versions/{version}&quot;,
+            Access.WRITE,
+            BodyKind.JSON,
+            Produces.JSON),
+<span class="fc" id="L58">    DOWNLOAD_VOCABULARY(</span>
+            &quot;downloadVocabulary&quot;, &quot;GET&quot;, &quot;/v1/content/{vocabularyName}&quot;, Access.READ, BodyKind.NONE, Produces.TURTLE),
+<span class="fc" id="L60">    DOWNLOAD_VOCABULARY_VERSION(</span>
+            &quot;downloadVocabularyVersion&quot;,
+            &quot;GET&quot;,
+            &quot;/v1/content/{vocabularyName}/versions/{version}&quot;,
+            Access.READ,
+            BodyKind.NONE,
+            Produces.TURTLE),
+<span class="fc" id="L67">    GET_EXTERNAL_VOCABULARIES(</span>
+            &quot;getExternalVocabularies&quot;, &quot;GET&quot;, &quot;/v1/external-vocabularies&quot;, Access.READ, BodyKind.NONE, Produces.JSON),
+<span class="fc" id="L69">    CREATE_EXTERNAL_VOCABULARY(</span>
+            &quot;createExternalVocabulary&quot;,
+            &quot;POST&quot;,
+            &quot;/v1/external-vocabularies&quot;,
+            Access.WRITE,
+            BodyKind.MULTIPART,
+            Produces.JSON),
+<span class="fc" id="L76">    SEARCH_EXTERNAL_VOCABULARIES(</span>
+            &quot;searchExternalVocabularies&quot;,
+            &quot;POST&quot;,
+            &quot;/v1/external-vocabulary/searches&quot;,
+            Access.READ,
+            BodyKind.JSON,
+            Produces.JSON),
+<span class="fc" id="L83">    DOWNLOAD_EXTERNAL_VOCABULARY_CONTENT(</span>
+            &quot;downloadExternalVocabularyContent&quot;,
+            &quot;POST&quot;,
+            &quot;/v1/external-vocabularies/content&quot;,
+            Access.READ,
+            BodyKind.JSON,
+            Produces.TURTLE),
+<span class="fc" id="L90">    GET_EXTERNAL_VOCABULARY_CONTENT_BY_NAME(</span>
+            &quot;getExternalVocabularyContentByName&quot;,
+            &quot;GET&quot;,
+            &quot;/v1/external-vocabularies/{name}/content&quot;,
+            Access.READ,
+            BodyKind.NONE,
+            Produces.TURTLE),
+<span class="fc" id="L97">    GET_EXTERNAL_VOCABULARY(</span>
+            &quot;getExternalVocabulary&quot;,
+            &quot;GET&quot;,
+            &quot;/v1/external-vocabularies/{name}&quot;,
+            Access.READ,
+            BodyKind.NONE,
+            Produces.JSON),
+<span class="fc" id="L104">    DELETE_EXTERNAL_VOCABULARY(</span>
+            &quot;deleteExternalVocabulary&quot;,
+            &quot;DELETE&quot;,
+            &quot;/v1/external-vocabularies/{name}&quot;,
+            Access.WRITE,
+            BodyKind.NONE,
+            Produces.JSON);
+
+    /** Who may call an operation (D16). */
+<span class="fc" id="L113">    public enum Access {</span>
+<span class="fc" id="L114">        PUBLIC,</span>
+<span class="fc" id="L115">        READ,</span>
+<span class="fc" id="L116">        WRITE</span>
+    }
+
+    /** The kind of request body an operation takes. */
+<span class="fc" id="L120">    public enum BodyKind {</span>
+<span class="fc" id="L121">        NONE,</span>
+<span class="fc" id="L122">        JSON,</span>
+<span class="fc" id="L123">        MULTIPART</span>
+    }
+
+    /** The media type of the success response. */
+<span class="fc" id="L127">    public enum Produces {</span>
+<span class="fc" id="L128">        JSON,</span>
+<span class="fc" id="L129">        TURTLE</span>
+    }
+
+    public static final String ROLE_VIEWER = &quot;GA_VOCABULARY_VIEWER&quot;;
+    public static final String ROLE_ADMIN = &quot;GA_VOCABULARY_ADMIN&quot;;
+
+    private final String operationId;
+    private final String method;
+    private final String pathTemplate;
+    private final Access access;
+    private final BodyKind bodyKind;
+    private final Produces produces;
+    private final String[] segments;
+
+    ApiOperation(
+            String operationId,
+            String method,
+            String pathTemplate,
+            Access access,
+            BodyKind bodyKind,
+<span class="fc" id="L149">            Produces produces) {</span>
+<span class="fc" id="L150">        this.operationId = operationId;</span>
+<span class="fc" id="L151">        this.method = method;</span>
+<span class="fc" id="L152">        this.pathTemplate = pathTemplate;</span>
+<span class="fc" id="L153">        this.access = access;</span>
+<span class="fc" id="L154">        this.bodyKind = bodyKind;</span>
+<span class="fc" id="L155">        this.produces = produces;</span>
+<span class="fc" id="L156">        this.segments = pathTemplate.substring(1).split(&quot;/&quot;);</span>
+<span class="fc" id="L157">    }</span>
+
+    public String operationId() {
+<span class="fc" id="L160">        return operationId;</span>
+    }
+
+    public String method() {
+<span class="fc" id="L164">        return method;</span>
+    }
+
+    public String pathTemplate() {
+<span class="fc" id="L168">        return pathTemplate;</span>
+    }
+
+    public Access access() {
+<span class="fc" id="L172">        return access;</span>
+    }
+
+    public BodyKind bodyKind() {
+<span class="fc" id="L176">        return bodyKind;</span>
+    }
+
+    public Produces produces() {
+<span class="fc" id="L180">        return produces;</span>
+    }
+
+    /** Roles that may call the operation; empty for a public operation. */
+    public Set&lt;String&gt; allowedRoles() {
+<span class="fc bfc" id="L185" title="All 3 branches covered.">        return switch (access) {</span>
+<span class="fc" id="L186">            case PUBLIC -&gt; Set.of();</span>
+<span class="fc" id="L187">            case READ -&gt; Set.of(ROLE_VIEWER, ROLE_ADMIN);</span>
+<span class="fc" id="L188">            case WRITE -&gt; Set.of(ROLE_ADMIN);</span>
+        };
+    }
+
+    /** Number of fixed (non-parameter) segments that match; -1 when the path does not match. */
+    int matchScore(String[] pathSegments) {
+<span class="fc bfc" id="L194" title="All 2 branches covered.">        if (pathSegments.length != segments.length) {</span>
+<span class="fc" id="L195">            return -1;</span>
+        }
+<span class="fc" id="L197">        int fixed = 0;</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        for (int i = 0; i &lt; segments.length; i++) {</span>
+<span class="fc" id="L199">            String template = segments[i];</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">            if (template.startsWith(&quot;{&quot;)) {</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">                if (pathSegments[i].isEmpty()) {</span>
+<span class="fc" id="L202">                    return -1;</span>
+                }
+<span class="fc bfc" id="L204" title="All 2 branches covered.">            } else if (template.equals(pathSegments[i])) {</span>
+<span class="fc" id="L205">                fixed++;</span>
+            } else {
+<span class="fc" id="L207">                return -1;</span>
+            }
+        }
+<span class="fc" id="L210">        return fixed;</span>
+    }
+
+    /** The result of routing a request: the matched path template and the operation for the method, if any. */
+<span class="fc" id="L214">    public record Route(String pathTemplate, Optional&lt;ApiOperation&gt; operation, String allowedMethods) {}</span>
+
+    /**
+     * Routes a raw request path and method. A fixed segment wins over a path parameter (D77). Returns empty when no
+     * path template matches.
+     */
+    public static Optional&lt;Route&gt; route(String method, String rawPath) {
+<span class="fc bfc" id="L221" title="All 4 branches covered.">        if (rawPath == null || !rawPath.startsWith(&quot;/&quot;)) {</span>
+<span class="fc" id="L222">            return Optional.empty();</span>
+        }
+<span class="fc" id="L224">        String[] pathSegments = rawPath.substring(1).split(&quot;/&quot;, -1);</span>
+<span class="fc" id="L225">        int best = -1;</span>
+<span class="fc" id="L226">        String bestTemplate = null;</span>
+<span class="fc bfc" id="L227" title="All 2 branches covered.">        for (ApiOperation operation : values()) {</span>
+<span class="fc" id="L228">            int score = operation.matchScore(pathSegments);</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">            if (score &gt; best) {</span>
+<span class="fc" id="L230">                best = score;</span>
+<span class="fc" id="L231">                bestTemplate = operation.pathTemplate;</span>
+            }
+        }
+<span class="fc bfc" id="L234" title="All 2 branches covered.">        if (bestTemplate == null) {</span>
+<span class="fc" id="L235">            return Optional.empty();</span>
+        }
+<span class="fc" id="L237">        String template = bestTemplate;</span>
+<span class="fc" id="L238">        List&lt;ApiOperation&gt; onPath = Arrays.stream(values())</span>
+<span class="fc" id="L239">                .filter(op -&gt; op.pathTemplate.equals(template))</span>
+<span class="fc" id="L240">                .toList();</span>
+<span class="fc" id="L241">        String allowed =</span>
+<span class="fc" id="L242">                onPath.stream().map(ApiOperation::method).collect(Collectors.toCollection(TreeSet::new)).stream()</span>
+<span class="fc" id="L243">                        .collect(Collectors.joining(&quot;, &quot;));</span>
+<span class="fc" id="L244">        Optional&lt;ApiOperation&gt; operation =</span>
+<span class="fc" id="L245">                onPath.stream().filter(op -&gt; op.method.equals(method)).findFirst();</span>
+<span class="fc" id="L246">        return Optional.of(new Route(template, operation, allowed));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

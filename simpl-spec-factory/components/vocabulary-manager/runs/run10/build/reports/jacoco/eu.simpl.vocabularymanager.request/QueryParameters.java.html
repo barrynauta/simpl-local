@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QueryParameters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.request</a> &gt; <span class="el_source">QueryParameters.java</span></div><h1>QueryParameters.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.request;
+
+import eu.simpl.vocabularymanager.error.Issue;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * The query parameters of a request, parsed from the raw query string in request order. Unknown, repeated and
+ * undecodable parameters become issues (D21, D52).
+ */
+public final class QueryParameters {
+
+<span class="fc" id="L18">    private final Map&lt;String, String&gt; values = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L19">    private final List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L21">    private QueryParameters() {}</span>
+
+    /** Parses the raw query and records issues for parameters not in the allowed set. */
+    public static QueryParameters parse(String rawQuery, Set&lt;String&gt; allowed) {
+<span class="fc" id="L25">        QueryParameters parameters = new QueryParameters();</span>
+<span class="fc bfc" id="L26" title="All 4 branches covered.">        if (rawQuery == null || rawQuery.isEmpty()) {</span>
+<span class="fc" id="L27">            return parameters;</span>
+        }
+<span class="fc" id="L29">        List&lt;String&gt; seen = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        for (String pair : rawQuery.split(&quot;&amp;&quot;, -1)) {</span>
+<span class="fc" id="L31">            int equals = pair.indexOf('=');</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">            String rawName = equals &lt; 0 ? pair : pair.substring(0, equals);</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">            String rawValue = equals &lt; 0 ? &quot;&quot; : pair.substring(equals + 1);</span>
+<span class="fc" id="L34">            String name = decode(rawName);</span>
+<span class="fc" id="L35">            String value = decode(rawValue);</span>
+<span class="pc bpc" id="L36" title="1 of 4 branches missed.">            if (name == null || value == null) {</span>
+<span class="fc" id="L37">                parameters.issues.add(Issue.schemaViolation(</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">                        &quot;query&quot;, name == null ? rawName : name, &quot;Query parameter is not correctly encoded.&quot;, null));</span>
+<span class="fc" id="L39">                continue;</span>
+            }
+<span class="fc bfc" id="L41" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc" id="L42">                parameters.issues.add(Issue.schemaViolation(</span>
+                        &quot;query&quot;, name, &quot;Query parameter '&quot; + name + &quot;' is not supported.&quot;, value));
+<span class="fc" id="L44">                continue;</span>
+            }
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (seen.contains(name)) {</span>
+<span class="fc" id="L47">                parameters.issues.add(Issue.schemaViolation(</span>
+                        &quot;query&quot;, name, &quot;Query parameter '&quot; + name + &quot;' may be given only once.&quot;, value));
+<span class="fc" id="L49">                continue;</span>
+            }
+<span class="fc" id="L51">            seen.add(name);</span>
+<span class="fc" id="L52">            parameters.values.put(name, value);</span>
+        }
+<span class="fc" id="L54">        return parameters;</span>
+    }
+
+    public String get(String name) {
+<span class="fc" id="L58">        return values.get(name);</span>
+    }
+
+    public boolean has(String name) {
+<span class="fc" id="L62">        return values.containsKey(name);</span>
+    }
+
+    /** All accepted parameters in request order. */
+    public Map&lt;String, String&gt; inOrder() {
+<span class="fc" id="L67">        return values;</span>
+    }
+
+    public List&lt;Issue&gt; issues() {
+<span class="fc" id="L71">        return issues;</span>
+    }
+
+    private static String decode(String text) {
+        try {
+<span class="fc" id="L76">            return URLDecoder.decode(text, StandardCharsets.UTF_8);</span>
+<span class="fc" id="L77">        } catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L78">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

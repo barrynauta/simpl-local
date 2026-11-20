@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Checks.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">Checks.java</span></div><h1>Checks.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.Problems;
+import eu.simpl.vocabularymanager.request.FieldRules;
+import eu.simpl.vocabularymanager.request.QueryParameters;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.slf4j.MDC;
+
+/** Collects the 400 issues of one request (path, query, body) and throws them together (D49, D51, D52). */
+<span class="fc" id="L14">final class Checks {</span>
+
+<span class="fc" id="L16">    final List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+
+    QueryParameters query(HttpServletRequest request, Set&lt;String&gt; allowed) {
+<span class="fc" id="L19">        QueryParameters parameters = QueryParameters.parse(request.getQueryString(), allowed);</span>
+<span class="fc" id="L20">        issues.addAll(parameters.issues());</span>
+<span class="fc" id="L21">        return parameters;</span>
+    }
+
+    /** No query parameter is allowed (POST, PATCH, DELETE and GET without parameters). */
+    void noQuery(HttpServletRequest request) {
+<span class="fc" id="L26">        query(request, Set.of());</span>
+<span class="fc" id="L27">    }</span>
+
+    String pathName(String value, String parameter) {
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (!FieldRules.isValidName(value)) {</span>
+<span class="fc" id="L31">            issues.add(Issue.schemaViolation(</span>
+                    &quot;path&quot;,
+                    parameter,
+                    &quot;'&quot; + parameter + &quot;' must be 3 to 64 characters, start with an upper-case letter and contain&quot;
+                            + &quot; only letters and digits.&quot;,
+                    value));
+<span class="fc" id="L37">            return null;</span>
+        }
+<span class="fc" id="L39">        MDC.put(&quot;vocabularyName&quot;, value);</span>
+<span class="fc" id="L40">        return value;</span>
+    }
+
+    Integer pathVersion(String value) {
+<span class="fc" id="L44">        Integer version = FieldRules.positiveInt(value, &quot;path&quot;, &quot;version&quot;, Integer.MAX_VALUE, issues);</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (version != null) {</span>
+<span class="fc" id="L46">            MDC.put(&quot;version&quot;, version.toString());</span>
+        }
+<span class="fc" id="L48">        return version;</span>
+    }
+
+    void throwIfAny() {
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L53">            throw Problems.badRequest(issues);</span>
+        }
+<span class="fc" id="L55">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

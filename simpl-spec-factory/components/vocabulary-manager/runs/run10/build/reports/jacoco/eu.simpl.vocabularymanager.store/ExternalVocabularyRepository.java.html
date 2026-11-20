@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalVocabularyRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">ExternalVocabularyRepository.java</span></div><h1>ExternalVocabularyRepository.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.sparql.modify.request.UpdateModify;
+import org.apache.jena.sparql.syntax.ElementNamedGraph;
+import org.apache.jena.sparql.syntax.ElementPathBlock;
+import org.apache.jena.update.UpdateRequest;
+
+/** Store access for external vocabularies (D30, D41, D56). Aliases are kept in the order sent (D73). */
+public class ExternalVocabularyRepository {
+
+    static final String ALIAS_SEPARATOR = &quot;\n&quot;;
+    private static final String FIELDS = &quot;?e a vm:ExternalVocabulary ; vm:name ?name ; vm:namespaceUri ?ns ;&quot;
+            + &quot; vm:aliasList ?aliases ; vm:createdBy ?createdBy ; vm:creationDate ?created .&quot;
+            + &quot; OPTIONAL { ?e vm:sourceUri ?src } OPTIONAL { ?e vm:description ?desc }\n&quot;;
+
+    private final SparqlStore store;
+
+<span class="fc" id="L33">    public ExternalVocabularyRepository(SparqlStore store) {</span>
+<span class="fc" id="L34">        this.store = store;</span>
+<span class="fc" id="L35">    }</span>
+
+    public long count() {
+<span class="fc" id="L38">        ParameterizedSparqlString query =</span>
+<span class="fc" id="L39">                pss(&quot;SELECT (COUNT(?e) AS ?count) WHERE { GRAPH ?g { ?e a vm:ExternalVocabulary } }&quot;);</span>
+<span class="fc" id="L40">        return Rdf.longValue(store.select(query.toString()).getFirst(), &quot;count&quot;);</span>
+    }
+
+    public List&lt;ExternalVocabulary&gt; list(long offset, int limit) {
+<span class="fc" id="L44">        ParameterizedSparqlString query = pss(&quot;SELECT * WHERE { GRAPH ?g { &quot; + FIELDS</span>
+                + &quot; } } ORDER BY ASC(STR(?name)) LIMIT &quot; + limit + &quot; OFFSET &quot; + offset);
+<span class="fc" id="L46">        return store.select(query.toString()).stream()</span>
+<span class="fc" id="L47">                .map(ExternalVocabularyRepository::toExternal)</span>
+<span class="fc" id="L48">                .toList();</span>
+    }
+
+    public Optional&lt;ExternalVocabulary&gt; find(String name) {
+<span class="fc" id="L52">        ParameterizedSparqlString query = pss(&quot;SELECT * WHERE { GRAPH ?g { &quot; + FIELDS + &quot; } } LIMIT 1&quot;);</span>
+<span class="fc" id="L53">        query.setIri(&quot;e&quot;, Rdf.externalIri(name));</span>
+<span class="fc" id="L54">        return store.select(query.toString()).stream().findFirst().map(ExternalVocabularyRepository::toExternal);</span>
+    }
+
+    /** External vocabularies by name, in no particular order (search results, at most 100 names). */
+    public List&lt;ExternalVocabulary&gt; findAll(Collection&lt;String&gt; names) {
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (names.isEmpty()) {</span>
+<span class="fc" id="L60">            return List.of();</span>
+        }
+<span class="fc" id="L62">        ParameterizedSparqlString query =</span>
+<span class="fc" id="L63">                pss(&quot;SELECT * WHERE { VALUES (?name) { ?names } GRAPH ?g { &quot; + FIELDS + &quot; } } LIMIT 101&quot;);</span>
+<span class="fc" id="L64">        query.setValues(</span>
+<span class="fc" id="L65">                &quot;names&quot;, names.stream().map(Rdf::text).map(RDFNode.class::cast).toList());</span>
+<span class="fc" id="L66">        return store.select(query.toString()).stream()</span>
+<span class="fc" id="L67">                .map(ExternalVocabularyRepository::toExternal)</span>
+<span class="fc" id="L68">                .toList();</span>
+    }
+
+    public boolean existsIgnoreCase(String name) {
+<span class="fc" id="L72">        ParameterizedSparqlString query = pss(&quot;SELECT ?e WHERE { GRAPH ?g { ?e vm:nameKey ?key } } LIMIT 1&quot;);</span>
+<span class="fc" id="L73">        query.setLiteral(&quot;key&quot;, name.toLowerCase(Locale.ROOT));</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        return !store.select(query.toString()).isEmpty();</span>
+    }
+
+    /** Maps each given lookup key to the name of the external vocabulary that has it as namespace or alias key. */
+    public Map&lt;String, String&gt; namesByKey(Collection&lt;String&gt; keys) {
+<span class="fc" id="L79">        Map&lt;String, String&gt; result = new LinkedHashMap&lt;&gt;();</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (keys.isEmpty()) {</span>
+<span class="nc" id="L81">            return result;</span>
+        }
+<span class="fc" id="L83">        ParameterizedSparqlString query = pss(&quot;SELECT DISTINCT ?key ?name WHERE { VALUES (?key) { ?keys }&quot;</span>
+                + &quot; GRAPH ?g { ?e vm:name ?name . { ?e vm:namespaceKey ?key } UNION&quot;
+                + &quot; { ?e vm:alias ?a . ?a vm:key ?key } } } LIMIT 101&quot;);
+<span class="fc" id="L86">        query.setValues(</span>
+<span class="fc" id="L87">                &quot;keys&quot;, keys.stream().map(Rdf::text).map(RDFNode.class::cast).toList());</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        for (QuerySolution row : store.select(query.toString())) {</span>
+<span class="fc" id="L89">            result.putIfAbsent(Rdf.string(row, &quot;key&quot;), Rdf.string(row, &quot;name&quot;));</span>
+<span class="fc" id="L90">        }</span>
+<span class="fc" id="L91">        return result;</span>
+    }
+
+    public Optional&lt;byte[]&gt; content(String name) {
+<span class="fc" id="L95">        ParameterizedSparqlString query = new ParameterizedSparqlString(ContentChunks.SELECT);</span>
+<span class="fc" id="L96">        query.setIri(&quot;c&quot;, Rdf.externalContentGraph(name));</span>
+<span class="fc" id="L97">        List&lt;QuerySolution&gt; rows = store.select(query.toString());</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        return rows.isEmpty() ? Optional.empty() : Optional.of(ContentChunks.join(rows));</span>
+    }
+
+    /** Data of an external vocabulary to register. */
+<span class="fc" id="L102">    public record Registration(</span>
+            String name,
+            String namespaceUri,
+            List&lt;String&gt; aliasUris,
+            String sourceUri,
+            String description,
+            String createdBy,
+            Instant now,
+            byte[] content) {}
+
+    /**
+     * Registers the external vocabulary, only when neither its name (ignoring case) nor any of its lookup keys is
+     * registered yet.
+     *
+     * @return true when this request registered it
+     */
+    public boolean insert(Registration data, String token) {
+<span class="fc" id="L119">        StringBuilder template = new StringBuilder(&quot;INSERT { GRAPH ?g { ?e a vm:ExternalVocabulary ; vm:name ?name ;&quot;</span>
+                + &quot; vm:nameKey ?nameKey ; vm:namespaceUri ?ns ; vm:namespaceKey ?nsKey ; vm:aliasList ?aliases ;&quot;
+                + &quot; vm:createdBy ?createdBy ; vm:creationDate ?now ; vm:contentGraph ?c ; vm:changeToken ?token&quot;);
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        if (data.sourceUri() != null) {</span>
+<span class="fc" id="L123">            template.append(&quot; ; vm:sourceUri ?src&quot;);</span>
+        }
+<span class="fc bfc" id="L125" title="All 2 branches covered.">        if (data.description() != null) {</span>
+<span class="fc" id="L126">            template.append(&quot; ; vm:description ?desc&quot;);</span>
+        }
+<span class="fc" id="L128">        template.append(&quot; .\n&quot;);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        for (int i = 0; i &lt; data.aliasUris().size(); i++) {</span>
+<span class="fc" id="L130">            String n = String.format(Locale.ROOT, &quot;%02d&quot;, i);</span>
+<span class="fc" id="L131">            template.append(&quot; ?e vm:alias ?alias&quot;)</span>
+<span class="fc" id="L132">                    .append(n)</span>
+<span class="fc" id="L133">                    .append(&quot; . ?alias&quot;)</span>
+<span class="fc" id="L134">                    .append(n)</span>
+<span class="fc" id="L135">                    .append(&quot; a vm:AliasUri ; vm:index ?aliasIndex&quot;)</span>
+<span class="fc" id="L136">                    .append(n)</span>
+<span class="fc" id="L137">                    .append(&quot; ; vm:uri ?aliasUri&quot;)</span>
+<span class="fc" id="L138">                    .append(n)</span>
+<span class="fc" id="L139">                    .append(&quot; ; vm:key ?aliasKey&quot;)</span>
+<span class="fc" id="L140">                    .append(n)</span>
+<span class="fc" id="L141">                    .append(&quot; .\n&quot;);</span>
+        }
+<span class="fc" id="L143">        template.append(&quot;} }\nWHERE { FILTER NOT EXISTS { GRAPH ?g { ?x vm:nameKey ?nameKey } }&quot;</span>
+                + &quot; FILTER NOT EXISTS { GRAPH ?g { VALUES (?k) { ?keys } { ?y vm:namespaceKey ?k } UNION&quot;
+                + &quot; { ?z vm:key ?k } } } }&quot;);
+<span class="fc" id="L146">        ParameterizedSparqlString insert = pss(template.toString());</span>
+<span class="fc" id="L147">        insert.setIri(&quot;e&quot;, Rdf.externalIri(data.name()));</span>
+<span class="fc" id="L148">        insert.setIri(&quot;c&quot;, Rdf.externalContentGraph(data.name()));</span>
+<span class="fc" id="L149">        insert.setLiteral(&quot;name&quot;, data.name());</span>
+<span class="fc" id="L150">        insert.setLiteral(&quot;nameKey&quot;, data.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L151">        insert.setLiteral(&quot;ns&quot;, data.namespaceUri());</span>
+<span class="fc" id="L152">        insert.setLiteral(&quot;nsKey&quot;, ExternalVocabulary.key(data.namespaceUri()));</span>
+<span class="fc" id="L153">        insert.setLiteral(&quot;aliases&quot;, String.join(ALIAS_SEPARATOR, data.aliasUris()));</span>
+<span class="fc" id="L154">        insert.setLiteral(&quot;createdBy&quot;, data.createdBy());</span>
+<span class="fc" id="L155">        insert.setLiteral(&quot;now&quot;, Rdf.dateTime(data.now()));</span>
+<span class="fc" id="L156">        insert.setLiteral(&quot;token&quot;, token);</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        if (data.sourceUri() != null) {</span>
+<span class="fc" id="L158">            insert.setLiteral(&quot;src&quot;, data.sourceUri());</span>
+        }
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        if (data.description() != null) {</span>
+<span class="fc" id="L161">            insert.setLiteral(&quot;desc&quot;, data.description());</span>
+        }
+<span class="fc" id="L163">        List&lt;RDFNode&gt; keys = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L164">        keys.add(Rdf.text(ExternalVocabulary.key(data.namespaceUri())));</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        for (int i = 0; i &lt; data.aliasUris().size(); i++) {</span>
+<span class="fc" id="L166">            String alias = data.aliasUris().get(i);</span>
+<span class="fc" id="L167">            String n = String.format(Locale.ROOT, &quot;%02d&quot;, i);</span>
+<span class="fc" id="L168">            insert.setIri(&quot;alias&quot; + n, Rdf.externalAliasIri(data.name(), i));</span>
+<span class="fc" id="L169">            insert.setLiteral(&quot;aliasIndex&quot; + n, Rdf.integer(i));</span>
+<span class="fc" id="L170">            insert.setLiteral(&quot;aliasUri&quot; + n, alias);</span>
+<span class="fc" id="L171">            insert.setLiteral(&quot;aliasKey&quot; + n, ExternalVocabulary.key(alias));</span>
+<span class="fc" id="L172">            keys.add(Rdf.text(ExternalVocabulary.key(alias)));</span>
+        }
+<span class="fc" id="L174">        insert.setValues(&quot;keys&quot;, keys);</span>
+<span class="fc" id="L175">        UpdateRequest request = insert.asUpdate();</span>
+<span class="fc" id="L176">        UpdateModify content = new UpdateModify();</span>
+<span class="fc" id="L177">        content.setHasInsertClause(true);</span>
+<span class="fc" id="L178">        content.setHasDeleteClause(false);</span>
+<span class="fc" id="L179">        ContentChunks.addQuads(content.getInsertAcc(), Rdf.externalContentGraph(data.name()), data.content());</span>
+<span class="fc" id="L180">        ElementPathBlock condition = new ElementPathBlock();</span>
+<span class="fc" id="L181">        condition.addTriple(Triple.create(</span>
+<span class="fc" id="L182">                NodeFactory.createURI(Rdf.externalIri(data.name())),</span>
+<span class="fc" id="L183">                NodeFactory.createURI(Rdf.NS + &quot;changeToken&quot;),</span>
+<span class="fc" id="L184">                NodeFactory.createLiteralString(token)));</span>
+<span class="fc" id="L185">        content.setElement(new ElementNamedGraph(NodeFactory.createURI(Rdf.EXTERNAL_GRAPH), condition));</span>
+<span class="fc" id="L186">        request.add(content);</span>
+<span class="fc" id="L187">        store.update(request.toString());</span>
+<span class="fc" id="L188">        ParameterizedSparqlString check = pss(&quot;SELECT ?token WHERE { GRAPH ?g { ?e vm:changeToken ?token } } LIMIT 1&quot;);</span>
+<span class="fc" id="L189">        check.setIri(&quot;e&quot;, Rdf.externalIri(data.name()));</span>
+<span class="fc" id="L190">        return store.select(check.toString()).stream().anyMatch(row -&gt; token.equals(Rdf.string(row, &quot;token&quot;)));</span>
+    }
+
+    /** Removes metadata and content in one store transaction (D41). */
+    public void delete(String name) {
+<span class="fc" id="L195">        ParameterizedSparqlString delete = pss(&quot;DELETE WHERE { GRAPH ?g { ?e vm:alias ?a . ?a ?ap ?ao } } ;\n&quot;</span>
+                + &quot;DELETE WHERE { GRAPH ?g { ?e ?p ?o } } ;\nDROP SILENT GRAPH ?c&quot;);
+<span class="fc" id="L197">        delete.setIri(&quot;e&quot;, Rdf.externalIri(name));</span>
+<span class="fc" id="L198">        delete.setIri(&quot;c&quot;, Rdf.externalContentGraph(name));</span>
+<span class="fc" id="L199">        store.update(delete.toString());</span>
+<span class="fc" id="L200">    }</span>
+
+    static ParameterizedSparqlString pss(String body) {
+<span class="fc" id="L203">        ParameterizedSparqlString pss = new ParameterizedSparqlString(Rdf.PREFIXES + body);</span>
+<span class="fc" id="L204">        pss.setIri(&quot;g&quot;, Rdf.EXTERNAL_GRAPH);</span>
+<span class="fc" id="L205">        return pss;</span>
+    }
+
+    private static ExternalVocabulary toExternal(QuerySolution row) {
+<span class="fc" id="L209">        String aliases = Rdf.string(row, &quot;aliases&quot;);</span>
+        List&lt;String&gt; aliasUris =
+<span class="pc bpc" id="L211" title="1 of 4 branches missed.">                aliases == null || aliases.isEmpty() ? List.of() : Arrays.asList(aliases.split(ALIAS_SEPARATOR));</span>
+<span class="fc" id="L212">        return new ExternalVocabulary(</span>
+<span class="fc" id="L213">                Rdf.string(row, &quot;name&quot;),</span>
+<span class="fc" id="L214">                Rdf.string(row, &quot;ns&quot;),</span>
+                aliasUris,
+<span class="fc" id="L216">                Rdf.string(row, &quot;src&quot;),</span>
+<span class="fc" id="L217">                Rdf.string(row, &quot;desc&quot;),</span>
+<span class="fc" id="L218">                Rdf.string(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L219">                Rdf.instant(row, &quot;created&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

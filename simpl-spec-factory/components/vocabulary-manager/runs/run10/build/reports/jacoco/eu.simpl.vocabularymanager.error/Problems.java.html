@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Problems.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.error</a> &gt; <span class="el_source">Problems.java</span></div><h1>Problems.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.error;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Factories for every problem the component returns. Types follow D48: belgif for 400, 404, 500 and 503, simpl for
+ * 401, 403, 405, 406, 409, 413 and 415.
+ */
+public final class Problems {
+
+    public static final String UPLOAD_TOO_LARGE =
+            &quot;Uploaded vocabulary file is too large. The maximum allowed upload size is 5 MB. &quot;
+                    + &quot;Please upload a smaller Turtle file.&quot;;
+    public static final String STORE_UNAVAILABLE = &quot;The vocabulary store is not available. Retry later.&quot;;
+    public static final String IDP_UNAVAILABLE = &quot;The identity provider is not available. Retry later.&quot;;
+    public static final String TOO_MANY_UPLOADS = &quot;Too many uploads in progress. Retry later.&quot;;
+
+    private static final String BELGIF_PROBLEMS = &quot;https://www.belgif.be/specification/rest/api-guide/problems/&quot;;
+
+    private Problems() {}
+
+    public static ProblemException badRequest(List&lt;Issue&gt; issues) {
+<span class="fc" id="L24">        return new ProblemException(</span>
+                400,
+                &quot;urn:problem-type:belgif:badRequest&quot;,
+                BELGIF_PROBLEMS + &quot;badRequest.html&quot;,
+                &quot;Bad Request&quot;,
+                &quot;The input message is incorrect&quot;,
+                issues,
+                null);
+    }
+
+    public static ProblemException badRequest(Issue issue) {
+<span class="fc" id="L35">        return badRequest(List.of(issue));</span>
+    }
+
+    public static ProblemException unauthorized(String detail) {
+<span class="fc" id="L39">        return new ProblemException(</span>
+                401,
+                &quot;urn:problem-type:simpl:unauthorized&quot;,
+                null,
+                &quot;Unauthorized&quot;,
+                detail,
+                null,
+<span class="fc" id="L46">                Map.of(&quot;WWW-Authenticate&quot;, &quot;Bearer&quot;));</span>
+    }
+
+    public static ProblemException forbidden() {
+<span class="fc" id="L50">        return new ProblemException(</span>
+                403,
+                &quot;urn:problem-type:simpl:forbidden&quot;,
+                null,
+                &quot;Forbidden&quot;,
+                &quot;You are not allowed to perform this operation.&quot;,
+                null,
+                null);
+    }
+
+    public static ProblemException notFound(String detail, Issue issue) {
+<span class="fc" id="L61">        return new ProblemException(</span>
+                404,
+                &quot;urn:problem-type:belgif:resourceNotFound&quot;,
+                BELGIF_PROBLEMS + &quot;resourceNotFound.html&quot;,
+                &quot;Resource Not Found&quot;,
+                detail,
+<span class="fc bfc" id="L67" title="All 2 branches covered.">                issue == null ? null : List.of(issue),</span>
+                null);
+    }
+
+    public static ProblemException vocabularyNotFound(String name) {
+<span class="fc" id="L72">        String detail = &quot;Vocabulary with name '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L73">        return notFound(detail, Issue.notFound(&quot;path&quot;, &quot;vocabularyName&quot;, detail));</span>
+    }
+
+    public static ProblemException versionNotFound(String name, int version) {
+<span class="fc" id="L77">        String detail = &quot;Version &quot; + version + &quot; of vocabulary '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L78">        return notFound(detail, Issue.notFound(&quot;path&quot;, &quot;version&quot;, detail));</span>
+    }
+
+    public static ProblemException externalNotFound(String name) {
+<span class="fc" id="L82">        String detail = &quot;External vocabulary with name '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L83">        return notFound(detail, Issue.notFound(&quot;path&quot;, &quot;name&quot;, detail));</span>
+    }
+
+    public static ProblemException externalNamespaceNotFound(String uri) {
+<span class="fc" id="L87">        String detail = &quot;External vocabulary with namespaceUri '&quot; + uri + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L88">        return notFound(detail, Issue.notFound(&quot;body&quot;, &quot;namespaceUri&quot;, detail));</span>
+    }
+
+    public static ProblemException pathNotFound() {
+<span class="fc" id="L92">        return notFound(&quot;The requested resource does not exist.&quot;, null);</span>
+    }
+
+    public static ProblemException methodNotAllowed(String allow) {
+<span class="fc" id="L96">        return new ProblemException(</span>
+                405,
+                &quot;urn:problem-type:simpl:methodNotAllowed&quot;,
+                null,
+                &quot;Method Not Allowed&quot;,
+                &quot;The method is not allowed on this resource.&quot;,
+                null,
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">                allow == null ? null : Map.of(&quot;Allow&quot;, allow));</span>
+    }
+
+    public static ProblemException notAcceptable() {
+<span class="fc" id="L107">        return new ProblemException(</span>
+                406,
+                &quot;urn:problem-type:simpl:notAcceptable&quot;,
+                null,
+                &quot;Not Acceptable&quot;,
+                &quot;Requested media type cannot be served.&quot;,
+                null,
+                null);
+    }
+
+    public static ProblemException conflict(String detail) {
+<span class="fc" id="L118">        return new ProblemException(409, &quot;urn:problem-type:simpl:conflict&quot;, null, &quot;Conflict&quot;, detail, null, null);</span>
+    }
+
+    public static ProblemException payloadTooLarge(String detail, String name) {
+<span class="fc" id="L122">        return new ProblemException(</span>
+                413,
+                &quot;urn:problem-type:simpl:payloadTooLarge&quot;,
+                null,
+                &quot;Payload Too Large&quot;,
+                detail,
+<span class="fc" id="L128">                List.of(Issue.invalidInput(name, detail, null)),</span>
+                null);
+    }
+
+    public static ProblemException uploadTooLarge() {
+<span class="fc" id="L133">        return payloadTooLarge(UPLOAD_TOO_LARGE, &quot;vocabularyFile&quot;);</span>
+    }
+
+    public static ProblemException unsupportedMediaType() {
+<span class="fc" id="L137">        return new ProblemException(</span>
+                415,
+                &quot;urn:problem-type:simpl:unsupportedMediaType&quot;,
+                null,
+                &quot;Unsupported Media Type&quot;,
+                &quot;Request content type is not supported.&quot;,
+                null,
+                null);
+    }
+
+    public static ProblemException internalError() {
+<span class="fc" id="L148">        return new ProblemException(</span>
+                500,
+                &quot;urn:problem-type:belgif:internalServerError&quot;,
+                BELGIF_PROBLEMS + &quot;internalServerError.html&quot;,
+                &quot;Internal Server Error&quot;,
+                &quot;Internal Server Error&quot;,
+                null,
+                null);
+    }
+
+    public static ProblemException serviceUnavailable(String detail) {
+<span class="fc" id="L159">        return new ProblemException(</span>
+                503,
+                &quot;urn:problem-type:belgif:serviceUnavailable&quot;,
+                BELGIF_PROBLEMS + &quot;serviceUnavailable.html&quot;,
+                &quot;Service Unavailable&quot;,
+                detail,
+                null,
+<span class="fc" id="L166">                Map.of(&quot;Retry-After&quot;, &quot;5&quot;));</span>
+    }
+
+    public static ProblemException firewallRejected() {
+<span class="fc" id="L170">        return new ProblemException(</span>
+                400,
+                &quot;urn:problem-type:belgif:badRequest&quot;,
+                BELGIF_PROBLEMS + &quot;badRequest.html&quot;,
+                &quot;Bad Request&quot;,
+                &quot;The request was rejected.&quot;,
+                null,
+                null);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

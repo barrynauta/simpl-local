@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TokenAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">TokenAuthenticationFilter.java</span></div><h1>TokenAuthenticationFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import eu.simpl.vocabularymanager.error.ProblemException;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import eu.simpl.vocabularymanager.error.Problems;
+import eu.simpl.vocabularymanager.web.ApiOperation;
+import eu.simpl.vocabularymanager.web.RoutingFilter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Validates the bearer token (D17) and puts the caller in the security context. Without an Authorization header the
+ * request stays anonymous and the authorisation rules decide (401 for every secured operation). A token on the
+ * public health operation is ignored. Failures are written as problem+json: 401, or 503 when the realm keys cannot
+ * be fetched (D44).
+ */
+public class TokenAuthenticationFilter extends OncePerRequestFilter {
+
+<span class="fc" id="L28">    private static final Logger LOG = LoggerFactory.getLogger(TokenAuthenticationFilter.class);</span>
+    private static final String PREFIX = &quot;bearer &quot;;
+
+    private final TokenValidator validator;
+
+<span class="fc" id="L33">    public TokenAuthenticationFilter(TokenValidator validator) {</span>
+<span class="fc" id="L34">        this.validator = validator;</span>
+<span class="fc" id="L35">    }</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L40">        ApiOperation operation = RoutingFilter.operationOf(request);</span>
+<span class="fc" id="L41">        List&lt;String&gt; headers = Collections.list(request.getHeaders(&quot;Authorization&quot;));</span>
+<span class="fc bfc" id="L42" title="All 6 branches covered.">        if (headers.isEmpty() || (operation != null &amp;&amp; operation.access() == ApiOperation.Access.PUBLIC)) {</span>
+<span class="fc" id="L43">            chain.doFilter(request, response);</span>
+<span class="fc" id="L44">            return;</span>
+        }
+        try {
+<span class="fc" id="L47">            String header = headers.getFirst();</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">            if (headers.size() &gt; 1</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">                    || header.length() &lt;= PREFIX.length()</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">                    || !header.regionMatches(true, 0, PREFIX, 0, PREFIX.length())) {</span>
+<span class="nc" id="L51">                throw Problems.unauthorized(&quot;The access token is missing or malformed.&quot;);</span>
+            }
+<span class="fc" id="L53">            AuthenticatedUser user =</span>
+<span class="fc" id="L54">                    validator.validate(header.substring(PREFIX.length()).trim());</span>
+<span class="fc" id="L55">            SecurityContextHolder.getContext().setAuthentication(user);</span>
+<span class="fc" id="L56">        } catch (ProblemException problem) {</span>
+<span class="fc" id="L57">            LOG.warn(&quot;Authentication failed: status={} path={}&quot;, problem.status(), request.getRequestURI());</span>
+<span class="fc" id="L58">            ProblemWriter.write(response, problem);</span>
+<span class="fc" id="L59">            return;</span>
+<span class="fc" id="L60">        }</span>
+        try {
+<span class="fc" id="L62">            chain.doFilter(request, response);</span>
+        } finally {
+<span class="fc" id="L64">            SecurityContextHolder.clearContext();</span>
+        }
+<span class="fc" id="L66">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

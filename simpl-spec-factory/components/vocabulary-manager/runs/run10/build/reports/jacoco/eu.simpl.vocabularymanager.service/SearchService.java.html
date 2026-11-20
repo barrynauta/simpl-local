@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">SearchService.java</span></div><h1>SearchService.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.store.ExternalVocabularyRepository;
+import eu.simpl.vocabularymanager.store.Rdf;
+import eu.simpl.vocabularymanager.store.VocabularyRepository;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.RDFNode;
+
+/** The two read-only searches of D38. Neither is paged; every reference matches at most one result. */
+public class SearchService {
+
+    private final VocabularyRepository vocabularies;
+    private final ExternalVocabularyRepository externals;
+
+<span class="fc" id="L24">    public SearchService(VocabularyRepository vocabularies, ExternalVocabularyRepository externals) {</span>
+<span class="fc" id="L25">        this.vocabularies = vocabularies;</span>
+<span class="fc" id="L26">        this.externals = externals;</span>
+<span class="fc" id="L27">    }</span>
+
+    /** One reference of an internal search: a name, with a version or without (latest). */
+<span class="fc" id="L30">    public record Reference(String name, Integer version) {}</span>
+
+    /** One internal search result (VocabularySearchItem). */
+<span class="fc" id="L33">    public record Hit(String name, int version, VocabularyStatus status, boolean latest) {}</span>
+
+    /**
+     * Resolves the references in request order; repeated references give one result at their first position and
+     * missing names or versions are left out (D38).
+     */
+    public List&lt;Hit&gt; searchInternal(List&lt;Reference&gt; references) {
+<span class="fc" id="L40">        List&lt;Reference&gt; unique = new ArrayList&lt;&gt;(new LinkedHashSet&lt;&gt;(references));</span>
+<span class="fc" id="L41">        Set&lt;String&gt; latestNames = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L42">        List&lt;List&lt;? extends RDFNode&gt;&gt; pairs = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        for (Reference reference : unique) {</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">            if (reference.version() == null) {</span>
+<span class="fc" id="L45">                latestNames.add(reference.name());</span>
+            } else {
+<span class="fc" id="L47">                pairs.add(List.of(Rdf.text(reference.name()), Rdf.integer(reference.version())));</span>
+            }
+<span class="fc" id="L49">        }</span>
+<span class="fc" id="L50">        Map&lt;String, Hit&gt; latest = new HashMap&lt;&gt;();</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">        if (!latestNames.isEmpty()) {</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            for (QuerySolution row : vocabularies.searchLatest(latestNames)) {</span>
+<span class="fc" id="L53">                String name = Rdf.string(row, &quot;name&quot;);</span>
+<span class="fc" id="L54">                latest.put(</span>
+                        name,
+                        new Hit(
+                                name,
+<span class="fc" id="L58">                                Rdf.integer(row, &quot;latest&quot;),</span>
+<span class="fc" id="L59">                                VocabularyStatus.valueOf(Rdf.string(row, &quot;status&quot;)),</span>
+                                true));
+<span class="fc" id="L61">            }</span>
+        }
+<span class="fc" id="L63">        Map&lt;Reference, Hit&gt; versioned = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (!pairs.isEmpty()) {</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            for (QuerySolution row : vocabularies.searchVersions(pairs)) {</span>
+<span class="fc" id="L66">                String name = Rdf.string(row, &quot;name&quot;);</span>
+<span class="fc" id="L67">                int version = Rdf.integer(row, &quot;version&quot;);</span>
+<span class="fc" id="L68">                versioned.put(</span>
+<span class="fc" id="L69">                        new Reference(name, version),</span>
+<span class="fc" id="L70">                        new Hit(name, version, VocabularyStatus.valueOf(Rdf.string(row, &quot;status&quot;)), false));</span>
+<span class="fc" id="L71">            }</span>
+        }
+<span class="fc" id="L73">        List&lt;Hit&gt; hits = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        for (Reference reference : unique) {</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">            Hit hit = reference.version() == null ? latest.get(reference.name()) : versioned.get(reference);</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">            if (hit != null) {</span>
+<span class="fc" id="L77">                hits.add(hit);</span>
+            }
+<span class="fc" id="L79">        }</span>
+<span class="fc" id="L80">        return hits;</span>
+    }
+
+    /**
+     * Looks the URIs up (normalised, D30) against namespace and alias keys; results in the order of the first
+     * matching URI, each external vocabulary once (D38).
+     */
+    public List&lt;ExternalVocabulary&gt; searchExternal(List&lt;String&gt; uris) {
+<span class="fc" id="L88">        List&lt;String&gt; keys =</span>
+<span class="fc" id="L89">                uris.stream().map(ExternalVocabulary::key).distinct().toList();</span>
+<span class="fc" id="L90">        Map&lt;String, String&gt; namesByKey = externals.namesByKey(keys);</span>
+<span class="fc" id="L91">        Set&lt;String&gt; orderedNames = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        for (String key : keys) {</span>
+<span class="fc" id="L93">            String name = namesByKey.get(key);</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            if (name != null) {</span>
+<span class="fc" id="L95">                orderedNames.add(name);</span>
+            }
+<span class="fc" id="L97">        }</span>
+<span class="fc" id="L98">        Map&lt;String, ExternalVocabulary&gt; byName = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L99">        externals.findAll(orderedNames).forEach(external -&gt; byName.put(external.name(), external));</span>
+<span class="fc" id="L100">        return orderedNames.stream()</span>
+<span class="fc" id="L101">                .map(byName::get)</span>
+<span class="fc" id="L102">                .filter(java.util.Objects::nonNull)</span>
+<span class="fc" id="L103">                .toList();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.request</a> &gt; <span class="el_source">FieldRules.java</span></div><h1>FieldRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.request;
+
+import eu.simpl.vocabularymanager.error.Issue;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.regex.Pattern;
+
+/**
+ * Field and parameter rules of the decided contract (D19, D22, D37, D49, D56, D73, D91, D112). Each method adds an
+ * issue to the list when the value breaks the rule and returns the parsed value or null.
+ */
+public final class FieldRules {
+
+<span class="fc" id="L15">    public static final Pattern NAME = Pattern.compile(&quot;^[A-Z][a-zA-Z0-9]*$&quot;);</span>
+    public static final int NAME_MIN = 3;
+    public static final int NAME_MAX = 64;
+<span class="fc" id="L18">    public static final Pattern NAME_FILTER = Pattern.compile(&quot;^[A-Za-z0-9]+$&quot;);</span>
+    public static final int TEXT_MAX = 1000;
+    public static final int PAGE_SIZE_MAX = 100;
+    public static final int PAGE_SIZE_DEFAULT = 20;
+    public static final int URI_MAX = 4096;
+    public static final int ALIAS_MAX = 20;
+<span class="fc" id="L24">    private static final Pattern DIGITS = Pattern.compile(&quot;^[0-9]+$&quot;);</span>
+
+    private FieldRules() {}
+
+    public static boolean isValidName(String value) {
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        return value != null</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">                &amp;&amp; value.length() &gt;= NAME_MIN</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">                &amp;&amp; value.length() &lt;= NAME_MAX</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">                &amp;&amp; NAME.matcher(value).matches();</span>
+    }
+
+    /** A vocabulary or external vocabulary name (D37). */
+    public static String name(String value, String in, String field, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L38">            issues.add(Issue.schemaViolation(in, field, &quot;'&quot; + field + &quot;' is required.&quot;, null));</span>
+<span class="fc" id="L39">            return null;</span>
+        }
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (!isValidName(value)) {</span>
+<span class="fc" id="L42">            issues.add(Issue.schemaViolation(</span>
+                    in,
+                    field,
+                    &quot;'&quot; + field + &quot;' must be 3 to 64 characters, start with an upper-case letter and contain only&quot;
+                            + &quot; letters and digits.&quot;,
+                    value));
+<span class="fc" id="L48">            return null;</span>
+        }
+<span class="fc" id="L50">        return value;</span>
+    }
+
+    /** A text field: trimmed, 1 to 1000 characters when required, at most 1000 otherwise (D37, D56). */
+    public static String text(String value, String field, boolean required, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">            if (required) {</span>
+<span class="fc" id="L57">                issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;'&quot; + field + &quot;' is required.&quot;, null));</span>
+            }
+<span class="fc" id="L59">            return null;</span>
+        }
+<span class="fc" id="L61">        String trimmed = value.strip();</span>
+<span class="fc bfc" id="L62" title="All 4 branches covered.">        if (required &amp;&amp; trimmed.isEmpty()) {</span>
+<span class="fc" id="L63">            issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;'&quot; + field + &quot;' must not be empty.&quot;, null));</span>
+<span class="fc" id="L64">            return null;</span>
+        }
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (trimmed.length() &gt; TEXT_MAX) {</span>
+<span class="fc" id="L67">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;, field, &quot;'&quot; + field + &quot;' must be at most &quot; + TEXT_MAX + &quot; characters.&quot;, null));
+<span class="fc" id="L69">            return null;</span>
+        }
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        return trimmed.isEmpty() ? null : trimmed;</span>
+    }
+
+    /**
+     * A positive 32-bit integer in a path or query, written as digits only (D49, D91, D112).
+     *
+     * @return the value, or null after adding an issue
+     */
+    public static Integer positiveInt(String value, String in, String field, int max, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L80" title="All 6 branches covered.">        if (value == null || !DIGITS.matcher(value).matches() || value.length() &gt; 10) {</span>
+<span class="fc" id="L81">            issues.add(Issue.schemaViolation(in, field, &quot;'&quot; + field + &quot;' must be a whole number.&quot;, value));</span>
+<span class="fc" id="L82">            return null;</span>
+        }
+<span class="fc" id="L84">        long parsed = Long.parseLong(value);</span>
+<span class="fc bfc" id="L85" title="All 4 branches covered.">        if (parsed &lt; 1 || parsed &gt; max) {</span>
+<span class="fc" id="L86">            issues.add(Issue.schemaViolation(in, field, &quot;'&quot; + field + &quot;' must be between 1 and &quot; + max + &quot;.&quot;, value));</span>
+<span class="fc" id="L87">            return null;</span>
+        }
+<span class="fc" id="L89">        return (int) parsed;</span>
+    }
+
+    /** An absolute URI as RFC 3986 requires, with a scheme (D73). */
+    public static boolean isAbsoluteUri(String value) {
+<span class="pc bpc" id="L94" title="2 of 6 branches missed.">        if (value == null || value.isEmpty() || value.length() &gt; URI_MAX) {</span>
+<span class="fc" id="L95">            return false;</span>
+        }
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        for (int i = 0; i &lt; value.length(); i++) {</span>
+<span class="fc" id="L98">            char c = value.charAt(i);</span>
+<span class="fc bfc" id="L99" title="All 4 branches covered.">            if (c &lt;= ' ' || c &gt;= 0x7f) {</span>
+<span class="fc" id="L100">                return false;</span>
+            }
+        }
+        try {
+<span class="fc" id="L104">            URI uri = new URI(value);</span>
+<span class="fc" id="L105">            return uri.isAbsolute();</span>
+<span class="fc" id="L106">        } catch (URISyntaxException e) {</span>
+<span class="fc" id="L107">            return false;</span>
+        }
+    }
+
+    public static String uri(String value, String in, String field, boolean required, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">            if (required) {</span>
+<span class="fc" id="L114">                issues.add(Issue.schemaViolation(in, field, &quot;'&quot; + field + &quot;' is required.&quot;, null));</span>
+            }
+<span class="fc" id="L116">            return null;</span>
+        }
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if (!isAbsoluteUri(value)) {</span>
+<span class="fc" id="L119">            issues.add(Issue.schemaViolation(in, field, &quot;'&quot; + field + &quot;' must be an absolute URI.&quot;, value));</span>
+<span class="fc" id="L120">            return null;</span>
+        }
+<span class="fc" id="L122">        return value;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MultipartForm.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.request</a> &gt; <span class="el_source">MultipartForm.java</span></div><h1>MultipartForm.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.request;
+
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.Problems;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * A multipart/form-data request read through the servlet container (D15, D52, D70, D76, D110). The container caps
+ * the whole request at 6 MB; the file part is capped at 5 MB here. Unknown, repeated and nameless parts become issues.
+ */
+public final class MultipartForm {
+
+    public static final long FILE_LIMIT = 5L * 1024 * 1024;
+    public static final int MAX_PARTS = 64;
+
+<span class="fc" id="L27">    private final Map&lt;String, List&lt;byte[]&gt;&gt; parts = new LinkedHashMap&lt;&gt;();</span>
+
+<span class="fc" id="L29">    private MultipartForm() {}</span>
+
+    /**
+     * Reads every part.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ProblemException 413 when the request or the file part is too large,
+     *     400 when the multipart body is malformed or has too many parts
+     */
+    public static MultipartForm read(HttpServletRequest request, String fileField) {
+        Collection&lt;Part&gt; received;
+        try {
+<span class="fc" id="L40">            received = request.getParts();</span>
+<span class="fc" id="L41">        } catch (IOException | ServletException | IllegalStateException e) {</span>
+<span class="fc" id="L42">            throw classify(e);</span>
+<span class="fc" id="L43">        }</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        if (received.size() &gt; MAX_PARTS) {</span>
+<span class="nc" id="L45">            throw Problems.badRequest(</span>
+<span class="nc" id="L46">                    Issue.schemaViolation(&quot;body&quot;, &quot;body&quot;, &quot;A request may have at most &quot; + MAX_PARTS + &quot; parts.&quot;, null));</span>
+        }
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        for (Part part : received) {</span>
+<span class="fc bfc" id="L49" title="All 4 branches covered.">            if (fileField.equals(part.getName()) &amp;&amp; part.getSize() &gt; FILE_LIMIT) {</span>
+<span class="fc" id="L50">                throw Problems.uploadTooLarge();</span>
+            }
+<span class="fc" id="L52">        }</span>
+<span class="fc" id="L53">        MultipartForm form = new MultipartForm();</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        for (Part part : received) {</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">            String name = part.getName() == null ? &quot;&quot; : part.getName();</span>
+<span class="fc" id="L56">            try (InputStream in = part.getInputStream()) {</span>
+<span class="fc" id="L57">                form.parts.computeIfAbsent(name, key -&gt; new ArrayList&lt;&gt;()).add(in.readAllBytes());</span>
+<span class="nc" id="L58">            } catch (IOException e) {</span>
+<span class="nc" id="L59">                throw Problems.badRequest(Issue.schemaViolation(&quot;body&quot;, name, &quot;The part could not be read.&quot;, null));</span>
+<span class="fc" id="L60">            }</span>
+<span class="fc" id="L61">        }</span>
+<span class="fc" id="L62">        return form;</span>
+    }
+
+    private static RuntimeException classify(Exception e) {
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        for (Throwable cause = e; cause != null; cause = cause.getCause()) {</span>
+<span class="fc" id="L67">            String type = cause.getClass().getSimpleName();</span>
+<span class="pc bpc" id="L68" title="1 of 4 branches missed.">            if (type.contains(&quot;SizeLimitExceeded&quot;) || type.contains(&quot;SizeException&quot;)) {</span>
+<span class="fc" id="L69">                return Problems.uploadTooLarge();</span>
+            }
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">            if (type.contains(&quot;FileCountLimitExceeded&quot;)) {</span>
+<span class="nc" id="L72">                return Problems.badRequest(Issue.schemaViolation(</span>
+                        &quot;body&quot;, &quot;body&quot;, &quot;A request may have at most &quot; + MAX_PARTS + &quot; parts.&quot;, null));
+            }
+        }
+<span class="nc" id="L76">        return Problems.badRequest(</span>
+<span class="nc" id="L77">                Issue.schemaViolation(&quot;body&quot;, &quot;body&quot;, &quot;The multipart request body could not be read.&quot;, null));</span>
+    }
+
+    /** Adds an issue for every part name not in the allowed set and for every repeated single-value part. */
+    public void checkNames(Set&lt;String&gt; allowed, Set&lt;String&gt; repeatable, List&lt;Issue&gt; issues) {
+<span class="fc" id="L82">        parts.forEach((name, values) -&gt; {</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc" id="L84">                issues.add(Issue.schemaViolation(&quot;body&quot;, name, &quot;Field '&quot; + name + &quot;' is not supported.&quot;, null));</span>
+<span class="pc bpc" id="L85" title="1 of 4 branches missed.">            } else if (values.size() &gt; 1 &amp;&amp; !repeatable.contains(name)) {</span>
+<span class="nc" id="L86">                issues.add(Issue.schemaViolation(&quot;body&quot;, name, &quot;Field '&quot; + name + &quot;' may be given only once.&quot;, null));</span>
+            }
+<span class="fc" id="L88">        });</span>
+<span class="fc" id="L89">    }</span>
+
+    public boolean has(String name) {
+<span class="fc" id="L92">        return parts.containsKey(name);</span>
+    }
+
+    public byte[] bytes(String name) {
+<span class="fc" id="L96">        List&lt;byte[]&gt; values = parts.get(name);</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        return values == null ? null : values.getFirst();</span>
+    }
+
+    public String text(String name) {
+<span class="fc" id="L101">        byte[] value = bytes(name);</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        return value == null ? null : new String(value, StandardCharsets.UTF_8);</span>
+    }
+
+    public List&lt;String&gt; texts(String name) {
+<span class="fc" id="L106">        List&lt;byte[]&gt; values = parts.get(name);</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        if (values == null) {</span>
+<span class="fc" id="L108">            return List.of();</span>
+        }
+<span class="fc" id="L110">        return values.stream()</span>
+<span class="fc" id="L111">                .map(value -&gt; new String(value, StandardCharsets.UTF_8))</span>
+<span class="fc" id="L112">                .toList();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

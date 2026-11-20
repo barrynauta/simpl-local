@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SparqlStore.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">SparqlStore.java</span></div><h1>SparqlStore.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.error.ProblemException;
+import eu.simpl.vocabularymanager.error.Problems;
+import eu.simpl.vocabularymanager.web.OutboundHeaders;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.ConnectException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpConnectTimeoutException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.function.Supplier;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.riot.ResultSetMgr;
+import org.apache.jena.riot.resultset.ResultSetLang;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * SPARQL access to the store (E3) over the SPARQL 1.1 protocol. Queries use the read user, updates the update user
+ * (D83). Timeouts, read retries and the circuit breaker follow D44, D71 and D103. Results are parsed with Jena.
+ */
+public class SparqlStore {
+
+<span class="fc" id="L37">    private static final Logger LOG = LoggerFactory.getLogger(SparqlStore.class);</span>
+<span class="fc" id="L38">    private static final long[] READ_BACKOFF_MS = {200, 400};</span>
+
+    private final AppProperties.Store settings;
+    private final HttpClient httpClient;
+    private final CircuitBreaker breaker;
+    private final OutboundHeaders outboundHeaders;
+    private final String readAuthorization;
+    private final String updateAuthorization;
+
+    public SparqlStore(
+            AppProperties.Store settings,
+            HttpClient httpClient,
+            CircuitBreaker breaker,
+<span class="fc" id="L51">            OutboundHeaders outboundHeaders) {</span>
+<span class="fc" id="L52">        this.settings = settings;</span>
+<span class="fc" id="L53">        this.httpClient = httpClient;</span>
+<span class="fc" id="L54">        this.breaker = breaker;</span>
+<span class="fc" id="L55">        this.outboundHeaders = outboundHeaders;</span>
+<span class="fc" id="L56">        this.readAuthorization = basic(settings.readUser(), settings.readPassword());</span>
+<span class="fc" id="L57">        this.updateAuthorization = basic(settings.updateUser(), settings.updatePassword());</span>
+<span class="fc" id="L58">    }</span>
+
+    /** Creates the HTTP client with the decided connect timeout (D44). */
+    public static HttpClient httpClient(Duration connectTimeout) {
+<span class="fc" id="L62">        return HttpClient.newBuilder()</span>
+<span class="fc" id="L63">                .connectTimeout(connectTimeout)</span>
+<span class="fc" id="L64">                .followRedirects(HttpClient.Redirect.NEVER)</span>
+<span class="fc" id="L65">                .version(HttpClient.Version.HTTP_1_1)</span>
+<span class="fc" id="L66">                .build();</span>
+    }
+
+    /**
+     * Runs a SELECT query, retrying at most twice on a connection failure or timeout.
+     *
+     * @throws ProblemException 503 when the store stays unavailable, 500 on another store error
+     */
+    public List&lt;QuerySolution&gt; select(String query) {
+<span class="fc" id="L75">        for (int attempt = 0; ; attempt++) {</span>
+            try {
+<span class="fc" id="L77">                return guarded(() -&gt; selectOnce(query));</span>
+<span class="fc" id="L78">            } catch (StoreUnavailableException e) {</span>
+<span class="fc bfc" id="L79" title="All 4 branches covered.">                if (attempt &gt;= READ_BACKOFF_MS.length || e.breakerOpen()) {</span>
+<span class="fc" id="L80">                    throw e;</span>
+                }
+<span class="fc" id="L82">                sleep(READ_BACKOFF_MS[attempt]);</span>
+            }
+        }
+    }
+
+    /**
+     * Runs an update request as one store transaction. Updates are never retried here (D44).
+     *
+     * @throws ProblemException 503 when the store is unavailable or times out, 500 on another store error
+     */
+    public void update(String update) {
+<span class="fc" id="L93">        guarded(() -&gt; {</span>
+<span class="fc" id="L94">            send(</span>
+<span class="fc" id="L95">                    settings.url() + &quot;/update&quot;,</span>
+                    &quot;application/sparql-update&quot;,
+                    update,
+                    updateAuthorization,
+                    &quot;*/*&quot;,
+<span class="fc" id="L100">                    settings.updateTimeout());</span>
+<span class="fc" id="L101">            return null;</span>
+        });
+<span class="fc" id="L103">    }</span>
+
+    /** True when the store answers an ASK within the health timeout; bypasses breaker and retries. */
+    public boolean ping() {
+        try {
+<span class="fc" id="L108">            HttpResponse&lt;InputStream&gt; response = send(</span>
+<span class="fc" id="L109">                    settings.url() + &quot;/query&quot;,</span>
+                    &quot;application/sparql-query&quot;,
+                    &quot;ASK {}&quot;,
+                    readAuthorization,
+                    &quot;application/sparql-results+json&quot;,
+<span class="fc" id="L114">                    settings.healthTimeout());</span>
+<span class="fc" id="L115">            response.body().close();</span>
+<span class="fc" id="L116">            return true;</span>
+<span class="fc" id="L117">        } catch (ProblemException | IOException e) {</span>
+<span class="fc" id="L118">            return false;</span>
+        }
+    }
+
+    private List&lt;QuerySolution&gt; selectOnce(String query) {
+<span class="fc" id="L123">        HttpResponse&lt;InputStream&gt; response = send(</span>
+<span class="fc" id="L124">                settings.url() + &quot;/query&quot;,</span>
+                &quot;application/sparql-query&quot;,
+                query,
+                readAuthorization,
+                &quot;application/sparql-results+json&quot;,
+<span class="fc" id="L129">                settings.readTimeout());</span>
+<span class="fc" id="L130">        try (InputStream body = response.body()) {</span>
+<span class="fc" id="L131">            ResultSet results = ResultSetMgr.read(body, ResultSetLang.RS_JSON);</span>
+<span class="fc" id="L132">            List&lt;QuerySolution&gt; rows = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L133">            results.forEachRemaining(rows::add);</span>
+<span class="fc" id="L134">            return rows;</span>
+<span class="nc" id="L135">        } catch (IOException e) {</span>
+<span class="nc" id="L136">            throw new StoreUnavailableException(&quot;store response could not be read&quot;, false);</span>
+<span class="fc" id="L137">        } catch (RuntimeException e) {</span>
+<span class="fc" id="L138">            LOG.error(&quot;Store returned an unreadable result&quot;, e);</span>
+<span class="fc" id="L139">            throw new StoreFailureException();</span>
+        }
+    }
+
+    private &lt;T&gt; T guarded(Supplier&lt;T&gt; call) {
+        try {
+<span class="fc" id="L145">            return CircuitBreaker.decorateSupplier(breaker, call).get();</span>
+<span class="fc" id="L146">        } catch (CallNotPermittedException e) {</span>
+<span class="fc" id="L147">            throw new StoreUnavailableException(&quot;circuit breaker open&quot;, true);</span>
+        }
+    }
+
+    private HttpResponse&lt;InputStream&gt; send(
+            String url, String contentType, String body, String authorization, String accept, Duration timeout) {
+<span class="fc" id="L153">        HttpRequest.Builder request = HttpRequest.newBuilder(URI.create(url))</span>
+<span class="fc" id="L154">                .timeout(timeout)</span>
+<span class="fc" id="L155">                .header(&quot;Content-Type&quot;, contentType + &quot;; charset=utf-8&quot;)</span>
+<span class="fc" id="L156">                .header(&quot;Accept&quot;, accept)</span>
+<span class="fc" id="L157">                .header(&quot;Authorization&quot;, authorization)</span>
+<span class="fc" id="L158">                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));</span>
+<span class="fc" id="L159">        outboundHeaders.current().forEach(request::header);</span>
+        HttpResponse&lt;InputStream&gt; response;
+        try {
+<span class="fc" id="L162">            response = httpClient.send(request.build(), HttpResponse.BodyHandlers.ofInputStream());</span>
+<span class="fc" id="L163">        } catch (HttpConnectTimeoutException | ConnectException e) {</span>
+<span class="fc" id="L164">            throw new StoreUnavailableException(</span>
+<span class="fc" id="L165">                    &quot;connection failed: &quot; + e.getClass().getSimpleName(), false);</span>
+<span class="fc" id="L166">        } catch (HttpTimeoutException e) {</span>
+<span class="fc" id="L167">            throw new StoreUnavailableException(&quot;timeout&quot;, false);</span>
+<span class="nc" id="L168">        } catch (IOException e) {</span>
+<span class="nc" id="L169">            throw new StoreUnavailableException(&quot;I/O error: &quot; + e.getClass().getSimpleName(), false);</span>
+<span class="nc" id="L170">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L171">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L172">            throw new StoreUnavailableException(&quot;interrupted&quot;, false);</span>
+<span class="fc" id="L173">        }</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        if (response.statusCode() / 100 != 2) {</span>
+<span class="fc" id="L175">            closeQuietly(response);</span>
+<span class="fc" id="L176">            LOG.error(&quot;Store answered with status {}&quot;, response.statusCode());</span>
+<span class="fc" id="L177">            throw new StoreFailureException();</span>
+        }
+<span class="fc" id="L179">        return response;</span>
+    }
+
+    private static void closeQuietly(HttpResponse&lt;InputStream&gt; response) {
+        try {
+<span class="fc" id="L184">            response.body().close();</span>
+<span class="nc" id="L185">        } catch (IOException e) {</span>
+<span class="nc" id="L186">            LOG.debug(&quot;Closing a store response failed&quot;, e);</span>
+<span class="fc" id="L187">        }</span>
+<span class="fc" id="L188">    }</span>
+
+    private static void sleep(long millis) {
+        try {
+<span class="fc" id="L192">            Thread.sleep(millis);</span>
+<span class="nc" id="L193">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L194">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L195">            throw new StoreUnavailableException(&quot;interrupted&quot;, true);</span>
+<span class="fc" id="L196">        }</span>
+<span class="fc" id="L197">    }</span>
+
+    private static String basic(String user, String password) {
+<span class="pc bpc" id="L200" title="2 of 4 branches missed.">        String pair = (user == null ? &quot;&quot; : user) + &quot;:&quot; + (password == null ? &quot;&quot; : password);</span>
+<span class="fc" id="L201">        return &quot;Basic &quot; + Base64.getEncoder().encodeToString(pair.getBytes(StandardCharsets.UTF_8));</span>
+    }
+
+    /** The store did not answer (connection failure, timeout, open breaker): 503 (D44). */
+    public static final class StoreUnavailableException extends ProblemException {
+        private final boolean breakerOpen;
+
+        StoreUnavailableException(String reason, boolean breakerOpen) {
+<span class="fc" id="L209">            super(</span>
+                    503,
+<span class="fc" id="L211">                    Problems.serviceUnavailable(Problems.STORE_UNAVAILABLE).type(),</span>
+<span class="fc" id="L212">                    Problems.serviceUnavailable(Problems.STORE_UNAVAILABLE).href(),</span>
+                    &quot;Service Unavailable&quot;,
+                    Problems.STORE_UNAVAILABLE,
+                    null,
+<span class="fc" id="L216">                    java.util.Map.of(&quot;Retry-After&quot;, &quot;5&quot;));</span>
+<span class="fc" id="L217">            this.breakerOpen = breakerOpen;</span>
+<span class="fc" id="L218">            LOG.warn(&quot;Store unavailable: {}&quot;, reason);</span>
+<span class="fc" id="L219">        }</span>
+
+        boolean breakerOpen() {
+<span class="fc" id="L222">            return breakerOpen;</span>
+        }
+    }
+
+    /** The store answered with an error that is not a timeout or connection failure: 500 (D44). */
+    public static final class StoreFailureException extends ProblemException {
+        StoreFailureException() {
+<span class="fc" id="L229">            super(</span>
+                    500,
+<span class="fc" id="L231">                    Problems.internalError().type(),</span>
+<span class="fc" id="L232">                    Problems.internalError().href(),</span>
+                    &quot;Internal Server Error&quot;,
+                    &quot;Internal Server Error&quot;,
+                    null,
+                    null);
+<span class="fc" id="L237">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

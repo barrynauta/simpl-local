@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProblemHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.error</a> &gt; <span class="el_source">ProblemHandler.java</span></div><h1>ProblemHandler.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.error;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+/**
+ * The one handler that maps exceptions to application/problem+json (D104, CODE-34 to CODE-36). Problem exceptions
+ * carry their own status; framework exceptions get a defined problem; anything else is a logged 500 without
+ * internals in the body (BLG-err-sanit).
+ */
+@RestControllerAdvice
+<span class="fc" id="L23">public class ProblemHandler {</span>
+
+<span class="fc" id="L25">    private static final Logger LOG = LoggerFactory.getLogger(ProblemHandler.class);</span>
+<span class="fc" id="L26">    private static final MediaType PROBLEM_JSON = MediaType.parseMediaType(ProblemWriter.PROBLEM_JSON);</span>
+
+    @ExceptionHandler(ProblemException.class)
+    public ResponseEntity&lt;ProblemBody&gt; problem(ProblemException problem) {
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (problem.status() &gt;= 500) {</span>
+<span class="fc" id="L31">            LOG.warn(&quot;Request failed: status={} detail={}&quot;, problem.status(), problem.detail());</span>
+        } else {
+<span class="fc" id="L33">            LOG.info(&quot;Request rejected: status={} type={}&quot;, problem.status(), problem.type());</span>
+        }
+<span class="fc" id="L35">        return toResponse(problem);</span>
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity&lt;ProblemBody&gt; tooLarge(MaxUploadSizeExceededException e) {
+<span class="nc" id="L40">        return toResponse(Problems.uploadTooLarge());</span>
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity&lt;ProblemBody&gt; multipart(MultipartException e) {
+<span class="nc" id="L45">        return toResponse(Problems.badRequest(</span>
+<span class="nc" id="L46">                Issue.schemaViolation(&quot;body&quot;, &quot;body&quot;, &quot;The multipart request body could not be read.&quot;, null)));</span>
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity&lt;ProblemBody&gt; unsupported(HttpMediaTypeNotSupportedException e) {
+<span class="nc" id="L51">        return toResponse(Problems.unsupportedMediaType());</span>
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity&lt;ProblemBody&gt; notAcceptable(HttpMediaTypeNotAcceptableException e) {
+<span class="nc" id="L56">        return toResponse(Problems.notAcceptable());</span>
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity&lt;ProblemBody&gt; methodNotAllowed(HttpRequestMethodNotSupportedException e) {
+<span class="nc" id="L61">        return toResponse(Problems.methodNotAllowed(null));</span>
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity&lt;ProblemBody&gt; notFound(NoResourceFoundException e) {
+<span class="nc" id="L66">        return toResponse(Problems.pathNotFound());</span>
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;ProblemBody&gt; unexpected(Exception e) {
+<span class="nc" id="L71">        LOG.error(&quot;Unexpected error&quot;, e);</span>
+<span class="nc" id="L72">        return toResponse(Problems.internalError());</span>
+    }
+
+    static ResponseEntity&lt;ProblemBody&gt; toResponse(ProblemException problem) {
+<span class="fc" id="L76">        HttpHeaders headers = new HttpHeaders();</span>
+<span class="fc" id="L77">        problem.headers().forEach(headers::set);</span>
+<span class="fc" id="L78">        return ResponseEntity.status(problem.status())</span>
+<span class="fc" id="L79">                .headers(headers)</span>
+<span class="fc" id="L80">                .contentType(PROBLEM_JSON)</span>
+<span class="fc" id="L81">                .body(ProblemBody.of(problem));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,93 @@
+# Every value is read from the environment (E2, E4, MACH-07); the values after ':' are local defaults only.
+vm:
+  content-base-url: ${VOCABULARY_CONTENT_BASE_URL:https://authority.example/vocabulary-manager}
+  security:
+    issuer-uri: ${ISSUER_URI:http://localhost:8180/realms/simpl}
+    jwks-uri: ${JWKS_URI:http://localhost:8180/realms/simpl/protocol/openid-connect/certs}
+    audience: ${TOKEN_AUDIENCE:vocabulary-manager-be}
+    key-fetch-timeout: ${KEY_FETCH_TIMEOUT:2s}
+    key-refetch-cooldown: ${KEY_REFETCH_COOLDOWN:10s}
+    clock-skew: ${TOKEN_CLOCK_SKEW:30s}
+  store:
+    url: ${STORE_URL:http://localhost:3030/vocabulary}
+    read-user: ${STORE_READ_USER:reader}
+    read-password: ${STORE_READ_PASSWORD:}
+    update-user: ${STORE_UPDATE_USER:writer}
+    update-password: ${STORE_UPDATE_PASSWORD:}
+    connect-timeout: ${STORE_CONNECT_TIMEOUT:2s}
+    read-timeout: ${STORE_READ_TIMEOUT:10s}
+    update-timeout: ${STORE_UPDATE_TIMEOUT:45s}
+    health-timeout: ${STORE_HEALTH_TIMEOUT:2s}
+  uploads:
+    max-concurrent: ${MAX_CONCURRENT_UPLOADS:4}
+
+spring:
+  application:
+    name: vocabulary-manager
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: false
+  servlet:
+    multipart:
+      enabled: true
+      resolve-lazily: true
+      max-file-size: 6291456
+      max-request-size: 6291456
+      file-size-threshold: 1MB
+  web:
+    resources:
+      add-mappings: false
+  mvc:
+    problemdetails:
+      enabled: false
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  server-header: ""
+  error:
+    include-stacktrace: never
+    include-message: never
+    whitelabel:
+      enabled: false
+  tomcat:
+    max-part-count: 200
+    max-part-header-size: 2KB
+    max-swallow-size: 16MB
+    threads:
+      max: 100
+    connection-timeout: 20s
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8081}
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type: w3c
+  metrics:
+    tags:
+      application: vocabulary-manager
+
+logging:
+  structured:
+    format:
+      console: ${LOG_FORMAT:logstash}
+  level:
+    root: INFO
+    org.apache.jena: WARN

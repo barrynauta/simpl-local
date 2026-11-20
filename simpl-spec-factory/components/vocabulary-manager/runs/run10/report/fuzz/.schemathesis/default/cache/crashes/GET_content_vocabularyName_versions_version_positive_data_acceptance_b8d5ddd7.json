@@ -1,0 +1,103 @@
+{
+  "operation": "GET /content/{vocabularyName}/versions/{version}",
+  "method": "GET",
+  "path_template": "/content/{vocabularyName}/versions/{version}",
+  "fingerprint": "b8d5ddd7",
+  "case_id": "pfG6po",
+  "code_sample": "curl -X GET -H 'Authorization: [Filtered]' http://localhost:8196/v1/content/A00/versions/9223372036854775808",
+  "sequence": [
+    {
+      "method": "GET",
+      "url": "http://localhost:8196/v1/content/A00/versions/9223372036854775808",
+      "url_template": "http://localhost:8196/v1/content/{vocabularyName}/versions/{version}",
+      "headers": {
+        "User-Agent": "schemathesis/4.33.4",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "Authorization": "[Filtered]",
+        "X-Schemathesis-TestCaseId": "pfG6po"
+      },
+      "response": {
+        "status_code": 400,
+        "headers": {
+          "server": "nginx",
+          "date": "Fri, 20 Nov 2026 11:31:55 GMT",
+          "content-type": "application/problem+json",
+          "transfer-encoding": "chunked",
+          "connection": "keep-alive",
+          "x-correlation-id": "31f2de46-1251-4f16-b556-dd473bcfe967",
+          "x-content-type-options": "nosniff",
+          "x-xss-protection": "0",
+          "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+          "pragma": "no-cache",
+          "expires": "0",
+          "x-frame-options": "DENY"
+        },
+        "body": "{\"type\":\"urn:problem-type:belgif:badRequest\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"The input message is incorrect\",\"instance\":\"urn:uuid:4103fcac-e7ea-47d5-b376-189ec0f2c1bc\",\"issues\":[{\"type\":\"urn:problem-type:belgif:input-validation:schemaViolation\",\"href\":\"https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html\",\"title\":\"Input isn't valid with respect to schema\",\"detail\":\"'version' must be a whole number.\",\"in\":\"path\",\"name\":\"version\",\"value\":\"9223372036854775808\"}]}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "positive_data_acceptance",
+          "status": "failure",
+          "message": "Schema-valid request rejected\n\nValid data should have been accepted\nExpected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 1.3124896213412285e-05,
+          "mode": "positive"
+        },
+        "components": {
+          "PATH": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Number beyond common integer widths",
+            "location": null,
+            "parameter": "version",
+            "parameter_location": "PATH",
+            "scenario": "large_number"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [
+          [
+            "path",
+            "version"
+          ]
+        ],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "PATH": {
+            "vocabularyName": "A00",
+            "version": 9223372036854775808
+          }
+        }
+      },
+      "path": "/content/{vocabularyName}/versions/{version}",
+      "path_parameters": {
+        "vocabularyName": "A00",
+        "version": "9223372036854775808"
+      },
+      "query": {},
+      "case_headers": {
+        "Authorization": "[Filtered]"
+      },
+      "cookies": {},
+      "case_body": {
+        "encoding": "none"
+      },
+      "media_type": null,
+      "parent_index": null,
+      "auth_identity": null,
+      "operation": "GET /content/{vocabularyName}/versions/{version}"
+    }
+  ],
+  "aliases": []
+}

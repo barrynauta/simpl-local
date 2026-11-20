@@ -1,0 +1,160 @@
+Schemathesis v4.33.4
+━━━━━━━━━━━━━━━━━━━━
+
+ ✅  Loaded specification from docs/openapi-decided.yaml (in 0.10s)
+
+     Base URL:         http://localhost:8196/v1
+     Specification:    Open API 3.0.1
+     Operations:       19 selected / 19 total
+
+ ✅  API capabilities:
+
+     Supports NULL byte in headers:                            ✘
+     Accepts backslash and control characters in URL paths:    ✘
+
+ ❌  Examples (in 0.21s)
+
+     ✅  9 passed  ❌  2 failed  ⏭   8 skipped
+
+ ❌  Coverage (in 2.39s)
+
+     ✅ 17 passed  ❌  2 failed
+
+ ❌  Fuzzing (in 3.64s)
+
+     ✅ 18 passed  ❌  1 failed
+
+ ❌  Stateful (in 3.95s)
+
+     Scenarios:    96
+     API Links:    5 covered / 25 selected / 25 total (25 inferred)
+
+     ✅ 92 passed  ❌ 4 failed
+
+=================================== FAILURES ===================================
+_________________________ POST /external-vocabularies __________________________
+1. Test Case ID: 0Tr5f3
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:af036553-3923-4518-b52e-3a07144c61d8","issues":[{"type":"urn:problem-type:belgif:input-validation:invalidInput","href":"https://www.belgif.be/specification/rest/api-guide/issues/invalidInput.html","title":"Invalid input","detail":"Encountered invalid Turtle syntax: Out of place: [KEY // Output truncated...`
+
+Reproduce with:
+
+    curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=bacfbd6fa20694633dfe46ce1be4b1bb' -d $'--bacfbd6fa20694633dfe46ce1be4b1bb\r\nContent-Disposition: form-data; name="name"\r\n\r\nDublinCoreTerms\r\n--bacfbd6fa20694633dfe46ce1be4b1bb\r\nContent-Disposition: form-data; name="namespaceUri"\r\n\r\nhttp://purl.org/dc/terms/\r\n--bacfbd6fa20694633dfe46ce1be4b1bb\r\nContent-Disposition: form-data; name="aliasUris"\r\n\r\nhttps://purl.org/dc/terms/\r\n--bacfbd6fa20694633dfe46ce1be4b1bb\r\nContent-Disposition: form-data; name="description"\r\n\r\nCached copy of DCMI Metadata Terms for validation.\r\n--bacfbd6fa20694633dfe46ce1be4b1bb\r\nContent-Disposition: form-data; name="sourceUri"\r\n\r\nhttps://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl\r\n--bacfbd6fa20694633dfe46ce1be4b1bb\r\nContent-Disposition: form-data; name="vocabularyFile"; filename="vocabularyFile.png"\r\nContent-Type: text/turtle\r\n\r\n�PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x00\x00\x00\x00:~�U\x00\x00\x00\nIDATx�c`\x00\x00\x00\x02\x00\x01H��q\x00\x00\x00\x00IEND�B`�\r\n--bacfbd6fa20694633dfe46ce1be4b1bb--\r\n' http://localhost:8196/v1/external-vocabularies
+
+    st replay 0Tr5f3
+
+______________________________ POST /vocabularies ______________________________
+1. Test Case ID: tPXITR
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:2ddb0ab2-71f5-4cb5-a3ee-d64c8c3e09d0","issues":[{"type":"urn:problem-type:belgif:input-validation:invalidInput","href":"https://www.belgif.be/specification/rest/api-guide/issues/invalidInput.html","title":"Invalid input","detail":"Encountered invalid Turtle syntax: Out of place: [KEY // Output truncated...`
+
+Reproduce with:
+
+    curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=c9421e1a09249ee8744a2ffdcf669855' -d $'--c9421e1a09249ee8744a2ffdcf669855\r\nContent-Disposition: form-data; name="name"\r\n\r\nHealthcareVocabulary\r\n--c9421e1a09249ee8744a2ffdcf669855\r\nContent-Disposition: form-data; name="description"\r\n\r\nVocabulary defining healthcare resource types.\r\n--c9421e1a09249ee8744a2ffdcf669855\r\nContent-Disposition: form-data; name="changelog"\r\n\r\nInitial version.\r\n--c9421e1a09249ee8744a2ffdcf669855\r\nContent-Disposition: form-data; name="vocabularyFile"; filename="vocabularyFile.png"\r\nContent-Type: text/turtle\r\n\r\n�PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x00\x00\x00\x00:~�U\x00\x00\x00\nIDATx�c`\x00\x00\x00\x02\x00\x01H��q\x00\x00\x00\x00IEND�B`�\r\n--c9421e1a09249ee8744a2ffdcf669855--\r\n' http://localhost:8196/v1/vocabularies
+
+    st replay tPXITR
+
+________________________________ Stateful tests ________________________________
+1. Test Case ID: r2iN01
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:138519ae-8e2a-47a3-b3fd-789f30f02433","issues":[{"type":"urn:problem-type:belgif:input-validation:invalidInput","href":"https://www.belgif.be/specification/rest/api-guide/issues/invalidInput.html","title":"Invalid input","detail":"Encountered invalid Turtle syntax: Out of place: [KEY // Output truncated...`
+
+Reproduce with:
+
+    curl -X GET -H 'Authorization: [Filtered]' 'http://localhost:8196/v1/vocabularies?name=Smoke179517145124490&pageSize=34&creationDate=3268-02-24'
+    curl -X POST -H 'Authorization: [Filtered]' -H 'Content-Type: multipart/form-data; boundary=494830b7680cbaa5e805aa38d0e5c26e' -d $'--494830b7680cbaa5e805aa38d0e5c26e\r\nContent-Disposition: form-data; name="vocabularyFile"; filename="vocabularyFile"\r\nContent-Type: text/turtle\r\n\r\n�o\r\n--494830b7680cbaa5e805aa38d0e5c26e\r\nContent-Disposition: form-data; name="description"\r\n\r\nd\r\n--494830b7680cbaa5e805aa38d0e5c26e\r\nContent-Disposition: form-data; name="changelog"\r\n\r\n烚a¦\r\n--494830b7680cbaa5e805aa38d0e5c26e--\r\n' http://localhost:8196/v1/vocabularies/Backup1795171627A/versions
+
+    st replay r2iN01
+
+2. Test Case ID: vbw1D4
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[400] Bad Request:
+
+    `{"type":"urn:problem-type:belgif:badRequest","href":"https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html","title":"Bad Request","status":400,"detail":"The input message is incorrect","instance":"urn:uuid:d4f3ceea-a087-4621-827c-4e9ed7f9370e","issues":[{"type":"urn:problem-type:belgif:input-validation:schemaViolation","href":"https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html","title":"Input isn't valid with respect to schema","detail":"'lastUpdated' is not // Output truncated...`
+
+Reproduce with:
+
+    curl -X GET -H 'Authorization: [Filtered]' 'http://localhost:8196/v1/vocabularies?pageSize=15&lastUpdated=0304-06-22T22%3A07%3A51-18%3A04'
+
+    st replay vbw1D4
+
+=================================== WARNINGS ===================================
+
+Missing test data: 8 operations repeatedly returned 404 Not Found, preventing tests from reaching your API's core logic
+
+No links point to these operations (2 operations):
+  - GET /content/{vocabularyName}
+  - POST /external-vocabularies/content
+
+💡 Provide realistic parameter values in your config file so tests can access existing resources
+
+No links point to these operations - POST /external-vocabularies appears to supply the data they need (3 operations):
+  - DELETE /external-vocabularies/{name}
+  - GET /external-vocabularies/{name}
+  - GET /external-vocabularies/{name}/content
+
+💡 Add a link from POST /external-vocabularies, or supply the identifiers it returns in your config file
+
+No links point to this operation - POST /vocabularies appears to supply the data it needs:
+  - GET /vocabularies/{vocabularyName}/versions/{version}
+
+💡 Add a link from POST /vocabularies, or supply the identifiers it returns in your config file
+
+No links point to these operations - nothing in the schema appears to supply the data they need (2 operations):
+  - GET /content/{vocabularyName}/versions/{version}
+  - POST /vocabularies/{vocabularyName}/versions
+
+💡 Schemathesis found no operation that creates this data - create it outside the test run and supply the identifiers in your config file
+
+=================================== SUMMARY ====================================
+
+API Operations:
+  Selected: 19/19
+  Tested: 19
+
+Test Phases:
+  ❌ Examples
+  ❌ Coverage
+  ❌ Fuzzing
+  ❌ Stateful
+
+Failures:
+  ❌ ST202 Schema-valid request rejected: 4
+
+For more information, run `st explain ST202`.
+
+Warnings:
+  ⚠️ Missing test data: 8 operations repeatedly returned 404 responses
+
+Test cases:
+  1720 generated, 4 found 4 unique failures
+
+Seed: 1
+
+======================= 4 failures, 1 warning in 10.22s ========================

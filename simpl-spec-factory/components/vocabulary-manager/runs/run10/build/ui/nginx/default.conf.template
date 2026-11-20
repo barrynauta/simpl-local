@@ -1,0 +1,124 @@
+# Front proxy of the Vocabulary Manager stack. Port 8196 serves the API, port 4433 serves the UI and proxies /v1 to
+# the same backends (MACH-04: the UI uses the public API). Backends are resolved through Docker DNS, so any number of
+# replicas works (D102). Values in ${...} come from the environment (E4).
+
+resolver ${DNS_RESOLVER} valid=10s ipv6=off;
+
+upstream vocabulary_backend {
+    zone vocabulary_backend 64k;
+    server ${BACKEND_HOST}:8080 resolve;
+    keepalive 32;
+}
+
+map $http_x_forwarded_proto $forwarded_proto {
+    default $http_x_forwarded_proto;
+    ''      $scheme;
+}
+
+server_tokens off;
+
+# nginx answers TRACE itself with 405; the Allow header lists the methods of the operation table (D67, RFC 9110).
+map $request_uri $allowed_methods {
+    default "";
+    ~^/v1/health(\?.*)?$ "GET";
+    ~^/v1/vocabularies(\?.*)?$ "GET, POST";
+    ~^/v1/vocabularies/searches(\?.*)?$ "POST";
+    ~^/v1/vocabularies/[^/?]+(\?.*)?$ "GET, PATCH";
+    ~^/v1/vocabularies/[^/?]+/versions(\?.*)?$ "GET, POST";
+    ~^/v1/vocabularies/[^/?]+/versions/[^/?]+(\?.*)?$ "GET, PATCH";
+    ~^/v1/content/[^/?]+(\?.*)?$ "GET";
+    ~^/v1/content/[^/?]+/versions/[^/?]+(\?.*)?$ "GET";
+    ~^/v1/external-vocabularies(\?.*)?$ "GET, POST";
+    ~^/v1/external-vocabulary/searches(\?.*)?$ "POST";
+    ~^/v1/external-vocabularies/content(\?.*)?$ "POST";
+    ~^/v1/external-vocabularies/[^/?]+/content(\?.*)?$ "GET";
+    ~^/v1/external-vocabularies/[^/?]+(\?.*)?$ "DELETE, GET";
+}
+
+server {
+    listen 8196;
+    merge_slashes off;
+    client_max_body_size 8m;
+    large_client_header_buffers 4 16k;
+
+    location / {
+        proxy_pass http://vocabulary_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+
+    error_page 400 /__problem/400;
+    error_page 405 /__problem/405;
+    error_page 413 /__problem/413;
+    error_page 502 503 504 =503 /__problem/503;
+
+    location = /__problem/400 {
+        internal;
+        default_type application/problem+json;
+        return 400 '{"type":"urn:problem-type:belgif:badRequest","title":"Bad Request","status":400,"detail":"The request was rejected."}';
+    }
+    location = /__problem/405 {
+        internal;
+        default_type application/problem+json;
+        add_header Allow $allowed_methods always;
+        return 405 '{"type":"urn:problem-type:simpl:methodNotAllowed","title":"Method Not Allowed","status":405,"detail":"The method is not allowed on this resource."}';
+    }
+    location = /__problem/413 {
+        internal;
+        default_type application/problem+json;
+        return 413 '{"type":"urn:problem-type:simpl:payloadTooLarge","title":"Payload Too Large","status":413,"detail":"Uploaded vocabulary file is too large. The maximum allowed upload size is 5 MB. Please upload a smaller Turtle file.","issues":[{"type":"urn:problem-type:belgif:input-validation:invalidInput","title":"Invalid input","in":"body","name":"vocabularyFile","detail":"Uploaded vocabulary file is too large. The maximum allowed upload size is 5 MB. Please upload a smaller Turtle file."}]}';
+    }
+    location = /__problem/503 {
+        internal;
+        default_type application/problem+json;
+        add_header Retry-After 5 always;
+        return 503 '{"type":"urn:problem-type:belgif:serviceUnavailable","title":"Service Unavailable","status":503,"detail":"The vocabulary service is not available. Retry later."}';
+    }
+}
+
+server {
+    listen 4433;
+    root /usr/share/nginx/html;
+    client_max_body_size 8m;
+
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options DENY always;
+    add_header Referrer-Policy no-referrer always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ${KEYCLOAK_PUBLIC_URL}; frame-src ${KEYCLOAK_PUBLIC_URL}; form-action 'self' ${KEYCLOAK_PUBLIC_URL}; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" always;
+
+    location = /config.json {
+        default_type application/json;
+        add_header Cache-Control "no-store" always;
+        return 200 '{"keycloakUrl":"${KEYCLOAK_PUBLIC_URL}","realm":"${KEYCLOAK_REALM}","clientId":"${UI_CLIENT_ID}"}';
+    }
+
+    location /v1/ {
+        proxy_pass http://vocabulary_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        proxy_read_timeout 120s;
+    }
+
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        add_header X-Content-Type-Options nosniff always;
+        try_files $uri =404;
+    }
+
+    location / {
+        add_header Cache-Control "no-cache" always;
+        add_header X-Content-Type-Options nosniff always;
+        add_header X-Frame-Options DENY always;
+        add_header Referrer-Policy no-referrer always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ${KEYCLOAK_PUBLIC_URL}; frame-src ${KEYCLOAK_PUBLIC_URL}; form-action 'self' ${KEYCLOAK_PUBLIC_URL}; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" always;
+        try_files $uri /index.html;
+    }
+}

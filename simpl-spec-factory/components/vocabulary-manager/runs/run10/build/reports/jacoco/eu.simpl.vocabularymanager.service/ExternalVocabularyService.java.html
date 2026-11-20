@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalVocabularyService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">ExternalVocabularyService.java</span></div><h1>ExternalVocabularyService.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.Problems;
+import eu.simpl.vocabularymanager.store.ExternalVocabularyRepository;
+import eu.simpl.vocabularymanager.validation.ParsedContent;
+import eu.simpl.vocabularymanager.validation.TurtleSyntaxValidator;
+import java.time.Clock;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+/** Registration, lookup and removal of external vocabularies (D30, D41, D42, D56, D66, D70, D73). */
+public class ExternalVocabularyService {
+
+<span class="fc" id="L22">    private static final Logger LOG = LoggerFactory.getLogger(ExternalVocabularyService.class);</span>
+
+    private final ExternalVocabularyRepository repository;
+    private final TurtleSyntaxValidator syntax;
+    private final Clock clock;
+
+    public ExternalVocabularyService(
+<span class="fc" id="L29">            ExternalVocabularyRepository repository, TurtleSyntaxValidator syntax, Clock clock) {</span>
+<span class="fc" id="L30">        this.repository = repository;</span>
+<span class="fc" id="L31">        this.syntax = syntax;</span>
+<span class="fc" id="L32">        this.clock = clock;</span>
+<span class="fc" id="L33">    }</span>
+
+    /** A registration request after the field checks. */
+<span class="fc" id="L36">    public record Registration(</span>
+            String name,
+            String namespaceUri,
+            List&lt;String&gt; aliasUris,
+            String sourceUri,
+            String description,
+            byte[] content,
+            String createdBy) {}
+
+    /**
+     * Registers an external vocabulary: conflicts first (409), then a Turtle syntax check only (D30, D51).
+     *
+     * @throws eu.simpl.vocabularymanager.error.ProblemException 409 or 400
+     */
+    public ExternalVocabulary register(Registration request) {
+<span class="fc" id="L51">        checkConflicts(request);</span>
+<span class="fc" id="L52">        ParsedContent parsed = syntax.parse(request.content(), request.namespaceUri());</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (parsed.graph().isEmpty()) {</span>
+<span class="fc" id="L54">            throw Problems.badRequest(</span>
+<span class="fc" id="L55">                    Issue.invalidInput(&quot;vocabularyFile&quot;, &quot;Vocabulary contains no statements&quot;, &quot;document&quot;));</span>
+        }
+<span class="fc" id="L57">        ExternalVocabularyRepository.Registration data = new ExternalVocabularyRepository.Registration(</span>
+<span class="fc" id="L58">                request.name(),</span>
+<span class="fc" id="L59">                request.namespaceUri(),</span>
+<span class="fc" id="L60">                request.aliasUris(),</span>
+<span class="fc" id="L61">                request.sourceUri(),</span>
+<span class="fc" id="L62">                request.description(),</span>
+<span class="fc" id="L63">                request.createdBy(),</span>
+<span class="fc" id="L64">                clock.instant().truncatedTo(ChronoUnit.SECONDS),</span>
+<span class="fc" id="L65">                request.content());</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        if (!repository.insert(data, UUID.randomUUID().toString())) {</span>
+<span class="nc" id="L67">            checkConflicts(request);</span>
+<span class="nc" id="L68">            throw Problems.conflict(&quot;External vocabulary with name '&quot; + request.name() + &quot;' already exists.&quot;);</span>
+        }
+<span class="fc" id="L70">        MDC.put(&quot;vocabularyName&quot;, request.name());</span>
+<span class="fc" id="L71">        LOG.info(&quot;External vocabulary registered: vocabularyName={}&quot;, request.name());</span>
+<span class="fc" id="L72">        return new ExternalVocabulary(</span>
+<span class="fc" id="L73">                data.name(),</span>
+<span class="fc" id="L74">                data.namespaceUri(),</span>
+<span class="fc" id="L75">                data.aliasUris(),</span>
+<span class="fc" id="L76">                data.sourceUri(),</span>
+<span class="fc" id="L77">                data.description(),</span>
+<span class="fc" id="L78">                data.createdBy(),</span>
+<span class="fc" id="L79">                data.now());</span>
+    }
+
+    private void checkConflicts(Registration request) {
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (repository.existsIgnoreCase(request.name())) {</span>
+<span class="fc" id="L84">            throw Problems.conflict(&quot;External vocabulary with name '&quot; + request.name() + &quot;' already exists.&quot;);</span>
+        }
+<span class="fc" id="L86">        List&lt;String&gt; uris = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L87">        uris.add(request.namespaceUri());</span>
+<span class="fc" id="L88">        uris.addAll(request.aliasUris());</span>
+<span class="fc" id="L89">        Map&lt;String, String&gt; taken =</span>
+<span class="fc" id="L90">                repository.namesByKey(uris.stream().map(ExternalVocabulary::key).toList());</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        for (String uri : uris) {</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">            if (taken.containsKey(ExternalVocabulary.key(uri))) {</span>
+<span class="fc" id="L93">                throw Problems.conflict(</span>
+                        &quot;An external vocabulary with namespace or alias '&quot; + uri + &quot;' is already registered.&quot;);
+            }
+<span class="fc" id="L96">        }</span>
+<span class="fc" id="L97">    }</span>
+
+    public ExternalVocabulary get(String name) {
+<span class="fc" id="L100">        return repository.find(name).orElseThrow(() -&gt; Problems.externalNotFound(name));</span>
+    }
+
+    public byte[] content(String name) {
+<span class="fc" id="L104">        return repository.content(name).orElseThrow(() -&gt; Problems.externalNotFound(name));</span>
+    }
+
+    /** Content by namespace or alias URI (D66); returns the name for the file name and the bytes. */
+    public Map.Entry&lt;String, byte[]&gt; contentByNamespace(String uri) {
+<span class="fc" id="L109">        String name =</span>
+<span class="fc" id="L110">                repository.namesByKey(List.of(ExternalVocabulary.key(uri))).get(ExternalVocabulary.key(uri));</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (name == null) {</span>
+<span class="fc" id="L112">            throw Problems.externalNamespaceNotFound(uri);</span>
+        }
+<span class="pc" id="L114">        byte[] content = repository.content(name).orElseThrow(() -&gt; Problems.externalNamespaceNotFound(uri));</span>
+<span class="fc" id="L115">        return Map.entry(name, content);</span>
+    }
+
+    /** Hard delete of metadata and content, without a reference check (D41, D42). */
+    public void delete(String name) {
+<span class="fc" id="L120">        get(name);</span>
+<span class="fc" id="L121">        repository.delete(name);</span>
+<span class="fc" id="L122">        LOG.info(&quot;External vocabulary removed: vocabularyName={}&quot;, name);</span>
+<span class="fc" id="L123">    }</span>
+
+    public VocabularyService.Page&lt;ExternalVocabulary&gt; list(long offset, int limit) {
+<span class="fc" id="L126">        long total = repository.count();</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">        List&lt;ExternalVocabulary&gt; items = offset &gt;= total ? List.of() : repository.list(offset, limit);</span>
+<span class="fc" id="L128">        return new VocabularyService.Page&lt;&gt;(items, total);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

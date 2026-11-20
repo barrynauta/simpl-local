@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OperationAuthorizationManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">OperationAuthorizationManager.java</span></div><h1>OperationAuthorizationManager.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import eu.simpl.vocabularymanager.web.ApiOperation;
+import eu.simpl.vocabularymanager.web.RoutingFilter;
+import java.util.function.Supplier;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authorization.AuthorizationResult;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+
+/**
+ * Default-deny authorisation (D16, D84): each declared operation has its own role rule from {@link ApiOperation}; a
+ * request that matches no operation is allowed only for an authenticated caller, who then gets 404 (D67).
+ */
+<span class="fc" id="L16">public class OperationAuthorizationManager implements AuthorizationManager&lt;RequestAuthorizationContext&gt; {</span>
+
+    @Override
+    public AuthorizationResult authorize(
+            Supplier&lt;? extends Authentication&gt; authentication, RequestAuthorizationContext context) {
+<span class="fc" id="L21">        ApiOperation operation = RoutingFilter.operationOf(context.getRequest());</span>
+<span class="fc" id="L22">        return new AuthorizationDecision(isAllowed(operation, authentication.get()));</span>
+    }
+
+    static boolean isAllowed(ApiOperation operation, Authentication authentication) {
+<span class="fc bfc" id="L26" title="All 4 branches covered.">        if (operation != null &amp;&amp; operation.access() == ApiOperation.Access.PUBLIC) {</span>
+<span class="fc" id="L27">            return true;</span>
+        }
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (!(authentication instanceof AuthenticatedUser user)) {</span>
+<span class="fc" id="L30">            return false;</span>
+        }
+<span class="fc bfc" id="L32" title="All 4 branches covered.">        return operation == null || user.hasAnyRole(operation.allowedRoles());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

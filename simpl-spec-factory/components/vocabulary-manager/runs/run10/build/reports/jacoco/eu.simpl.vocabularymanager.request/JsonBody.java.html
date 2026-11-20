@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonBody.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.request</a> &gt; <span class="el_source">JsonBody.java</span></div><h1>JsonBody.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.request;
+
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.Problems;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+
+/**
+ * Reads a JSON request body with Jackson into plain Java values (maps, lists, strings, numbers). The body is capped
+ * at 1 MB (D110); it must be one JSON object without duplicate keys.
+ */
+public final class JsonBody {
+
+    public static final int LIMIT = 1024 * 1024;
+<span class="fc" id="L21">    private static final JsonMapper MAPPER = JsonMapper.builder()</span>
+<span class="fc" id="L22">            .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)</span>
+<span class="fc" id="L23">            .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)</span>
+<span class="fc" id="L24">            .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)</span>
+<span class="fc" id="L25">            .build();</span>
+
+    private JsonBody() {}
+
+    /**
+     * Reads the body.
+     *
+     * @throws eu.simpl.vocabularymanager.error.ProblemException 413 above 1 MB, 400 when it is not a JSON object
+     */
+    public static Map&lt;String, Object&gt; read(HttpServletRequest request) {
+        byte[] bytes;
+<span class="fc" id="L36">        try (InputStream in = request.getInputStream()) {</span>
+<span class="fc" id="L37">            bytes = in.readNBytes(LIMIT + 1);</span>
+<span class="nc" id="L38">        } catch (IOException e) {</span>
+<span class="nc" id="L39">            throw invalid(&quot;The request body could not be read.&quot;);</span>
+<span class="fc" id="L40">        }</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        if (bytes.length &gt; LIMIT) {</span>
+<span class="nc" id="L42">            throw Problems.payloadTooLarge(&quot;The request body is larger than 1 MB.&quot;, &quot;body&quot;);</span>
+        }
+<span class="fc" id="L44">        return parse(bytes);</span>
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    static Map&lt;String, Object&gt; parse(byte[] bytes) {
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (bytes.length == 0) {</span>
+<span class="fc" id="L50">            throw invalid(&quot;A JSON object is required.&quot;);</span>
+        }
+        Object value;
+        try {
+<span class="fc" id="L54">            value = MAPPER.readValue(bytes, Object.class);</span>
+<span class="fc" id="L55">        } catch (JacksonException e) {</span>
+<span class="fc" id="L56">            throw invalid(&quot;The request body is not valid JSON.&quot;);</span>
+<span class="fc" id="L57">        }</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (!(value instanceof Map&lt;?, ?&gt; map)) {</span>
+<span class="fc" id="L59">            throw invalid(&quot;The request body must be a JSON object.&quot;);</span>
+        }
+<span class="fc" id="L61">        return (Map&lt;String, Object&gt;) map;</span>
+    }
+
+    private static RuntimeException invalid(String detail) {
+<span class="fc" id="L65">        return Problems.badRequest(Issue.schemaViolation(&quot;body&quot;, &quot;body&quot;, detail, null));</span>
+    }
+
+    /** True for a JSON number without fraction or exponent (D112). */
+    public static boolean isInteger(Object value) {
+<span class="pc bpc" id="L70" title="1 of 6 branches missed.">        return value instanceof Integer || value instanceof Long || value instanceof java.math.BigInteger;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>
