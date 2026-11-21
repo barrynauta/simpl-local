@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RouteRuleCheck.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">RouteRuleCheck.java</span></div><h1>RouteRuleCheck.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import eu.simpl.vocabularymanager.api.Routes;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+/**
+ * Default deny (D84): the service does not start when a handler exists without a role rule in
+ * {@link Routes#ALL}, or a rule has no handler. Only the error page is exempt.
+ */
+@Component
+public class RouteRuleCheck implements SmartInitializingSingleton {
+
+    private final RequestMappingHandlerMapping mapping;
+
+<span class="fc" id="L24">    public RouteRuleCheck(@Qualifier(&quot;requestMappingHandlerMapping&quot;) RequestMappingHandlerMapping mapping) {</span>
+<span class="fc" id="L25">        this.mapping = mapping;</span>
+<span class="fc" id="L26">    }</span>
+
+    @Override
+    public void afterSingletonsInstantiated() {
+<span class="fc" id="L30">        check(mapping.getHandlerMethods());</span>
+<span class="fc" id="L31">    }</span>
+
+    /** Throws when handlers and rules differ. */
+    public static void check(Map&lt;RequestMappingInfo, HandlerMethod&gt; handlers) {
+<span class="fc" id="L35">        Set&lt;String&gt; declared = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        for (Routes.Route r : Routes.ALL) {</span>
+<span class="fc" id="L37">            declared.add(r.method() + &quot; &quot; + r.pattern());</span>
+<span class="fc" id="L38">        }</span>
+<span class="fc" id="L39">        Set&lt;String&gt; found = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        for (RequestMappingInfo info : handlers.keySet()) {</span>
+<span class="fc" id="L41">            Set&lt;String&gt; patterns = info.getPatternValues();</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            if (patterns.contains(&quot;/error&quot;)) {</span>
+<span class="fc" id="L43">                continue;</span>
+            }
+<span class="fc" id="L45">            Set&lt;RequestMethod&gt; methods = info.getMethodsCondition().getMethods();</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (methods.isEmpty()) {</span>
+<span class="fc" id="L47">                throw new IllegalStateException(&quot;Handler without method and role rule: &quot; + patterns);</span>
+            }
+<span class="fc bfc" id="L49" title="All 2 branches covered.">            for (String p : patterns) {</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">                for (RequestMethod m : methods) {</span>
+<span class="fc" id="L51">                    String key = m.name() + &quot; &quot; + p;</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">                    if (!declared.contains(key)) {</span>
+<span class="fc" id="L53">                        throw new IllegalStateException(&quot;Handler without role rule: &quot; + key);</span>
+                    }
+<span class="fc" id="L55">                    found.add(key);</span>
+<span class="fc" id="L56">                }</span>
+<span class="fc" id="L57">            }</span>
+<span class="fc" id="L58">        }</span>
+<span class="fc" id="L59">        declared.removeAll(found);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (!declared.isEmpty()) {</span>
+<span class="fc" id="L61">            throw new IllegalStateException(&quot;Role rule without handler: &quot; + declared);</span>
+        }
+<span class="fc" id="L63">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

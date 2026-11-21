@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NegotiationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">NegotiationFilter.java</span></div><h1>NegotiationFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Runs after the token and role checks and before the operation: 406 (D63, D127, D151), then 415
+ * (D15), then 413 for the request size (D76, D110, D150), in the order of D51. The Accept header is
+ * then set to the operation's own media type so the framework mapping always matches.
+ */
+public class NegotiationFilter extends OncePerRequestFilter {
+
+    public static final long JSON_LIMIT = 1024L * 1024L;
+    public static final long MULTIPART_LIMIT = 6L * 1024L * 1024L;
+
+<span class="fc" id="L31">    private static final MediaType TURTLE = MediaType.parseMediaType(&quot;text/turtle&quot;);</span>
+<span class="fc" id="L32">    private static final MediaType PROBLEM = MediaType.parseMediaType(&quot;application/problem+json&quot;);</span>
+
+    private final ProblemWriter problems;
+
+<span class="fc" id="L36">    public NegotiationFilter(ProblemWriter problems) {</span>
+<span class="fc" id="L37">        this.problems = problems;</span>
+<span class="fc" id="L38">    }</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L43">        Object attr = request.getAttribute(RouteGuardFilter.MATCH_ATTRIBUTE);</span>
+<span class="pc bpc" id="L44" title="1 of 4 branches missed.">        if (!(attr instanceof Routes.Match match) || match.route() == null) {</span>
+<span class="fc" id="L45">            chain.doFilter(request, response);</span>
+<span class="fc" id="L46">            return;</span>
+        }
+<span class="fc" id="L48">        Routes.Route route = match.route();</span>
+<span class="fc" id="L49">        response.setHeader(&quot;Vary&quot;, &quot;Accept&quot;);</span>
+        try {
+<span class="fc bfc" id="L51" title="All 2 branches covered.">            MediaType produced = route.turtle() ? TURTLE : MediaType.APPLICATION_JSON;</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            if (!acceptable(request.getHeader(&quot;Accept&quot;), route.turtle())) {</span>
+<span class="fc" id="L53">                throw new ApiException(ProblemType.NOT_ACCEPTABLE, &quot;Requested media type cannot be served.&quot;);</span>
+            }
+<span class="fc bfc" id="L55" title="All 2 branches covered.">            if (route.body() != Routes.Body.NONE) {</span>
+<span class="fc" id="L56">                checkContentType(request.getContentType(), route.body());</span>
+<span class="fc" id="L57">                long length = request.getContentLengthLong();</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">                long limit = route.body() == Routes.Body.JSON ? JSON_LIMIT : MULTIPART_LIMIT;</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">                if (length &gt; limit) {</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">                    throw route.body() == Routes.Body.JSON ? ApiException.jsonTooLarge() : ApiException.fileTooLarge();</span>
+                }
+            }
+<span class="fc" id="L63">            HttpServletRequest wrapped = new NegotiatedRequest(request, produced.toString(), route);</span>
+<span class="fc" id="L64">            chain.doFilter(wrapped, response);</span>
+<span class="fc" id="L65">        } catch (ApiException e) {</span>
+<span class="fc" id="L66">            problems.write(response, e);</span>
+<span class="fc" id="L67">        }</span>
+<span class="fc" id="L68">    }</span>
+
+    /** Accept rules of D63 and D127. */
+    static boolean acceptable(String accept, boolean turtle) {
+<span class="pc bpc" id="L72" title="1 of 4 branches missed.">        if (accept == null || accept.isBlank()) {</span>
+<span class="fc" id="L73">            return true;</span>
+        }
+        List&lt;MediaType&gt; types;
+        try {
+<span class="fc" id="L77">            types = MediaType.parseMediaTypes(accept);</span>
+<span class="fc" id="L78">        } catch (InvalidMediaTypeException e) {</span>
+<span class="fc" id="L79">            return false;</span>
+<span class="fc" id="L80">        }</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        for (MediaType t : types) {</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">            if (t.getQualityValue() &lt;= 0.0) {</span>
+<span class="fc" id="L83">                continue;</span>
+            }
+<span class="fc bfc" id="L85" title="All 2 branches covered.">            if (t.isWildcardType()) {</span>
+<span class="fc" id="L86">                return true;</span>
+            }
+<span class="fc bfc" id="L88" title="All 4 branches covered.">            if (t.getType().equals(&quot;application&quot;) &amp;&amp; t.isWildcardSubtype()) {</span>
+<span class="fc" id="L89">                return true;</span>
+            }
+<span class="fc bfc" id="L91" title="All 2 branches covered.">            if (turtle) {</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">                if (t.getType().equals(&quot;text&quot;)</span>
+<span class="pc bpc" id="L93" title="1 of 4 branches missed.">                        &amp;&amp; (t.isWildcardSubtype() || t.getSubtype().equals(&quot;turtle&quot;))) {</span>
+<span class="fc" id="L94">                    return true;</span>
+                }
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            } else if (t.getType().equals(&quot;application&quot;)</span>
+<span class="fc bfc" id="L97" title="All 4 branches covered.">                    &amp;&amp; (t.getSubtype().equals(&quot;json&quot;) || t.getSubtype().equals(PROBLEM.getSubtype()))) {</span>
+<span class="fc" id="L98">                return true;</span>
+            }
+<span class="fc" id="L100">        }</span>
+<span class="fc" id="L101">        return false;</span>
+    }
+
+    private static void checkContentType(String contentType, Routes.Body body) {
+<span class="fc" id="L105">        MediaType ct = null;</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (contentType != null) {</span>
+            try {
+<span class="fc" id="L108">                ct = MediaType.parseMediaType(contentType);</span>
+<span class="nc" id="L109">            } catch (InvalidMediaTypeException e) {</span>
+<span class="nc" id="L110">                ct = null;</span>
+<span class="fc" id="L111">            }</span>
+        }
+<span class="fc bfc" id="L113" title="All 4 branches covered.">        boolean ok = ct != null</span>
+                &amp;&amp; (body == Routes.Body.JSON
+<span class="pc bpc" id="L115" title="1 of 4 branches missed.">                        ? ct.getType().equals(&quot;application&quot;) &amp;&amp; ct.getSubtype().equals(&quot;json&quot;)</span>
+<span class="pc bpc" id="L116" title="1 of 4 branches missed.">                        : ct.getType().equals(&quot;multipart&quot;) &amp;&amp; ct.getSubtype().equals(&quot;form-data&quot;));</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        if (!ok) {</span>
+<span class="fc" id="L118">            throw new ApiException(ProblemType.UNSUPPORTED_MEDIA_TYPE, &quot;Request content type is not supported.&quot;);</span>
+        }
+<span class="fc" id="L120">    }</span>
+
+    /** Request with the operation's media type as Accept and a size-limited JSON body. */
+    static final class NegotiatedRequest extends HttpServletRequestWrapper {
+        private final String accept;
+        private final Routes.Route route;
+        private ServletInputStream limited;
+
+        NegotiatedRequest(HttpServletRequest request, String accept, Routes.Route route) {
+<span class="fc" id="L129">            super(request);</span>
+<span class="fc" id="L130">            this.accept = accept;</span>
+<span class="fc" id="L131">            this.route = route;</span>
+<span class="fc" id="L132">        }</span>
+
+        @Override
+        public String getHeader(String name) {
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">            return &quot;accept&quot;.equalsIgnoreCase(name) ? accept : super.getHeader(name);</span>
+        }
+
+        @Override
+        public Enumeration&lt;String&gt; getHeaders(String name) {
+<span class="fc bfc" id="L141" title="All 2 branches covered.">            return &quot;accept&quot;.equalsIgnoreCase(name) ? Collections.enumeration(List.of(accept)) : super.getHeaders(name);</span>
+        }
+
+        @Override
+        public ServletInputStream getInputStream() throws IOException {
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">            if (route.body() != Routes.Body.JSON) {</span>
+<span class="nc" id="L147">                return super.getInputStream();</span>
+            }
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">            if (limited == null) {</span>
+<span class="fc" id="L150">                limited = new LimitedInputStream(super.getInputStream(), JSON_LIMIT);</span>
+            }
+<span class="fc" id="L152">            return limited;</span>
+        }
+    }
+
+    /** Thrown when a body without Content-Length grows past the limit. */
+    public static final class BodyTooLargeException extends IOException {
+        private static final long serialVersionUID = 1L;
+
+        public BodyTooLargeException() {
+<span class="nc" id="L161">            super(&quot;request body too large&quot;);</span>
+<span class="nc" id="L162">        }</span>
+    }
+
+    static final class LimitedInputStream extends ServletInputStream {
+        private final ServletInputStream in;
+        private final long limit;
+        private long count;
+
+<span class="fc" id="L170">        LimitedInputStream(ServletInputStream in, long limit) {</span>
+<span class="fc" id="L171">            this.in = in;</span>
+<span class="fc" id="L172">            this.limit = limit;</span>
+<span class="fc" id="L173">        }</span>
+
+        @Override
+        public int read() throws IOException {
+<span class="nc" id="L177">            int b = in.read();</span>
+<span class="nc bnc" id="L178" title="All 4 branches missed.">            if (b &gt;= 0 &amp;&amp; ++count &gt; limit) {</span>
+<span class="nc" id="L179">                throw new BodyTooLargeException();</span>
+            }
+<span class="nc" id="L181">            return b;</span>
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+<span class="fc" id="L186">            int n = in.read(b, off, len);</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">            if (n &gt; 0) {</span>
+<span class="fc" id="L188">                count += n;</span>
+<span class="pc bpc" id="L189" title="1 of 2 branches missed.">                if (count &gt; limit) {</span>
+<span class="nc" id="L190">                    throw new BodyTooLargeException();</span>
+                }
+            }
+<span class="fc" id="L193">            return n;</span>
+        }
+
+        @Override
+        public boolean isFinished() {
+<span class="nc" id="L198">            return in.isFinished();</span>
+        }
+
+        @Override
+        public boolean isReady() {
+<span class="nc" id="L203">            return in.isReady();</span>
+        }
+
+        @Override
+        public void setReadListener(ReadListener listener) {
+<span class="nc" id="L208">            in.setReadListener(listener);</span>
+<span class="nc" id="L209">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

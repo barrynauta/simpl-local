@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Model.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.domain</a> &gt; <span class="el_source">Model.java</span></div><h1>Model.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.domain;
+
+import java.time.Instant;
+import java.util.List;
+
+/** The domain model (docs/logical-data-model.md, traced to the CDM of decision D2). */
+public final class Model {
+
+    private Model() {}
+
+    /** Lifecycle status of a vocabulary or a vocabulary version (D3, glossary state tables). */
+<span class="fc" id="L12">    public enum Status {</span>
+<span class="fc" id="L13">        ACTIVE,</span>
+<span class="fc" id="L14">        DEPRECATED;</span>
+
+        public static Status parse(String s) {
+<span class="fc bfc" id="L17" title="All 2 branches covered.">            for (Status v : values()) {</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">                if (v.name().equals(s)) {</span>
+<span class="fc" id="L19">                    return v;</span>
+                }
+            }
+<span class="fc" id="L22">            return null;</span>
+        }
+    }
+
+    /**
+     * A vocabulary (CDM InternalVocabulary) with values of its latest version (D25).
+     *
+     * @param name identity (D30, D37)
+     * @param status vocabulary status (D3)
+     * @param latestVersion highest version number (D5)
+     * @param description description of the latest version (D28)
+     * @param createdBy creator of version 1 (D27)
+     * @param creationDate creation time of version 1
+     * @param lastUpdateDate last change of the vocabulary or any version (D25, D160)
+     */
+<span class="fc" id="L37">    public record Vocabulary(</span>
+            String name,
+            Status status,
+            int latestVersion,
+            String description,
+            String createdBy,
+            Instant creationDate,
+            Instant lastUpdateDate) {}
+
+    /**
+     * A vocabulary version (CDM InternalVocabularyVersion, D26).
+     *
+     * @param name vocabulary name
+     * @param version version number (D7)
+     * @param description description of this version (D28)
+     * @param changelog what changed (D31)
+     * @param status version status (D3, D4)
+     * @param createdBy creator (D27)
+     * @param creationDate creation time
+     * @param lastUpdateDate last status change of this version (D4, D160)
+     * @param latestVersion latest version number of the vocabulary (D5)
+     */
+<span class="fc" id="L59">    public record VocabularyVersion(</span>
+            String name,
+            int version,
+            String description,
+            String changelog,
+            Status status,
+            String createdBy,
+            Instant creationDate,
+            Instant lastUpdateDate,
+            int latestVersion) {}
+
+    /**
+     * A registered external vocabulary (CDM ExternalVocabulary, D30, D56, D73).
+     *
+     * @param name identity
+     * @param namespaceUri namespace URI as sent
+     * @param aliasUris alias URIs as sent, in the order sent
+     * @param sourceUri optional source
+     * @param description optional description (D148)
+     * @param createdBy creator (D27)
+     * @param creationDate registration time
+     */
+<span class="fc" id="L81">    public record ExternalVocabulary(</span>
+            String name,
+            String namespaceUri,
+            List&lt;String&gt; aliasUris,
+            String sourceUri,
+            String description,
+            String createdBy,
+            Instant creationDate) {}
+
+    /**
+     * One page of a list.
+     *
+     * @param items the rows
+     * @param total number of rows over all pages
+     * @param &lt;T&gt; row type
+     */
+<span class="fc" id="L97">    public record Page&lt;T&gt;(List&lt;T&gt; items, long total) {}</span>
+
+    /**
+     * A vocabulary validation warning (D10); not stored.
+     *
+     * @param code warning code (closed set)
+     * @param description text
+     * @param location where
+     */
+<span class="fc" id="L106">    public record Warning(String code, String description, String location) {}</span>
+
+    /**
+     * Stored content of a version: hash and size for the identical-version check (D46).
+     *
+     * @param sha256 hex SHA-256 of the bytes
+     * @param size number of bytes
+     * @param description description of the version
+     */
+<span class="fc" id="L115">    public record ContentFingerprint(String sha256, long size, String description) {}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

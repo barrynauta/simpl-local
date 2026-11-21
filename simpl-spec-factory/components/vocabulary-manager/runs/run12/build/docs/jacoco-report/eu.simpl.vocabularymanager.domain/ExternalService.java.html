@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.domain</a> &gt; <span class="el_source">ExternalService.java</span></div><h1>ExternalService.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.domain;
+
+import eu.simpl.vocabularymanager.domain.Model.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.Model.Page;
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.store.ExternalStore;
+import eu.simpl.vocabularymanager.store.ExternalStore.NewExternal;
+import eu.simpl.vocabularymanager.validation.ContentValidator;
+import eu.simpl.vocabularymanager.validation.References;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+/**
+ * External vocabularies: register, read, search, delete (D30, D38, D41, D42, D56, D66, D73, D147,
+ * D148).
+ */
+@Service
+public class ExternalService {
+
+<span class="fc" id="L31">    private static final Logger LOG = LoggerFactory.getLogger(ExternalService.class);</span>
+
+    /**
+     * Content of an external vocabulary with its name.
+     *
+     * @param name name, for the filename
+     * @param bytes content as registered
+     */
+<span class="fc" id="L39">    public record NamedContent(String name, byte[] bytes) {}</span>
+
+    /**
+     * A registration request after the shape checks.
+     *
+     * @param name name
+     * @param namespaceUri as sent
+     * @param aliasUris as sent
+     * @param sourceUri optional
+     * @param description optional, trimmed, null when blank
+     * @param bytes file content
+     */
+<span class="fc" id="L51">    public record Registration(</span>
+            String name,
+            String namespaceUri,
+            List&lt;String&gt; aliasUris,
+            String sourceUri,
+            String description,
+            byte[] bytes) {}
+
+    private final ExternalStore store;
+    private final ContentValidator validator;
+
+<span class="fc" id="L62">    public ExternalService(ExternalStore store, ContentValidator validator) {</span>
+<span class="fc" id="L63">        this.store = store;</span>
+<span class="fc" id="L64">        this.validator = validator;</span>
+<span class="fc" id="L65">    }</span>
+
+    public static ApiException notFound(String name) {
+<span class="fc" id="L68">        String d = &quot;External vocabulary with name '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L69">        return ApiException.notFound(d, Issue.notFound(&quot;path&quot;, &quot;name&quot;, d));</span>
+    }
+
+    public ExternalVocabulary get(String name) {
+<span class="fc" id="L73">        return store.find(name).orElseThrow(() -&gt; notFound(name));</span>
+    }
+
+    public Page&lt;ExternalVocabulary&gt; list(int page, int pageSize) {
+<span class="fc" id="L77">        return store.list(page, pageSize);</span>
+    }
+
+    public byte[] content(String name) {
+<span class="fc" id="L81">        get(name);</span>
+<span class="pc" id="L82">        return store.content(name).orElseThrow(() -&gt; notFound(name));</span>
+    }
+
+    /** POST /external-vocabularies/content: lookup by namespace or alias (D30, D66). */
+    public NamedContent contentByNamespace(String namespaceUri) {
+<span class="fc" id="L87">        String key = References.normalise(namespaceUri);</span>
+<span class="fc" id="L88">        String owner = store.ownersOfKeys(List.of(key)).get(key);</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if (owner != null) {</span>
+<span class="fc" id="L90">            var bytes = store.content(owner);</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">            if (bytes.isPresent()) {</span>
+<span class="fc" id="L92">                return new NamedContent(owner, bytes.get());</span>
+            }
+        }
+<span class="fc" id="L95">        String d = &quot;External vocabulary with namespaceUri '&quot; + namespaceUri + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L96">        throw ApiException.notFound(d, Issue.notFound(&quot;body&quot;, &quot;namespaceUri&quot;, d));</span>
+    }
+
+    public void delete(String name) {
+<span class="fc" id="L100">        get(name);</span>
+<span class="fc" id="L101">        store.delete(name);</span>
+<span class="fc" id="L102">        LOG.info(&quot;external vocabulary removed&quot;);</span>
+<span class="fc" id="L103">    }</span>
+
+    /** Registration after the shape checks: 409 in the order of D147, syntax check, write. */
+    public ExternalVocabulary register(Registration r, String creator) {
+<span class="fc" id="L107">        conflictCheck(r);</span>
+<span class="fc" id="L108">        validator.validateExternal(r.bytes(), r.namespaceUri());</span>
+<span class="fc" id="L109">        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);</span>
+<span class="fc" id="L110">        List&lt;String&gt; aliasKeys = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        for (String a : r.aliasUris()) {</span>
+<span class="fc" id="L112">            aliasKeys.add(References.normalise(a));</span>
+<span class="fc" id="L113">        }</span>
+<span class="fc" id="L114">        NewExternal ne = new NewExternal(</span>
+<span class="fc" id="L115">                r.name(),</span>
+<span class="fc" id="L116">                r.namespaceUri(),</span>
+<span class="fc" id="L117">                References.normalise(r.namespaceUri()),</span>
+<span class="fc" id="L118">                r.aliasUris(),</span>
+                aliasKeys,
+<span class="fc" id="L120">                r.sourceUri(),</span>
+<span class="fc" id="L121">                r.description(),</span>
+                creator,
+                now,
+<span class="fc" id="L124">                r.bytes());</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        if (!store.insert(ne, UUID.randomUUID().toString())) {</span>
+<span class="nc" id="L126">            conflictCheck(r);</span>
+<span class="nc" id="L127">            throw ApiException.conflict(&quot;An external vocabulary with name '&quot; + r.name() + &quot;' is already registered.&quot;);</span>
+        }
+<span class="fc" id="L129">        LOG.info(&quot;external vocabulary registered&quot;);</span>
+<span class="fc" id="L130">        return new ExternalVocabulary(</span>
+<span class="fc" id="L131">                r.name(), r.namespaceUri(), r.aliasUris(), r.sourceUri(), r.description(), creator, now);</span>
+    }
+
+    private void conflictCheck(Registration r) {
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        if (store.nameKeyExists(r.name())) {</span>
+<span class="fc" id="L136">            throw ApiException.conflict(&quot;An external vocabulary with name '&quot; + r.name() + &quot;' is already registered.&quot;);</span>
+        }
+<span class="fc" id="L138">        Map&lt;String, String&gt; keyToSent = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L139">        keyToSent.put(References.normalise(r.namespaceUri()), r.namespaceUri());</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        for (String a : r.aliasUris()) {</span>
+<span class="fc" id="L141">            keyToSent.putIfAbsent(References.normalise(a), a);</span>
+<span class="fc" id="L142">        }</span>
+<span class="fc" id="L143">        Set&lt;String&gt; used = store.usedKeys(keyToSent.keySet());</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; e : keyToSent.entrySet()) {</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">            if (used.contains(e.getKey())) {</span>
+<span class="fc" id="L146">                throw ApiException.conflict(</span>
+<span class="fc" id="L147">                        &quot;An external vocabulary with namespace or alias '&quot; + e.getValue() + &quot;' is already registered.&quot;);</span>
+            }
+<span class="fc" id="L149">        }</span>
+<span class="fc" id="L150">    }</span>
+
+    /**
+     * External search (D38): URIs normalised, matched against namespace and aliases, results in the
+     * order of the first matching URI, each external vocabulary once.
+     */
+    public List&lt;ExternalVocabulary&gt; search(List&lt;String&gt; uris) {
+<span class="fc" id="L157">        Set&lt;String&gt; keys = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        for (String u : uris) {</span>
+<span class="fc" id="L159">            keys.add(References.normalise(u));</span>
+<span class="fc" id="L160">        }</span>
+<span class="fc" id="L161">        Map&lt;String, String&gt; owners = store.ownersOfKeys(keys);</span>
+<span class="fc" id="L162">        Set&lt;String&gt; names = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        for (String k : keys) {</span>
+<span class="fc" id="L164">            String owner = owners.get(k);</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">            if (owner != null) {</span>
+<span class="fc" id="L166">                names.add(owner);</span>
+            }
+<span class="fc" id="L168">        }</span>
+<span class="fc" id="L169">        return store.load(new ArrayList&lt;&gt;(names));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,110 @@
+# UI server of the Vocabulary Manager (rendered by the nginx entrypoint from environment variables).
+server {
+    listen 8080;
+    server_name _;
+    server_tokens off;
+    root /usr/share/nginx/html;
+
+    # D122: the proxy limit is above the 6 MB request limit of D76, so the service decides on sizes.
+    client_max_body_size 7m;
+    resolver 127.0.0.11 valid=10s ipv6=off;
+
+    # D123 and OWASP headers. Only server-level add_header directives, so every location inherits them.
+    add_header Content-Security-Policy "default-src 'self'; connect-src 'self' ${KEYCLOAK_PUBLIC_URL}; script-src 'self'; style-src 'self'; img-src 'self' data:; frame-src ${KEYCLOAK_PUBLIC_URL}; frame-ancestors 'none'; base-uri 'self'; form-action 'self' ${KEYCLOAK_PUBLIC_URL}" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer" always;
+    add_header X-Frame-Options "DENY" always;
+
+    # D122, D158: answers nginx gives itself are problem+json.
+    error_page 400 /__problem/400;
+    error_page 404 /__problem/404;
+    error_page 405 /__problem/405;
+    error_page 413 /__problem/413;
+    error_page 414 /__problem/414;
+    error_page 431 494 /__problem/431;
+    error_page 500 /__problem/500;
+    error_page 502 503 504 /__problem/503;
+
+    location = /__problem/400 {
+        internal;
+        default_type application/problem+json;
+        return 400 '{"type":"urn:problem-type:belgif:badRequest","title":"Bad Request","status":400,"detail":"The request is malformed."}';
+    }
+    location = /__problem/404 {
+        internal;
+        default_type application/problem+json;
+        return 404 '{"type":"urn:problem-type:belgif:resourceNotFound","title":"Resource Not Found","status":404,"detail":"The requested resource was not found."}';
+    }
+    location = /__problem/405 {
+        internal;
+        default_type application/problem+json;
+        return 405 '{"type":"urn:problem-type:simpl:methodNotAllowed","title":"Method Not Allowed","status":405,"detail":"The method is not allowed for this resource."}';
+    }
+    location = /__problem/413 {
+        internal;
+        default_type application/problem+json;
+        return 413 '{"type":"urn:problem-type:simpl:payloadTooLarge","title":"Payload Too Large","status":413,"detail":"The request is larger than the proxy limit of 7 MB."}';
+    }
+    location = /__problem/414 {
+        internal;
+        default_type application/problem+json;
+        return 414 '{"type":"urn:problem-type:simpl:uriTooLong","title":"URI Too Long","status":414,"detail":"The request URL is too long."}';
+    }
+    location = /__problem/431 {
+        internal;
+        default_type application/problem+json;
+        return 431 '{"type":"urn:problem-type:simpl:requestHeaderFieldsTooLarge","title":"Request Header Fields Too Large","status":431,"detail":"The request headers are too large."}';
+    }
+    location = /__problem/500 {
+        internal;
+        default_type application/problem+json;
+        return 500 '{"type":"urn:problem-type:belgif:internalServerError","title":"Internal Server Error","status":500,"detail":"Internal Server Error"}';
+    }
+    location = /__problem/503 {
+        internal;
+        default_type application/problem+json;
+        return 503 '{"type":"urn:problem-type:belgif:serviceUnavailable","title":"Service Unavailable","status":503,"detail":"The vocabulary service is not available. Retry later."}';
+    }
+
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 'ok';
+    }
+
+    # Runtime configuration of the SPA (identity provider URL, realm, client).
+    location = /config.json {
+        expires -1;
+        default_type application/json;
+        return 200 '{"keycloakUrl":"${KEYCLOAK_PUBLIC_URL}","keycloakRealm":"${KEYCLOAK_REALM}","keycloakClientId":"${KEYCLOAK_CLIENT_ID}"}';
+    }
+
+    # D67, D120: management endpoints are never reachable through the proxy.
+    location ^~ /actuator {
+        return 404;
+    }
+
+    # API proxy to the backend replicas (Docker DNS name 'backend', resolved at request time).
+    location /v1/ {
+        set $backend_upstream http://backend:8080;
+        proxy_pass $backend_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 5s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    location /assets/ {
+        expires 1y;
+        try_files $uri =404;
+    }
+
+    # SPA history fallback for /vocabularies, /vocabularies/new, /vocabularies/<Name>, ...
+    location / {
+        expires -1;
+        try_files $uri $uri/ /index.html;
+    }
+}

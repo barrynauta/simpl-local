@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ParsedTurtle.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">ParsedTurtle.java</span></div><h1>ParsedTurtle.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RiotException;
+import org.apache.jena.riot.system.ErrorHandler;
+import org.apache.jena.riot.system.StreamRDFBase;
+
+/**
+ * The result of the syntax step (D9): the triples in file order and the namespace declarations
+ * (@prefix and PREFIX) in file order. Each triple and each declaration has a position (one shared
+ * counter) so issues of different rules can be put in file order (D125).
+ *
+ * @param triples distinct triples in file order
+ * @param triplePositions the position of each triple
+ * @param prefixes the namespace declarations in file order
+ */
+<span class="fc" id="L24">public record ParsedTurtle(List&lt;Triple&gt; triples, List&lt;Integer&gt; triplePositions, List&lt;Prefix&gt; prefixes) {</span>
+
+    /**
+     * One namespace declaration.
+     *
+     * @param prefix the prefix label ('' for the empty prefix)
+     * @param namespace the namespace IRI
+     * @param position position in the file
+     */
+<span class="fc" id="L33">    public record Prefix(String prefix, String namespace, int position) {}</span>
+
+    /** The first syntax error, with the line and, when the parser gives one, the column. */
+    public static final class SyntaxError extends Exception {
+        private static final long serialVersionUID = 1L;
+        private final long line;
+        private final long column;
+
+        public SyntaxError(String message, long line, long column) {
+<span class="fc" id="L42">            super(message);</span>
+<span class="fc" id="L43">            this.line = line;</span>
+<span class="fc" id="L44">            this.column = column;</span>
+<span class="fc" id="L45">        }</span>
+
+        /** Location text of D9 and D65: 'line N, column M', column only when known. */
+        public String location() {
+<span class="fc bfc" id="L49" title="All 2 branches covered.">            if (line &lt;= 0) {</span>
+<span class="fc" id="L50">                return &quot;document&quot;;</span>
+            }
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            return column &gt; 0 ? &quot;line &quot; + line + &quot;, column &quot; + column : &quot;line &quot; + line;</span>
+        }
+    }
+
+    /** Parses Turtle (RDF 1.1) with Jena RIOT; relative IRIs resolve against {@code base} (D57). */
+    public static ParsedTurtle parse(byte[] bytes, String base) throws SyntaxError {
+<span class="fc" id="L58">        Collector collector = new Collector();</span>
+<span class="fc" id="L59">        FirstError handler = new FirstError();</span>
+        try {
+<span class="fc" id="L61">            RDFParser.create()</span>
+<span class="fc" id="L62">                    .source(new ByteArrayInputStream(bytes))</span>
+<span class="fc" id="L63">                    .lang(Lang.TURTLE)</span>
+<span class="fc" id="L64">                    .base(base)</span>
+<span class="fc" id="L65">                    .errorHandler(handler)</span>
+<span class="fc" id="L66">                    .parse(collector);</span>
+<span class="fc" id="L67">        } catch (RiotException e) {</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">            if (handler.message != null) {</span>
+<span class="fc" id="L69">                throw new SyntaxError(handler.message, handler.line, handler.column);</span>
+            }
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            throw new SyntaxError(e.getMessage() == null ? &quot;parse error&quot; : e.getMessage(), -1, -1);</span>
+<span class="nc" id="L72">        } catch (RuntimeException e) {</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">            String msg = handler.message != null ? handler.message : String.valueOf(e.getMessage());</span>
+<span class="nc" id="L74">            throw new SyntaxError(msg, handler.line, handler.column);</span>
+<span class="fc" id="L75">        }</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (handler.message != null) {</span>
+<span class="nc" id="L77">            throw new SyntaxError(handler.message, handler.line, handler.column);</span>
+        }
+<span class="fc" id="L79">        return new ParsedTurtle(</span>
+<span class="fc" id="L80">                new ArrayList&lt;&gt;(collector.triples.keySet()),</span>
+<span class="fc" id="L81">                new ArrayList&lt;&gt;(collector.triples.values()),</span>
+                collector.prefixes);
+    }
+
+<span class="fc" id="L85">    private static final class Collector extends StreamRDFBase {</span>
+<span class="fc" id="L86">        private final Map&lt;Triple, Integer&gt; triples = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L87">        private final List&lt;Prefix&gt; prefixes = new ArrayList&lt;&gt;();</span>
+        private int position;
+
+        @Override
+        public void triple(Triple triple) {
+<span class="fc" id="L92">            position++;</span>
+<span class="fc" id="L93">            triples.putIfAbsent(triple, position);</span>
+<span class="fc" id="L94">        }</span>
+
+        @Override
+        public void prefix(String prefix, String iri) {
+<span class="fc" id="L98">            position++;</span>
+<span class="fc" id="L99">            prefixes.add(new Prefix(prefix, iri, position));</span>
+<span class="fc" id="L100">        }</span>
+    }
+
+<span class="fc" id="L103">    private static final class FirstError implements ErrorHandler {</span>
+        private String message;
+<span class="fc" id="L105">        private long line = -1;</span>
+<span class="fc" id="L106">        private long column = -1;</span>
+
+        @Override
+        public void warning(String message, long line, long col) {
+            // Warnings never block (D10).
+<span class="nc" id="L111">        }</span>
+
+        @Override
+        public void error(String message, long line, long col) {
+<span class="nc" id="L115">            record(message, line, col);</span>
+<span class="nc" id="L116">            throw new RiotException(message);</span>
+        }
+
+        @Override
+        public void fatal(String message, long line, long col) {
+<span class="fc" id="L121">            record(message, line, col);</span>
+<span class="fc" id="L122">            throw new RiotException(message);</span>
+        }
+
+        private void record(String message, long line, long col) {
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">            if (this.message == null) {</span>
+<span class="fc" id="L127">                this.message = message;</span>
+<span class="fc" id="L128">                this.line = line;</span>
+<span class="fc" id="L129">                this.column = col;</span>
+            }
+<span class="fc" id="L131">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

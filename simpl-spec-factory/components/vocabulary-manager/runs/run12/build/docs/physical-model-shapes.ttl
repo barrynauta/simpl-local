@@ -1,0 +1,63 @@
+# Physical model of the Vocabulary Manager in the RDF store (decision D87): one SHACL shape set per
+# named graph. The build's own test ShaclShapesTest validates stored data against these shapes.
+#   urn:simpl:vm:graph:internal          InternalVocabulary, InternalVocabularyVersion
+#   urn:simpl:vm:graph:content           content chunks of internal versions (D106)
+#   urn:simpl:vm:graph:external          ExternalVocabulary and its aliases
+#   urn:simpl:vm:graph:external-content  content chunks of external vocabularies
+@prefix sh:  <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix vm:  <https://w3id.org/simpl/vocabulary-manager#> .
+@prefix vms: <https://w3id.org/simpl/vocabulary-manager/shapes#> .
+
+# ---- graph urn:simpl:vm:graph:internal ----
+vms:InternalVocabularyShape a sh:NodeShape ;
+  sh:targetClass vm:InternalVocabulary ;
+  sh:property [ sh:path vm:name ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ;
+                sh:minLength 3 ; sh:maxLength 64 ; sh:pattern "^[A-Z][a-zA-Z0-9]*$" ] ;
+  sh:property [ sh:path vm:nameKey ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path vm:status ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "ACTIVE" "DEPRECATED" ) ] ;
+  sh:property [ sh:path vm:latestVersion ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ] ;
+  sh:property [ sh:path vm:createdBy ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path vm:creationDate ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+  sh:property [ sh:path vm:lastUpdateDate ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+  sh:property [ sh:path vm:statusChange ; sh:datatype xsd:string ] .
+
+vms:InternalVocabularyVersionShape a sh:NodeShape ;
+  sh:targetClass vm:InternalVocabularyVersion ;
+  sh:property [ sh:path vm:ofVocabulary ; sh:minCount 1 ; sh:maxCount 1 ; sh:class vm:InternalVocabulary ] ;
+  sh:property [ sh:path vm:version ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ] ;
+  sh:property [ sh:path vm:description ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ; sh:minLength 1 ; sh:maxLength 1000 ] ;
+  sh:property [ sh:path vm:changelog ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ; sh:minLength 1 ; sh:maxLength 1000 ] ;
+  sh:property [ sh:path vm:status ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "ACTIVE" "DEPRECATED" ) ] ;
+  sh:property [ sh:path vm:createdBy ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path vm:creationDate ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+  sh:property [ sh:path vm:lastUpdateDate ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+  sh:property [ sh:path vm:contentSha256 ; sh:minCount 1 ; sh:maxCount 1 ; sh:pattern "^[0-9a-f]{64}$" ] ;
+  sh:property [ sh:path vm:contentSize ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 0 ; sh:maxInclusive 5242880 ] ;
+  sh:property [ sh:path vm:createToken ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] .
+
+# ---- graphs urn:simpl:vm:graph:content and urn:simpl:vm:graph:external-content ----
+vms:ContentChunkShape a sh:NodeShape ;
+  sh:targetSubjectsOf vm:chunkOf ;
+  sh:property [ sh:path vm:chunkOf ; sh:minCount 1 ; sh:maxCount 1 ; sh:nodeKind sh:IRI ] ;
+  sh:property [ sh:path vm:index ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 0 ] ;
+  sh:property [ sh:path vm:data ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:base64Binary ] .
+
+# ---- graph urn:simpl:vm:graph:external ----
+vms:ExternalVocabularyShape a sh:NodeShape ;
+  sh:targetClass vm:ExternalVocabulary ;
+  sh:property [ sh:path vm:name ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ; sh:pattern "^[A-Z][a-zA-Z0-9]*$" ] ;
+  sh:property [ sh:path vm:nameKey ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:namespaceUri ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path vm:namespaceKey ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path vm:sourceUri ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path vm:description ; sh:maxCount 1 ; sh:datatype xsd:string ; sh:minLength 1 ; sh:maxLength 1000 ] ;
+  sh:property [ sh:path vm:alias ; sh:maxCount 20 ; sh:node vms:AliasShape ] ;
+  sh:property [ sh:path vm:createdBy ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path vm:creationDate ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+  sh:property [ sh:path vm:createToken ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+vms:AliasShape a sh:NodeShape ;
+  sh:property [ sh:path vm:index ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 0 ; sh:maxInclusive 19 ] ;
+  sh:property [ sh:path vm:uri ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path vm:key ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] .

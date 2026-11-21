@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.domain</a> &gt; <span class="el_source">VocabularyService.java</span></div><h1>VocabularyService.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.domain;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.domain.Model.ContentFingerprint;
+import eu.simpl.vocabularymanager.domain.Model.Page;
+import eu.simpl.vocabularymanager.domain.Model.Status;
+import eu.simpl.vocabularymanager.domain.Model.Vocabulary;
+import eu.simpl.vocabularymanager.domain.Model.VocabularyVersion;
+import eu.simpl.vocabularymanager.domain.Model.Warning;
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.store.Content;
+import eu.simpl.vocabularymanager.store.VocabularyStore;
+import eu.simpl.vocabularymanager.store.VocabularyStore.ListFilter;
+import eu.simpl.vocabularymanager.store.VocabularyStore.NewVersion;
+import eu.simpl.vocabularymanager.validation.ContentValidator;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * The vocabulary lifecycle of BP02B: create (version 1 ACTIVE), new version (deprecates every older
+ * ACTIVE version), status changes, reads (decisions D3 to D8, D43, D46, D82, D160). Request-shape
+ * checks happen before; this class runs the 404, 409, validation and write steps of D51.
+ */
+@Service
+public class VocabularyService {
+
+<span class="fc" id="L37">    private static final Logger LOG = LoggerFactory.getLogger(VocabularyService.class);</span>
+
+    /**
+     * A created version and its validation warnings.
+     *
+     * @param version the stored version
+     * @param warnings validation warnings (not stored, D10)
+     */
+<span class="fc" id="L45">    public record Created(VocabularyVersion version, List&lt;Warning&gt; warnings) {}</span>
+
+    private final VocabularyStore store;
+    private final ContentValidator validator;
+    private final Duration writeBudget;
+    private final Clock clock;
+
+    @Autowired
+    public VocabularyService(VocabularyStore store, ContentValidator validator, AppProperties props) {
+<span class="fc" id="L54">        this(store, validator, props.store().writeBudget(), Clock.systemUTC());</span>
+<span class="fc" id="L55">    }</span>
+
+<span class="fc" id="L57">    VocabularyService(VocabularyStore store, ContentValidator validator, Duration writeBudget, Clock clock) {</span>
+<span class="fc" id="L58">        this.store = store;</span>
+<span class="fc" id="L59">        this.validator = validator;</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        this.writeBudget = writeBudget == null ? Duration.ofSeconds(30) : writeBudget;</span>
+<span class="fc" id="L61">        this.clock = clock;</span>
+<span class="fc" id="L62">    }</span>
+
+    public static ApiException vocabularyNotFound(String name) {
+<span class="fc" id="L65">        String d = &quot;Vocabulary with name '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L66">        return ApiException.notFound(d, Issue.notFound(&quot;path&quot;, &quot;vocabularyName&quot;, d));</span>
+    }
+
+    public static ApiException versionNotFound(String name, int version) {
+<span class="fc" id="L70">        String d = &quot;Version &quot; + version + &quot; of vocabulary '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L71">        return ApiException.notFound(d, Issue.notFound(&quot;path&quot;, &quot;version&quot;, d));</span>
+    }
+
+    public Vocabulary get(String name) {
+<span class="fc" id="L75">        return store.find(name).orElseThrow(() -&gt; vocabularyNotFound(name));</span>
+    }
+
+    public Page&lt;Vocabulary&gt; list(ListFilter filter, String sort, int page, int pageSize) {
+<span class="fc" id="L79">        return store.list(filter, sort, page, pageSize);</span>
+    }
+
+    public VocabularyVersion getVersion(String name, int version) {
+<span class="fc" id="L83">        Vocabulary v = get(name);</span>
+<span class="fc" id="L84">        return store.findVersion(name, version, v.latestVersion()).orElseThrow(() -&gt; versionNotFound(name, version));</span>
+    }
+
+    public Page&lt;VocabularyVersion&gt; versions(String name, String sort, int page, int pageSize) {
+<span class="fc" id="L88">        Vocabulary v = get(name);</span>
+<span class="fc" id="L89">        return store.listVersions(name, v.latestVersion(), sort, page, pageSize);</span>
+    }
+
+    /** Content of the latest version (D5, D29). */
+    public byte[] latestContent(String name) {
+<span class="fc" id="L94">        Vocabulary v = get(name);</span>
+<span class="pc" id="L95">        return store.content(name, v.latestVersion()).orElseThrow(() -&gt; vocabularyNotFound(name));</span>
+    }
+
+    public byte[] content(String name, int version) {
+<span class="fc" id="L99">        get(name);</span>
+<span class="fc" id="L100">        return store.content(name, version).orElseThrow(() -&gt; versionNotFound(name, version));</span>
+    }
+
+    /** POST /vocabularies after the shape checks: 409, validation, conditional write. */
+    public Created create(String name, String description, String changelog, byte[] bytes, String creator) {
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if (store.nameKeyExists(name)) {</span>
+<span class="fc" id="L106">            throw duplicate(name);</span>
+        }
+<span class="fc" id="L108">        List&lt;Warning&gt; warnings = validator.validateInternal(bytes, name, 1);</span>
+<span class="fc" id="L109">        Instant now = now();</span>
+<span class="fc" id="L110">        String token = UUID.randomUUID().toString();</span>
+<span class="fc" id="L111">        NewVersion nv = new NewVersion(description.strip(), changelog.strip(), creator, now, bytes);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        if (!store.insertVocabulary(name, nv, token)) {</span>
+<span class="fc" id="L113">            throw duplicate(name);</span>
+        }
+<span class="fc" id="L115">        LOG.info(&quot;vocabulary created&quot;);</span>
+<span class="fc" id="L116">        return new Created(</span>
+<span class="fc" id="L117">                new VocabularyVersion(name, 1, nv.description(), nv.changelog(), Status.ACTIVE, creator, now, now, 1),</span>
+                warnings);
+    }
+
+    private static ApiException duplicate(String name) {
+<span class="fc" id="L122">        return ApiException.conflict(&quot;Vocabulary with name '&quot; + name + &quot;' already exists.&quot;);</span>
+    }
+
+    /** POST .../versions after the shape checks: 404, 409 identical (D46), validation, write. */
+    public Created createVersion(String name, String description, String changelog, byte[] bytes, String creator) {
+<span class="fc" id="L127">        Vocabulary v = get(name);</span>
+<span class="fc" id="L128">        String desc = description.strip();</span>
+<span class="fc" id="L129">        ContentFingerprint fp = store.fingerprint(name, v.latestVersion()).orElse(null);</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        if (fp != null</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">                &amp;&amp; fp.size() == bytes.length</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">                &amp;&amp; fp.sha256().equals(Content.sha256(bytes))</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">                &amp;&amp; fp.description().equals(desc)) {</span>
+<span class="fc" id="L134">            throw ApiException.conflict(&quot;Version &quot;</span>
+<span class="fc" id="L135">                    + v.latestVersion()</span>
+                    + &quot; of vocabulary '&quot;
+                    + name
+                    + &quot;' already has this content and description.&quot;);
+        }
+<span class="fc" id="L140">        List&lt;Warning&gt; warnings = validator.validateInternal(bytes, name, v.latestVersion() + 1);</span>
+<span class="fc" id="L141">        String token = UUID.randomUUID().toString();</span>
+<span class="fc" id="L142">        WriteRetry retry = new WriteRetry(writeBudget);</span>
+<span class="fc" id="L143">        int expected = v.latestVersion();</span>
+        while (true) {
+<span class="fc" id="L145">            Instant now = now();</span>
+<span class="fc" id="L146">            NewVersion nv = new NewVersion(desc, changelog.strip(), creator, now, bytes);</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">            if (store.insertVersion(name, expected, nv, token)) {</span>
+<span class="fc" id="L148">                int created = expected + 1;</span>
+<span class="fc" id="L149">                MDC.put(&quot;version&quot;, Integer.toString(created));</span>
+<span class="fc" id="L150">                LOG.info(&quot;vocabulary version created&quot;);</span>
+<span class="fc" id="L151">                return new Created(</span>
+                        new VocabularyVersion(
+                                name,
+                                created,
+<span class="fc" id="L155">                                nv.description(),</span>
+<span class="fc" id="L156">                                nv.changelog(),</span>
+                                Status.ACTIVE,
+                                creator,
+                                now,
+                                now,
+                                created),
+                        warnings);
+            }
+<span class="fc" id="L164">            retry.beforeRetry();</span>
+<span class="fc" id="L165">            expected = get(name).latestVersion();</span>
+<span class="fc" id="L166">        }</span>
+    }
+
+    /** PATCH /vocabularies/{name}: 404, 409 same status, conditional write (D3, D4, D43). */
+    public Vocabulary changeStatus(String name, Status to) {
+<span class="fc" id="L171">        WriteRetry retry = new WriteRetry(writeBudget);</span>
+<span class="fc" id="L172">        String token = UUID.randomUUID().toString();</span>
+        while (true) {
+<span class="fc" id="L174">            Vocabulary v = get(name);</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">            if (v.status() == to) {</span>
+<span class="fc" id="L176">                throw ApiException.conflict(&quot;Vocabulary is already in status &quot; + to.name());</span>
+            }
+<span class="fc bfc" id="L178" title="All 2 branches covered.">            if (store.changeVocabularyStatus(name, v.status(), to, now(), token)) {</span>
+<span class="fc" id="L179">                LOG.info(&quot;vocabulary status changed to {}&quot;, to);</span>
+<span class="fc" id="L180">                return get(name);</span>
+            }
+<span class="fc" id="L182">            retry.beforeRetry();</span>
+<span class="fc" id="L183">        }</span>
+    }
+
+    /** PATCH .../versions/{version}: 404, 409 same status, conditional write (D4, D160). */
+    public VocabularyVersion changeVersionStatus(String name, int version, Status to) {
+<span class="fc" id="L188">        WriteRetry retry = new WriteRetry(writeBudget);</span>
+<span class="fc" id="L189">        String token = UUID.randomUUID().toString();</span>
+        while (true) {
+<span class="fc" id="L191">            VocabularyVersion current = getVersion(name, version);</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">            if (current.status() == to) {</span>
+<span class="fc" id="L193">                throw ApiException.conflict(&quot;Vocabulary version is already in status &quot; + to.name());</span>
+            }
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">            if (store.changeVersionStatus(name, version, current.status(), to, now(), token)) {</span>
+<span class="fc" id="L196">                LOG.info(&quot;vocabulary version status changed to {}&quot;, to);</span>
+<span class="fc" id="L197">                return getVersion(name, version);</span>
+            }
+<span class="nc" id="L199">            retry.beforeRetry();</span>
+<span class="nc" id="L200">        }</span>
+    }
+
+    private Instant now() {
+<span class="fc" id="L204">        return clock.instant().truncatedTo(ChronoUnit.SECONDS);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

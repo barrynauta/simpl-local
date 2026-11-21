@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Dto.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">Dto.java</span></div><h1>Dto.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import eu.simpl.vocabularymanager.domain.Model;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
+
+/** Wire objects of the decided contract (OpenAPI schemas plus D5, D10, D27, D79). */
+public final class Dto {
+
+    private Dto() {}
+
+    /** UTC to the second with Z (D58). */
+    public static String time(Instant t) {
+<span class="pc bpc" id="L21" title="1 of 2 branches missed.">        return t == null ? null : DateTimeFormatter.ISO_INSTANT.format(t.truncatedTo(ChronoUnit.SECONDS));</span>
+    }
+
+    /** VocabularyCategory: the vocabulary (D25). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L26">    public record VocabularyDto(</span>
+            String href,
+            String contentHref,
+            String name,
+            int version,
+            String description,
+            String status,
+            String createdBy,
+            String creationDate,
+            String lastUpdateDate) {
+
+        public static VocabularyDto of(Model.Vocabulary v, String contentBase) {
+<span class="fc" id="L38">            return new VocabularyDto(</span>
+<span class="fc" id="L39">                    &quot;/vocabularies/&quot; + v.name(),</span>
+<span class="fc" id="L40">                    contentBase + &quot;/content/&quot; + v.name(),</span>
+<span class="fc" id="L41">                    v.name(),</span>
+<span class="fc" id="L42">                    v.latestVersion(),</span>
+<span class="fc" id="L43">                    v.description(),</span>
+<span class="fc" id="L44">                    v.status().name(),</span>
+<span class="fc" id="L45">                    v.createdBy(),</span>
+<span class="fc" id="L46">                    time(v.creationDate()),</span>
+<span class="fc" id="L47">                    time(v.lastUpdateDate()));</span>
+        }
+    }
+
+    /**
+     * VocabularyMetadata and VocabularyVersionMetadataResponse: the vocabulary version (D26, D27,
+     * D5). validationWarnings is present only on the creation response, always as an array (D10).
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonPropertyOrder({
+        &quot;href&quot;,
+        &quot;contentHref&quot;,
+        &quot;latestVersionHref&quot;,
+        &quot;name&quot;,
+        &quot;version&quot;,
+        &quot;description&quot;,
+        &quot;changelog&quot;,
+        &quot;status&quot;,
+        &quot;createdBy&quot;,
+        &quot;creationDate&quot;,
+        &quot;lastUpdateDate&quot;,
+        &quot;validationWarnings&quot;
+    })
+<span class="fc" id="L70">    public record VersionDto(</span>
+            String href,
+            String contentHref,
+            String latestVersionHref,
+            String name,
+            int version,
+            String description,
+            String changelog,
+            String status,
+            String createdBy,
+            String creationDate,
+            String lastUpdateDate,
+            List&lt;WarningDto&gt; validationWarnings) {
+
+        public static VersionDto of(Model.VocabularyVersion v, String contentBase, List&lt;WarningDto&gt; warnings) {
+<span class="fc" id="L85">            return new VersionDto(</span>
+<span class="fc" id="L86">                    &quot;/vocabularies/&quot; + v.name() + &quot;/versions/&quot; + v.version(),</span>
+<span class="fc" id="L87">                    contentBase + &quot;/content/&quot; + v.name() + &quot;/versions/&quot; + v.version(),</span>
+<span class="fc" id="L88">                    &quot;/vocabularies/&quot; + v.name() + &quot;/versions/&quot; + v.latestVersion(),</span>
+<span class="fc" id="L89">                    v.name(),</span>
+<span class="fc" id="L90">                    v.version(),</span>
+<span class="fc" id="L91">                    v.description(),</span>
+<span class="fc" id="L92">                    v.changelog(),</span>
+<span class="fc" id="L93">                    v.status().name(),</span>
+<span class="fc" id="L94">                    v.createdBy(),</span>
+<span class="fc" id="L95">                    time(v.creationDate()),</span>
+<span class="fc" id="L96">                    time(v.lastUpdateDate()),</span>
+                    warnings);
+        }
+    }
+
+    /** VocabularyValidationWarning (D10). */
+<span class="fc" id="L102">    public record WarningDto(String code, String description, String location) {</span>
+        public static WarningDto of(Model.Warning w) {
+<span class="fc" id="L104">            return new WarningDto(w.code(), w.description(), w.location());</span>
+        }
+    }
+
+    /** ExternalVocabulary (D41, D110: aliasUris always present). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L110">    public record ExternalDto(</span>
+            String href,
+            String name,
+            String namespaceUri,
+            @JsonInclude(JsonInclude.Include.ALWAYS) List&lt;String&gt; aliasUris,
+            String sourceUri,
+            String description,
+            String createdBy,
+            String creationDate) {
+
+        public static ExternalDto of(Model.ExternalVocabulary e) {
+<span class="fc" id="L121">            return new ExternalDto(</span>
+<span class="fc" id="L122">                    &quot;/external-vocabularies/&quot; + e.name(),</span>
+<span class="fc" id="L123">                    e.name(),</span>
+<span class="fc" id="L124">                    e.namespaceUri(),</span>
+<span class="fc" id="L125">                    e.aliasUris(),</span>
+<span class="fc" id="L126">                    e.sourceUri(),</span>
+<span class="fc" id="L127">                    e.description(),</span>
+<span class="fc" id="L128">                    e.createdBy(),</span>
+<span class="fc" id="L129">                    time(e.creationDate()));</span>
+        }
+    }
+
+    /** VocabularySearchItem (D38). */
+<span class="fc" id="L134">    public record SearchItemDto(</span>
+            String href, String contentHref, String name, int version, String status, boolean latest) {}
+
+    /** HealthResponse. */
+<span class="fc" id="L138">    public record HealthDto(String status) {}</span>
+
+    /** CollectionPage with items; links are left out when absent (D22). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonPropertyOrder({&quot;page&quot;, &quot;totalPages&quot;, &quot;total&quot;, &quot;pageSize&quot;, &quot;self&quot;, &quot;first&quot;, &quot;prev&quot;, &quot;next&quot;, &quot;last&quot;, &quot;items&quot;})
+<span class="fc" id="L143">    public record PageDto&lt;T&gt;(</span>
+            int page,
+            long totalPages,
+            long total,
+            int pageSize,
+            String self,
+            String first,
+            String prev,
+            String next,
+            String last,
+            @JsonInclude(JsonInclude.Include.ALWAYS) List&lt;T&gt; items) {
+
+        /** A paged list with links that keep the request's other parameters (D22, D59, D78, D111). */
+        public static &lt;T&gt; PageDto&lt;T&gt; paged(
+                String path, Map&lt;String, String&gt; params, int page, int pageSize, long total, List&lt;T&gt; items) {
+<span class="fc bfc" id="L158" title="All 2 branches covered.">            long totalPages = total == 0 ? 0 : (total + pageSize - 1) / pageSize;</span>
+<span class="fc" id="L159">            String self = link(path, params, page, pageSize);</span>
+<span class="fc" id="L160">            String first = link(path, params, 1, pageSize);</span>
+<span class="fc" id="L161">            String prev = null;</span>
+<span class="fc bfc" id="L162" title="All 4 branches covered.">            if (total &gt; 0 &amp;&amp; page &gt; 1) {</span>
+<span class="fc" id="L163">                prev = link(path, params, (int) Math.min(page - 1L, totalPages), pageSize);</span>
+            }
+<span class="fc bfc" id="L165" title="All 2 branches covered.">            String next = page &lt; totalPages ? link(path, params, page + 1, pageSize) : null;</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">            String last = total &gt; 0 ? link(path, params, (int) totalPages, pageSize) : null;</span>
+<span class="fc" id="L167">            return new PageDto&lt;&gt;(page, totalPages, total, pageSize, self, first, prev, next, last, items);</span>
+        }
+
+        /** A search result: one page, no links (D38, D153). */
+        public static &lt;T&gt; PageDto&lt;T&gt; search(List&lt;T&gt; items) {
+<span class="fc bfc" id="L172" title="All 2 branches covered.">            return new PageDto&lt;&gt;(1, items.isEmpty() ? 0 : 1, items.size(), 100, null, null, null, null, null, items);</span>
+        }
+
+        static String link(String path, Map&lt;String, String&gt; params, int page, int pageSize) {
+<span class="fc" id="L176">            StringBuilder sb = new StringBuilder(path);</span>
+<span class="fc" id="L177">            sb.append(&quot;?page=&quot;).append(page).append(&quot;&amp;pageSize=&quot;).append(pageSize);</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">            for (Map.Entry&lt;String, String&gt; e : params.entrySet()) {</span>
+<span class="fc bfc" id="L179" title="All 4 branches covered.">                if (e.getKey().equals(&quot;page&quot;) || e.getKey().equals(&quot;pageSize&quot;)) {</span>
+<span class="fc" id="L180">                    continue;</span>
+                }
+<span class="fc" id="L182">                sb.append('&amp;').append(enc(e.getKey())).append('=').append(enc(e.getValue()));</span>
+<span class="fc" id="L183">            }</span>
+<span class="fc" id="L184">            return sb.toString();</span>
+        }
+
+        private static String enc(String s) {
+<span class="fc" id="L188">            return URLEncoder.encode(s, StandardCharsets.UTF_8).replace(&quot;+&quot;, &quot;%20&quot;);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

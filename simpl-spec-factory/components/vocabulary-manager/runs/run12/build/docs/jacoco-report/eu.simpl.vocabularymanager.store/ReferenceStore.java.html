@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReferenceStore.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">ReferenceStore.java</span></div><h1>ReferenceStore.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.domain.Model.Status;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.springframework.stereotype.Component;
+
+/**
+ * Batch lookups by name and version (internal) and by normalised namespace key (external): the
+ * reference check of an upload in one store query (Q5, D85) and the internal search (D38).
+ */
+@Component
+public class ReferenceStore {
+
+    private final StoreClient store;
+
+<span class="fc" id="L27">    public ReferenceStore(StoreClient store) {</span>
+<span class="fc" id="L28">        this.store = store;</span>
+<span class="fc" id="L29">    }</span>
+
+    /**
+     * What the store knows about one internal vocabulary.
+     *
+     * @param status vocabulary status
+     * @param latest latest version number
+     * @param versions status of each looked-up version (and, when asked, every ACTIVE version)
+     */
+<span class="fc" id="L38">    public record InternalInfo(Status status, int latest, Map&lt;Integer, Status&gt; versions) {</span>
+
+        /** Highest version number with status ACTIVE among the known versions, or 0. */
+        public int latestActive() {
+<span class="fc" id="L42">            int best = 0;</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">            for (Map.Entry&lt;Integer, Status&gt; e : versions.entrySet()) {</span>
+<span class="pc bpc" id="L44" title="1 of 4 branches missed.">                if (e.getValue() == Status.ACTIVE &amp;&amp; e.getKey() &gt; best) {</span>
+<span class="fc" id="L45">                    best = e.getKey();</span>
+                }
+<span class="fc" id="L47">            }</span>
+<span class="fc" id="L48">            return best;</span>
+        }
+    }
+
+    /**
+     * Result of a combined lookup.
+     *
+     * @param internal per vocabulary name
+     * @param externalKeys normalised namespace keys that a registered external vocabulary owns
+     */
+<span class="fc" id="L58">    public record Lookup(Map&lt;String, InternalInfo&gt; internal, Set&lt;String&gt; externalKeys) {}</span>
+
+    /**
+     * One store query for internal names (with the given version numbers, the latest version and,
+     * when {@code withActive}, every ACTIVE version) and for external namespace keys.
+     */
+    public Lookup lookup(
+            Collection&lt;String&gt; names,
+            Collection&lt;Integer&gt; versions,
+            boolean withActive,
+            Collection&lt;String&gt; externalKeys) {
+<span class="fc" id="L69">        Map&lt;String, InternalInfo&gt; internal = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L70">        Set&lt;String&gt; ext = new HashSet&lt;&gt;();</span>
+<span class="pc bpc" id="L71" title="1 of 4 branches missed.">        if (names.isEmpty() &amp;&amp; externalKeys.isEmpty()) {</span>
+<span class="nc" id="L72">            return new Lookup(internal, ext);</span>
+        }
+<span class="fc" id="L74">        List&lt;String&gt; branches = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (!names.isEmpty()) {</span>
+            String versionFilter =
+<span class="fc bfc" id="L77" title="All 2 branches covered.">                    versions.isEmpty() ? &quot;(?num = ?latest)&quot; : &quot;(?num = ?latest || ?num IN (?versionList))&quot;;</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">            if (withActive) {</span>
+<span class="fc" id="L79">                versionFilter = &quot;(&quot; + versionFilter + &quot; || STR(?ns) = \&quot;ACTIVE\&quot;)&quot;;</span>
+            }
+<span class="fc" id="L81">            branches.add(&quot;{ VALUES (?name) { ?names } GRAPH ?gInternal { ?v a vm:InternalVocabulary ; vm:name ?name&quot;</span>
+                    + &quot; ; vm:status ?vs ; vm:latestVersion ?latest . OPTIONAL { ?ver vm:ofVocabulary ?v ;&quot;
+                    + &quot; vm:version ?num ; vm:status ?ns . FILTER&quot;
+                    + versionFilter
+                    + &quot; } } }&quot;);
+        }
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (!externalKeys.isEmpty()) {</span>
+<span class="fc" id="L88">            branches.add(&quot;{ VALUES (?key) { ?keys } GRAPH ?gExternal { { ?e vm:namespaceKey ?key } UNION { ?e&quot;</span>
+                    + &quot; vm:alias ?a . ?a vm:key ?key } } }&quot;);
+        }
+<span class="fc" id="L91">        ParameterizedSparqlString q = Rdf.pss(&quot;SELECT ?name ?vs ?latest ?num ?ns ?key WHERE { &quot;</span>
+<span class="fc" id="L92">                + String.join(&quot; UNION &quot;, branches)</span>
+                + &quot; } LIMIT 20000&quot;);
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (!names.isEmpty()) {</span>
+<span class="fc" id="L95">            q.setValues(&quot;names&quot;, literals(names));</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (!versions.isEmpty()) {</span>
+<span class="fc" id="L97">                StringBuilder in = new StringBuilder();</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">                for (Integer v : versions) {</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">                    if (!in.isEmpty()) {</span>
+<span class="nc" id="L100">                        in.append(&quot;, &quot;);</span>
+                    }
+<span class="fc" id="L102">                    in.append(v.intValue());</span>
+<span class="fc" id="L103">                }</span>
+<span class="fc" id="L104">                q.setCommandText(q.getCommandText().replace(&quot;?versionList&quot;, in.toString()));</span>
+            }
+        }
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        if (!externalKeys.isEmpty()) {</span>
+<span class="fc" id="L108">            q.setValues(&quot;keys&quot;, literals(externalKeys));</span>
+        }
+<span class="fc" id="L110">        Map&lt;String, Map&lt;Integer, Status&gt;&gt; versionMaps = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        for (QuerySolution r : store.select(q.toString())) {</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">            if (r.contains(&quot;key&quot;)) {</span>
+<span class="fc" id="L113">                ext.add(Rdf.str(r.get(&quot;key&quot;)));</span>
+<span class="fc" id="L114">                continue;</span>
+            }
+<span class="fc" id="L116">            String name = Rdf.str(r.get(&quot;name&quot;));</span>
+<span class="fc" id="L117">            Map&lt;Integer, Status&gt; vm = versionMaps.computeIfAbsent(name, k -&gt; new HashMap&lt;&gt;());</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">            if (!internal.containsKey(name)) {</span>
+<span class="fc" id="L119">                internal.put(</span>
+                        name,
+<span class="fc" id="L121">                        new InternalInfo(Status.parse(Rdf.str(r.get(&quot;vs&quot;))), Rdf.integerValue(r.get(&quot;latest&quot;)), vm));</span>
+            }
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">            if (r.contains(&quot;num&quot;)) {</span>
+<span class="fc" id="L124">                vm.put(Rdf.integerValue(r.get(&quot;num&quot;)), Status.parse(Rdf.str(r.get(&quot;ns&quot;))));</span>
+            }
+<span class="fc" id="L126">        }</span>
+<span class="fc" id="L127">        return new Lookup(internal, ext);</span>
+    }
+
+    private static List&lt;RDFNode&gt; literals(Collection&lt;String&gt; values) {
+<span class="fc" id="L131">        List&lt;RDFNode&gt; out = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        for (String s : values) {</span>
+<span class="fc" id="L133">            out.add(ResourceFactory.createStringLiteral(s));</span>
+<span class="fc" id="L134">        }</span>
+<span class="fc" id="L135">        return out;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

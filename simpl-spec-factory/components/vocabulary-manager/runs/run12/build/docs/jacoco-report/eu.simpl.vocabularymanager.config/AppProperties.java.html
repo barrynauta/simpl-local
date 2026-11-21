@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">AppProperties.java</span></div><h1>AppProperties.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import java.time.Duration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * Configuration of the service; every value comes from the environment (decisions E2, E4, D83).
+ *
+ * @param contentBaseUrl base of contentHref values and of internal references (E2, D12)
+ * @param store the RDF store (Fuseki) endpoints, users and timeouts (D44, D71, D83)
+ * @param auth the identity provider (E1, E5, D44, D88)
+ * @param uploads concurrency limit of uploads (D92)
+ */
+@ConfigurationProperties(prefix = &quot;vm&quot;)
+public record AppProperties(String contentBaseUrl, Store store, Auth auth, Uploads uploads) {
+
+<span class="fc" id="L17">    public AppProperties {</span>
+<span class="pc bpc" id="L18" title="1 of 4 branches missed.">        if (contentBaseUrl == null || contentBaseUrl.isBlank()) {</span>
+<span class="fc" id="L19">            contentBaseUrl = &quot;https://authority.example/vocabulary-manager&quot;;</span>
+        }
+<span class="pc bpc" id="L21" title="1 of 2 branches missed.">        while (contentBaseUrl.endsWith(&quot;/&quot;)) {</span>
+<span class="nc" id="L22">            contentBaseUrl = contentBaseUrl.substring(0, contentBaseUrl.length() - 1);</span>
+        }
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        if (uploads == null) {</span>
+<span class="fc" id="L25">            uploads = new Uploads(4);</span>
+        }
+<span class="fc" id="L27">    }</span>
+
+    /**
+     * Store settings.
+     *
+     * @param queryUrl SPARQL query endpoint
+     * @param updateUrl SPARQL update endpoint
+     * @param readUser user for queries
+     * @param readPassword password of the read user
+     * @param updateUser user for updates
+     * @param updatePassword password of the update user
+     * @param connectTimeout connect timeout (2 s)
+     * @param readTimeout response timeout of a query (10 s)
+     * @param updateTimeout response timeout of an update (45 s)
+     * @param writeBudget total time a write may take, lock and retries included (30 s)
+     */
+<span class="fc" id="L43">    public record Store(</span>
+            String queryUrl,
+            String updateUrl,
+            String readUser,
+            String readPassword,
+            String updateUser,
+            String updatePassword,
+            Duration connectTimeout,
+            Duration readTimeout,
+            Duration updateTimeout,
+            Duration writeBudget) {}
+
+    /**
+     * Identity provider settings.
+     *
+     * @param issuer the one accepted issuer (E5)
+     * @param audience the required audience (E5)
+     * @param jwksUri where the realm keys are fetched
+     * @param fetchTimeout timeout of a key fetch (2 s)
+     * @param refetchInterval minimum time between two key fetches (10 s, D88)
+     */
+<span class="fc" id="L64">    public record Auth(</span>
+            String issuer, String audience, String jwksUri, Duration fetchTimeout, Duration refetchInterval) {}
+
+    /**
+     * Upload limits.
+     *
+     * @param maxConcurrent create or new-version requests handled at once per instance (D92)
+     */
+<span class="fc" id="L72">    public record Uploads(int maxConcurrent) {}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

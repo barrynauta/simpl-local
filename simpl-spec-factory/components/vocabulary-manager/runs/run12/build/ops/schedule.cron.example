@@ -1,0 +1,5 @@
+# Example schedule (D89, D156). Installing it is an operations task. Times in UTC.
+# Daily backup at 02:00, copied off the host by BACKUP_COPY_CMD.
+0 2 * * *  cd /opt/vocabulary-manager && BACKUP_COPY_CMD='rclone copy {file} offsite:vm-backups' ops/backup.sh >> /var/log/vm-backup.log 2>&1
+# Weekly compaction on Sunday at 03:00, after the backup.
+0 3 * * 0  cd /opt/vocabulary-manager && ops/compact.sh >> /var/log/vm-compact.log 2>&1

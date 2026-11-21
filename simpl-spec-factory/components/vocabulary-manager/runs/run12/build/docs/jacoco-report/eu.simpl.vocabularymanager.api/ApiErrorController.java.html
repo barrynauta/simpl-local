@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiErrorController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">ApiErrorController.java</span></div><h1>ApiErrorController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.springframework.boot.webmvc.error.ErrorController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * Replaces the framework's error page: whatever the container itself rejects is answered with
+ * problem+json too (D158). A direct request to /error is an unknown path (404).
+ */
+@RestController
+public class ApiErrorController implements ErrorController {
+
+    private final ProblemWriter writer;
+
+<span class="fc" id="L23">    public ApiErrorController(ProblemWriter writer) {</span>
+<span class="fc" id="L24">        this.writer = writer;</span>
+<span class="fc" id="L25">    }</span>
+
+    @RequestMapping(&quot;/error&quot;)
+    public void error(HttpServletRequest request, HttpServletResponse response) throws IOException {
+<span class="fc" id="L29">        Object code = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);</span>
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">        int status = code instanceof Integer i ? i : 404;</span>
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        if (status &lt; 400) {</span>
+<span class="nc" id="L32">            status = 404;</span>
+        }
+<span class="fc" id="L34">        ProblemType type = ProblemType.forStatus(status);</span>
+<span class="pc bpc" id="L35" title="2 of 3 branches missed.">        String detail =</span>
+                switch (status) {
+<span class="fc" id="L37">                    case 404 -&gt; &quot;The requested resource was not found.&quot;;</span>
+<span class="nc" id="L38">                    case 413 -&gt; ApiException.FILE_TOO_LARGE;</span>
+<span class="pc" id="L39">                    default -&gt; type.title();</span>
+                };
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        ApiException ex = status == 413 ? ApiException.fileTooLarge() : new ApiException(type, detail);</span>
+<span class="fc" id="L42">        writer.write(response, ex);</span>
+<span class="pc bpc" id="L43" title="3 of 4 branches missed.">        if (response.getStatus() != status &amp;&amp; status != type.status()) {</span>
+<span class="nc" id="L44">            response.setStatus(status);</span>
+        }
+<span class="fc" id="L46">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

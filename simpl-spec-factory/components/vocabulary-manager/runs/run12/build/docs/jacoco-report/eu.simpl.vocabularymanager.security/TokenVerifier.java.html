@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TokenVerifier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">TokenVerifier.java</span></div><h1>TokenVerifier.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jwt.proc.BadJWTException;
+import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
+import eu.simpl.vocabularymanager.config.AppProperties;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.micrometer.core.instrument.MeterRegistry;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.text.ParseException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
+
+/**
+ * Bearer token checks of decisions D17, D44, D88, D108, D129 and D132: signature with the cached
+ * realm keys (Nimbus JWKSet and JWSVerifier), claims with Nimbus DefaultJWTClaimsVerifier (issuer,
+ * audience, expiry, not-before). Own code only for the timing of the key fetch: at most one fetch
+ * per 10 s, 2 s timeout, no retry inside a request, fail closed with 503 when no keys can be
+ * fetched.
+ */
+@Component
+public class TokenVerifier {
+
+<span class="fc" id="L51">    private static final Logger LOG = LoggerFactory.getLogger(TokenVerifier.class);</span>
+<span class="fc" id="L52">    private static final Set&lt;JWSAlgorithm&gt; ALLOWED = Set.of(</span>
+            JWSAlgorithm.RS256,
+            JWSAlgorithm.RS384,
+            JWSAlgorithm.RS512,
+            JWSAlgorithm.PS256,
+            JWSAlgorithm.ES256,
+            JWSAlgorithm.ES384);
+
+    /** Outcome of a failed check: 401 or 503. */
+    public static final class TokenException extends Exception {
+        private static final long serialVersionUID = 1L;
+        private final boolean unavailable;
+
+        public TokenException(String message, boolean unavailable) {
+<span class="fc" id="L66">            super(message);</span>
+<span class="fc" id="L67">            this.unavailable = unavailable;</span>
+<span class="fc" id="L68">        }</span>
+
+        public boolean unavailable() {
+<span class="fc" id="L71">            return unavailable;</span>
+        }
+    }
+
+    /**
+     * The checked identity.
+     *
+     * @param subject token subject (sub), the user id in logs (D80)
+     * @param creator email, else preferred_username (D27)
+     * @param roles realm roles
+     */
+<span class="fc" id="L82">    public record Principal(String subject, String creator, Set&lt;String&gt; roles) {}</span>
+
+    private final AppProperties.Auth cfg;
+    private final HttpClient http;
+    private final Clock clock;
+    private final CircuitBreaker breaker;
+<span class="fc" id="L88">    private final DefaultJWSVerifierFactory verifierFactory = new DefaultJWSVerifierFactory();</span>
+    private final DefaultJWTClaimsVerifier&lt;com.nimbusds.jose.proc.SecurityContext&gt; claimsVerifier;
+
+    private volatile JWKSet keys;
+    private volatile Instant lastFetchAttempt;
+    private volatile boolean lastFetchFailed;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public TokenVerifier(AppProperties props, MeterRegistry meters) {
+<span class="fc" id="L97">        this(props, meters, Clock.systemUTC());</span>
+<span class="fc" id="L98">    }</span>
+
+<span class="fc" id="L100">    TokenVerifier(AppProperties props, MeterRegistry meters, Clock clock) {</span>
+<span class="fc" id="L101">        this.cfg = props.auth();</span>
+<span class="fc" id="L102">        this.clock = clock;</span>
+<span class="fc" id="L103">        this.http = HttpClient.newBuilder()</span>
+<span class="fc" id="L104">                .connectTimeout(cfg.fetchTimeout())</span>
+<span class="fc" id="L105">                .followRedirects(HttpClient.Redirect.NEVER)</span>
+<span class="fc" id="L106">                .build();</span>
+<span class="fc" id="L107">        CircuitBreakerConfig cbc = CircuitBreakerConfig.custom()</span>
+<span class="fc" id="L108">                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)</span>
+<span class="fc" id="L109">                .slidingWindowSize(20)</span>
+<span class="fc" id="L110">                .minimumNumberOfCalls(10)</span>
+<span class="fc" id="L111">                .failureRateThreshold(50)</span>
+<span class="fc" id="L112">                .waitDurationInOpenState(Duration.ofSeconds(10))</span>
+<span class="fc" id="L113">                .permittedNumberOfCallsInHalfOpenState(3)</span>
+<span class="fc" id="L114">                .build();</span>
+<span class="fc" id="L115">        CircuitBreakerRegistry registry = CircuitBreakerRegistry.of(cbc);</span>
+<span class="fc" id="L116">        this.breaker = registry.circuitBreaker(&quot;identityProviderKeys&quot;);</span>
+<span class="fc" id="L117">        TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(registry).bindTo(meters);</span>
+<span class="fc" id="L118">        JWTClaimsSet exact = new JWTClaimsSet.Builder().issuer(cfg.issuer()).build();</span>
+<span class="fc" id="L119">        this.claimsVerifier = new DefaultJWTClaimsVerifier&lt;&gt;(cfg.audience(), exact, Set.of(&quot;sub&quot;, &quot;exp&quot;, &quot;iss&quot;));</span>
+<span class="fc" id="L120">    }</span>
+
+    /** Verifies the token and returns the principal. */
+    public Principal verify(String token) throws TokenException {
+        SignedJWT jwt;
+        try {
+<span class="fc" id="L126">            jwt = SignedJWT.parse(token);</span>
+<span class="fc" id="L127">        } catch (ParseException | RuntimeException e) {</span>
+<span class="fc" id="L128">            throw new TokenException(&quot;malformed token&quot;, false);</span>
+<span class="fc" id="L129">        }</span>
+<span class="fc" id="L130">        JWSAlgorithm alg = jwt.getHeader().getAlgorithm();</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        if (!ALLOWED.contains(alg)) {</span>
+<span class="nc" id="L132">            throw new TokenException(&quot;unsupported algorithm&quot;, false);</span>
+        }
+<span class="fc" id="L134">        String kid = jwt.getHeader().getKeyID();</span>
+<span class="fc" id="L135">        JWK jwk = keyFor(kid);</span>
+        try {
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">            Key key = jwk.getKeyType().getValue().equals(&quot;EC&quot;)</span>
+<span class="nc" id="L138">                    ? jwk.toECKey().toECPublicKey()</span>
+<span class="fc" id="L139">                    : jwk.toRSAKey().toRSAPublicKey();</span>
+<span class="fc" id="L140">            JWSVerifier verifier = verifierFactory.createJWSVerifier(jwt.getHeader(), key);</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">            if (!jwt.verify(verifier)) {</span>
+<span class="fc" id="L142">                throw new TokenException(&quot;bad signature&quot;, false);</span>
+            }
+<span class="fc" id="L144">            JWTClaimsSet claims = jwt.getJWTClaimsSet();</span>
+<span class="fc" id="L145">            claimsVerifier.verify(claims, null);</span>
+<span class="fc" id="L146">            return new Principal(claims.getSubject(), creator(claims), roles(claims));</span>
+<span class="fc" id="L147">        } catch (JOSEException | ParseException | BadJWTException | RuntimeException e) {</span>
+<span class="fc" id="L148">            throw new TokenException(&quot;invalid token: &quot; + e.getClass().getSimpleName(), false);</span>
+        }
+    }
+
+    private JWK keyFor(String kid) throws TokenException {
+<span class="fc" id="L153">        JWKSet current = keys;</span>
+<span class="pc bpc" id="L154" title="1 of 6 branches missed.">        if (current != null &amp;&amp; kid != null &amp;&amp; current.getKeyByKeyId(kid) != null) {</span>
+<span class="fc" id="L155">            return current.getKeyByKeyId(kid);</span>
+        }
+<span class="fc" id="L157">        return keyForSlow(kid);</span>
+    }
+
+    /** Unknown key id: one thread at a time, so a fetch in progress is waited for (D88, D129). */
+    private synchronized JWK keyForSlow(String kid) throws TokenException {
+<span class="fc" id="L162">        JWKSet current = keys;</span>
+<span class="pc bpc" id="L163" title="1 of 6 branches missed.">        if (current != null &amp;&amp; kid != null &amp;&amp; current.getKeyByKeyId(kid) != null) {</span>
+<span class="fc" id="L164">            return current.getKeyByKeyId(kid);</span>
+        }
+<span class="fc" id="L166">        Instant now = clock.instant();</span>
+<span class="fc" id="L167">        Instant last = lastFetchAttempt;</span>
+<span class="fc bfc" id="L168" title="All 4 branches covered.">        boolean mayFetch = last == null || !now.isBefore(last.plus(cfg.refetchInterval()));</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">        if (mayFetch) {</span>
+<span class="fc" id="L170">            fetch(now);</span>
+<span class="fc" id="L171">            current = keys;</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">            if (lastFetchFailed) {</span>
+<span class="fc" id="L173">                throw new TokenException(&quot;realm keys could not be fetched&quot;, true);</span>
+            }
+<span class="pc bpc" id="L175" title="2 of 6 branches missed.">            if (kid != null &amp;&amp; current != null &amp;&amp; current.getKeyByKeyId(kid) != null) {</span>
+<span class="fc" id="L176">                return current.getKeyByKeyId(kid);</span>
+            }
+<span class="fc" id="L178">            throw new TokenException(&quot;unknown key id&quot;, false);</span>
+        }
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        if (lastFetchFailed) {</span>
+<span class="fc" id="L181">            throw new TokenException(&quot;realm keys not available&quot;, true);</span>
+        }
+<span class="fc" id="L183">        throw new TokenException(&quot;unknown key id&quot;, false);</span>
+    }
+
+    private void fetch(Instant now) {
+<span class="fc" id="L187">        lastFetchAttempt = now;</span>
+        try {
+<span class="fc" id="L189">            String body = breaker.executeCallable(this::download);</span>
+<span class="fc" id="L190">            keys = JWKSet.parse(body);</span>
+<span class="fc" id="L191">            lastFetchFailed = false;</span>
+<span class="fc" id="L192">            LOG.info(&quot;realm keys loaded: {} keys&quot;, keys.getKeys().size());</span>
+<span class="nc" id="L193">        } catch (CallNotPermittedException e) {</span>
+<span class="nc" id="L194">            lastFetchFailed = true;</span>
+<span class="nc" id="L195">            LOG.warn(&quot;realm key fetch skipped: circuit breaker open&quot;);</span>
+<span class="fc" id="L196">        } catch (Exception e) {</span>
+<span class="fc" id="L197">            lastFetchFailed = true;</span>
+<span class="fc" id="L198">            LOG.warn(&quot;realm key fetch failed: {}&quot;, e.getClass().getSimpleName());</span>
+<span class="pc" id="L199">        }</span>
+<span class="fc" id="L200">    }</span>
+
+    private String download() throws IOException, InterruptedException {
+<span class="fc" id="L203">        HttpRequest.Builder rb = HttpRequest.newBuilder(URI.create(cfg.jwksUri()))</span>
+<span class="fc" id="L204">                .timeout(cfg.fetchTimeout())</span>
+<span class="fc" id="L205">                .GET();</span>
+<span class="fc" id="L206">        String correlationId = MDC.get(&quot;correlationId&quot;);</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">        if (correlationId != null) {</span>
+<span class="fc" id="L208">            rb.header(&quot;X-Correlation-Id&quot;, correlationId);</span>
+        }
+<span class="fc" id="L210">        String traceId = MDC.get(&quot;traceId&quot;);</span>
+<span class="fc" id="L211">        String spanId = MDC.get(&quot;spanId&quot;);</span>
+<span class="pc bpc" id="L212" title="3 of 8 branches missed.">        if (traceId != null &amp;&amp; spanId != null &amp;&amp; traceId.length() == 32 &amp;&amp; spanId.length() == 16) {</span>
+<span class="fc" id="L213">            rb.header(&quot;traceparent&quot;, &quot;00-&quot; + traceId + &quot;-&quot; + spanId + &quot;-01&quot;);</span>
+        }
+<span class="fc" id="L215">        HttpResponse&lt;String&gt; resp = http.send(rb.build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));</span>
+<span class="fc bfc" id="L216" title="All 2 branches covered.">        if (resp.statusCode() != 200) {</span>
+<span class="fc" id="L217">            throw new IOException(&quot;status &quot; + resp.statusCode());</span>
+        }
+<span class="fc" id="L219">        return resp.body();</span>
+    }
+
+    /** Key state for GET /health (D108, D134): never fetches. */
+    public boolean degraded() {
+<span class="pc bpc" id="L224" title="1 of 4 branches missed.">        return keys == null &amp;&amp; lastFetchFailed;</span>
+    }
+
+    private static String creator(JWTClaimsSet c) throws ParseException {
+<span class="fc" id="L228">        String email = c.getStringClaim(&quot;email&quot;);</span>
+<span class="pc bpc" id="L229" title="2 of 4 branches missed.">        if (email != null &amp;&amp; !email.isBlank()) {</span>
+<span class="fc" id="L230">            return email;</span>
+        }
+<span class="nc" id="L232">        String user = c.getStringClaim(&quot;preferred_username&quot;);</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        return user != null ? user : c.getSubject();</span>
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private static Set&lt;String&gt; roles(JWTClaimsSet c) {
+<span class="fc" id="L238">        Set&lt;String&gt; out = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L239">        Object ra = c.getClaim(&quot;realm_access&quot;);</span>
+<span class="pc bpc" id="L240" title="2 of 4 branches missed.">        if (ra instanceof Map&lt;?, ?&gt; m &amp;&amp; m.get(&quot;roles&quot;) instanceof List&lt;?&gt; l) {</span>
+<span class="fc bfc" id="L241" title="All 2 branches covered.">            for (Object o : new ArrayList&lt;&gt;((List&lt;Object&gt;) l)) {</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">                if (o instanceof String s) {</span>
+<span class="fc" id="L243">                    out.add(s);</span>
+                }
+<span class="fc" id="L245">            }</span>
+        }
+<span class="fc" id="L247">        return out;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

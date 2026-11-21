@@ -1,0 +1,107 @@
+spring:
+  application:
+    name: vocabulary-manager-be
+  main:
+    banner-mode: off
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+  threads:
+    virtual:
+      enabled: false
+  servlet:
+    multipart:
+      enabled: true
+      resolve-lazily: true
+      max-file-size: -1
+      max-request-size: 6MB
+      file-size-threshold: 1MB
+  mvc:
+    problemdetails:
+      enabled: false
+  web:
+    resources:
+      add-mappings: false
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  max-http-request-header-size: 32KB
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: never
+    include-message: never
+  tomcat:
+    max-swallow-size: -1
+    max-http-form-post-size: 2MB
+    max-parameter-count: 10000
+    max-part-count: 64
+    max-part-header-size: 4KB
+    relaxed-query-chars: "|,{,},[,],\\,^,`,\",<,>"
+    relaxed-path-chars: "|,{,},[,],\\,^,`,\",<,>"
+    threads:
+      max: 200
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:9090}
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    defaults:
+      enabled: false
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type: w3c
+  observations:
+    key-values:
+      application: vocabulary-manager-be
+  metrics:
+    tags:
+      application: vocabulary-manager-be
+
+logging:
+  structured:
+    format:
+      console: logstash
+  level:
+    root: INFO
+    org.apache.jena: WARN
+
+vm:
+  content-base-url: ${VOCABULARY_CONTENT_BASE_URL:https://authority.example/vocabulary-manager}
+  store:
+    query-url: ${STORE_QUERY_URL:http://localhost:3030/vocabulary/query}
+    update-url: ${STORE_UPDATE_URL:http://localhost:3030/vocabulary/update}
+    read-user: ${STORE_READ_USER:vmread}
+    read-password: ${STORE_READ_PASSWORD:}
+    update-user: ${STORE_UPDATE_USER:vmupdate}
+    update-password: ${STORE_UPDATE_PASSWORD:}
+    connect-timeout: 2s
+    read-timeout: 10s
+    update-timeout: 45s
+    write-budget: 30s
+  auth:
+    issuer: ${ISSUER_URI:http://localhost:8193/realms/simpl}
+    audience: ${TOKEN_AUDIENCE:vocabulary-manager-be}
+    jwks-uri: ${JWKS_URI:http://localhost:8193/realms/simpl/protocol/openid-connect/certs}
+    fetch-timeout: 2s
+    refetch-interval: 10s
+  uploads:
+    max-concurrent: ${MAX_CONCURRENT_UPLOADS:4}

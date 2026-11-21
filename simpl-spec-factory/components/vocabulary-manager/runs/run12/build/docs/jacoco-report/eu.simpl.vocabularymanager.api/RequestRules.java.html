@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">RequestRules.java</span></div><h1>RequestRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.security.TokenVerifier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.databind.JsonNode;
+
+/** Shared request checks of the controllers (D7, D37, D52). */
+final class RequestRules {
+
+<span class="fc" id="L16">    static final Set&lt;String&gt; NONE = Set.of();</span>
+
+    private RequestRules() {}
+
+    /** Any query parameter on POST, PATCH or DELETE is 400 (D52). */
+    static void noQuery(String rawQuery) {
+<span class="fc" id="L22">        QueryParams.parse(rawQuery, NONE);</span>
+<span class="fc" id="L23">    }</span>
+
+    static void throwIfAny(List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L27">            throw ApiException.badRequest(issues);</span>
+        }
+<span class="fc" id="L29">    }</span>
+
+    /** A required text field of 1 to 1000 characters after trimming (D37). */
+    static void requiredText(MultipartForm form, String field, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        if (!form.has(field)) {</span>
+<span class="fc" id="L34">            issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' is required.&quot;, null));</span>
+<span class="pc bpc" id="L35" title="1 of 4 branches missed.">        } else if (form.oversized(field) || !Validation.validText(form.text(field))) {</span>
+<span class="fc" id="L36">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' must be 1 to 1000 characters after trimming.&quot;, null));
+        }
+<span class="fc" id="L39">    }</span>
+
+    static void requiredFile(MultipartForm form, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (form.file() == null) {</span>
+<span class="fc" id="L43">            issues.add(Issue.schemaViolation(&quot;body&quot;, MultipartForm.FILE, &quot;Field 'vocabularyFile' is required.&quot;, null));</span>
+        }
+<span class="fc" id="L45">    }</span>
+
+    static void name(String value, boolean present, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        if (!present) {</span>
+<span class="fc" id="L49">            issues.add(Issue.schemaViolation(&quot;body&quot;, &quot;name&quot;, &quot;Field 'name' is required.&quot;, null));</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        } else if (!Validation.validName(value)) {</span>
+<span class="fc" id="L51">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;,
+                    &quot;name&quot;,
+                    &quot;Field 'name' must be 3 to 64 characters matching ^[A-Z][a-zA-Z0-9]*$.&quot;,
+<span class="pc bpc" id="L55" title="2 of 4 branches missed.">                    value != null &amp;&amp; value.length() &lt;= 100 ? value : null));</span>
+        }
+<span class="fc" id="L57">    }</span>
+
+    /** Unknown properties of a JSON object, each an issue named with its path (D52). */
+    static void unknownProperties(JsonNode obj, Set&lt;String&gt; allowed, String prefix, List&lt;Issue&gt; out) {
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        for (String name : obj.propertyNames()) {</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">                String path = prefix.isEmpty() ? name : prefix + &quot;.&quot; + name;</span>
+<span class="fc" id="L64">                out.add(Issue.schemaViolation(&quot;body&quot;, path, &quot;Property '&quot; + path + &quot;' is not supported.&quot;, null));</span>
+            }
+<span class="fc" id="L66">        }</span>
+<span class="fc" id="L67">    }</span>
+
+    static List&lt;Issue&gt; issues() {
+<span class="fc" id="L70">        return new ArrayList&lt;&gt;();</span>
+    }
+
+    /** The verified user of the request. */
+    static TokenVerifier.Principal user() {
+<span class="fc" id="L75">        Authentication a = SecurityContextHolder.getContext().getAuthentication();</span>
+<span class="fc" id="L76">        return (TokenVerifier.Principal) a.getPrincipal();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

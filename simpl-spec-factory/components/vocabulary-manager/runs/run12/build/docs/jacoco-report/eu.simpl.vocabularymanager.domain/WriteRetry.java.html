@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WriteRetry.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.domain</a> &gt; <span class="el_source">WriteRetry.java</span></div><h1>WriteRetry.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.domain;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import java.time.Duration;
+import java.util.concurrent.ThreadLocalRandom;
+
+/**
+ * Retry of a conditional write whose condition failed (D82, D157): at most 5 retries after 50, 100,
+ * 200, 400 and 800 ms, each with up to 50 % random jitter, inside the write budget (D71); then 503.
+ */
+public final class WriteRetry {
+
+<span class="fc" id="L13">    static final long[] BACKOFF_MS = {50, 100, 200, 400, 800};</span>
+
+    private final long deadlineNanos;
+    private int attempt;
+
+<span class="fc" id="L18">    public WriteRetry(Duration budget) {</span>
+<span class="fc" id="L19">        this.deadlineNanos = System.nanoTime() + budget.toNanos();</span>
+<span class="fc" id="L20">    }</span>
+
+    /** Waits before the next attempt, or throws 503 when no attempt is left. */
+    public void beforeRetry() {
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        if (attempt &gt;= BACKOFF_MS.length) {</span>
+<span class="fc" id="L25">            throw ApiException.unavailable(ApiException.STORE_UNAVAILABLE);</span>
+        }
+<span class="fc" id="L27">        long base = BACKOFF_MS[attempt++];</span>
+<span class="fc" id="L28">        long wait = base + ThreadLocalRandom.current().nextLong(base / 2 + 1);</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (System.nanoTime() + wait * 1_000_000L &gt; deadlineNanos) {</span>
+<span class="fc" id="L30">            throw ApiException.unavailable(ApiException.STORE_UNAVAILABLE);</span>
+        }
+        try {
+<span class="fc" id="L33">            Thread.sleep(wait);</span>
+<span class="nc" id="L34">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L35">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L36">            throw ApiException.unavailable(ApiException.STORE_UNAVAILABLE);</span>
+<span class="fc" id="L37">        }</span>
+<span class="fc" id="L38">    }</span>
+
+    int attempts() {
+<span class="fc" id="L41">        return attempt;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

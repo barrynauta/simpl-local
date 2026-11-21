@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Validation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">Validation.java</span></div><h1>Validation.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/** Field and value rules of the decided contract (D19, D20, D37, D49, D56, D73, D91, D112). */
+public final class Validation {
+
+<span class="fc" id="L21">    public static final Pattern NAME = Pattern.compile(&quot;^[A-Z][a-zA-Z0-9]*$&quot;);</span>
+<span class="fc" id="L22">    public static final Pattern NAME_FILTER = Pattern.compile(&quot;^[A-Za-z0-9]+$&quot;);</span>
+<span class="fc" id="L23">    private static final Pattern DATE_PREFIX = Pattern.compile(&quot;^\\d{4}-\\d{2}-\\d{2}(T.*)?$&quot;);</span>
+<span class="fc" id="L24">    private static final Pattern OFFSET = Pattern.compile(&quot;([+-])(\\d{2}):(\\d{2})$&quot;);</span>
+    public static final int TEXT_MAX = 1000;
+
+    private Validation() {}
+
+    /** Vocabulary or external vocabulary name: 3 to 64 characters and the pattern of D37. */
+    public static boolean validName(String s) {
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        return s != null</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">                &amp;&amp; s.length() &gt;= 3</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">                &amp;&amp; s.length() &lt;= 64</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">                &amp;&amp; NAME.matcher(s).matches();</span>
+    }
+
+    /** Digits only, 1 to 2147483647 (D91, D112); null when invalid. */
+    public static Integer positiveInt(String s) {
+<span class="pc bpc" id="L39" title="1 of 6 branches missed.">        if (s == null || s.isEmpty() || s.length() &gt; 10) {</span>
+<span class="fc" id="L40">            return null;</span>
+        }
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        for (int i = 0; i &lt; s.length(); i++) {</span>
+<span class="fc" id="L43">            char c = s.charAt(i);</span>
+<span class="fc bfc" id="L44" title="All 4 branches covered.">            if (c &lt; '0' || c &gt; '9') {</span>
+<span class="fc" id="L45">                return null;</span>
+            }
+        }
+<span class="fc" id="L48">        long v = Long.parseLong(s);</span>
+<span class="fc bfc" id="L49" title="All 4 branches covered.">        return v &gt;= 1 &amp;&amp; v &lt;= Integer.MAX_VALUE ? (int) v : null;</span>
+    }
+
+    /** Path name check (D49): 400 schemaViolation in path. */
+    public static void pathName(String paramName, String value) {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (!validName(value)) {</span>
+<span class="fc" id="L55">            throw ApiException.badRequest(Issue.schemaViolation(</span>
+                    &quot;path&quot;,
+                    paramName,
+                    &quot;Path parameter '&quot; + paramName + &quot;' must be 3 to 64 characters matching ^[A-Z][a-zA-Z0-9]*$.&quot;,
+                    value));
+        }
+<span class="fc" id="L61">    }</span>
+
+    /** Path version check (D49, D91). */
+    public static int pathVersion(String value) {
+<span class="fc" id="L65">        Integer v = positiveInt(value);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (v == null) {</span>
+<span class="fc" id="L67">            throw ApiException.badRequest(Issue.schemaViolation(</span>
+                    &quot;path&quot;, &quot;version&quot;, &quot;Path parameter 'version' must be an integer from 1 to 2147483647.&quot;, value));
+        }
+<span class="fc" id="L70">        return v;</span>
+    }
+
+    /** Text after trimming must be 1 to 1000 characters (D37). */
+    public static boolean validText(String s) {
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (s == null) {</span>
+<span class="fc" id="L76">            return false;</span>
+        }
+<span class="fc" id="L78">        String t = s.strip();</span>
+<span class="fc bfc" id="L79" title="All 4 branches covered.">        return !t.isEmpty() &amp;&amp; t.length() &lt;= TEXT_MAX;</span>
+    }
+
+    /** Absolute URI with a scheme, RFC 3986 (D73). */
+    public static boolean absoluteUri(String s) {
+<span class="pc bpc" id="L84" title="1 of 6 branches missed.">        if (s == null || s.isEmpty() || s.length() &gt; 2048) {</span>
+<span class="fc" id="L85">            return false;</span>
+        }
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        for (int i = 0; i &lt; s.length(); i++) {</span>
+<span class="fc" id="L88">            char c = s.charAt(i);</span>
+<span class="pc bpc" id="L89" title="1 of 4 branches missed.">            if (c &lt;= ' ' || c == 0x7f) {</span>
+<span class="fc" id="L90">                return false;</span>
+            }
+        }
+        try {
+<span class="fc" id="L94">            URI u = new URI(s);</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">            return u.isAbsolute()</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">                    &amp;&amp; u.getScheme() != null</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">                    &amp;&amp; !u.getRawSchemeSpecificPart().isEmpty();</span>
+<span class="fc" id="L98">        } catch (URISyntaxException e) {</span>
+<span class="fc" id="L99">            return false;</span>
+        }
+    }
+
+    /**
+     * A date filter (D20, D110, D130): a date matches the whole UTC day, a date-time the second.
+     *
+     * @return [from, to) or null when invalid
+     */
+    public static Instant[] dateRange(String s) {
+<span class="fc bfc" id="L109" title="All 4 branches covered.">        if (s == null || !DATE_PREFIX.matcher(s).matches()) {</span>
+<span class="fc" id="L110">            return null;</span>
+        }
+        try {
+<span class="fc bfc" id="L113" title="All 2 branches covered.">            if (s.length() == 10) {</span>
+<span class="fc" id="L114">                LocalDate d = LocalDate.parse(s, DateTimeFormatter.ISO_LOCAL_DATE);</span>
+<span class="fc" id="L115">                Instant from = d.atStartOfDay().toInstant(ZoneOffset.UTC);</span>
+<span class="fc" id="L116">                return new Instant[] {from, from.plus(1, ChronoUnit.DAYS)};</span>
+            }
+            Instant t;
+<span class="fc" id="L119">            String upper = s.toUpperCase(java.util.Locale.ROOT);</span>
+<span class="fc" id="L120">            Matcher m = OFFSET.matcher(upper);</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">            if (upper.endsWith(&quot;Z&quot;)) {</span>
+<span class="fc" id="L122">                t = OffsetDateTime.parse(upper, DateTimeFormatter.ISO_OFFSET_DATE_TIME)</span>
+<span class="fc" id="L123">                        .toInstant();</span>
+<span class="pc bpc" id="L124" title="1 of 4 branches missed.">            } else if (m.find() &amp;&amp; upper.indexOf('T') &lt; m.start()) {</span>
+<span class="fc" id="L125">                int hours = Integer.parseInt(m.group(2));</span>
+<span class="fc" id="L126">                int minutes = Integer.parseInt(m.group(3));</span>
+<span class="pc bpc" id="L127" title="1 of 8 branches missed.">                if (hours &gt; 18 || minutes &gt; 59 || hours == 18 &amp;&amp; minutes &gt; 0) {</span>
+<span class="fc" id="L128">                    return null;</span>
+                }
+<span class="fc" id="L130">                t = OffsetDateTime.parse(upper, DateTimeFormatter.ISO_OFFSET_DATE_TIME)</span>
+<span class="fc" id="L131">                        .toInstant();</span>
+<span class="fc" id="L132">            } else {</span>
+<span class="fc" id="L133">                t = LocalDateTime.parse(upper, DateTimeFormatter.ISO_LOCAL_DATE_TIME)</span>
+<span class="fc" id="L134">                        .toInstant(ZoneOffset.UTC);</span>
+            }
+<span class="fc" id="L136">            Instant from = t.truncatedTo(ChronoUnit.SECONDS);</span>
+<span class="fc" id="L137">            return new Instant[] {from, from.plusSeconds(1)};</span>
+<span class="fc" id="L138">        } catch (DateTimeException | ArithmeticException e) {</span>
+<span class="fc" id="L139">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

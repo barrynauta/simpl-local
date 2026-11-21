@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Routes.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">Routes.java</span></div><h1>Routes.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import org.springframework.http.server.PathContainer;
+import org.springframework.web.util.pattern.PathPattern;
+import org.springframework.web.util.pattern.PathPatternParser;
+
+/**
+ * The declared operations of the decided contract (docs/openapi-decided.yaml) with their access
+ * rule (D16, D84) and media types (D15, D63). The security configuration, the method check (D67,
+ * D139), the negotiation check (D63, D133) and the start-up check that every handler has a rule all
+ * read this one table.
+ */
+public final class Routes {
+
+    /** Who may call an operation (D16). */
+<span class="fc" id="L23">    public enum Access {</span>
+<span class="fc" id="L24">        PUBLIC,</span>
+<span class="fc" id="L25">        READ,</span>
+<span class="fc" id="L26">        WRITE</span>
+    }
+
+    /** Body media type of an operation. */
+<span class="fc" id="L30">    public enum Body {</span>
+<span class="fc" id="L31">        NONE,</span>
+<span class="fc" id="L32">        JSON,</span>
+<span class="fc" id="L33">        MULTIPART</span>
+    }
+
+    /**
+     * One operation.
+     *
+     * @param method HTTP method
+     * @param pattern path pattern under /v1
+     * @param operationId OpenAPI operationId
+     * @param access role rule
+     * @param body request body media type
+     * @param turtle true when the success response is text/turtle
+     */
+<span class="fc" id="L46">    public record Route(String method, String pattern, String operationId, Access access, Body body, boolean turtle) {</span>
+
+        public PathPattern parsed() {
+<span class="fc" id="L49">            return PATTERNS.computeIfAbsent(pattern, PARSER::parse);</span>
+        }
+    }
+
+    /**
+     * A matched request.
+     *
+     * @param route the operation, or null when the path is declared but not for this method
+     * @param allowed the methods the matched path declares
+     * @param variables path variables
+     */
+<span class="fc" id="L60">    public record Match(Route route, Set&lt;String&gt; allowed, Map&lt;String, String&gt; variables) {}</span>
+
+    public static final String V1 = &quot;/v1&quot;;
+<span class="fc" id="L63">    private static final PathPatternParser PARSER = new PathPatternParser();</span>
+<span class="fc" id="L64">    private static final Map&lt;String, PathPattern&gt; PATTERNS = new java.util.concurrent.ConcurrentHashMap&lt;&gt;();</span>
+
+<span class="fc" id="L66">    public static final List&lt;Route&gt; ALL = List.of(</span>
+            new Route(&quot;GET&quot;, V1 + &quot;/health&quot;, &quot;getHealth&quot;, Access.PUBLIC, Body.NONE, false),
+            new Route(&quot;GET&quot;, V1 + &quot;/vocabularies&quot;, &quot;getVocabularies&quot;, Access.READ, Body.NONE, false),
+            new Route(&quot;POST&quot;, V1 + &quot;/vocabularies&quot;, &quot;createVocabulary&quot;, Access.WRITE, Body.MULTIPART, false),
+            new Route(&quot;POST&quot;, V1 + &quot;/vocabularies/searches&quot;, &quot;searchVocabularies&quot;, Access.READ, Body.JSON, false),
+            new Route(&quot;GET&quot;, V1 + &quot;/vocabularies/{vocabularyName}&quot;, &quot;getVocabulary&quot;, Access.READ, Body.NONE, false),
+            new Route(
+                    &quot;PATCH&quot;,
+                    V1 + &quot;/vocabularies/{vocabularyName}&quot;,
+                    &quot;updateVocabularyStatus&quot;,
+                    Access.WRITE,
+                    Body.JSON,
+                    false),
+            new Route(
+                    &quot;GET&quot;,
+                    V1 + &quot;/vocabularies/{vocabularyName}/versions&quot;,
+                    &quot;getVocabularyVersions&quot;,
+                    Access.READ,
+                    Body.NONE,
+                    false),
+            new Route(
+                    &quot;POST&quot;,
+                    V1 + &quot;/vocabularies/{vocabularyName}/versions&quot;,
+                    &quot;createVocabularyVersion&quot;,
+                    Access.WRITE,
+                    Body.MULTIPART,
+                    false),
+            new Route(
+                    &quot;GET&quot;,
+                    V1 + &quot;/vocabularies/{vocabularyName}/versions/{version}&quot;,
+                    &quot;getVocabularyVersion&quot;,
+                    Access.READ,
+                    Body.NONE,
+                    false),
+            new Route(
+                    &quot;PATCH&quot;,
+                    V1 + &quot;/vocabularies/{vocabularyName}/versions/{version}&quot;,
+                    &quot;updateVocabularyVersionStatus&quot;,
+                    Access.WRITE,
+                    Body.JSON,
+                    false),
+            new Route(&quot;GET&quot;, V1 + &quot;/content/{vocabularyName}&quot;, &quot;downloadVocabulary&quot;, Access.READ, Body.NONE, true),
+            new Route(
+                    &quot;GET&quot;,
+                    V1 + &quot;/content/{vocabularyName}/versions/{version}&quot;,
+                    &quot;downloadVocabularyVersion&quot;,
+                    Access.READ,
+                    Body.NONE,
+                    true),
+            new Route(&quot;GET&quot;, V1 + &quot;/external-vocabularies&quot;, &quot;getExternalVocabularies&quot;, Access.READ, Body.NONE, false),
+            new Route(
+                    &quot;POST&quot;,
+                    V1 + &quot;/external-vocabularies&quot;,
+                    &quot;createExternalVocabulary&quot;,
+                    Access.WRITE,
+                    Body.MULTIPART,
+                    false),
+            new Route(
+                    &quot;POST&quot;,
+                    V1 + &quot;/external-vocabulary/searches&quot;,
+                    &quot;searchExternalVocabularies&quot;,
+                    Access.READ,
+                    Body.JSON,
+                    false),
+            new Route(
+                    &quot;POST&quot;,
+                    V1 + &quot;/external-vocabularies/content&quot;,
+                    &quot;downloadExternalVocabularyContent&quot;,
+                    Access.READ,
+                    Body.JSON,
+                    true),
+            new Route(
+                    &quot;GET&quot;,
+                    V1 + &quot;/external-vocabularies/{name}/content&quot;,
+                    &quot;getExternalVocabularyContentByName&quot;,
+                    Access.READ,
+                    Body.NONE,
+                    true),
+            new Route(
+                    &quot;GET&quot;,
+                    V1 + &quot;/external-vocabularies/{name}&quot;,
+                    &quot;getExternalVocabulary&quot;,
+                    Access.READ,
+                    Body.NONE,
+                    false),
+            new Route(
+                    &quot;DELETE&quot;,
+                    V1 + &quot;/external-vocabularies/{name}&quot;,
+                    &quot;deleteExternalVocabulary&quot;,
+                    Access.WRITE,
+                    Body.NONE,
+                    false));
+
+    private Routes() {}
+
+    /**
+     * Finds the operation for a raw request path. A fixed segment wins over a path parameter (D77):
+     * among the matching patterns the most specific one decides.
+     */
+    public static Optional&lt;Match&gt; match(String method, String rawPath) {
+<span class="fc" id="L166">        PathContainer path = PathContainer.parsePath(rawPath);</span>
+<span class="fc" id="L167">        List&lt;PathPattern&gt; matching = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">        for (Route r : ALL) {</span>
+<span class="fc" id="L169">            PathPattern p = r.parsed();</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">            if (p.matches(path)</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">                    &amp;&amp; matching.stream().noneMatch(x -&gt; x.getPatternString().equals(p.getPatternString()))) {</span>
+<span class="fc" id="L172">                matching.add(p);</span>
+            }
+<span class="fc" id="L174">        }</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        if (matching.isEmpty()) {</span>
+<span class="fc" id="L176">            return Optional.empty();</span>
+        }
+<span class="fc" id="L178">        matching.sort(Comparator.comparing(p -&gt; p, PathPattern.SPECIFICITY_COMPARATOR));</span>
+<span class="fc" id="L179">        PathPattern best = matching.get(0);</span>
+<span class="fc" id="L180">        Set&lt;String&gt; allowed = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L181">        Route found = null;</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">        for (Route r : ALL) {</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">            if (r.pattern().equals(best.getPatternString())) {</span>
+<span class="fc" id="L184">                allowed.add(r.method());</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">                if (r.method().equals(method)) {</span>
+<span class="fc" id="L186">                    found = r;</span>
+                }
+            }
+<span class="fc" id="L189">        }</span>
+<span class="fc" id="L190">        PathPattern.PathMatchInfo info = best.matchAndExtract(path);</span>
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">        Map&lt;String, String&gt; vars = info == null ? Map.of() : info.getUriVariables();</span>
+<span class="fc" id="L192">        return Optional.of(new Match(found, allowed, vars));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.domain</a> &gt; <span class="el_source">SearchService.java</span></div><h1>SearchService.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.domain;
+
+import eu.simpl.vocabularymanager.domain.Model.Status;
+import eu.simpl.vocabularymanager.store.ReferenceStore;
+import eu.simpl.vocabularymanager.store.ReferenceStore.InternalInfo;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import org.springframework.stereotype.Service;
+
+/** Internal vocabulary search (D38): one store query, request order, duplicates once. */
+@Service
+public class SearchService {
+
+    /**
+     * A reference: name and optional version.
+     *
+     * @param name exact vocabulary name (D54)
+     * @param version version number, or null for the latest version
+     */
+<span class="fc" id="L22">    public record Reference(String name, Integer version) {}</span>
+
+    /**
+     * A found reference.
+     *
+     * @param name name
+     * @param version version number (latest version when latest)
+     * @param status vocabulary status when latest, else the version status
+     * @param latest true for a reference without version
+     */
+<span class="fc" id="L32">    public record Result(String name, int version, Status status, boolean latest) {}</span>
+
+    private final ReferenceStore store;
+
+<span class="fc" id="L36">    public SearchService(ReferenceStore store) {</span>
+<span class="fc" id="L37">        this.store = store;</span>
+<span class="fc" id="L38">    }</span>
+
+    public List&lt;Result&gt; search(List&lt;Reference&gt; refs) {
+<span class="fc" id="L41">        Set&lt;Reference&gt; distinct = new LinkedHashSet&lt;&gt;(refs);</span>
+<span class="fc" id="L42">        Set&lt;String&gt; names = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L43">        Set&lt;Integer&gt; versions = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        for (Reference r : distinct) {</span>
+<span class="fc" id="L45">            names.add(r.name());</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (r.version() != null) {</span>
+<span class="fc" id="L47">                versions.add(r.version());</span>
+            }
+<span class="fc" id="L49">        }</span>
+<span class="fc" id="L50">        ReferenceStore.Lookup lookup = store.lookup(names, versions, false, List.of());</span>
+<span class="fc" id="L51">        List&lt;Result&gt; out = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        for (Reference r : distinct) {</span>
+<span class="fc" id="L53">            InternalInfo info = lookup.internal().get(r.name());</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">            if (info == null) {</span>
+<span class="fc" id="L55">                continue;</span>
+            }
+<span class="fc bfc" id="L57" title="All 2 branches covered.">            if (r.version() == null) {</span>
+<span class="fc" id="L58">                out.add(new Result(r.name(), info.latest(), info.status(), true));</span>
+            } else {
+<span class="fc" id="L60">                Status s = info.versions().get(r.version());</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">                if (s != null) {</span>
+<span class="fc" id="L62">                    out.add(new Result(r.name(), r.version(), s, false));</span>
+                }
+            }
+<span class="fc" id="L65">        }</span>
+<span class="fc" id="L66">        return out;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

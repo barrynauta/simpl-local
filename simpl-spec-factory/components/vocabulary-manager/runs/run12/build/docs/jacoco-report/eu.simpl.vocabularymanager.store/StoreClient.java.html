@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StoreClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">StoreClient.java</span></div><h1>StoreClient.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.micrometer.core.instrument.MeterRegistry;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpConnectTimeoutException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.function.Supplier;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.riot.ResultSetMgr;
+import org.apache.jena.riot.resultset.ResultSetLang;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
+
+/**
+ * SPARQL over HTTP to Fuseki with the timeouts, retries and circuit breaker of decisions D44, D71,
+ * D103 and D134. Queries use the read user, updates the update user (D83). Each update request is
+ * one store transaction. The W3C trace context and the correlation id are forwarded (D86).
+ */
+@Component
+public class StoreClient {
+
+<span class="fc" id="L42">    private static final Logger LOG = LoggerFactory.getLogger(StoreClient.class);</span>
+<span class="fc" id="L43">    private static final long[] READ_RETRY_DELAYS_MS = {200, 400};</span>
+
+    private final AppProperties.Store cfg;
+    private final HttpClient http;
+    private final CircuitBreaker breaker;
+    private final String readAuth;
+    private final String updateAuth;
+
+<span class="fc" id="L51">    public StoreClient(AppProperties props, MeterRegistry meters) {</span>
+<span class="fc" id="L52">        this.cfg = props.store();</span>
+<span class="fc" id="L53">        this.http = HttpClient.newBuilder()</span>
+<span class="fc" id="L54">                .version(HttpClient.Version.HTTP_1_1)</span>
+<span class="fc" id="L55">                .connectTimeout(cfg.connectTimeout())</span>
+<span class="fc" id="L56">                .followRedirects(HttpClient.Redirect.NEVER)</span>
+<span class="fc" id="L57">                .build();</span>
+<span class="fc" id="L58">        CircuitBreakerConfig cbc = CircuitBreakerConfig.custom()</span>
+<span class="fc" id="L59">                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)</span>
+<span class="fc" id="L60">                .slidingWindowSize(20)</span>
+<span class="fc" id="L61">                .minimumNumberOfCalls(10)</span>
+<span class="fc" id="L62">                .failureRateThreshold(50)</span>
+<span class="fc" id="L63">                .waitDurationInOpenState(Duration.ofSeconds(10))</span>
+<span class="fc" id="L64">                .permittedNumberOfCallsInHalfOpenState(3)</span>
+<span class="fc" id="L65">                .automaticTransitionFromOpenToHalfOpenEnabled(false)</span>
+<span class="pc bpc" id="L66" title="2 of 4 branches missed.">                .recordException(t -&gt; t instanceof StoreException se &amp;&amp; se.countsAsFailure())</span>
+<span class="fc" id="L67">                .build();</span>
+<span class="fc" id="L68">        CircuitBreakerRegistry registry = CircuitBreakerRegistry.of(cbc);</span>
+<span class="fc" id="L69">        this.breaker = registry.circuitBreaker(&quot;store&quot;);</span>
+<span class="fc" id="L70">        TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(registry).bindTo(meters);</span>
+<span class="fc" id="L71">        this.readAuth = basic(cfg.readUser(), cfg.readPassword());</span>
+<span class="fc" id="L72">        this.updateAuth = basic(cfg.updateUser(), cfg.updatePassword());</span>
+<span class="fc" id="L73">    }</span>
+
+    private static String basic(String user, String password) {
+<span class="pc bpc" id="L76" title="2 of 4 branches missed.">        String raw = (user == null ? &quot;&quot; : user) + &quot;:&quot; + (password == null ? &quot;&quot; : password);</span>
+<span class="fc" id="L77">        return &quot;Basic &quot; + Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));</span>
+    }
+
+    /** A SELECT query; results are fully read. Retried on connection failure or timeout. */
+    public List&lt;QuerySolution&gt; select(String sparql) {
+<span class="fc" id="L82">        return withReadRetry(() -&gt; {</span>
+<span class="fc" id="L83">            byte[] body = post(cfg.queryUrl(), sparql, true, cfg.readTimeout());</span>
+<span class="fc" id="L84">            ResultSet rs = ResultSetMgr.read(new ByteArrayInputStream(body), ResultSetLang.RS_JSON);</span>
+<span class="fc" id="L85">            List&lt;QuerySolution&gt; rows = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L86">            rs.forEachRemaining(rows::add);</span>
+<span class="fc" id="L87">            return rows;</span>
+        });
+    }
+
+    /** An ASK query. */
+    public boolean ask(String sparql) {
+<span class="fc" id="L93">        return withReadRetry(() -&gt; askOnce(sparql, cfg.readTimeout()));</span>
+    }
+
+    /** One ASK with a short timeout and no retry, for GET /health (D44, D134). */
+    public boolean ping(Duration timeout) {
+        try {
+<span class="fc" id="L99">            return breaker.executeSupplier(() -&gt; askOnce(&quot;ASK {}&quot;, timeout));</span>
+<span class="nc" id="L100">        } catch (CallNotPermittedException e) {</span>
+<span class="nc" id="L101">            return false;</span>
+<span class="fc" id="L102">        } catch (StoreException e) {</span>
+<span class="fc" id="L103">            return false;</span>
+        }
+    }
+
+    private boolean askOnce(String sparql, Duration timeout) {
+<span class="fc" id="L108">        byte[] body = post(cfg.queryUrl(), sparql, true, timeout);</span>
+<span class="fc" id="L109">        return ResultSetMgr.readBoolean(new ByteArrayInputStream(body), ResultSetLang.RS_JSON);</span>
+    }
+
+    /** A SPARQL update: one store transaction, never retried here (D44). */
+    public void update(String sparqlUpdate) {
+<span class="fc" id="L114">        guarded(() -&gt; post(cfg.updateUrl(), sparqlUpdate, false, cfg.updateTimeout()));</span>
+<span class="fc" id="L115">    }</span>
+
+    private &lt;T&gt; T withReadRetry(Supplier&lt;T&gt; call) {
+<span class="fc" id="L118">        int attempt = 0;</span>
+        while (true) {
+            try {
+<span class="fc" id="L121">                return guarded(call);</span>
+<span class="fc" id="L122">            } catch (StoreException e) {</span>
+<span class="pc bpc" id="L123" title="1 of 6 branches missed.">                if (!e.unavailable() || attempt &gt;= READ_RETRY_DELAYS_MS.length || breakerOpen()) {</span>
+<span class="fc" id="L124">                    throw e;</span>
+                }
+<span class="fc" id="L126">                sleep(READ_RETRY_DELAYS_MS[attempt++]);</span>
+<span class="fc" id="L127">            }</span>
+        }
+    }
+
+    private boolean breakerOpen() {
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        return breaker.getState() == CircuitBreaker.State.OPEN;</span>
+    }
+
+    private &lt;T&gt; T guarded(Supplier&lt;T&gt; call) {
+        try {
+<span class="fc" id="L137">            return breaker.executeSupplier(call);</span>
+<span class="fc" id="L138">        } catch (CallNotPermittedException e) {</span>
+<span class="fc" id="L139">            throw StoreException.unavailable(&quot;store circuit breaker is open&quot;, e);</span>
+        }
+    }
+
+    private byte[] post(String url, String body, boolean query, Duration timeout) {
+<span class="fc" id="L144">        HttpRequest.Builder rb = HttpRequest.newBuilder(URI.create(url))</span>
+<span class="fc" id="L145">                .timeout(timeout)</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">                .header(&quot;Authorization&quot;, query ? readAuth : updateAuth)</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">                .header(&quot;Content-Type&quot;, query ? &quot;application/sparql-query&quot; : &quot;application/sparql-update; charset=utf-8&quot;)</span>
+<span class="fc" id="L148">                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">        if (query) {</span>
+<span class="fc" id="L150">            rb.header(&quot;Accept&quot;, &quot;application/sparql-results+json&quot;);</span>
+        }
+<span class="fc" id="L152">        String correlationId = MDC.get(&quot;correlationId&quot;);</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">        if (correlationId != null) {</span>
+<span class="fc" id="L154">            rb.header(&quot;X-Correlation-Id&quot;, correlationId);</span>
+        }
+<span class="fc" id="L156">        String traceId = MDC.get(&quot;traceId&quot;);</span>
+<span class="fc" id="L157">        String spanId = MDC.get(&quot;spanId&quot;);</span>
+<span class="pc bpc" id="L158" title="4 of 8 branches missed.">        if (traceId != null &amp;&amp; spanId != null &amp;&amp; traceId.length() == 32 &amp;&amp; spanId.length() == 16) {</span>
+<span class="fc" id="L159">            rb.header(&quot;traceparent&quot;, &quot;00-&quot; + traceId + &quot;-&quot; + spanId + &quot;-01&quot;);</span>
+        }
+        HttpResponse&lt;byte[]&gt; resp;
+        try {
+<span class="fc" id="L163">            resp = http.send(rb.build(), HttpResponse.BodyHandlers.ofByteArray());</span>
+<span class="fc" id="L164">        } catch (HttpConnectTimeoutException | ConnectException e) {</span>
+<span class="fc" id="L165">            throw StoreException.unavailable(&quot;store connection failed&quot;, e);</span>
+<span class="nc" id="L166">        } catch (HttpTimeoutException e) {</span>
+<span class="nc" id="L167">            throw StoreException.unavailable(&quot;store call timed out&quot;, e);</span>
+<span class="nc" id="L168">        } catch (IOException e) {</span>
+<span class="nc" id="L169">            throw StoreException.unavailable(&quot;store I/O failure&quot;, e);</span>
+<span class="nc" id="L170">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L171">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L172">            throw StoreException.unavailable(&quot;interrupted&quot;, e);</span>
+<span class="fc" id="L173">        }</span>
+<span class="fc" id="L174">        int status = resp.statusCode();</span>
+<span class="pc bpc" id="L175" title="2 of 4 branches missed.">        if (status &gt;= 200 &amp;&amp; status &lt; 300) {</span>
+<span class="fc" id="L176">            return resp.body();</span>
+        }
+<span class="nc" id="L178">        LOG.warn(&quot;store answered status {}&quot;, status);</span>
+<span class="nc bnc" id="L179" title="All 6 branches missed.">        if (status == 502 || status == 503 || status == 504) {</span>
+<span class="nc" id="L180">            throw StoreException.unavailable(&quot;store status &quot; + status, null);</span>
+        }
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        if (status &gt;= 500) {</span>
+<span class="nc" id="L183">            throw StoreException.serverError(&quot;store status &quot; + status);</span>
+        }
+<span class="nc" id="L185">        throw StoreException.clientError(&quot;store status &quot; + status);</span>
+    }
+
+    static void sleep(long ms) {
+        try {
+<span class="fc" id="L190">            Thread.sleep(ms);</span>
+<span class="nc" id="L191">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L192">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L193">            throw StoreException.unavailable(&quot;interrupted&quot;, e);</span>
+<span class="fc" id="L194">        }</span>
+<span class="fc" id="L195">    }</span>
+
+    CircuitBreaker breaker() {
+<span class="nc" id="L198">        return breaker;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

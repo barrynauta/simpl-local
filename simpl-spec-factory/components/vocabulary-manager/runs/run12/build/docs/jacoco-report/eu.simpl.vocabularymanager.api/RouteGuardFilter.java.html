@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RouteGuardFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">RouteGuardFilter.java</span></div><h1>RouteGuardFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import org.slf4j.MDC;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Runs before the token check: a method the path does not declare, a method the server does not
+ * know, HEAD, OPTIONS and TRACE get 405 with Allow (D67, D126, D139, D166). Puts the operation and
+ * the vocabulary name and version of a declared operation in the MDC (D96).
+ */
+public class RouteGuardFilter extends OncePerRequestFilter {
+
+<span class="fc" id="L25">    public static final String MATCH_ATTRIBUTE = RouteGuardFilter.class.getName() + &quot;.match&quot;;</span>
+<span class="fc" id="L26">    private static final Set&lt;String&gt; SERVED = Set.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;);</span>
+
+    private final ProblemWriter problems;
+
+<span class="fc" id="L30">    public RouteGuardFilter(ProblemWriter problems) {</span>
+<span class="fc" id="L31">        this.problems = problems;</span>
+<span class="fc" id="L32">    }</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L37">        String method = request.getMethod();</span>
+<span class="fc" id="L38">        String path = request.getRequestURI();</span>
+        Optional&lt;Routes.Match&gt; match;
+        try {
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">            match = Routes.match(method, path == null ? &quot;/&quot; : path);</span>
+<span class="nc" id="L42">        } catch (RuntimeException e) {</span>
+<span class="nc" id="L43">            match = Optional.empty();</span>
+<span class="fc" id="L44">        }</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (match.isPresent()) {</span>
+<span class="fc" id="L46">            Routes.Match m = match.get();</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">            if (m.route() == null) {</span>
+<span class="fc" id="L48">                reject(response, m.allowed());</span>
+<span class="fc" id="L49">                return;</span>
+            }
+<span class="fc" id="L51">            request.setAttribute(MATCH_ATTRIBUTE, m);</span>
+<span class="fc" id="L52">            MDC.put(&quot;operationId&quot;, m.route().operationId());</span>
+<span class="fc" id="L53">            putVariable(m.variables(), &quot;vocabularyName&quot;, &quot;vocabularyName&quot;);</span>
+<span class="fc" id="L54">            putVariable(m.variables(), &quot;name&quot;, &quot;vocabularyName&quot;);</span>
+<span class="fc" id="L55">            putVariable(m.variables(), &quot;version&quot;, &quot;version&quot;);</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        } else if (!SERVED.contains(method)) {</span>
+<span class="nc" id="L57">            reject(response, Set.of());</span>
+<span class="nc" id="L58">            return;</span>
+        }
+<span class="fc" id="L60">        chain.doFilter(request, response);</span>
+<span class="fc" id="L61">    }</span>
+
+    private static void putVariable(Map&lt;String, String&gt; vars, String key, String mdcKey) {
+<span class="fc" id="L64">        String v = vars.get(key);</span>
+<span class="pc bpc" id="L65" title="2 of 6 branches missed.">        if (v != null &amp;&amp; v.length() &lt;= 64 &amp;&amp; v.matches(&quot;[A-Za-z0-9]+&quot;)) {</span>
+<span class="fc" id="L66">            MDC.put(mdcKey, v);</span>
+        }
+<span class="fc" id="L68">    }</span>
+
+    private void reject(HttpServletResponse response, Set&lt;String&gt; allowed) throws IOException {
+<span class="fc" id="L71">        problems.write(</span>
+                response,
+                new ApiException(
+                        ProblemType.METHOD_NOT_ALLOWED,
+                        &quot;The method is not allowed for this resource.&quot;,
+<span class="fc" id="L76">                        List.of(),</span>
+<span class="fc" id="L77">                        Map.of(&quot;Allow&quot;, String.join(&quot;, &quot;, allowed)),</span>
+                        false));
+<span class="fc" id="L79">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

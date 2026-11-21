@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Issue.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.error</a> &gt; <span class="el_source">Issue.java</span></div><h1>Issue.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.error;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+/**
+ * One issue of a problem (Belgif InputValidationIssue / VocabularyValidationIssue). Null fields are
+ * left out of the JSON.
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+<span class="fc" id="L11">public record Issue(</span>
+        String type,
+        String href,
+        String title,
+        String detail,
+        @JsonProperty(&quot;in&quot;) String in,
+        String name,
+        Object value,
+        String location) {
+
+    private static final String ISSUES = &quot;https://www.belgif.be/specification/rest/api-guide/issues/&quot;;
+    public static final String SCHEMA_VIOLATION = &quot;urn:problem-type:belgif:input-validation:schemaViolation&quot;;
+    public static final String INVALID_INPUT = &quot;urn:problem-type:belgif:input-validation:invalidInput&quot;;
+
+    /** A request that breaks the decided contract (shape, pattern, limits). */
+    public static Issue schemaViolation(String in, String name, String detail, Object value) {
+<span class="fc" id="L27">        return new Issue(</span>
+                SCHEMA_VIOLATION,
+                ISSUES + &quot;schemaViolation.html&quot;,
+                &quot;Input isn't valid with respect to schema&quot;,
+                detail,
+                in,
+                name,
+                value,
+                null);
+    }
+
+    /** A validation error of uploaded content or another invalid input value. */
+    public static Issue invalidInput(String in, String name, String detail, String location) {
+<span class="fc" id="L40">        return new Issue(</span>
+                INVALID_INPUT, ISSUES + &quot;invalidInput.html&quot;, &quot;Invalid input&quot;, detail, in, name, null, location);
+    }
+
+    /** The short issue of a not-found problem (OpenAPI VocabularyNotFoundResponse example). */
+    public static Issue notFound(String in, String name, String detail) {
+<span class="fc" id="L46">        return new Issue(null, null, null, detail, in, name, null, null);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

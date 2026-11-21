@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">SearchController.java</span></div><h1>SearchController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.domain.SearchService;
+import eu.simpl.vocabularymanager.domain.SearchService.Reference;
+import eu.simpl.vocabularymanager.error.Issue;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+
+/** POST /vocabularies/searches (D38, D54, D68, D153). */
+@RestController
+public class SearchController {
+
+    private static final int MAX_ITEMS = 100;
+
+    private final SearchService service;
+    private final JsonBody json;
+    private final String contentBase;
+
+<span class="fc" id="L26">    public SearchController(SearchService service, JsonBody json, AppProperties props) {</span>
+<span class="fc" id="L27">        this.service = service;</span>
+<span class="fc" id="L28">        this.json = json;</span>
+<span class="fc" id="L29">        this.contentBase = props.contentBaseUrl();</span>
+<span class="fc" id="L30">    }</span>
+
+    @PostMapping(
+            path = &quot;/v1/vocabularies/searches&quot;,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Dto.PageDto&lt;Dto.SearchItemDto&gt; search(HttpServletRequest request) {
+<span class="fc" id="L37">        RequestRules.noQuery(request.getQueryString());</span>
+<span class="fc" id="L38">        List&lt;Reference&gt; refs = references(json.read(request));</span>
+<span class="fc" id="L39">        List&lt;Dto.SearchItemDto&gt; items = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        for (SearchService.Result r : service.search(refs)) {</span>
+            String href =
+<span class="fc bfc" id="L42" title="All 2 branches covered.">                    r.latest() ? &quot;/vocabularies/&quot; + r.name() : &quot;/vocabularies/&quot; + r.name() + &quot;/versions/&quot; + r.version();</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">            String contentHref = r.latest()</span>
+<span class="fc" id="L44">                    ? contentBase + &quot;/content/&quot; + r.name()</span>
+<span class="fc" id="L45">                    : contentBase + &quot;/content/&quot; + r.name() + &quot;/versions/&quot; + r.version();</span>
+<span class="fc" id="L46">            items.add(new Dto.SearchItemDto(</span>
+<span class="fc" id="L47">                    href, contentHref, r.name(), r.version(), r.status().name(), r.latest()));</span>
+<span class="fc" id="L48">        }</span>
+<span class="fc" id="L49">        return Dto.PageDto.search(items);</span>
+    }
+
+    /** VocabularySearchRequest: items 1 to 100, each name and optional version (D38, D68). */
+    static List&lt;Reference&gt; references(JsonNode body) {
+<span class="fc" id="L54">        List&lt;Issue&gt; issues = RequestRules.issues();</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        if (!body.isObject()) {</span>
+<span class="fc" id="L56">            issues.add(Issue.schemaViolation(&quot;body&quot;, &quot;body&quot;, &quot;The body must be a JSON object.&quot;, null));</span>
+<span class="nc" id="L57">            RequestRules.throwIfAny(issues);</span>
+        }
+<span class="fc" id="L59">        RequestRules.unknownProperties(body, Set.of(&quot;items&quot;), &quot;&quot;, issues);</span>
+<span class="fc" id="L60">        JsonNode items = body.get(&quot;items&quot;);</span>
+<span class="pc bpc" id="L61" title="1 of 8 branches missed.">        if (items == null || !items.isArray() || items.isEmpty() || items.size() &gt; MAX_ITEMS) {</span>
+<span class="fc" id="L62">            issues.add(</span>
+<span class="fc" id="L63">                    Issue.schemaViolation(&quot;body&quot;, &quot;items&quot;, &quot;'items' must be an array of 1 to 100 references.&quot;, null));</span>
+<span class="nc" id="L64">            RequestRules.throwIfAny(issues);</span>
+        }
+<span class="fc" id="L66">        List&lt;Reference&gt; refs = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        for (int i = 0; i &lt; items.size(); i++) {</span>
+<span class="fc" id="L68">            JsonNode item = items.get(i);</span>
+<span class="fc" id="L69">            String prefix = &quot;items[&quot; + i + &quot;]&quot;;</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">            if (!item.isObject()) {</span>
+<span class="fc" id="L71">                issues.add(Issue.schemaViolation(&quot;body&quot;, prefix, &quot;Each item must be a JSON object.&quot;, null));</span>
+<span class="fc" id="L72">                continue;</span>
+            }
+<span class="fc" id="L74">            RequestRules.unknownProperties(item, Set.of(&quot;name&quot;, &quot;version&quot;), prefix, issues);</span>
+<span class="fc" id="L75">            JsonNode n = item.get(&quot;name&quot;);</span>
+<span class="fc" id="L76">            String name = null;</span>
+<span class="pc bpc" id="L77" title="2 of 6 branches missed.">            if (n == null || !n.isString() || !Validation.validName(n.asString())) {</span>
+<span class="fc" id="L78">                issues.add(Issue.schemaViolation(</span>
+                        &quot;body&quot;,
+                        prefix + &quot;.name&quot;,
+                        &quot;'name' must be 3 to 64 characters matching ^[A-Z][a-zA-Z0-9]*$.&quot;,
+                        null));
+            } else {
+<span class="fc" id="L84">                name = n.asString();</span>
+            }
+<span class="fc" id="L86">            JsonNode v = item.get(&quot;version&quot;);</span>
+<span class="fc" id="L87">            Integer version = null;</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">            if (v != null) {</span>
+<span class="pc bpc" id="L89" title="1 of 6 branches missed.">                if (v.isIntegralNumber() &amp;&amp; v.canConvertToInt() &amp;&amp; v.asInt() &gt;= 1) {</span>
+<span class="fc" id="L90">                    version = v.asInt();</span>
+                } else {
+<span class="fc" id="L92">                    issues.add(Issue.schemaViolation(</span>
+                            &quot;body&quot;, prefix + &quot;.version&quot;, &quot;'version' must be an integer from 1 to 2147483647.&quot;, null));
+                }
+            }
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (name != null) {</span>
+<span class="fc" id="L97">                refs.add(new Reference(name, version));</span>
+            }
+        }
+<span class="fc" id="L100">        RequestRules.throwIfAny(issues);</span>
+<span class="fc" id="L101">        return refs;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

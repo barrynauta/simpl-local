@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SemanticRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">SemanticRules.java</span></div><h1>SemanticRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.SKOS;
+
+/**
+ * Semantic rules S1 to S6 of decision D9 (S7 is the reference check). All rules run and every error
+ * is returned, each with a position for file order (D125) and the location text of D65.
+ */
+public final class SemanticRules {
+
+    public static final String S1 = &quot;Literal value for object property&quot;;
+    public static final String S2 = &quot;Resource value for datatype property&quot;;
+    public static final String S3 = &quot;Property declared as both object and datatype property&quot;;
+    public static final String S4 = &quot;Duplicate preferred label for the same language&quot;;
+    public static final String S5 = &quot;Resource is an instance of disjoint classes&quot;;
+    public static final String S6 = &quot;Vocabulary contains no statements&quot;;
+
+    /**
+     * One validation error.
+     *
+     * @param detail rule text
+     * @param location where (D65)
+     * @param position position in the file, for ordering
+     */
+<span class="fc" id="L37">    public record Finding(String detail, String location, int position) {}</span>
+
+    private SemanticRules() {}
+
+    public static List&lt;Finding&gt; check(ParsedTurtle parsed) {
+<span class="fc" id="L42">        List&lt;Finding&gt; out = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L43">        List&lt;Triple&gt; triples = parsed.triples();</span>
+<span class="fc" id="L44">        List&lt;Integer&gt; pos = parsed.triplePositions();</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (triples.isEmpty()) {</span>
+<span class="fc" id="L46">            out.add(new Finding(S6, &quot;document&quot;, 0));</span>
+<span class="fc" id="L47">            return out;</span>
+        }
+<span class="fc" id="L49">        Node type = RDF.type.asNode();</span>
+<span class="fc" id="L50">        Node objectProperty = OWL.ObjectProperty.asNode();</span>
+<span class="fc" id="L51">        Node datatypeProperty = OWL.DatatypeProperty.asNode();</span>
+<span class="fc" id="L52">        Node disjointWith = OWL.disjointWith.asNode();</span>
+<span class="fc" id="L53">        Node prefLabel = SKOS.prefLabel.asNode();</span>
+
+<span class="fc" id="L55">        Set&lt;Node&gt; objectProps = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L56">        Set&lt;Node&gt; datatypeProps = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L57">        Map&lt;Node, Integer&gt; s3Position = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L58">        Map&lt;Node, Set&lt;Node&gt;&gt; disjoint = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        for (int i = 0; i &lt; triples.size(); i++) {</span>
+<span class="fc" id="L60">            Triple t = triples.get(i);</span>
+<span class="fc" id="L61">            Node p = t.getPredicate();</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            if (p.equals(type)) {</span>
+<span class="fc" id="L63">                Node o = t.getObject();</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">                if (o.equals(objectProperty)) {</span>
+<span class="fc" id="L65">                    objectProps.add(t.getSubject());</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">                    if (datatypeProps.contains(t.getSubject())) {</span>
+<span class="fc" id="L67">                        s3Position.putIfAbsent(t.getSubject(), pos.get(i));</span>
+                    }
+<span class="fc bfc" id="L69" title="All 2 branches covered.">                } else if (o.equals(datatypeProperty)) {</span>
+<span class="fc" id="L70">                    datatypeProps.add(t.getSubject());</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">                    if (objectProps.contains(t.getSubject())) {</span>
+<span class="fc" id="L72">                        s3Position.putIfAbsent(t.getSubject(), pos.get(i));</span>
+                    }
+                }
+<span class="fc bfc" id="L75" title="All 2 branches covered.">            } else if (p.equals(disjointWith)) {</span>
+<span class="fc" id="L76">                disjoint.computeIfAbsent(t.getSubject(), k -&gt; new HashSet&lt;&gt;()).add(t.getObject());</span>
+<span class="fc" id="L77">                disjoint.computeIfAbsent(t.getObject(), k -&gt; new HashSet&lt;&gt;()).add(t.getSubject());</span>
+            }
+        }
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        for (Map.Entry&lt;Node, Integer&gt; e : s3Position.entrySet()) {</span>
+<span class="fc" id="L81">            out.add(new Finding(S3, &quot;resource '&quot; + term(e.getKey()) + &quot;'&quot;, e.getValue()));</span>
+<span class="fc" id="L82">        }</span>
+
+<span class="fc" id="L84">        Map&lt;Node, Map&lt;String, Integer&gt;&gt; labelCount = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L85">        Map&lt;String, Integer&gt; s4Done = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L86">        Map&lt;Node, List&lt;Node&gt;&gt; typesOf = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L87">        Map&lt;Node, Integer&gt; s5Position = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        for (int i = 0; i &lt; triples.size(); i++) {</span>
+<span class="fc" id="L89">            Triple t = triples.get(i);</span>
+<span class="fc" id="L90">            Node s = t.getSubject();</span>
+<span class="fc" id="L91">            Node p = t.getPredicate();</span>
+<span class="fc" id="L92">            Node o = t.getObject();</span>
+<span class="pc bpc" id="L93" title="1 of 4 branches missed.">            if (objectProps.contains(p) &amp;&amp; o.isLiteral()) {</span>
+<span class="fc" id="L94">                out.add(new Finding(S1, statement(t), pos.get(i)));</span>
+            }
+<span class="pc bpc" id="L96" title="1 of 6 branches missed.">            if (datatypeProps.contains(p) &amp;&amp; (o.isURI() || o.isBlank())) {</span>
+<span class="fc" id="L97">                out.add(new Finding(S2, statement(t), pos.get(i)));</span>
+            }
+<span class="pc bpc" id="L99" title="1 of 4 branches missed.">            if (p.equals(prefLabel) &amp;&amp; o.isLiteral()) {</span>
+<span class="fc" id="L100">                String lang = o.getLiteralLanguage();</span>
+<span class="pc bpc" id="L101" title="1 of 4 branches missed.">                String key = lang == null || lang.isEmpty() ? &quot;none&quot; : lang.toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L102">                Map&lt;String, Integer&gt; perLang = labelCount.computeIfAbsent(s, k -&gt; new HashMap&lt;&gt;());</span>
+<span class="fc" id="L103">                int n = perLang.merge(key, 1, Integer::sum);</span>
+<span class="fc" id="L104">                String doneKey = term(s) + &quot;\u0000&quot; + key;</span>
+<span class="pc bpc" id="L105" title="1 of 4 branches missed.">                if (n == 2 &amp;&amp; !s4Done.containsKey(doneKey)) {</span>
+<span class="fc" id="L106">                    s4Done.put(doneKey, pos.get(i));</span>
+<span class="fc" id="L107">                    out.add(new Finding(S4, &quot;resource '&quot; + term(s) + &quot;', language '&quot; + key + &quot;'&quot;, pos.get(i)));</span>
+                }
+            }
+<span class="fc bfc" id="L110" title="All 4 branches covered.">            if (p.equals(type) &amp;&amp; !disjoint.isEmpty()) {</span>
+<span class="fc" id="L111">                List&lt;Node&gt; types = typesOf.computeIfAbsent(s, k -&gt; new ArrayList&lt;&gt;());</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">                if (!s5Position.containsKey(s)) {</span>
+<span class="fc" id="L113">                    Set&lt;Node&gt; dis = disjoint.get(o);</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">                    if (dis != null) {</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">                        for (Node other : types) {</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">                            if (dis.contains(other)) {</span>
+<span class="fc" id="L117">                                s5Position.put(s, pos.get(i));</span>
+<span class="fc" id="L118">                                out.add(new Finding(S5, &quot;resource '&quot; + term(s) + &quot;'&quot;, pos.get(i)));</span>
+<span class="fc" id="L119">                                break;</span>
+                            }
+<span class="nc" id="L121">                        }</span>
+                    }
+                }
+<span class="fc" id="L124">                types.add(o);</span>
+            }
+        }
+<span class="fc" id="L127">        return out;</span>
+    }
+
+    /**
+     * statement '&amp;lt;s&amp;gt; &amp;lt;p&amp;gt; &amp;lt;o&amp;gt;' with full IRIs and an N-Triples literal (D65, D140).
+     */
+    static String statement(Triple t) {
+<span class="fc" id="L134">        return &quot;statement '&quot; + term(t.getSubject()) + &quot; &quot; + term(t.getPredicate()) + &quot; &quot; + term(t.getObject()) + &quot;'&quot;;</span>
+    }
+
+    static String term(Node n) {
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        if (n.isURI()) {</span>
+<span class="fc" id="L139">            return n.getURI();</span>
+        }
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        if (n.isBlank()) {</span>
+<span class="fc" id="L142">            return &quot;_:&quot; + n.getBlankNodeLabel();</span>
+        }
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        if (n.isLiteral()) {</span>
+<span class="fc" id="L145">            StringBuilder sb = new StringBuilder(&quot;\&quot;&quot;);</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">            for (char c : n.getLiteralLexicalForm().toCharArray()) {</span>
+<span class="pc bpc" id="L147" title="4 of 6 branches missed.">                switch (c) {</span>
+<span class="fc" id="L148">                    case '&quot;' -&gt; sb.append(&quot;\\\&quot;&quot;);</span>
+<span class="nc" id="L149">                    case '\\' -&gt; sb.append(&quot;\\\\&quot;);</span>
+<span class="nc" id="L150">                    case '\n' -&gt; sb.append(&quot;\\n&quot;);</span>
+<span class="nc" id="L151">                    case '\r' -&gt; sb.append(&quot;\\r&quot;);</span>
+<span class="nc" id="L152">                    case '\t' -&gt; sb.append(&quot;\\t&quot;);</span>
+<span class="fc" id="L153">                    default -&gt; sb.append(c);</span>
+                }
+            }
+<span class="fc" id="L156">            sb.append('&quot;');</span>
+<span class="fc" id="L157">            String lang = n.getLiteralLanguage();</span>
+<span class="pc bpc" id="L158" title="1 of 4 branches missed.">            if (lang != null &amp;&amp; !lang.isEmpty()) {</span>
+<span class="fc" id="L159">                sb.append('@').append(lang);</span>
+            } else {
+<span class="fc" id="L161">                String dt = n.getLiteralDatatypeURI();</span>
+<span class="pc bpc" id="L162" title="1 of 4 branches missed.">                if (dt != null &amp;&amp; !dt.equals(&quot;http://www.w3.org/2001/XMLSchema#string&quot;)) {</span>
+<span class="fc" id="L163">                    sb.append(&quot;^^&lt;&quot;).append(dt).append('&gt;');</span>
+                }
+            }
+<span class="fc" id="L166">            return sb.toString();</span>
+        }
+<span class="nc" id="L168">        return n.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

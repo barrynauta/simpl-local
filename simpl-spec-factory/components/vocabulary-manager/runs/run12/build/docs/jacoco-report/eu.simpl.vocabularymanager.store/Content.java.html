@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Content.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">Content.java</span></div><h1>Content.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import java.io.ByteArrayOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HexFormat;
+import java.util.List;
+
+/** Splits uploaded bytes into base64 chunks for the store and joins them again (D106). */
+public final class Content {
+
+    private Content() {}
+
+    public static List&lt;String&gt; toChunks(byte[] bytes) {
+<span class="fc" id="L17">        List&lt;String&gt; chunks = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">        if (bytes.length == 0) {</span>
+<span class="fc" id="L19">            chunks.add(&quot;&quot;);</span>
+<span class="fc" id="L20">            return chunks;</span>
+        }
+<span class="fc" id="L22">        Base64.Encoder enc = Base64.getEncoder();</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        for (int off = 0; off &lt; bytes.length; off += Rdf.CHUNK_BYTES) {</span>
+<span class="fc" id="L24">            int len = Math.min(Rdf.CHUNK_BYTES, bytes.length - off);</span>
+<span class="fc" id="L25">            byte[] part = new byte[len];</span>
+<span class="fc" id="L26">            System.arraycopy(bytes, off, part, 0, len);</span>
+<span class="fc" id="L27">            chunks.add(enc.encodeToString(part));</span>
+        }
+<span class="fc" id="L29">        return chunks;</span>
+    }
+
+    public static byte[] fromChunks(List&lt;String&gt; chunks) {
+<span class="fc" id="L33">        ByteArrayOutputStream out = new ByteArrayOutputStream();</span>
+<span class="fc" id="L34">        Base64.Decoder dec = Base64.getDecoder();</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        for (String c : chunks) {</span>
+<span class="fc" id="L36">            out.writeBytes(dec.decode(c));</span>
+<span class="fc" id="L37">        }</span>
+<span class="fc" id="L38">        return out.toByteArray();</span>
+    }
+
+    public static String sha256(byte[] bytes) {
+        try {
+<span class="fc" id="L43">            return HexFormat.of().formatHex(MessageDigest.getInstance(&quot;SHA-256&quot;).digest(bytes));</span>
+<span class="nc" id="L44">        } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L45">            throw new IllegalStateException(e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

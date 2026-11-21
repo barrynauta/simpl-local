@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UploadLimiter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.domain</a> &gt; <span class="el_source">UploadLimiter.java</span></div><h1>UploadLimiter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.domain;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.error.ApiException;
+import java.util.concurrent.Semaphore;
+import org.springframework.stereotype.Component;
+
+/** At most N create or new-version requests at the same time per instance (D92). */
+@Component
+public class UploadLimiter {
+
+    private final Semaphore permits;
+
+<span class="fc" id="L14">    public UploadLimiter(AppProperties props) {</span>
+<span class="fc" id="L15">        this.permits = new Semaphore(props.uploads().maxConcurrent());</span>
+<span class="fc" id="L16">    }</span>
+
+    /** A held permit; closing it releases the permit. */
+    public interface Permit extends AutoCloseable {
+        @Override
+        void close();
+    }
+
+    /** Takes a permit or throws 503 'Too many uploads in progress. Retry later.'. */
+    public Permit acquire() {
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (!permits.tryAcquire()) {</span>
+<span class="fc" id="L27">            throw ApiException.unavailable(ApiException.TOO_MANY_UPLOADS);</span>
+        }
+<span class="fc" id="L29">        return permits::release;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

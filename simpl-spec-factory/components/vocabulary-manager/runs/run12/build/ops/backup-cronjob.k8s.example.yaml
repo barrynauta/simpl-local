@@ -1,0 +1,30 @@
+# Example Kubernetes CronJob for the daily store backup (D89). The job runs inside the store network,
+# calls the Fuseki admin backup, and copies the file to an object store outside the cluster.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: vocabulary-store-backup
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: vm-factory-run12/fuseki:1.0.0
+              command: ["/bin/sh", "-c"]
+              args:
+                - >-
+                  wget -q -O - --post-data='' "http://vmadmin:${FUSEKI_ADMIN_PASSWORD}@fuseki:3030/\$/backup/vocabulary"
+                  && sleep 30 && echo "copy /fuseki/backups/*.nq.gz to the off-site target here"
+              env:
+                - name: FUSEKI_ADMIN_PASSWORD
+                  valueFrom: { secretKeyRef: { name: vocabulary-store, key: admin-password } }
+              volumeMounts:
+                - { name: backups, mountPath: /fuseki/backups }
+          volumes:
+            - name: backups
+              persistentVolumeClaim: { claimName: vocabulary-store-backups }

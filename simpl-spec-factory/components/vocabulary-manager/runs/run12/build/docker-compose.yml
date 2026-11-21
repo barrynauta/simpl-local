@@ -1,0 +1,167 @@
+# Vocabulary Manager, factory run 12. Start with ./stack.sh up (creates .env with local secrets, D131).
+# Host ports (127.0.0.1 only): API 8196, UI 4433, Keycloak 8193, store-down API 8199.
+# The store (Fuseki) and the backend management port publish nothing (D83, D98, D107, D120).
+name: vm-factory-run12
+
+x-backend-env: &backend-env
+  SERVER_PORT: "8080"
+  MANAGEMENT_PORT: "9090"
+  VOCABULARY_CONTENT_BASE_URL: ${VOCABULARY_CONTENT_BASE_URL:-https://authority.example/vocabulary-manager}
+  STORE_QUERY_URL: http://fuseki:3030/vocabulary/query
+  STORE_UPDATE_URL: http://fuseki:3030/vocabulary/update
+  STORE_READ_USER: vmread
+  STORE_READ_PASSWORD: ${FUSEKI_READ_PASSWORD:?run ./stack.sh up}
+  STORE_UPDATE_USER: vmupdate
+  STORE_UPDATE_PASSWORD: ${FUSEKI_UPDATE_PASSWORD:?run ./stack.sh up}
+  ISSUER_URI: ${ISSUER_URI:-http://localhost:8193/realms/simpl}
+  TOKEN_AUDIENCE: vocabulary-manager-be
+  JWKS_URI: http://keycloak:8080/realms/simpl/protocol/openid-connect/certs
+  MAX_CONCURRENT_UPLOADS: "4"
+
+services:
+  fuseki:
+    build: ./fuseki
+    image: vm-factory-run12/fuseki:1.0.0
+    environment:
+      FUSEKI_READ_PASSWORD: ${FUSEKI_READ_PASSWORD:?run ./stack.sh up}
+      FUSEKI_UPDATE_PASSWORD: ${FUSEKI_UPDATE_PASSWORD:?run ./stack.sh up}
+      FUSEKI_ADMIN_PASSWORD: ${FUSEKI_ADMIN_PASSWORD:?run ./stack.sh up}
+      JAVA_OPTS: -XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError
+    volumes:
+      - fuseki-data:/fuseki/databases
+      - fuseki-backups:/fuseki/backups
+    networks: [store]
+    read_only: false
+    security_opt: ["no-new-privileges:true"]
+    deploy:
+      resources:
+        limits:
+          cpus: "${FUSEKI_CPUS:-2.0}"
+          memory: ${FUSEKI_MEMORY:-1536m}
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2@sha256:7e66a96e4739239070aeaf72e4c5decf0f7f682cfc725b9f7ea2b336eaba38b3
+    command: ["start-dev", "--import-realm", "--http-port=8080", "--health-enabled=true"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?run ./stack.sh up}
+      KC_HOSTNAME: http://localhost:8193
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HTTP_ENABLED: "true"
+      JAVA_OPTS_KC_HEAP: -XX:MaxRAMPercentage=65
+    volumes:
+      - ./keycloak/realm-simpl.json:/opt/keycloak/data/import/realm-simpl.json:ro
+      - ./keycloak/realm-simpl-other.json:/opt/keycloak/data/import/realm-simpl-other.json:ro
+    ports:
+      - "127.0.0.1:8193:8080"
+    networks: [front]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"UP\"' <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: "${KEYCLOAK_CPUS:-2.0}"
+          memory: ${KEYCLOAK_MEMORY:-1024m}
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    image: vm-factory-run12/backend:1.0.0
+    environment: *backend-env
+    networks: [front, store]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m
+    depends_on:
+      fuseki:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    stop_grace_period: 35s
+    deploy:
+      replicas: ${BACKEND_REPLICAS:-2}
+      resources:
+        limits:
+          cpus: "${BACKEND_CPUS:-2.0}"
+          memory: ${BACKEND_MEMORY:-1024m}
+    restart: unless-stopped
+
+  gateway:
+    build: ./gateway
+    image: vm-factory-run12/gateway:1.0.0
+    ports:
+      - "127.0.0.1:8196:8080"
+    networks: [front]
+    security_opt: ["no-new-privileges:true"]
+    depends_on:
+      backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "${GATEWAY_CPUS:-1.0}"
+          memory: ${GATEWAY_MEMORY:-128m}
+    restart: unless-stopped
+
+  ui:
+    build: ./ui
+    image: vm-factory-run12/ui:1.0.0
+    environment:
+      KEYCLOAK_PUBLIC_URL: http://localhost:8193
+      KEYCLOAK_REALM: simpl
+      KEYCLOAK_CLIENT_ID: vocabulary-manager-ui
+    ports:
+      - "127.0.0.1:4433:8080"
+    networks: [front]
+    security_opt: ["no-new-privileges:true"]
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits:
+          cpus: "${UI_CPUS:-1.0}"
+          memory: ${UI_MEMORY:-128m}
+    restart: unless-stopped
+
+  # Second backend whose store is unreachable (D44 tests): ./stack.sh store-down-up
+  backend-store-down:
+    image: vm-factory-run12/backend:1.0.0
+    profiles: ["storedown"]
+    environment:
+      <<: *backend-env
+      STORE_QUERY_URL: http://fuseki:3031/vocabulary/query
+      STORE_UPDATE_URL: http://fuseki:3031/vocabulary/update
+    ports:
+      - "127.0.0.1:8199:8080"
+    networks: [front, store]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m
+    deploy:
+      resources:
+        limits:
+          cpus: "${BACKEND_CPUS:-2.0}"
+          memory: ${BACKEND_MEMORY:-1024m}
+
+networks:
+  front: {}
+  store:
+    internal: true
+
+volumes:
+  fuseki-data: {}
+  fuseki-backups: {}

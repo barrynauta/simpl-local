@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QueryParams.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">QueryParams.java</span></div><h1>QueryParams.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * The query string of a request, parsed in request order. Unknown parameters (D21, D52) and
+ * repeated parameters (D52, D138) give 400; bad encoding gives 400 badRequest (D158).
+ */
+public final class QueryParams {
+
+    private final Map&lt;String, String&gt; values;
+
+<span class="fc" id="L22">    private QueryParams(Map&lt;String, String&gt; values) {</span>
+<span class="fc" id="L23">        this.values = values;</span>
+<span class="fc" id="L24">    }</span>
+
+    /** Parses and checks the names against {@code allowed}. */
+    public static QueryParams parse(String rawQuery, Set&lt;String&gt; allowed) {
+<span class="fc" id="L28">        Map&lt;String, String&gt; values = new LinkedHashMap&lt;&gt;();</span>
+<span class="pc bpc" id="L29" title="1 of 4 branches missed.">        if (rawQuery == null || rawQuery.isEmpty()) {</span>
+<span class="fc" id="L30">            return new QueryParams(values);</span>
+        }
+<span class="fc" id="L32">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L33">        List&lt;String&gt; repeated = new ArrayList&lt;&gt;();</span>
+        // RFC 3986: '+' in a query is a plus sign, not a space (date-time offsets, D20).
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        for (String pair : rawQuery.replace(&quot;+&quot;, &quot;%2B&quot;).split(&quot;&amp;&quot;, -1)) {</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">            if (pair.isEmpty()) {</span>
+<span class="fc" id="L37">                continue;</span>
+            }
+<span class="fc" id="L39">            int eq = pair.indexOf('=');</span>
+            String name;
+            String value;
+            try {
+<span class="fc bfc" id="L43" title="All 2 branches covered.">                name = URLDecoder.decode(eq &lt; 0 ? pair : pair.substring(0, eq), StandardCharsets.UTF_8);</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">                value = eq &lt; 0 ? &quot;&quot; : URLDecoder.decode(pair.substring(eq + 1), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L45">            } catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L46">                throw new ApiException(ProblemType.BAD_REQUEST, &quot;The query string is not correctly encoded.&quot;);</span>
+<span class="fc" id="L47">            }</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">            if (values.containsKey(name)) {</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">                if (!repeated.contains(name)) {</span>
+<span class="fc" id="L50">                    repeated.add(name);</span>
+                }
+                continue;
+            }
+<span class="fc" id="L54">            values.put(name, value);</span>
+        }
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        for (String name : values.keySet()) {</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc" id="L58">                issues.add(</span>
+<span class="fc" id="L59">                        Issue.schemaViolation(&quot;query&quot;, name, &quot;Query parameter '&quot; + name + &quot;' is not supported.&quot;, null));</span>
+            }
+<span class="fc" id="L61">        }</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        for (String name : repeated) {</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">            if (allowed.contains(name)) {</span>
+<span class="fc" id="L64">                issues.add(Issue.schemaViolation(</span>
+                        &quot;query&quot;, name, &quot;Query parameter '&quot; + name + &quot;' may be given only once.&quot;, null));
+            }
+<span class="fc" id="L67">        }</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L69">            throw ApiException.badRequest(issues);</span>
+        }
+<span class="fc" id="L71">        return new QueryParams(values);</span>
+    }
+
+    public String get(String name) {
+<span class="fc" id="L75">        return values.get(name);</span>
+    }
+
+    /** The parameters in request order. */
+    public Map&lt;String, String&gt; all() {
+<span class="fc" id="L80">        return values;</span>
+    }
+
+    /**
+     * A positive 32-bit integer written as digits only (D22, D91, D112).
+     *
+     * @return the value or {@code dflt} when absent
+     */
+    public int positiveInt(String name, int dflt, int max, List&lt;Issue&gt; issues) {
+<span class="fc" id="L89">        String v = values.get(name);</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (v == null) {</span>
+<span class="fc" id="L91">            return dflt;</span>
+        }
+<span class="fc" id="L93">        Integer parsed = Validation.positiveInt(v);</span>
+<span class="fc bfc" id="L94" title="All 4 branches covered.">        if (parsed == null || parsed &gt; max) {</span>
+<span class="fc" id="L95">            issues.add(Issue.schemaViolation(</span>
+                    &quot;query&quot;, name, &quot;Query parameter '&quot; + name + &quot;' must be an integer from 1 to &quot; + max + &quot;.&quot;, v));
+<span class="fc" id="L97">            return dflt;</span>
+        }
+<span class="fc" id="L99">        return parsed;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

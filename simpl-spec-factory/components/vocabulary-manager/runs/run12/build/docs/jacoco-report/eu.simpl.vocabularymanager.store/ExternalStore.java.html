@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalStore.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">ExternalStore.java</span></div><h1>ExternalStore.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.domain.Model.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.Model.Page;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.springframework.stereotype.Component;
+
+/** Store access for registered external vocabularies (D30, D41, D56, D73). */
+@Component
+public class ExternalStore {
+
+    private final StoreClient store;
+
+<span class="fc" id="L27">    public ExternalStore(StoreClient store) {</span>
+<span class="fc" id="L28">        this.store = store;</span>
+<span class="fc" id="L29">    }</span>
+
+    /**
+     * A new registration.
+     *
+     * @param name name
+     * @param namespaceUri as sent
+     * @param namespaceKey normalised
+     * @param aliasUris as sent, in order
+     * @param aliasKeys normalised, same order
+     * @param sourceUri optional
+     * @param description optional
+     * @param createdBy creator
+     * @param at registration time
+     * @param bytes content
+     */
+<span class="fc" id="L45">    public record NewExternal(</span>
+            String name,
+            String namespaceUri,
+            String namespaceKey,
+            List&lt;String&gt; aliasUris,
+            List&lt;String&gt; aliasKeys,
+            String sourceUri,
+            String description,
+            String createdBy,
+            Instant at,
+            byte[] bytes) {}
+
+    public Optional&lt;ExternalVocabulary&gt; find(String name) {
+<span class="fc" id="L58">        List&lt;ExternalVocabulary&gt; found = load(List.of(name));</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        return found.isEmpty() ? Optional.empty() : Optional.of(found.get(0));</span>
+    }
+
+    public boolean nameKeyExists(String name) {
+<span class="fc" id="L63">        ParameterizedSparqlString q = Rdf.pss(&quot;ASK { GRAPH ?gExternal { ?e vm:nameKey ?key } }&quot;);</span>
+<span class="fc" id="L64">        q.setLiteral(&quot;key&quot;, name.toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L65">        return store.ask(q.toString());</span>
+    }
+
+    /** The normalised keys among {@code keys} that a namespace URI or alias already uses. */
+    public Set&lt;String&gt; usedKeys(Collection&lt;String&gt; keys) {
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">        if (keys.isEmpty()) {</span>
+<span class="nc" id="L71">            return Set.of();</span>
+        }
+<span class="fc" id="L73">        ParameterizedSparqlString q =</span>
+<span class="fc" id="L74">                Rdf.pss(&quot;SELECT DISTINCT ?key WHERE { VALUES (?key) { ?keys } GRAPH ?gExternal { { ?e&quot;</span>
+                        + &quot; vm:namespaceKey ?key } UNION { ?e vm:alias ?a . ?a vm:key ?key } } } LIMIT 101&quot;);
+<span class="fc" id="L76">        q.setValues(&quot;keys&quot;, literals(keys));</span>
+<span class="fc" id="L77">        Set&lt;String&gt; out = new java.util.HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        for (QuerySolution r : store.select(q.toString())) {</span>
+<span class="fc" id="L79">            out.add(Rdf.str(r.get(&quot;key&quot;)));</span>
+<span class="fc" id="L80">        }</span>
+<span class="fc" id="L81">        return out;</span>
+    }
+
+    /** Names of the external vocabularies that own each key (namespace or alias), per key. */
+    public Map&lt;String, String&gt; ownersOfKeys(Collection&lt;String&gt; keys) {
+<span class="fc" id="L86">        Map&lt;String, String&gt; out = new LinkedHashMap&lt;&gt;();</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        if (keys.isEmpty()) {</span>
+<span class="nc" id="L88">            return out;</span>
+        }
+<span class="fc" id="L90">        ParameterizedSparqlString q =</span>
+<span class="fc" id="L91">                Rdf.pss(&quot;SELECT ?key ?name WHERE { VALUES (?key) { ?keys } GRAPH ?gExternal { ?e vm:name ?name .&quot;</span>
+                        + &quot; { ?e vm:namespaceKey ?key } UNION { ?e vm:alias ?a . ?a vm:key ?key } } }&quot;
+                        + &quot; LIMIT 1000&quot;);
+<span class="fc" id="L94">        q.setValues(&quot;keys&quot;, literals(keys));</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        for (QuerySolution r : store.select(q.toString())) {</span>
+<span class="fc" id="L96">            out.putIfAbsent(Rdf.str(r.get(&quot;key&quot;)), Rdf.str(r.get(&quot;name&quot;)));</span>
+<span class="fc" id="L97">        }</span>
+<span class="fc" id="L98">        return out;</span>
+    }
+
+    public Page&lt;ExternalVocabulary&gt; list(int page, int pageSize) {
+<span class="fc" id="L102">        ParameterizedSparqlString count = Rdf.pss(</span>
+                &quot;SELECT (COUNT(?e) AS ?n) WHERE { GRAPH ?gExternal { ?e a vm:ExternalVocabulary } }&quot; + &quot; LIMIT 1&quot;);
+<span class="fc" id="L104">        long total =</span>
+<span class="fc" id="L105">                Long.parseLong(Rdf.str(store.select(count.toString()).get(0).get(&quot;n&quot;)));</span>
+<span class="fc" id="L106">        long offset = (long) (page - 1) * pageSize;</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        if (offset &gt;= total) {</span>
+<span class="nc" id="L108">            return new Page&lt;&gt;(List.of(), total);</span>
+        }
+<span class="fc" id="L110">        ParameterizedSparqlString q =</span>
+<span class="fc" id="L111">                Rdf.pss(&quot;SELECT ?name WHERE { GRAPH ?gExternal { ?e a vm:ExternalVocabulary ; vm:name ?name } }&quot;</span>
+                        + &quot; ORDER BY ASC(STR(?name)) LIMIT &quot;
+                        + pageSize
+                        + &quot; OFFSET &quot;
+                        + offset);
+<span class="fc" id="L116">        List&lt;String&gt; names = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        for (QuerySolution r : store.select(q.toString())) {</span>
+<span class="fc" id="L118">            names.add(Rdf.str(r.get(&quot;name&quot;)));</span>
+<span class="fc" id="L119">        }</span>
+<span class="fc" id="L120">        return new Page&lt;&gt;(load(names), total);</span>
+    }
+
+    /** Full records for the names, in the order of {@code names}; unknown names are skipped. */
+    public List&lt;ExternalVocabulary&gt; load(List&lt;String&gt; names) {
+<span class="fc bfc" id="L125" title="All 2 branches covered.">        if (names.isEmpty()) {</span>
+<span class="fc" id="L126">            return List.of();</span>
+        }
+<span class="fc" id="L128">        ParameterizedSparqlString q =</span>
+<span class="fc" id="L129">                Rdf.pss(&quot;SELECT ?name ?ns ?src ?desc ?by ?at ?ai ?auri WHERE { VALUES (?name) { ?names } GRAPH&quot;</span>
+                        + &quot; ?gExternal { ?e a vm:ExternalVocabulary ; vm:name ?name ; vm:namespaceUri ?ns ;&quot;
+                        + &quot; vm:createdBy ?by ; vm:creationDate ?at . OPTIONAL { ?e vm:sourceUri ?src }&quot;
+                        + &quot; OPTIONAL { ?e vm:description ?desc } OPTIONAL { ?e vm:alias ?a . ?a vm:index ?ai&quot;
+                        + &quot; ; vm:uri ?auri } } } LIMIT 5000&quot;);
+<span class="fc" id="L134">        q.setValues(&quot;names&quot;, literals(names));</span>
+<span class="fc" id="L135">        Map&lt;String, QuerySolution&gt; first = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L136">        Map&lt;String, TreeMap&lt;Integer, String&gt;&gt; aliases = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        for (QuerySolution r : store.select(q.toString())) {</span>
+<span class="fc" id="L138">            String name = Rdf.str(r.get(&quot;name&quot;));</span>
+<span class="fc" id="L139">            first.putIfAbsent(name, r);</span>
+<span class="fc" id="L140">            TreeMap&lt;Integer, String&gt; al = aliases.computeIfAbsent(name, k -&gt; new TreeMap&lt;&gt;());</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">            if (r.contains(&quot;ai&quot;)) {</span>
+<span class="fc" id="L142">                al.put(Rdf.integerValue(r.get(&quot;ai&quot;)), Rdf.str(r.get(&quot;auri&quot;)));</span>
+            }
+<span class="fc" id="L144">        }</span>
+<span class="fc" id="L145">        List&lt;ExternalVocabulary&gt; out = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        for (String n : names) {</span>
+<span class="fc" id="L147">            QuerySolution r = first.get(n);</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">            if (r == null) {</span>
+<span class="fc" id="L149">                continue;</span>
+            }
+<span class="fc" id="L151">            out.add(new ExternalVocabulary(</span>
+                    n,
+<span class="fc" id="L153">                    Rdf.str(r.get(&quot;ns&quot;)),</span>
+<span class="fc" id="L154">                    List.copyOf(aliases.get(n).values()),</span>
+<span class="fc" id="L155">                    Rdf.str(r.get(&quot;src&quot;)),</span>
+<span class="fc" id="L156">                    Rdf.str(r.get(&quot;desc&quot;)),</span>
+<span class="fc" id="L157">                    Rdf.str(r.get(&quot;by&quot;)),</span>
+<span class="fc" id="L158">                    Rdf.instant(r.get(&quot;at&quot;))));</span>
+<span class="fc" id="L159">        }</span>
+<span class="fc" id="L160">        return out;</span>
+    }
+
+    public Optional&lt;byte[]&gt; content(String name) {
+<span class="fc" id="L164">        ParameterizedSparqlString q =</span>
+<span class="fc" id="L165">                Rdf.pss(&quot;SELECT ?i ?data WHERE { GRAPH ?gExternalContent { ?c vm:chunkOf ?e ; vm:index ?i ;&quot;</span>
+                        + &quot; vm:data ?data } } ORDER BY ?i LIMIT 101&quot;);
+<span class="fc" id="L167">        q.setIri(&quot;e&quot;, Rdf.externalIri(name));</span>
+<span class="fc" id="L168">        List&lt;QuerySolution&gt; rows = store.select(q.toString());</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">        if (rows.isEmpty()) {</span>
+<span class="nc" id="L170">            return Optional.empty();</span>
+        }
+<span class="fc" id="L172">        List&lt;String&gt; chunks = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        for (QuerySolution r : rows) {</span>
+<span class="fc" id="L174">            chunks.add(Rdf.str(r.get(&quot;data&quot;)));</span>
+<span class="fc" id="L175">        }</span>
+<span class="fc" id="L176">        return Optional.of(Content.fromChunks(chunks));</span>
+    }
+
+    /**
+     * Registers when name and keys are still free (one store transaction).
+     *
+     * @return true when this request's write was applied
+     */
+    public boolean insert(NewExternal ne, String token) {
+<span class="fc" id="L185">        List&lt;String&gt; keys = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L186">        keys.add(ne.namespaceKey());</span>
+<span class="fc" id="L187">        keys.addAll(ne.aliasKeys());</span>
+<span class="fc" id="L188">        StringBuilder tpl = new StringBuilder();</span>
+<span class="fc" id="L189">        tpl.append(&quot;?e a vm:ExternalVocabulary ; vm:name ?name ; vm:nameKey ?nameKey ; vm:namespaceUri ?ns ;&quot;</span>
+                + &quot; vm:namespaceKey ?nsKey ; vm:createdBy ?by ; vm:creationDate ?at ; vm:createToken&quot;
+                + &quot; ?token .&quot;);
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        if (ne.sourceUri() != null) {</span>
+<span class="fc" id="L193">            tpl.append(&quot; ?e vm:sourceUri ?src .&quot;);</span>
+        }
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        if (ne.description() != null) {</span>
+<span class="fc" id="L196">            tpl.append(&quot; ?e vm:description ?desc .&quot;);</span>
+        }
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        for (int i = 0; i &lt; ne.aliasUris().size(); i++) {</span>
+<span class="fc" id="L199">            tpl.append(&quot; ?e vm:alias ?a&quot;)</span>
+<span class="fc" id="L200">                    .append(i)</span>
+<span class="fc" id="L201">                    .append(&quot; . ?a&quot;)</span>
+<span class="fc" id="L202">                    .append(i)</span>
+<span class="fc" id="L203">                    .append(&quot; vm:index ?ai&quot;)</span>
+<span class="fc" id="L204">                    .append(i)</span>
+<span class="fc" id="L205">                    .append(&quot; ; vm:uri ?au&quot;)</span>
+<span class="fc" id="L206">                    .append(i)</span>
+<span class="fc" id="L207">                    .append(&quot; ; vm:key ?ak&quot;)</span>
+<span class="fc" id="L208">                    .append(i)</span>
+<span class="fc" id="L209">                    .append(&quot; .&quot;);</span>
+        }
+<span class="fc" id="L211">        ParameterizedSparqlString op = Rdf.pss(&quot;INSERT { GRAPH ?gExternal { &quot;</span>
+                + tpl
+                + &quot; } } WHERE { FILTER NOT EXISTS { GRAPH ?gExternal { ?o vm:nameKey ?nameKey } }&quot;
+                + &quot; FILTER NOT EXISTS { VALUES (?k) { ?keys } GRAPH ?gExternal { { ?o2&quot;
+                + &quot; vm:namespaceKey ?k } UNION { ?o3 vm:key ?k } } } }&quot;);
+<span class="fc" id="L216">        String iri = Rdf.externalIri(ne.name());</span>
+<span class="fc" id="L217">        op.setIri(&quot;e&quot;, iri);</span>
+<span class="fc" id="L218">        op.setLiteral(&quot;name&quot;, ne.name());</span>
+<span class="fc" id="L219">        op.setLiteral(&quot;nameKey&quot;, ne.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L220">        op.setLiteral(&quot;ns&quot;, ne.namespaceUri());</span>
+<span class="fc" id="L221">        op.setLiteral(&quot;nsKey&quot;, ne.namespaceKey());</span>
+<span class="fc" id="L222">        op.setLiteral(&quot;by&quot;, ne.createdBy());</span>
+<span class="fc" id="L223">        op.setParam(&quot;at&quot;, Rdf.dateTime(ne.at()));</span>
+<span class="fc" id="L224">        op.setLiteral(&quot;token&quot;, token);</span>
+<span class="fc bfc" id="L225" title="All 2 branches covered.">        if (ne.sourceUri() != null) {</span>
+<span class="fc" id="L226">            op.setLiteral(&quot;src&quot;, ne.sourceUri());</span>
+        }
+<span class="fc bfc" id="L228" title="All 2 branches covered.">        if (ne.description() != null) {</span>
+<span class="fc" id="L229">            op.setLiteral(&quot;desc&quot;, ne.description());</span>
+        }
+<span class="fc bfc" id="L231" title="All 2 branches covered.">        for (int i = 0; i &lt; ne.aliasUris().size(); i++) {</span>
+<span class="fc" id="L232">            op.setIri(&quot;a&quot; + i, iri + &quot;:alias:&quot; + i);</span>
+<span class="fc" id="L233">            op.setParam(&quot;ai&quot; + i, Rdf.integer(i));</span>
+<span class="fc" id="L234">            op.setLiteral(&quot;au&quot; + i, ne.aliasUris().get(i));</span>
+<span class="fc" id="L235">            op.setLiteral(&quot;ak&quot; + i, ne.aliasKeys().get(i));</span>
+        }
+<span class="fc" id="L237">        op.setValues(&quot;keys&quot;, literals(keys));</span>
+<span class="fc" id="L238">        StringBuilder update = new StringBuilder(op.toString());</span>
+<span class="fc" id="L239">        List&lt;String&gt; chunks = Content.toChunks(ne.bytes());</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">        for (int i = 0; i &lt; chunks.size(); i++) {</span>
+<span class="fc" id="L241">            ParameterizedSparqlString c =</span>
+<span class="fc" id="L242">                    Rdf.pss(&quot;INSERT { GRAPH ?gExternalContent { ?c vm:chunkOf ?e ; vm:index ?i ; vm:data ?data }&quot;</span>
+                            + &quot; } WHERE { GRAPH ?gExternal { ?e vm:createToken ?token } }&quot;);
+<span class="fc" id="L244">            c.setIri(&quot;c&quot;, iri + &quot;:chunk:&quot; + i);</span>
+<span class="fc" id="L245">            c.setIri(&quot;e&quot;, iri);</span>
+<span class="fc" id="L246">            c.setParam(&quot;i&quot;, Rdf.integer(i));</span>
+<span class="fc" id="L247">            c.setLiteral(&quot;token&quot;, token);</span>
+<span class="fc" id="L248">            c.setParam(&quot;data&quot;, Rdf.base64(chunks.get(i)));</span>
+<span class="fc" id="L249">            update.append(&quot; ;\n&quot;).append(c.toString());</span>
+        }
+<span class="fc" id="L251">        store.update(update.toString());</span>
+<span class="fc" id="L252">        ParameterizedSparqlString check = Rdf.pss(&quot;ASK { GRAPH ?gExternal { ?e vm:createToken ?token } }&quot;);</span>
+<span class="fc" id="L253">        check.setIri(&quot;e&quot;, iri);</span>
+<span class="fc" id="L254">        check.setLiteral(&quot;token&quot;, token);</span>
+<span class="fc" id="L255">        return store.ask(check.toString());</span>
+    }
+
+    /** Removes metadata, aliases and content (D41). One store transaction. */
+    public void delete(String name) {
+<span class="fc" id="L260">        String iri = Rdf.externalIri(name);</span>
+<span class="fc" id="L261">        ParameterizedSparqlString a = Rdf.pss(&quot;DELETE WHERE { GRAPH ?gExternal { ?e vm:alias ?al . ?al ?p ?o } }&quot;);</span>
+<span class="fc" id="L262">        a.setIri(&quot;e&quot;, iri);</span>
+<span class="fc" id="L263">        ParameterizedSparqlString m = Rdf.pss(&quot;DELETE WHERE { GRAPH ?gExternal { ?e ?p ?o } }&quot;);</span>
+<span class="fc" id="L264">        m.setIri(&quot;e&quot;, iri);</span>
+<span class="fc" id="L265">        ParameterizedSparqlString c = Rdf.pss(&quot;DELETE WHERE { GRAPH ?gExternalContent { ?c vm:chunkOf ?e ; ?p ?o } }&quot;);</span>
+<span class="fc" id="L266">        c.setIri(&quot;e&quot;, iri);</span>
+<span class="fc" id="L267">        store.update(a.toString() + &quot; ;\n&quot; + m.toString() + &quot; ;\n&quot; + c.toString());</span>
+<span class="fc" id="L268">    }</span>
+
+    private static List&lt;RDFNode&gt; literals(Collection&lt;String&gt; values) {
+<span class="fc" id="L271">        List&lt;RDFNode&gt; out = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L272" title="All 2 branches covered.">        for (String s : values) {</span>
+<span class="fc" id="L273">            out.add(ResourceFactory.createStringLiteral(s));</span>
+<span class="fc" id="L274">        }</span>
+<span class="fc" id="L275">        return out;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

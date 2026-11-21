@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProblemErrorReportValve.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">ProblemErrorReportValve.java</span></div><h1>ProblemErrorReportValve.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import eu.simpl.vocabularymanager.error.ProblemType;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+import org.apache.catalina.Valve;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.apache.catalina.valves.ErrorReportValve;
+import org.springframework.boot.tomcat.TomcatWebServer;
+import org.springframework.boot.web.server.context.WebServerInitializedEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+
+/**
+ * Requests the servlet container refuses before routing (bad encoding, encoded slash, too many
+ * parameters) are answered with problem+json too (D158), not with the container's HTML page.
+ */
+<span class="fc" id="L21">public class ProblemErrorReportValve extends ErrorReportValve {</span>
+
+    @Override
+    protected void report(Request request, Response response, Throwable t) {
+<span class="fc" id="L25">        int status = response.getStatus();</span>
+<span class="pc bpc" id="L26" title="3 of 4 branches missed.">        if (status &lt; 400 || response.getContentWritten() &gt; 0) {</span>
+<span class="fc" id="L27">            return;</span>
+        }
+<span class="nc" id="L29">        ProblemType p = ProblemType.forStatus(status);</span>
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        String detail = status == 400 ? &quot;The request was rejected by the server.&quot; : p.title();</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        String href = p.href() == null ? &quot;&quot; : &quot;,\&quot;href\&quot;:\&quot;&quot; + p.href() + &quot;\&quot;&quot;;</span>
+<span class="nc" id="L32">        String body = &quot;{\&quot;type\&quot;:\&quot;&quot;</span>
+<span class="nc" id="L33">                + p.type()</span>
+                + &quot;\&quot;&quot;
+                + href
+                + &quot;,\&quot;title\&quot;:\&quot;&quot;
+<span class="nc" id="L37">                + p.title()</span>
+                + &quot;\&quot;,\&quot;status\&quot;:&quot;
+                + status
+                + &quot;,\&quot;detail\&quot;:\&quot;&quot;
+                + detail
+                + &quot;\&quot;,\&quot;instance\&quot;:\&quot;urn:uuid:&quot;
+<span class="nc" id="L43">                + UUID.randomUUID()</span>
+                + &quot;\&quot;}&quot;;
+        try {
+<span class="nc" id="L46">            response.setContentType(&quot;application/problem+json&quot;);</span>
+<span class="nc" id="L47">            byte[] bytes = body.getBytes(StandardCharsets.UTF_8);</span>
+<span class="nc" id="L48">            response.setContentLength(bytes.length);</span>
+<span class="nc" id="L49">            OutputStream out = response.getOutputStream();</span>
+<span class="nc" id="L50">            out.write(bytes);</span>
+<span class="nc" id="L51">            response.finishResponse();</span>
+<span class="nc" id="L52">        } catch (IOException | IllegalStateException e) {</span>
+            // The client is gone; nothing more to do.
+<span class="nc" id="L54">        }</span>
+<span class="nc" id="L55">    }</span>
+
+    /** Replaces the host's error report valve once the server runs. */
+    @Component
+<span class="fc" id="L59">    public static class Installer implements ApplicationListener&lt;WebServerInitializedEvent&gt; {</span>
+        @Override
+        public void onApplicationEvent(WebServerInitializedEvent event) {
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">            if (event.getWebServer() instanceof TomcatWebServer tomcat) {</span>
+<span class="fc" id="L63">                var host = tomcat.getTomcat().getHost();</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">                for (Valve v : host.getPipeline().getValves()) {</span>
+<span class="pc bpc" id="L65" title="1 of 4 branches missed.">                    if (v instanceof ErrorReportValve &amp;&amp; !(v instanceof ProblemErrorReportValve)) {</span>
+<span class="fc" id="L66">                        host.getPipeline().removeValve(v);</span>
+                    }
+                }
+<span class="fc" id="L69">                boolean present = false;</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">                for (Valve v : host.getPipeline().getValves()) {</span>
+<span class="fc" id="L71">                    present |= v instanceof ProblemErrorReportValve;</span>
+                }
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">                if (!present) {</span>
+<span class="fc" id="L74">                    host.getPipeline().addValve(new ProblemErrorReportValve());</span>
+                }
+            }
+<span class="fc" id="L77">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

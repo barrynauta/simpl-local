@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BearerTokenFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">BearerTokenFilter.java</span></div><h1>BearerTokenFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.MDC;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Reads the bearer token, verifies it ({@link TokenVerifier}) and sets the authentication with the
+ * realm roles as authorities. A present but invalid token gives 401 at once; no key set gives 503
+ * (D17, D44). GET /v1/health takes no token (D17).
+ */
+public class BearerTokenFilter extends OncePerRequestFilter {
+
+<span class="fc" id="L26">    private static final org.slf4j.Logger SECURITY_LOG = org.slf4j.LoggerFactory.getLogger(&quot;security&quot;);</span>
+    public static final String UNAUTHORIZED_DETAIL = &quot;A valid bearer token is required.&quot;;
+
+    private final TokenVerifier verifier;
+    private final ProblemWriter problems;
+
+<span class="fc" id="L32">    public BearerTokenFilter(TokenVerifier verifier, ProblemWriter problems) {</span>
+<span class="fc" id="L33">        this.verifier = verifier;</span>
+<span class="fc" id="L34">        this.problems = problems;</span>
+<span class="fc" id="L35">    }</span>
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+<span class="pc bpc" id="L39" title="1 of 4 branches missed.">        return &quot;/v1/health&quot;.equals(request.getRequestURI()) &amp;&amp; &quot;GET&quot;.equals(request.getMethod());</span>
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L45">        String header = request.getHeader(&quot;Authorization&quot;);</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if (header == null) {</span>
+<span class="nc" id="L47">            chain.doFilter(request, response);</span>
+<span class="nc" id="L48">            return;</span>
+        }
+<span class="pc bpc" id="L50" title="1 of 4 branches missed.">        if (!header.regionMatches(true, 0, &quot;Bearer &quot;, 0, 7) || header.length() &lt;= 7) {</span>
+<span class="fc" id="L51">            unauthorized(response);</span>
+<span class="fc" id="L52">            return;</span>
+        }
+        try {
+<span class="fc" id="L55">            TokenVerifier.Principal p = verifier.verify(header.substring(7).trim());</span>
+<span class="fc" id="L56">            List&lt;SimpleGrantedAuthority&gt; authorities = p.roles().stream()</span>
+<span class="fc" id="L57">                    .map(r -&gt; new SimpleGrantedAuthority(&quot;ROLE_&quot; + r))</span>
+<span class="fc" id="L58">                    .toList();</span>
+<span class="fc" id="L59">            UsernamePasswordAuthenticationToken auth =</span>
+<span class="fc" id="L60">                    UsernamePasswordAuthenticationToken.authenticated(p, null, authorities);</span>
+<span class="fc" id="L61">            SecurityContextHolder.getContext().setAuthentication(auth);</span>
+<span class="fc" id="L62">            MDC.put(&quot;userId&quot;, p.subject());</span>
+<span class="fc" id="L63">            chain.doFilter(request, response);</span>
+<span class="fc" id="L64">        } catch (TokenVerifier.TokenException e) {</span>
+<span class="fc" id="L65">            SECURITY_LOG.warn(&quot;token rejected: {}&quot;, e.getMessage());</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">            if (e.unavailable()) {</span>
+<span class="nc" id="L67">                problems.write(response, ApiException.unavailable(ApiException.IDP_UNAVAILABLE));</span>
+            } else {
+<span class="fc" id="L69">                unauthorized(response);</span>
+            }
+<span class="fc" id="L71">        }</span>
+<span class="fc" id="L72">    }</span>
+
+    private void unauthorized(HttpServletResponse response) throws IOException {
+<span class="fc" id="L75">        problems.write(</span>
+                response,
+                new ApiException(
+                        ProblemType.UNAUTHORIZED,
+                        UNAUTHORIZED_DETAIL,
+<span class="fc" id="L80">                        List.of(),</span>
+<span class="fc" id="L81">                        Map.of(&quot;WWW-Authenticate&quot;, &quot;Bearer&quot;),</span>
+                        false));
+<span class="fc" id="L83">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>
