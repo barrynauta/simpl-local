@@ -1,0 +1,154 @@
+{
+ "summary": {
+  "operations": 20,
+  "failed_checks": 14,
+  "explained": 13,
+  "findings": 1,
+  "server_errors": 0,
+  "by_check": {
+   "ST202": 13,
+   "ST201": 1
+  },
+  "schemathesis_exit": 1
+ },
+ "failures": [
+  {
+   "operation": "POST /external-vocabularies",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Encountered invalid Turtle syntax: the file is not va",
+   "verdict": "explained",
+   "decision": "D9",
+   "reason": "the OpenAPI types the file as binary; the decisions require valid Turtle"
+  },
+  {
+   "operation": "POST /external-vocabularies/content",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Property 'ñ' is not",
+   "verdict": "explained",
+   "decision": "D52",
+   "reason": "unknown JSON properties are rejected, also where the schema allows additional properties; D38 limits on search bodies"
+  },
+  {
+   "operation": "POST /external-vocabulary/searches",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "'aliasUris' must be",
+   "verdict": "explained",
+   "decision": "D38",
+   "reason": "each search array has at least 1 entry when present; at most 100 URIs in total"
+  },
+  {
+   "operation": "POST /vocabularies",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Encountered invalid Turtle syntax: the file is not va",
+   "verdict": "explained",
+   "decision": "D9",
+   "reason": "the OpenAPI types the file as binary; the decisions require valid Turtle"
+  },
+  {
+   "operation": "POST /vocabularies/searches",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "'items[0].version' m",
+   "verdict": "finding"
+  },
+  {
+   "operation": "POST /vocabularies/{vocabularyName}/versions",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "'changelog' must be",
+   "verdict": "explained",
+   "decision": "D37",
+   "reason": "changelog 1 to 1000 characters after trimming"
+  },
+  {
+   "operation": "GET /content/{vocabularyName}/versions/{version}",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "'version' must be a",
+   "verdict": "explained",
+   "decision": "D91",
+   "reason": "integers are 32-bit, 1 to 2147483647 (D91, D112)"
+  },
+  {
+   "operation": "GET /external-vocabularies",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "'pageSize' must be a",
+   "verdict": "explained",
+   "decision": "D22",
+   "reason": "pageSize 1 to 100; integers 32-bit (D91)"
+  },
+  {
+   "operation": "GET /vocabularies",
+   "check": "ST201",
+   "title": "Schema-violating request accepted",
+   "status": "200",
+   "detail": "Invalid data should have been rejected",
+   "verdict": "explained",
+   "decision": "D19",
+   "reason": "the name filter pattern is relaxed to ^[A-Za-z0-9]+$"
+  },
+  {
+   "operation": "GET /vocabularies",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "'creationDate' must",
+   "verdict": "explained",
+   "decision": "D20",
+   "reason": "a value matching the pattern but not a valid date returns 400"
+  },
+  {
+   "operation": "GET /vocabularies/{vocabularyName}/versions",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "'pageSize' must be a",
+   "verdict": "explained",
+   "decision": "D22",
+   "reason": "pageSize 1 to 100; integers 32-bit (D91)"
+  },
+  {
+   "operation": "GET /vocabularies/{vocabularyName}/versions/{version}",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "'version' must be a",
+   "verdict": "explained",
+   "decision": "D91",
+   "reason": "integers are 32-bit, 1 to 2147483647 (D91, D112)"
+  },
+  {
+   "operation": "PATCH /vocabularies/{vocabularyName}",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "Property '' is not s",
+   "verdict": "explained",
+   "decision": "D52",
+   "reason": "unknown JSON properties are rejected, also where the schema allows additional properties; D38 limits on search bodies"
+  },
+  {
+   "operation": "PATCH /vocabularies/{vocabularyName}/versions/{version}",
+   "check": "ST202",
+   "title": "Schema-valid request rejected",
+   "status": "400",
+   "detail": "'version' must be a",
+   "verdict": "explained",
+   "decision": "D91",
+   "reason": "integers are 32-bit, 1 to 2147483647 (D91, D112)"
+  }
+ ]
+}

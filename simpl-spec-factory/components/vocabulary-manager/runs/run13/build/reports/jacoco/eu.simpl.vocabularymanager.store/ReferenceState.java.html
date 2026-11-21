@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReferenceState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">ReferenceState.java</span></div><h1>ReferenceState.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+/**
+ * What the store knows about the vocabularies and namespaces an upload references, read with one store
+ * query per upload (Q5, D12, D38).
+ *
+ * @param internal vocabularies by exact name
+ * @param registeredExternalKeys URI keys (D30) of registered external namespaces and aliases that matched
+ */
+public record ReferenceState(Map&lt;String, InternalState&gt; internal, Set&lt;String&gt; registeredExternalKeys) {
+
+<span class="fc" id="L17">    public ReferenceState {</span>
+<span class="fc" id="L18">        internal = Map.copyOf(internal);</span>
+<span class="fc" id="L19">        registeredExternalKeys = Set.copyOf(registeredExternalKeys);</span>
+<span class="fc" id="L20">    }</span>
+
+    /** One stored vocabulary with the status of each version. */
+<span class="fc" id="L23">    public record InternalState(</span>
+            String name, VocabularyStatus status, int latestVersion, TreeMap&lt;Integer, VocabularyStatus&gt; versions) {
+
+        /** The highest-numbered ACTIVE version, or null (D5). */
+        public Integer latestActiveVersion() {
+<span class="fc bfc" id="L28" title="All 2 branches covered.">            for (Integer version : versions.descendingKeySet()) {</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">                if (versions.get(version) == VocabularyStatus.ACTIVE) {</span>
+<span class="fc" id="L30">                    return version;</span>
+                }
+<span class="fc" id="L32">            }</span>
+<span class="fc" id="L33">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

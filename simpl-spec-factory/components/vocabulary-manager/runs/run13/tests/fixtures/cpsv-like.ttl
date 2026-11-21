@@ -1,0 +1,28 @@
+# A small vocabulary in the style of the Core Public Service Vocabulary (SIMPL-393, D1).
+@prefix ex: <https://example.org/{name}/cpsv#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:PublicService a owl:Class ;
+    rdfs:label "Public Service"@en ;
+    rdfs:comment "A mandatory or discretionary set of activities performed by a public organisation."@en .
+
+ex:PublicOrganisation a owl:Class ;
+    rdfs:label "Public Organisation"@en .
+
+ex:hasCompetentAuthority a owl:ObjectProperty ;
+    rdfs:domain ex:PublicService ;
+    rdfs:range ex:PublicOrganisation .
+
+ex:processingTime a owl:DatatypeProperty ;
+    rdfs:domain ex:PublicService ;
+    rdfs:range xsd:duration .
+
+ex:ServiceTypes a skos:ConceptScheme ;
+    skos:prefLabel "Service types"@en .
+
+ex:Permit a skos:Concept ;
+    skos:inScheme ex:ServiceTypes ;
+    skos:prefLabel "Permit"@en , "Genehmigung"@de .

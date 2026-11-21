@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">RequestRules.java</span></div><h1>RequestRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.ProblemIssue;
+import eu.simpl.vocabularymanager.store.VocabularyQuery.TimeRange;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.regex.Pattern;
+
+/**
+ * The decided request rules (D19, D20, D22, D37, D49, D73, D91, D112, D130). Each check adds an issue
+ * and returns null when the value breaks the rule. The constants are compared with openapi-decided.yaml
+ * by a test (D93).
+ */
+public final class RequestRules {
+
+    public static final String NAME_PATTERN = &quot;^[A-Z][a-zA-Z0-9]*$&quot;;
+    public static final int NAME_MIN = 3;
+    public static final int NAME_MAX = 64;
+    public static final String NAME_FILTER_PATTERN = &quot;^[A-Za-z0-9]+$&quot;;
+    public static final int NAME_FILTER_MAX = 64;
+    public static final int TEXT_MAX = 1000;
+    public static final int PAGE_SIZE_MAX = 100;
+    public static final int PAGE_SIZE_DEFAULT = 20;
+    public static final long INT32_MAX = Integer.MAX_VALUE;
+    public static final String DATE_PATTERN = &quot;^\\d{4}-\\d{2}-\\d{2}(T.*)?$&quot;;
+    public static final int MAX_ALIASES = 20;
+
+<span class="fc" id="L39">    private static final Pattern NAME = Pattern.compile(NAME_PATTERN);</span>
+<span class="fc" id="L40">    private static final Pattern NAME_FILTER = Pattern.compile(NAME_FILTER_PATTERN);</span>
+<span class="fc" id="L41">    private static final Pattern DIGITS = Pattern.compile(&quot;^[0-9]+$&quot;);</span>
+<span class="fc" id="L42">    private static final Pattern DATE = Pattern.compile(DATE_PATTERN);</span>
+<span class="fc" id="L43">    private static final DateTimeFormatter STRICT_DATE =</span>
+<span class="fc" id="L44">            DateTimeFormatter.ofPattern(&quot;uuuu-MM-dd&quot;).withResolverStyle(ResolverStyle.STRICT);</span>
+
+    private RequestRules() {}
+
+    /** A vocabulary or external vocabulary name (D37). */
+    public static String name(String value, String in, String field, List&lt;ProblemIssue&gt; issues) {
+<span class="pc bpc" id="L50" title="1 of 4 branches missed.">        if (value == null || value.isEmpty()) {</span>
+<span class="fc" id="L51">            issues.add(ProblemIssue.schemaViolation(in, field, &quot;'&quot; + field + &quot;' is required.&quot;, null));</span>
+<span class="fc" id="L52">            return null;</span>
+        }
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (value.length() &lt; NAME_MIN</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">                || value.length() &gt; NAME_MAX</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">                || !NAME.matcher(value).matches()) {</span>
+<span class="fc" id="L57">            issues.add(ProblemIssue.schemaViolation(</span>
+                    in,
+                    field,
+                    &quot;'&quot; + field + &quot;' must be 3 to 64 characters, start with an upper-case letter and contain only&quot;
+                            + &quot; letters and digits.&quot;,
+<span class="fc" id="L62">                    shorten(value)));</span>
+<span class="fc" id="L63">            return null;</span>
+        }
+<span class="fc" id="L65">        return value;</span>
+    }
+
+    /** A positive 32-bit integer given as digits only (D49, D91, D112). */
+    public static Integer positiveInt(String value, String in, String field, long max, List&lt;ProblemIssue&gt; issues) {
+<span class="pc bpc" id="L70" title="1 of 4 branches missed.">        if (value == null || !DIGITS.matcher(value).matches()) {</span>
+<span class="fc" id="L71">            issues.add(ProblemIssue.schemaViolation(</span>
+<span class="fc" id="L72">                    in, field, &quot;'&quot; + field + &quot;' must be a whole number from 1 to &quot; + max + &quot;.&quot;, shorten(value)));</span>
+<span class="fc" id="L73">            return null;</span>
+        }
+<span class="fc" id="L75">        BigInteger number = new BigInteger(value);</span>
+<span class="fc bfc" id="L76" title="All 4 branches covered.">        if (number.signum() &lt;= 0 || number.compareTo(BigInteger.valueOf(max)) &gt; 0) {</span>
+<span class="fc" id="L77">            issues.add(ProblemIssue.schemaViolation(</span>
+<span class="fc" id="L78">                    in, field, &quot;'&quot; + field + &quot;' must be a whole number from 1 to &quot; + max + &quot;.&quot;, shorten(value)));</span>
+<span class="fc" id="L79">            return null;</span>
+        }
+<span class="fc" id="L81">        return number.intValue();</span>
+    }
+
+    /** Required text of 1 to 1000 characters after trimming (D37). Returns the trimmed text. */
+    public static String text(String value, String field, boolean required, List&lt;ProblemIssue&gt; issues) {
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">            if (required) {</span>
+<span class="fc" id="L88">                issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, field, &quot;'&quot; + field + &quot;' is required.&quot;, null));</span>
+            }
+<span class="fc" id="L90">            return null;</span>
+        }
+<span class="fc" id="L92">        String trimmed = value.strip();</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (trimmed.isEmpty()) {</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            if (required) {</span>
+<span class="fc" id="L95">                issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, field, &quot;'&quot; + field + &quot;' must not be empty.&quot;, null));</span>
+            }
+<span class="fc" id="L97">            return null;</span>
+        }
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (trimmed.codePointCount(0, trimmed.length()) &gt; TEXT_MAX) {</span>
+<span class="fc" id="L100">            issues.add(ProblemIssue.schemaViolation(</span>
+                    &quot;body&quot;, field, &quot;'&quot; + field + &quot;' must be at most 1000 characters.&quot;, null));
+<span class="fc" id="L102">            return null;</span>
+        }
+<span class="fc" id="L104">        return trimmed;</span>
+    }
+
+    /** The name filter of D19. */
+    public static String nameFilter(String value, List&lt;ProblemIssue&gt; issues) {
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (value.isEmpty()</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">                || value.length() &gt; NAME_FILTER_MAX</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">                || !NAME_FILTER.matcher(value).matches()) {</span>
+<span class="fc" id="L112">            issues.add(ProblemIssue.schemaViolation(</span>
+<span class="fc" id="L113">                    &quot;query&quot;, &quot;name&quot;, &quot;'name' must be 1 to 64 letters or digits.&quot;, shorten(value)));</span>
+<span class="fc" id="L114">            return null;</span>
+        }
+<span class="fc" id="L116">        return value;</span>
+    }
+
+    /**
+     * A date filter (D20, D110, D130): a date matches its whole UTC day, a date-time its second. A
+     * date-time without an offset is UTC.
+     */
+    public static TimeRange dateFilter(String value, String field, List&lt;ProblemIssue&gt; issues) {
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        if (DATE.matcher(value).matches()) {</span>
+            try {
+<span class="fc bfc" id="L126" title="All 2 branches covered.">                if (value.length() == 10) {</span>
+<span class="fc" id="L127">                    LocalDate day = LocalDate.parse(value, STRICT_DATE);</span>
+<span class="fc" id="L128">                    Instant from = day.atStartOfDay(ZoneOffset.UTC).toInstant();</span>
+<span class="fc" id="L129">                    return new TimeRange(from, from.plus(1, ChronoUnit.DAYS));</span>
+                }
+<span class="fc" id="L131">                LocalDate.parse(value.substring(0, 10), STRICT_DATE);</span>
+<span class="fc" id="L132">                Instant at = parseDateTime(value).truncatedTo(ChronoUnit.SECONDS);</span>
+<span class="fc" id="L133">                return new TimeRange(at, at.plusSeconds(1));</span>
+<span class="fc" id="L134">            } catch (DateTimeException | ArithmeticException e) {</span>
+                // falls through to the issue below
+            }
+        }
+<span class="fc" id="L138">        issues.add(ProblemIssue.schemaViolation(</span>
+<span class="fc" id="L139">                &quot;query&quot;, field, &quot;'&quot; + field + &quot;' must be a valid date (YYYY-MM-DD) or date-time.&quot;, shorten(value)));</span>
+<span class="fc" id="L140">        return null;</span>
+    }
+
+    private static Instant parseDateTime(String value) {
+        try {
+<span class="fc" id="L145">            return OffsetDateTime.parse(value, DateTimeFormatter.ISO_OFFSET_DATE_TIME)</span>
+<span class="fc" id="L146">                    .toInstant();</span>
+<span class="fc" id="L147">        } catch (DateTimeException e) {</span>
+<span class="fc" id="L148">            return LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)</span>
+<span class="fc" id="L149">                    .toInstant(ZoneOffset.UTC);</span>
+        }
+    }
+
+    /** An absolute URI (RFC 3986, with a scheme) as sent (D73). */
+    public static boolean absoluteUri(String value) {
+<span class="pc bpc" id="L155" title="1 of 6 branches missed.">        if (value == null || value.isEmpty() || value.length() &gt; 2048) {</span>
+<span class="fc" id="L156">            return false;</span>
+        }
+        try {
+<span class="fc" id="L159">            URI uri = new URI(value);</span>
+<span class="pc bpc" id="L160" title="1 of 4 branches missed.">            return uri.isAbsolute() &amp;&amp; uri.getScheme() != null;</span>
+<span class="fc" id="L161">        } catch (URISyntaxException e) {</span>
+<span class="fc" id="L162">            return false;</span>
+        }
+    }
+
+    static String shorten(String value) {
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">        if (value == null) {</span>
+<span class="nc" id="L168">            return null;</span>
+        }
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">        return value.length() &gt; 100 ? value.substring(0, 100) : value;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

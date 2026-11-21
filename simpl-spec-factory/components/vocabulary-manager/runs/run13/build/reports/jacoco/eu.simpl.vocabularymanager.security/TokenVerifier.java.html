@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TokenVerifier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">TokenVerifier.java</span></div><h1>TokenVerifier.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
+import com.nimbusds.jose.jwk.AsymmetricJWK;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jwt.proc.BadJWTException;
+import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
+import eu.simpl.vocabularymanager.config.VocabularyManagerProperties;
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Problems;
+import java.text.ParseException;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Verifies bearer tokens with Nimbus (D17, D108, D132): signature with a realm key, then issuer, audience,
+ * expiry and not-before with the Nimbus claims verifier. Never accepts a token without a signature check.
+ */
+public class TokenVerifier {
+
+<span class="fc" id="L31">    private static final Logger LOG = LoggerFactory.getLogger(TokenVerifier.class);</span>
+<span class="fc" id="L32">    private static final Set&lt;JWSAlgorithm&gt; ALLOWED_ALGORITHMS = Set.of(</span>
+            JWSAlgorithm.RS256,
+            JWSAlgorithm.RS384,
+            JWSAlgorithm.RS512,
+            JWSAlgorithm.PS256,
+            JWSAlgorithm.PS384,
+            JWSAlgorithm.PS512,
+            JWSAlgorithm.ES256,
+            JWSAlgorithm.ES384,
+            JWSAlgorithm.ES512);
+
+    /** The token is missing, malformed or fails a check (401). */
+    public static final class InvalidTokenException extends Exception {
+        private static final long serialVersionUID = 1L;
+
+        public InvalidTokenException(String message) {
+<span class="fc" id="L48">            super(message);</span>
+<span class="fc" id="L49">        }</span>
+    }
+
+    private final RealmKeyProvider keys;
+    private final DefaultJWTClaimsVerifier&lt;?&gt; claimsVerifier;
+<span class="fc" id="L54">    private final DefaultJWSVerifierFactory verifierFactory = new DefaultJWSVerifierFactory();</span>
+
+<span class="fc" id="L56">    public TokenVerifier(VocabularyManagerProperties.Identity identity, RealmKeyProvider keys) {</span>
+<span class="fc" id="L57">        this.keys = keys;</span>
+<span class="fc" id="L58">        this.claimsVerifier = new DefaultJWTClaimsVerifier&lt;&gt;(</span>
+<span class="fc" id="L59">                Set.of(identity.audience()),</span>
+<span class="fc" id="L60">                new JWTClaimsSet.Builder().issuer(identity.issuer()).build(),</span>
+<span class="fc" id="L61">                Set.of(&quot;sub&quot;, &quot;exp&quot;, &quot;iat&quot;),</span>
+<span class="fc" id="L62">                Set.of());</span>
+<span class="fc" id="L63">    }</span>
+
+    /**
+     * Verifies a compact serialised token.
+     *
+     * @throws InvalidTokenException when the token is not valid (401)
+     * @throws ApiException 503 when the realm keys cannot be fetched (D44)
+     */
+    public AuthenticatedUser verify(String token) throws InvalidTokenException {
+<span class="fc" id="L72">        SignedJWT jwt = parse(token);</span>
+<span class="fc" id="L73">        JWSHeader header = jwt.getHeader();</span>
+<span class="pc bpc" id="L74" title="1 of 4 branches missed.">        if (!ALLOWED_ALGORITHMS.contains(header.getAlgorithm()) || header.getKeyID() == null) {</span>
+<span class="fc" id="L75">            throw new InvalidTokenException(&quot;Unsupported algorithm or missing key id&quot;);</span>
+        }
+        JWK key;
+        try {
+<span class="fc" id="L79">            key = keys.keyFor(header.getKeyID());</span>
+<span class="fc" id="L80">        } catch (RealmKeyProvider.UnknownKeyException e) {</span>
+<span class="fc" id="L81">            throw new InvalidTokenException(&quot;Unknown key id&quot;);</span>
+<span class="fc" id="L82">        } catch (RealmKeyProvider.KeysUnavailableException e) {</span>
+<span class="fc" id="L83">            throw Problems.identityProviderUnavailable();</span>
+<span class="fc" id="L84">        }</span>
+<span class="fc" id="L85">        checkSignature(jwt, header, key);</span>
+<span class="fc" id="L86">        JWTClaimsSet claims = claims(jwt);</span>
+        try {
+<span class="fc" id="L88">            claimsVerifier.verify(claims, null);</span>
+<span class="fc" id="L89">        } catch (BadJWTException e) {</span>
+<span class="fc" id="L90">            throw new InvalidTokenException(&quot;Claims rejected: &quot; + e.getMessage());</span>
+<span class="fc" id="L91">        }</span>
+<span class="fc" id="L92">        return toUser(claims);</span>
+    }
+
+    private static SignedJWT parse(String token) throws InvalidTokenException {
+        try {
+<span class="fc" id="L97">            return SignedJWT.parse(token);</span>
+<span class="fc" id="L98">        } catch (ParseException e) {</span>
+<span class="fc" id="L99">            throw new InvalidTokenException(&quot;Malformed token&quot;);</span>
+        }
+    }
+
+    private void checkSignature(SignedJWT jwt, JWSHeader header, JWK key) throws InvalidTokenException {
+<span class="pc bpc" id="L104" title="2 of 4 branches missed.">        if (!(key instanceof AsymmetricJWK asymmetric) || key.isPrivate()) {</span>
+<span class="nc" id="L105">            throw new InvalidTokenException(&quot;Unsupported key&quot;);</span>
+        }
+        try {
+<span class="fc" id="L108">            JWSVerifier verifier = verifierFactory.createJWSVerifier(header, asymmetric.toPublicKey());</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">            if (!jwt.verify(verifier)) {</span>
+<span class="fc" id="L110">                throw new InvalidTokenException(&quot;Bad signature&quot;);</span>
+            }
+<span class="nc" id="L112">        } catch (JOSEException | IllegalStateException e) {</span>
+<span class="nc" id="L113">            LOG.debug(&quot;Signature check failed: {}&quot;, e.getClass().getSimpleName());</span>
+<span class="nc" id="L114">            throw new InvalidTokenException(&quot;Signature check failed&quot;);</span>
+<span class="fc" id="L115">        }</span>
+<span class="fc" id="L116">    }</span>
+
+    private static JWTClaimsSet claims(SignedJWT jwt) throws InvalidTokenException {
+        try {
+<span class="fc" id="L120">            return jwt.getJWTClaimsSet();</span>
+<span class="nc" id="L121">        } catch (ParseException e) {</span>
+<span class="nc" id="L122">            throw new InvalidTokenException(&quot;Malformed claims&quot;);</span>
+        }
+    }
+
+    private static AuthenticatedUser toUser(JWTClaimsSet claims) {
+<span class="fc" id="L127">        String creator = stringClaim(claims, &quot;email&quot;);</span>
+<span class="pc bpc" id="L128" title="2 of 4 branches missed.">        if (creator == null || creator.isBlank()) {</span>
+<span class="nc" id="L129">            creator = stringClaim(claims, &quot;preferred_username&quot;);</span>
+        }
+<span class="pc bpc" id="L131" title="2 of 4 branches missed.">        if (creator == null || creator.isBlank()) {</span>
+<span class="nc" id="L132">            creator = claims.getSubject();</span>
+        }
+<span class="fc" id="L134">        return new AuthenticatedUser(claims.getSubject(), creator, realmRoles(claims));</span>
+    }
+
+    private static String stringClaim(JWTClaimsSet claims, String name) {
+<span class="fc" id="L138">        Object value = claims.getClaim(name);</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">        return value instanceof String text ? text : null;</span>
+    }
+
+    private static Set&lt;String&gt; realmRoles(JWTClaimsSet claims) {
+<span class="fc" id="L143">        Object realmAccess = claims.getClaim(&quot;realm_access&quot;);</span>
+<span class="fc" id="L144">        Set&lt;String&gt; roles = new LinkedHashSet&lt;&gt;();</span>
+<span class="pc bpc" id="L145" title="2 of 4 branches missed.">        if (realmAccess instanceof Map&lt;?, ?&gt; map &amp;&amp; map.get(&quot;roles&quot;) instanceof Collection&lt;?&gt; values) {</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">            for (Object value : values) {</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">                if (value instanceof String role) {</span>
+<span class="fc" id="L148">                    roles.add(role);</span>
+                }
+<span class="fc" id="L150">            }</span>
+        }
+<span class="fc" id="L152">        return Set.copyOf(roles);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">VocabularyController.java</span></div><h1>VocabularyController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import static eu.simpl.vocabularymanager.api.ApiSupport.JSON;
+import static eu.simpl.vocabularymanager.api.ApiSupport.MULTIPART;
+import static eu.simpl.vocabularymanager.api.ApiSupport.PROBLEM_JSON;
+
+import eu.simpl.vocabularymanager.api.dto.CollectionResponse;
+import eu.simpl.vocabularymanager.api.dto.VersionCreatedResponse;
+import eu.simpl.vocabularymanager.api.dto.VersionResponse;
+import eu.simpl.vocabularymanager.api.dto.VocabularyResponse;
+import eu.simpl.vocabularymanager.domain.Page;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.error.ProblemIssue;
+import eu.simpl.vocabularymanager.error.Problems;
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import eu.simpl.vocabularymanager.service.VocabularyService.Created;
+import eu.simpl.vocabularymanager.service.VocabularyService.Submission;
+import eu.simpl.vocabularymanager.service.VocabularyService.VersionView;
+import eu.simpl.vocabularymanager.store.VocabularyQuery;
+import eu.simpl.vocabularymanager.store.VocabularyQuery.SortField;
+import eu.simpl.vocabularymanager.store.VocabularyRepository.VersionSort;
+import io.github.resilience4j.bulkhead.Bulkhead;
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.function.Supplier;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+
+/** The vocabulary operations of the decided contract (stories SIMPL-18161 to SIMPL-18196). */
+@RestController
+public class VocabularyController {
+
+<span class="fc" id="L45">    private static final Set&lt;String&gt; LIST_PARAMETERS =</span>
+<span class="fc" id="L46">            Set.of(&quot;name&quot;, &quot;status&quot;, &quot;creationDate&quot;, &quot;lastUpdated&quot;, &quot;sort&quot;, &quot;page&quot;, &quot;pageSize&quot;);</span>
+<span class="fc" id="L47">    private static final Set&lt;String&gt; VERSION_LIST_PARAMETERS = Set.of(&quot;sort&quot;, &quot;page&quot;, &quot;pageSize&quot;);</span>
+<span class="fc" id="L48">    private static final Set&lt;String&gt; CREATE_FIELDS = Set.of(&quot;vocabularyFile&quot;, &quot;name&quot;, &quot;description&quot;, &quot;changelog&quot;);</span>
+<span class="fc" id="L49">    private static final Set&lt;String&gt; VERSION_FIELDS = Set.of(&quot;vocabularyFile&quot;, &quot;description&quot;, &quot;changelog&quot;);</span>
+<span class="fc" id="L50">    private static final List&lt;String&gt; LIST_SORTS = List.of(</span>
+            &quot;name&quot;, &quot;-name&quot;, &quot;status&quot;, &quot;-status&quot;, &quot;creationDate&quot;, &quot;-creationDate&quot;, &quot;lastUpdated&quot;, &quot;-lastUpdated&quot;);
+<span class="fc" id="L52">    private static final List&lt;String&gt; VERSION_SORTS =</span>
+<span class="fc" id="L53">            List.of(&quot;name&quot;, &quot;-name&quot;, &quot;status&quot;, &quot;-status&quot;, &quot;creationDate&quot;, &quot;-creationDate&quot;);</span>
+
+    private final VocabularyService service;
+    private final Representations representations;
+    private final Bulkhead uploads;
+
+<span class="fc" id="L59">    public VocabularyController(VocabularyService service, Representations representations, Bulkhead uploads) {</span>
+<span class="fc" id="L60">        this.service = service;</span>
+<span class="fc" id="L61">        this.representations = representations;</span>
+<span class="fc" id="L62">        this.uploads = uploads;</span>
+<span class="fc" id="L63">    }</span>
+
+    @GetMapping(
+            path = &quot;/v1/vocabularies&quot;,
+            produces = {JSON, PROBLEM_JSON})
+    public ResponseEntity&lt;CollectionResponse&lt;VocabularyResponse&gt;&gt; getVocabularies(HttpServletRequest request) {
+<span class="fc" id="L69">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L70">        QueryParameters query = QueryParameters.read(request, LIST_PARAMETERS, issues);</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        String name = query.get(&quot;name&quot;) == null ? null : RequestRules.nameFilter(query.get(&quot;name&quot;), issues);</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        VocabularyStatus status = query.get(&quot;status&quot;) == null ? null : status(query.get(&quot;status&quot;), &quot;query&quot;, issues);</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        VocabularyQuery.TimeRange creation = query.get(&quot;creationDate&quot;) == null</span>
+<span class="fc" id="L74">                ? null</span>
+<span class="fc" id="L75">                : RequestRules.dateFilter(query.get(&quot;creationDate&quot;), &quot;creationDate&quot;, issues);</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        VocabularyQuery.TimeRange updated = query.get(&quot;lastUpdated&quot;) == null</span>
+<span class="fc" id="L77">                ? null</span>
+<span class="fc" id="L78">                : RequestRules.dateFilter(query.get(&quot;lastUpdated&quot;), &quot;lastUpdated&quot;, issues);</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        String sort = query.get(&quot;sort&quot;) == null ? &quot;name&quot; : sort(query.get(&quot;sort&quot;), LIST_SORTS, issues);</span>
+<span class="fc" id="L80">        int[] paging = ApiSupport.paging(query, issues);</span>
+<span class="fc" id="L81">        ApiSupport.failOnIssues(issues);</span>
+<span class="fc" id="L82">        boolean descending = sort.startsWith(&quot;-&quot;);</span>
+<span class="fc bfc" id="L83" title="All 6 branches covered.">        SortField field = switch (descending ? sort.substring(1) : sort) {</span>
+<span class="fc" id="L84">            case &quot;status&quot; -&gt; SortField.STATUS;</span>
+<span class="fc" id="L85">            case &quot;creationDate&quot; -&gt; SortField.CREATION_DATE;</span>
+<span class="fc" id="L86">            case &quot;lastUpdated&quot; -&gt; SortField.LAST_UPDATED;</span>
+<span class="fc" id="L87">            default -&gt; SortField.NAME;</span>
+        };
+<span class="fc" id="L89">        VocabularyQuery criteria = new VocabularyQuery(</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">                name == null ? null : name.toLowerCase(Locale.ROOT),</span>
+                status,
+                creation,
+                updated,
+                field,
+                descending,
+                paging[0],
+                paging[1]);
+<span class="fc" id="L98">        Page&lt;Vocabulary&gt; page = service.list(criteria);</span>
+<span class="fc" id="L99">        List&lt;VocabularyResponse&gt; items =</span>
+<span class="fc" id="L100">                page.items().stream().map(representations::vocabulary).toList();</span>
+<span class="fc" id="L101">        return ApiSupport.json(</span>
+<span class="fc" id="L102">                Representations.page(&quot;/vocabularies&quot;, paging[0], paging[1], page.total(), query.others(), items));</span>
+    }
+
+    @PostMapping(
+            path = &quot;/v1/vocabularies&quot;,
+            consumes = MULTIPART,
+            produces = {JSON, PROBLEM_JSON})
+    public ResponseEntity&lt;VersionCreatedResponse&gt; createVocabulary(HttpServletRequest request) {
+<span class="fc" id="L110">        return limited(() -&gt; {</span>
+<span class="fc" id="L111">            MultipartForm form = MultipartForm.read(request);</span>
+<span class="fc" id="L112">            List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L113">            ApiSupport.noQuery(request, issues);</span>
+<span class="fc" id="L114">            form.checkNames(CREATE_FIELDS, Set.of(), issues);</span>
+<span class="fc" id="L115">            String name = RequestRules.name(form.text(&quot;name&quot;), &quot;body&quot;, &quot;name&quot;, issues);</span>
+<span class="fc" id="L116">            String description = RequestRules.text(form.text(&quot;description&quot;), &quot;description&quot;, true, issues);</span>
+<span class="fc" id="L117">            String changelog = RequestRules.text(form.text(&quot;changelog&quot;), &quot;changelog&quot;, true, issues);</span>
+<span class="fc" id="L118">            requireFile(form, issues);</span>
+<span class="fc" id="L119">            ApiSupport.failOnIssues(issues);</span>
+<span class="fc" id="L120">            org.slf4j.MDC.put(&quot;vocabularyName&quot;, name);</span>
+<span class="fc" id="L121">            Created created = service.create(</span>
+<span class="fc" id="L122">                    new Submission(name, description, changelog, form.bytes(&quot;vocabularyFile&quot;)),</span>
+<span class="fc" id="L123">                    ApiSupport.user(request));</span>
+<span class="fc" id="L124">            return createdResponse(created);</span>
+        });
+    }
+
+    @GetMapping(
+            path = &quot;/v1/vocabularies/{vocabularyName}&quot;,
+            produces = {JSON, PROBLEM_JSON})
+    public ResponseEntity&lt;VocabularyResponse&gt; getVocabulary(
+            HttpServletRequest request, @PathVariable(&quot;vocabularyName&quot;) String vocabularyName) {
+<span class="fc" id="L133">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L134">        ApiSupport.noQuery(request, issues);</span>
+<span class="fc" id="L135">        String name = ApiSupport.pathName(vocabularyName, &quot;vocabularyName&quot;, issues);</span>
+<span class="fc" id="L136">        ApiSupport.failOnIssues(issues);</span>
+<span class="fc" id="L137">        return ApiSupport.json(representations.vocabulary(service.get(name)));</span>
+    }
+
+    @PatchMapping(
+            path = &quot;/v1/vocabularies/{vocabularyName}&quot;,
+            consumes = JSON,
+            produces = {JSON, PROBLEM_JSON})
+    public ResponseEntity&lt;VocabularyResponse&gt; updateVocabularyStatus(
+            HttpServletRequest request, @PathVariable(&quot;vocabularyName&quot;) String vocabularyName) {
+<span class="fc" id="L146">        JsonNode body = JsonBody.readObject(request);</span>
+<span class="fc" id="L147">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L148">        ApiSupport.noQuery(request, issues);</span>
+<span class="fc" id="L149">        String name = ApiSupport.pathName(vocabularyName, &quot;vocabularyName&quot;, issues);</span>
+<span class="fc" id="L150">        VocabularyStatus target = statusBody(body, issues);</span>
+<span class="fc" id="L151">        ApiSupport.failOnIssues(issues);</span>
+<span class="fc" id="L152">        return ApiSupport.json(representations.vocabulary(service.setStatus(name, target)));</span>
+    }
+
+    @GetMapping(
+            path = &quot;/v1/vocabularies/{vocabularyName}/versions&quot;,
+            produces = {JSON, PROBLEM_JSON})
+    public ResponseEntity&lt;CollectionResponse&lt;VersionResponse&gt;&gt; getVocabularyVersions(
+            HttpServletRequest request, @PathVariable(&quot;vocabularyName&quot;) String vocabularyName) {
+<span class="fc" id="L160">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L161">        QueryParameters query = QueryParameters.read(request, VERSION_LIST_PARAMETERS, issues);</span>
+<span class="fc" id="L162">        String name = ApiSupport.pathName(vocabularyName, &quot;vocabularyName&quot;, issues);</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        String sort = query.get(&quot;sort&quot;) == null ? null : sort(query.get(&quot;sort&quot;), VERSION_SORTS, issues);</span>
+<span class="fc" id="L164">        int[] paging = ApiSupport.paging(query, issues);</span>
+<span class="fc" id="L165">        ApiSupport.failOnIssues(issues);</span>
+<span class="fc" id="L166">        Vocabulary vocabulary = service.get(name);</span>
+<span class="fc bfc" id="L167" title="All 4 branches covered.">        boolean descending = sort != null &amp;&amp; sort.startsWith(&quot;-&quot;);</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">        VersionSort field = sort == null</span>
+<span class="fc" id="L169">                ? VersionSort.VERSION</span>
+<span class="fc bfc" id="L170" title="All 5 branches covered.">                : switch (descending ? sort.substring(1) : sort) {</span>
+<span class="fc" id="L171">                    case &quot;status&quot; -&gt; VersionSort.STATUS;</span>
+<span class="fc" id="L172">                    case &quot;creationDate&quot; -&gt; VersionSort.CREATION_DATE;</span>
+<span class="fc" id="L173">                    default -&gt; VersionSort.VERSION;</span>
+                };
+<span class="fc" id="L175">        Page&lt;VocabularyVersion&gt; page = service.versions(vocabulary, field, descending, paging[0], paging[1]);</span>
+<span class="fc" id="L176">        List&lt;VersionResponse&gt; items = page.items().stream()</span>
+<span class="fc" id="L177">                .map(version -&gt; representations.version(version, vocabulary.latestVersion()))</span>
+<span class="fc" id="L178">                .toList();</span>
+<span class="fc" id="L179">        return ApiSupport.json(Representations.page(</span>
+<span class="fc" id="L180">                &quot;/vocabularies/&quot; + name + &quot;/versions&quot;, paging[0], paging[1], page.total(), query.others(), items));</span>
+    }
+
+    @PostMapping(
+            path = &quot;/v1/vocabularies/{vocabularyName}/versions&quot;,
+            consumes = MULTIPART,
+            produces = {JSON, PROBLEM_JSON})
+    public ResponseEntity&lt;VersionCreatedResponse&gt; createVocabularyVersion(
+            HttpServletRequest request, @PathVariable(&quot;vocabularyName&quot;) String vocabularyName) {
+<span class="fc" id="L189">        return limited(() -&gt; {</span>
+<span class="fc" id="L190">            MultipartForm form = MultipartForm.read(request);</span>
+<span class="fc" id="L191">            List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L192">            ApiSupport.noQuery(request, issues);</span>
+<span class="fc" id="L193">            String name = ApiSupport.pathName(vocabularyName, &quot;vocabularyName&quot;, issues);</span>
+<span class="fc" id="L194">            form.checkNames(VERSION_FIELDS, Set.of(), issues);</span>
+<span class="fc" id="L195">            String description = RequestRules.text(form.text(&quot;description&quot;), &quot;description&quot;, true, issues);</span>
+<span class="fc" id="L196">            String changelog = RequestRules.text(form.text(&quot;changelog&quot;), &quot;changelog&quot;, true, issues);</span>
+<span class="fc" id="L197">            requireFile(form, issues);</span>
+<span class="fc" id="L198">            ApiSupport.failOnIssues(issues);</span>
+<span class="fc" id="L199">            Created created = service.createVersion(</span>
+<span class="fc" id="L200">                    new Submission(name, description, changelog, form.bytes(&quot;vocabularyFile&quot;)),</span>
+<span class="fc" id="L201">                    ApiSupport.user(request));</span>
+<span class="fc" id="L202">            return createdResponse(created);</span>
+        });
+    }
+
+    @GetMapping(
+            path = &quot;/v1/vocabularies/{vocabularyName}/versions/{version}&quot;,
+            produces = {JSON, PROBLEM_JSON})
+    public ResponseEntity&lt;VersionResponse&gt; getVocabularyVersion(
+            HttpServletRequest request,
+            @PathVariable(&quot;vocabularyName&quot;) String vocabularyName,
+            @PathVariable(&quot;version&quot;) String version) {
+<span class="fc" id="L213">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L214">        ApiSupport.noQuery(request, issues);</span>
+<span class="fc" id="L215">        String name = ApiSupport.pathName(vocabularyName, &quot;vocabularyName&quot;, issues);</span>
+<span class="fc" id="L216">        Integer number = ApiSupport.pathVersion(version, issues);</span>
+<span class="nc" id="L217">        ApiSupport.failOnIssues(issues);</span>
+<span class="nc" id="L218">        VersionView view = service.version(name, number);</span>
+<span class="nc" id="L219">        return ApiSupport.json(representations.version(view.version(), view.latestVersion()));</span>
+    }
+
+    @PatchMapping(
+            path = &quot;/v1/vocabularies/{vocabularyName}/versions/{version}&quot;,
+            consumes = JSON,
+            produces = {JSON, PROBLEM_JSON})
+    public ResponseEntity&lt;VersionResponse&gt; updateVocabularyVersionStatus(
+            HttpServletRequest request,
+            @PathVariable(&quot;vocabularyName&quot;) String vocabularyName,
+            @PathVariable(&quot;version&quot;) String version) {
+<span class="fc" id="L230">        JsonNode body = JsonBody.readObject(request);</span>
+<span class="fc" id="L231">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L232">        ApiSupport.noQuery(request, issues);</span>
+<span class="fc" id="L233">        String name = ApiSupport.pathName(vocabularyName, &quot;vocabularyName&quot;, issues);</span>
+<span class="fc" id="L234">        Integer number = ApiSupport.pathVersion(version, issues);</span>
+<span class="fc" id="L235">        VocabularyStatus target = statusBody(body, issues);</span>
+<span class="fc" id="L236">        ApiSupport.failOnIssues(issues);</span>
+<span class="fc" id="L237">        VersionView view = service.setVersionStatus(name, number, target);</span>
+<span class="fc" id="L238">        return ApiSupport.json(representations.version(view.version(), view.latestVersion()));</span>
+    }
+
+    @GetMapping(path = &quot;/v1/content/{vocabularyName}&quot;, produces = ApiSupport.TURTLE)
+    public ResponseEntity&lt;byte[]&gt; downloadVocabulary(
+            HttpServletRequest request, @PathVariable(&quot;vocabularyName&quot;) String vocabularyName) {
+<span class="fc" id="L244">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L245">        ApiSupport.noQuery(request, issues);</span>
+<span class="fc" id="L246">        String name = ApiSupport.pathName(vocabularyName, &quot;vocabularyName&quot;, issues);</span>
+<span class="fc" id="L247">        ApiSupport.failOnIssues(issues);</span>
+<span class="fc" id="L248">        return ApiSupport.turtle(service.latestContent(name), name + &quot;.ttl&quot;);</span>
+    }
+
+    @GetMapping(path = &quot;/v1/content/{vocabularyName}/versions/{version}&quot;, produces = ApiSupport.TURTLE)
+    public ResponseEntity&lt;byte[]&gt; downloadVocabularyVersion(
+            HttpServletRequest request,
+            @PathVariable(&quot;vocabularyName&quot;) String vocabularyName,
+            @PathVariable(&quot;version&quot;) String version) {
+<span class="fc" id="L256">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L257">        ApiSupport.noQuery(request, issues);</span>
+<span class="fc" id="L258">        String name = ApiSupport.pathName(vocabularyName, &quot;vocabularyName&quot;, issues);</span>
+<span class="fc" id="L259">        Integer number = ApiSupport.pathVersion(version, issues);</span>
+<span class="fc" id="L260">        ApiSupport.failOnIssues(issues);</span>
+<span class="fc" id="L261">        return ApiSupport.turtle(service.content(name, number), name + &quot;-v&quot; + number + &quot;.ttl&quot;);</span>
+    }
+
+    private ResponseEntity&lt;VersionCreatedResponse&gt; createdResponse(Created created) {
+<span class="fc" id="L265">        VersionCreatedResponse body = representations.created(created.version(), created.warnings());</span>
+<span class="fc" id="L266">        return ResponseEntity.created(URI.create(body.href()))</span>
+<span class="fc" id="L267">                .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L268">                .body(body);</span>
+    }
+
+    /** At most a few uploads per instance at a time (D92). */
+    private &lt;T&gt; T limited(Supplier&lt;T&gt; upload) {
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">        if (!uploads.tryAcquirePermission()) {</span>
+<span class="nc" id="L274">            throw Problems.tooManyUploads();</span>
+        }
+        try {
+<span class="fc" id="L277">            return upload.get();</span>
+        } finally {
+<span class="fc" id="L279">            uploads.onComplete();</span>
+        }
+    }
+
+    private static void requireFile(MultipartForm form, List&lt;ProblemIssue&gt; issues) {
+<span class="fc bfc" id="L284" title="All 2 branches covered.">        if (!form.has(&quot;vocabularyFile&quot;)) {</span>
+<span class="fc" id="L285">            issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, &quot;vocabularyFile&quot;, &quot;'vocabularyFile' is required.&quot;, null));</span>
+        }
+<span class="fc" id="L287">    }</span>
+
+    private static VocabularyStatus statusBody(JsonNode body, List&lt;ProblemIssue&gt; issues) {
+<span class="fc" id="L290">        JsonBody.unknownProperties(body, Set.of(&quot;status&quot;), &quot;&quot;, issues);</span>
+<span class="fc" id="L291">        JsonNode status = body.get(&quot;status&quot;);</span>
+<span class="pc bpc" id="L292" title="1 of 4 branches missed.">        if (status == null || status.isNull()) {</span>
+<span class="fc" id="L293">            issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, &quot;status&quot;, &quot;'status' is required.&quot;, null));</span>
+<span class="fc" id="L294">            return null;</span>
+        }
+<span class="fc bfc" id="L296" title="All 2 branches covered.">        if (!status.isString()) {</span>
+<span class="fc" id="L297">            issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, &quot;status&quot;, &quot;'status' must be ACTIVE or DEPRECATED.&quot;, null));</span>
+<span class="fc" id="L298">            return null;</span>
+        }
+<span class="fc" id="L300">        return status(status.asString(), &quot;body&quot;, issues);</span>
+    }
+
+    private static VocabularyStatus status(String value, String in, List&lt;ProblemIssue&gt; issues) {
+<span class="fc" id="L304">        VocabularyStatus status = VocabularyStatus.parse(value);</span>
+<span class="fc bfc" id="L305" title="All 2 branches covered.">        if (status == null) {</span>
+<span class="fc" id="L306">            issues.add(ProblemIssue.schemaViolation(</span>
+<span class="fc" id="L307">                    in, &quot;status&quot;, &quot;'status' must be ACTIVE or DEPRECATED.&quot;, RequestRules.shorten(value)));</span>
+        }
+<span class="fc" id="L309">        return status;</span>
+    }
+
+    private static String sort(String value, List&lt;String&gt; allowed, List&lt;ProblemIssue&gt; issues) {
+<span class="fc bfc" id="L313" title="All 2 branches covered.">        if (!allowed.contains(value)) {</span>
+<span class="fc" id="L314">            issues.add(ProblemIssue.schemaViolation(</span>
+                    &quot;query&quot;,
+                    &quot;sort&quot;,
+                    &quot;Query parameter 'sort' must be one of &quot; + allowed + &quot;.&quot;,
+<span class="fc" id="L318">                    RequestRules.shorten(value)));</span>
+<span class="fc" id="L319">            return null;</span>
+        }
+<span class="fc" id="L321">        return value;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">VocabularyRepository.java</span></div><h1>VocabularyRepository.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import static eu.simpl.vocabularymanager.store.SparqlSupport.instant;
+import static eu.simpl.vocabularymanager.store.SparqlSupport.quad;
+import static eu.simpl.vocabularymanager.store.SparqlSupport.rowInt;
+import static eu.simpl.vocabularymanager.store.SparqlSupport.rowText;
+import static eu.simpl.vocabularymanager.store.StoreModel.*;
+
+import eu.simpl.vocabularymanager.domain.Page;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
+import org.apache.jena.graph.Node;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.syntax.ElementSubQuery;
+import org.apache.jena.sparql.syntax.ElementVisitorBase;
+import org.apache.jena.sparql.syntax.ElementWalker;
+import org.apache.jena.update.UpdateRequest;
+
+/**
+ * Store access for vocabularies and vocabulary versions (the DAO of CODE-47). Every list query is paged in
+ * the store with ORDER BY, LIMIT and OFFSET and a COUNT query (D85). Every write is one update request,
+ * so one store transaction, with a condition on the state the request read (D8, D82).
+ */
+public class VocabularyRepository {
+
+    /** Highest LIMIT of a list query: 100 rows plus one (D85). */
+    static final int MAX_PAGE_ROWS = 101;
+    /** Bound of the reference and search lookups (D38, Q5). */
+    static final int MAX_LOOKUP_ROWS = 100_000;
+
+    private static final String VOCABULARY_PATTERN = &quot;&quot;&quot;
+            GRAPH ?gInternal {
+              ?voc a vm:InternalVocabulary ; vm:name ?name ; vm:status ?status ; vm:latestVersion ?latest ;
+                   vm:createdBy ?createdBy ; vm:creationDate ?created ; vm:lastUpdateDate ?updated .
+              ?latestVer vm:vocabulary ?voc ; vm:version ?latest ; vm:description ?description .
+            }
+            &quot;&quot;&quot;;
+    private static final String LIST_PATTERN = &quot;&quot;&quot;
+            GRAPH ?gInternal {
+              ?voc a vm:InternalVocabulary ; vm:name ?name ; vm:status ?status ; vm:latestVersion ?latest ;
+                   vm:createdBy ?createdBy ; vm:creationDate ?created ; vm:lastUpdateDate ?updated .
+            }
+            &quot;&quot;&quot;;
+    private static final String VERSION_PATTERN = &quot;&quot;&quot;
+            GRAPH ?gInternal {
+              ?ver vm:vocabulary ?voc ; vm:name ?name ; vm:version ?version ; vm:description ?description ;
+                   vm:changelog ?changelog ; vm:status ?status ; vm:createdBy ?createdBy ;
+                   vm:creationDate ?created ; vm:lastUpdateDate ?updated ; vm:contentSha256 ?sha .
+            }
+            &quot;&quot;&quot;;
+
+    /** Data of a new vocabulary version. */
+<span class="fc" id="L68">    public record NewVersion(</span>
+            String name,
+            int version,
+            String description,
+            String changelog,
+            String createdBy,
+            Instant now,
+            String sha256,
+            byte[] content) {}
+
+    /** Sortable fields of the version list (D23, D154). */
+<span class="fc" id="L79">    public enum VersionSort {</span>
+<span class="fc" id="L80">        VERSION,</span>
+<span class="fc" id="L81">        STATUS,</span>
+<span class="fc" id="L82">        CREATION_DATE</span>
+    }
+
+    private final SparqlStoreClient store;
+
+<span class="fc" id="L87">    public VocabularyRepository(SparqlStoreClient store) {</span>
+<span class="fc" id="L88">        this.store = store;</span>
+<span class="fc" id="L89">    }</span>
+
+    public Optional&lt;Vocabulary&gt; findVocabulary(String name) {
+<span class="fc" id="L92">        ParameterizedSparqlString pss = SparqlSupport.query(&quot;SELECT * WHERE {\n&quot; + VOCABULARY_PATTERN + &quot;}&quot;);</span>
+<span class="fc" id="L93">        pss.setParam(&quot;voc&quot;, vocabularyIri(name));</span>
+<span class="fc" id="L94">        Query query = pss.asQuery();</span>
+<span class="fc" id="L95">        query.setLimit(1);</span>
+<span class="fc" id="L96">        return store.select(query).stream().findFirst().map(VocabularyRepository::toVocabulary);</span>
+    }
+
+    /** True when a vocabulary with this name exists, compared case-insensitively (D37). */
+    public boolean nameTaken(String name) {
+<span class="fc" id="L101">        ParameterizedSparqlString pss =</span>
+<span class="fc" id="L102">                SparqlSupport.query(&quot;SELECT ?voc WHERE { GRAPH ?gInternal { ?voc vm:nameKey ?key } }&quot;);</span>
+<span class="fc" id="L103">        pss.setLiteral(&quot;key&quot;, name.toLowerCase(java.util.Locale.ROOT));</span>
+<span class="fc" id="L104">        Query query = pss.asQuery();</span>
+<span class="fc" id="L105">        query.setLimit(1);</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        return !store.select(query).isEmpty();</span>
+    }
+
+    public Page&lt;Vocabulary&gt; list(VocabularyQuery criteria) {
+<span class="fc" id="L110">        String filters = filters(criteria);</span>
+<span class="fc" id="L111">        String order = orderBy(criteria);</span>
+        // Sort and page first in a sub-query, then join the description of the latest version of the
+        // page's rows only (D85: ORDER BY, LIMIT and OFFSET in the store).
+<span class="fc" id="L114">        ParameterizedSparqlString pss = SparqlSupport.query(&quot;SELECT * WHERE {\n{ SELECT * WHERE {\n&quot;</span>
+                + LIST_PATTERN + filters + &quot;} ORDER BY &quot; + order + &quot; }\n&quot;
+                + &quot;GRAPH ?gInternal { ?latestVer vm:vocabulary ?voc ; vm:version ?latest ;&quot;
+                + &quot; vm:description ?description . }\n} ORDER BY &quot; + order);
+<span class="fc" id="L118">        bindFilters(pss, criteria);</span>
+<span class="fc" id="L119">        Query query = pss.asQuery();</span>
+<span class="fc" id="L120">        ElementWalker.walk(query.getQueryPattern(), new ElementVisitorBase() {</span>
+            @Override
+            public void visit(ElementSubQuery subQuery) {
+<span class="fc" id="L123">                subQuery.getQuery().setLimit(Math.min(criteria.pageSize(), MAX_PAGE_ROWS));</span>
+<span class="fc" id="L124">                subQuery.getQuery().setOffset(criteria.offset());</span>
+<span class="fc" id="L125">            }</span>
+        });
+<span class="fc" id="L127">        query.setLimit(MAX_PAGE_ROWS);</span>
+<span class="fc" id="L128">        List&lt;Vocabulary&gt; items = store.select(query).stream()</span>
+<span class="fc" id="L129">                .map(VocabularyRepository::toVocabulary)</span>
+<span class="fc" id="L130">                .toList();</span>
+
+<span class="fc" id="L132">        ParameterizedSparqlString count =</span>
+<span class="fc" id="L133">                SparqlSupport.query(&quot;SELECT (COUNT(?voc) AS ?total) WHERE {\n&quot; + LIST_PATTERN + filters + &quot;}&quot;);</span>
+<span class="fc" id="L134">        bindFilters(count, criteria);</span>
+<span class="fc" id="L135">        Query countQuery = count.asQuery();</span>
+<span class="fc" id="L136">        countQuery.setLimit(1);</span>
+<span class="fc" id="L137">        long total = store.select(countQuery).stream()</span>
+<span class="fc" id="L138">                .findFirst()</span>
+<span class="fc" id="L139">                .map(row -&gt; SparqlSupport.longValue(row, &quot;total&quot;))</span>
+<span class="fc" id="L140">                .orElse(0L);</span>
+<span class="fc" id="L141">        return new Page&lt;&gt;(items, total);</span>
+    }
+
+    private static String filters(VocabularyQuery criteria) {
+<span class="fc" id="L145">        StringBuilder text = new StringBuilder();</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        if (criteria.nameContains() != null) {</span>
+<span class="fc" id="L147">            text.append(&quot;FILTER(CONTAINS(LCASE(STR(?name)), ?nameFilter))\n&quot;);</span>
+        }
+<span class="fc bfc" id="L149" title="All 2 branches covered.">        if (criteria.status() != null) {</span>
+<span class="fc" id="L150">            text.append(&quot;FILTER(STR(?status) = ?statusFilter)\n&quot;);</span>
+        }
+<span class="fc bfc" id="L152" title="All 2 branches covered.">        if (criteria.creation() != null) {</span>
+<span class="fc" id="L153">            text.append(&quot;FILTER(?created &gt;= ?createdFrom &amp;&amp; ?created &lt; ?createdTo)\n&quot;);</span>
+        }
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        if (criteria.lastUpdate() != null) {</span>
+<span class="fc" id="L156">            text.append(&quot;FILTER(?updated &gt;= ?updatedFrom &amp;&amp; ?updated &lt; ?updatedTo)\n&quot;);</span>
+        }
+<span class="fc" id="L158">        return text.toString();</span>
+    }
+
+    private static void bindFilters(ParameterizedSparqlString pss, VocabularyQuery criteria) {
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        if (criteria.nameContains() != null) {</span>
+<span class="fc" id="L163">            pss.setLiteral(&quot;nameFilter&quot;, criteria.nameContains());</span>
+        }
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        if (criteria.status() != null) {</span>
+<span class="fc" id="L166">            pss.setLiteral(&quot;statusFilter&quot;, criteria.status().name());</span>
+        }
+<span class="fc bfc" id="L168" title="All 2 branches covered.">        if (criteria.creation() != null) {</span>
+<span class="fc" id="L169">            pss.setParam(&quot;createdFrom&quot;, dateTime(criteria.creation().from()));</span>
+<span class="fc" id="L170">            pss.setParam(&quot;createdTo&quot;, dateTime(criteria.creation().toExclusive()));</span>
+        }
+<span class="fc bfc" id="L172" title="All 2 branches covered.">        if (criteria.lastUpdate() != null) {</span>
+<span class="fc" id="L173">            pss.setParam(&quot;updatedFrom&quot;, dateTime(criteria.lastUpdate().from()));</span>
+<span class="fc" id="L174">            pss.setParam(&quot;updatedTo&quot;, dateTime(criteria.lastUpdate().toExclusive()));</span>
+        }
+<span class="fc" id="L176">    }</span>
+
+    /** Sort with ties broken by name ascending (D23); names compare by code point (D58). */
+    private static String orderBy(VocabularyQuery criteria) {
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        String direction = criteria.descending() ? &quot;DESC&quot; : &quot;ASC&quot;;</span>
+<span class="fc bfc" id="L181" title="All 4 branches covered.">        return switch (criteria.sort()) {</span>
+<span class="fc" id="L182">            case NAME -&gt; direction + &quot;(STR(?name))&quot;;</span>
+<span class="fc" id="L183">            case STATUS -&gt; direction + &quot;(STR(?status)) ASC(STR(?name))&quot;;</span>
+<span class="fc" id="L184">            case CREATION_DATE -&gt; direction + &quot;(?created) ASC(STR(?name))&quot;;</span>
+<span class="fc" id="L185">            case LAST_UPDATED -&gt; direction + &quot;(?updated) ASC(STR(?name))&quot;;</span>
+        };
+    }
+
+    public Optional&lt;VocabularyVersion&gt; findVersion(String name, int version) {
+<span class="fc" id="L190">        ParameterizedSparqlString pss = SparqlSupport.query(&quot;SELECT * WHERE {\n&quot; + VERSION_PATTERN + &quot;}&quot;);</span>
+<span class="fc" id="L191">        pss.setParam(&quot;ver&quot;, versionIri(name, version));</span>
+<span class="fc" id="L192">        Query query = pss.asQuery();</span>
+<span class="fc" id="L193">        query.setLimit(1);</span>
+<span class="fc" id="L194">        return store.select(query).stream().findFirst().map(VocabularyRepository::toVersion);</span>
+    }
+
+    public Page&lt;VocabularyVersion&gt; versions(
+            String name, VersionSort sort, boolean descending, int page, int pageSize, long total) {
+<span class="fc bfc" id="L199" title="All 2 branches covered.">        String direction = descending ? &quot;DESC&quot; : &quot;ASC&quot;;</span>
+<span class="fc bfc" id="L200" title="All 3 branches covered.">        String order = switch (sort) {</span>
+<span class="fc" id="L201">            case VERSION -&gt; &quot;DESC(?version)&quot;;</span>
+<span class="fc" id="L202">            case STATUS -&gt; direction + &quot;(STR(?status)) DESC(?version)&quot;;</span>
+<span class="fc" id="L203">            case CREATION_DATE -&gt; direction + &quot;(?created) DESC(?version)&quot;;</span>
+        };
+<span class="fc" id="L205">        ParameterizedSparqlString pss =</span>
+<span class="fc" id="L206">                SparqlSupport.query(&quot;SELECT * WHERE {\n&quot; + VERSION_PATTERN + &quot;} ORDER BY &quot; + order);</span>
+<span class="fc" id="L207">        pss.setParam(&quot;voc&quot;, vocabularyIri(name));</span>
+<span class="fc" id="L208">        Query query = pss.asQuery();</span>
+<span class="fc" id="L209">        query.setLimit(Math.min(pageSize, MAX_PAGE_ROWS));</span>
+<span class="fc" id="L210">        query.setOffset((long) (page - 1) * pageSize);</span>
+<span class="fc" id="L211">        List&lt;VocabularyVersion&gt; items = store.select(query).stream()</span>
+<span class="fc" id="L212">                .map(VocabularyRepository::toVersion)</span>
+<span class="fc" id="L213">                .toList();</span>
+<span class="fc" id="L214">        return new Page&lt;&gt;(items, total);</span>
+    }
+
+    /** The stored content of a version, as uploaded. */
+    public Optional&lt;byte[]&gt; content(String name, int version) {
+<span class="fc" id="L219">        ParameterizedSparqlString pss =</span>
+<span class="fc" id="L220">                SparqlSupport.query(&quot;SELECT ?content WHERE { GRAPH ?gContent { ?ver vm:content ?content } }&quot;);</span>
+<span class="fc" id="L221">        pss.setParam(&quot;ver&quot;, versionIri(name, version));</span>
+<span class="fc" id="L222">        Query query = pss.asQuery();</span>
+<span class="fc" id="L223">        query.setLimit(1);</span>
+<span class="fc" id="L224">        return store.select(query).stream()</span>
+<span class="fc" id="L225">                .findFirst()</span>
+<span class="fc" id="L226">                .map(row -&gt; ContentCodec.decode(row.get(&quot;content&quot;).asNode()));</span>
+    }
+
+    /**
+     * One store query for the references of an upload or a search (Q5): the named vocabularies with their
+     * version statuses, and which of the given URI keys belong to a registered external vocabulary.
+     */
+    public ReferenceState referenceState(Collection&lt;String&gt; names, Collection&lt;String&gt; externalKeys) {
+<span class="fc bfc" id="L234" title="All 4 branches covered.">        if (names.isEmpty() &amp;&amp; externalKeys.isEmpty()) {</span>
+<span class="fc" id="L235">            return new ReferenceState(Map.of(), Set.of());</span>
+        }
+<span class="fc" id="L237">        List&lt;String&gt; branches = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L238" title="All 2 branches covered.">        if (!names.isEmpty()) {</span>
+<span class="fc" id="L239">            branches.add(&quot;&quot;&quot;</span>
+                    { VALUES ?name { }
+                      GRAPH ?gInternal { ?voc vm:name ?name ; vm:status ?vstatus ; vm:latestVersion ?latest .
+                        ?ver vm:vocabulary ?voc ; vm:version ?version ; vm:status ?status . }
+                      BIND(&quot;internal&quot; AS ?kind) }
+                    &quot;&quot;&quot;);
+        }
+<span class="fc bfc" id="L246" title="All 2 branches covered.">        if (!externalKeys.isEmpty()) {</span>
+<span class="fc" id="L247">            branches.add(&quot;&quot;&quot;</span>
+                    { VALUES ?extKey { }
+                      GRAPH ?gExternal { { ?ext vm:namespaceKey ?extKey } UNION { ?ext vm:aliasKey ?extKey } }
+                      BIND(&quot;external&quot; AS ?kind) }
+                    &quot;&quot;&quot;);
+        }
+<span class="fc" id="L253">        Query query = SparqlSupport.query(&quot;SELECT ?kind ?name ?vstatus ?latest ?version ?status ?extKey WHERE {\n&quot;</span>
+<span class="fc" id="L254">                        + String.join(&quot; UNION &quot;, branches) + &quot;}&quot;)</span>
+<span class="fc" id="L255">                .asQuery();</span>
+<span class="fc" id="L256">        ValuesBinder.bind(query, &quot;name&quot;, names.stream().map(StoreModel::string).toList());</span>
+<span class="fc" id="L257">        ValuesBinder.bind(</span>
+<span class="fc" id="L258">                query, &quot;extKey&quot;, externalKeys.stream().map(StoreModel::string).toList());</span>
+<span class="fc" id="L259">        query.setLimit(MAX_LOOKUP_ROWS);</span>
+<span class="fc" id="L260">        Map&lt;String, ReferenceState.InternalState&gt; internal = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L261">        Set&lt;String&gt; external = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">        for (QuerySolution row : store.select(query)) {</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">            if (&quot;external&quot;.equals(rowText(row, &quot;kind&quot;))) {</span>
+<span class="fc" id="L264">                external.add(rowText(row, &quot;extKey&quot;));</span>
+<span class="fc" id="L265">                continue;</span>
+            }
+<span class="fc" id="L267">            String name = rowText(row, &quot;name&quot;);</span>
+<span class="fc" id="L268">            ReferenceState.InternalState state = internal.computeIfAbsent(</span>
+                    name,
+<span class="fc" id="L270">                    key -&gt; new ReferenceState.InternalState(</span>
+                            key,
+<span class="fc" id="L272">                            VocabularyStatus.parse(rowText(row, &quot;vstatus&quot;)),</span>
+<span class="fc" id="L273">                            rowInt(row, &quot;latest&quot;),</span>
+                            new TreeMap&lt;&gt;()));
+<span class="fc" id="L275">            state.versions().put(rowInt(row, &quot;version&quot;), VocabularyStatus.parse(rowText(row, &quot;status&quot;)));</span>
+<span class="fc" id="L276">        }</span>
+<span class="fc" id="L277">        return new ReferenceState(internal, external);</span>
+    }
+
+    /** Creates a vocabulary with version 1 unless the name is taken case-insensitively (D37, D43, D82). */
+    public boolean insertVocabulary(NewVersion data, String token) {
+<span class="fc" id="L282">        Node voc = vocabularyIri(data.name());</span>
+<span class="fc" id="L283">        Node ver = versionIri(data.name(), 1);</span>
+<span class="fc" id="L284">        Node key = string(data.name().toLowerCase(java.util.Locale.ROOT));</span>
+<span class="fc" id="L285">        List&lt;Quad&gt; inserts = new ArrayList&lt;&gt;(List.of(</span>
+<span class="fc" id="L286">                quad(GRAPH_INTERNAL, voc, RDF_TYPE, INTERNAL_VOCABULARY),</span>
+<span class="fc" id="L287">                quad(GRAPH_INTERNAL, voc, NAME, string(data.name())),</span>
+<span class="fc" id="L288">                quad(GRAPH_INTERNAL, voc, NAME_KEY, key),</span>
+<span class="fc" id="L289">                quad(GRAPH_INTERNAL, voc, STATUS, string(VocabularyStatus.ACTIVE.name())),</span>
+<span class="fc" id="L290">                quad(GRAPH_INTERNAL, voc, LATEST_VERSION, integer(1)),</span>
+<span class="fc" id="L291">                quad(GRAPH_INTERNAL, voc, CREATED_BY, string(data.createdBy())),</span>
+<span class="fc" id="L292">                quad(GRAPH_INTERNAL, voc, CREATION_DATE, dateTime(data.now())),</span>
+<span class="fc" id="L293">                quad(GRAPH_INTERNAL, voc, LAST_UPDATE_DATE, dateTime(data.now())),</span>
+<span class="fc" id="L294">                quad(GRAPH_INTERNAL, voc, WRITE_TOKEN, string(token))));</span>
+<span class="fc" id="L295">        inserts.addAll(versionQuads(ver, voc, data, token));</span>
+<span class="fc" id="L296">        inserts.add(quad(GRAPH_CONTENT, ver, CONTENT, ContentCodec.encode(data.content())));</span>
+<span class="fc" id="L297">        ParameterizedSparqlString where = SparqlSupport.query(</span>
+                &quot;SELECT * WHERE { FILTER NOT EXISTS { GRAPH ?gInternal { ?other vm:nameKey ?key } } }&quot;);
+<span class="fc" id="L299">        where.setParam(&quot;key&quot;, key);</span>
+<span class="fc" id="L300">        UpdateRequest request = new UpdateRequest();</span>
+<span class="fc" id="L301">        request.add(SparqlSupport.modify(List.of(), inserts, SparqlSupport.where(where)));</span>
+<span class="fc" id="L302">        store.update(request);</span>
+<span class="fc" id="L303">        return tokenIs(voc, WRITE_TOKEN, token);</span>
+    }
+
+    /**
+     * Creates version {@code data.version()} if the latest version is still {@code expectedLatest}, and
+     * deprecates every older ACTIVE version in the same transaction (D4, D82).
+     */
+    public boolean insertVersion(NewVersion data, int expectedLatest, String token) {
+<span class="fc" id="L311">        Node voc = vocabularyIri(data.name());</span>
+<span class="fc" id="L312">        Node ver = versionIri(data.name(), data.version());</span>
+<span class="fc" id="L313">        Node now = dateTime(data.now());</span>
+<span class="fc" id="L314">        Var oldUpdated = Var.alloc(&quot;oldUpdated&quot;);</span>
+<span class="fc" id="L315">        Var oldToken = Var.alloc(&quot;oldToken&quot;);</span>
+<span class="fc" id="L316">        List&lt;Quad&gt; inserts = new ArrayList&lt;&gt;(List.of(</span>
+<span class="fc" id="L317">                quad(GRAPH_INTERNAL, voc, LATEST_VERSION, integer(data.version())),</span>
+<span class="fc" id="L318">                quad(GRAPH_INTERNAL, voc, LAST_UPDATE_DATE, now),</span>
+<span class="fc" id="L319">                quad(GRAPH_INTERNAL, voc, WRITE_TOKEN, string(token))));</span>
+<span class="fc" id="L320">        inserts.addAll(versionQuads(ver, voc, data, token));</span>
+<span class="fc" id="L321">        List&lt;Quad&gt; deletes = List.of(</span>
+<span class="fc" id="L322">                quad(GRAPH_INTERNAL, voc, LATEST_VERSION, integer(expectedLatest)),</span>
+<span class="fc" id="L323">                quad(GRAPH_INTERNAL, voc, LAST_UPDATE_DATE, oldUpdated),</span>
+<span class="fc" id="L324">                quad(GRAPH_INTERNAL, voc, WRITE_TOKEN, oldToken));</span>
+<span class="fc" id="L325">        ParameterizedSparqlString condition = SparqlSupport.query(&quot;&quot;&quot;</span>
+                SELECT * WHERE { GRAPH ?gInternal {
+                  ?voc vm:latestVersion ?expected ; vm:lastUpdateDate ?oldUpdated .
+                  OPTIONAL { ?voc vm:writeToken ?oldToken }
+                } }
+                &quot;&quot;&quot;);
+<span class="fc" id="L331">        condition.setParam(&quot;voc&quot;, voc);</span>
+<span class="fc" id="L332">        condition.setParam(&quot;expected&quot;, integer(expectedLatest));</span>
+
+<span class="fc" id="L334">        Var old = Var.alloc(&quot;old&quot;);</span>
+<span class="fc" id="L335">        Var oldDate = Var.alloc(&quot;oldDate&quot;);</span>
+<span class="fc" id="L336">        ParameterizedSparqlString olderActive = SparqlSupport.query(&quot;&quot;&quot;</span>
+                SELECT * WHERE { GRAPH ?gInternal {
+                  ?ver vm:writeToken ?token .
+                  ?old vm:vocabulary ?voc ; vm:status &quot;ACTIVE&quot; ; vm:version ?v ; vm:lastUpdateDate ?oldDate .
+                  FILTER(?v &lt; ?next)
+                } }
+                &quot;&quot;&quot;);
+<span class="fc" id="L343">        olderActive.setParam(&quot;ver&quot;, ver);</span>
+<span class="fc" id="L344">        olderActive.setParam(&quot;voc&quot;, voc);</span>
+<span class="fc" id="L345">        olderActive.setLiteral(&quot;token&quot;, token);</span>
+<span class="fc" id="L346">        olderActive.setParam(&quot;next&quot;, integer(data.version()));</span>
+
+<span class="fc" id="L348">        ParameterizedSparqlString mine =</span>
+<span class="fc" id="L349">                SparqlSupport.query(&quot;SELECT * WHERE { GRAPH ?gInternal { ?ver vm:writeToken ?token } }&quot;);</span>
+<span class="fc" id="L350">        mine.setParam(&quot;ver&quot;, ver);</span>
+<span class="fc" id="L351">        mine.setLiteral(&quot;token&quot;, token);</span>
+
+<span class="fc" id="L353">        UpdateRequest request = new UpdateRequest();</span>
+<span class="fc" id="L354">        request.add(SparqlSupport.modify(deletes, inserts, SparqlSupport.where(condition)));</span>
+<span class="fc" id="L355">        request.add(SparqlSupport.modify(</span>
+<span class="fc" id="L356">                List.of(</span>
+<span class="fc" id="L357">                        quad(GRAPH_INTERNAL, old, STATUS, string(VocabularyStatus.ACTIVE.name())),</span>
+<span class="fc" id="L358">                        quad(GRAPH_INTERNAL, old, LAST_UPDATE_DATE, oldDate)),</span>
+<span class="fc" id="L359">                List.of(</span>
+<span class="fc" id="L360">                        quad(GRAPH_INTERNAL, old, STATUS, string(VocabularyStatus.DEPRECATED.name())),</span>
+<span class="fc" id="L361">                        quad(GRAPH_INTERNAL, old, LAST_UPDATE_DATE, now)),</span>
+<span class="fc" id="L362">                SparqlSupport.where(olderActive)));</span>
+<span class="fc" id="L363">        request.add(SparqlSupport.modify(</span>
+<span class="fc" id="L364">                List.of(),</span>
+<span class="fc" id="L365">                List.of(quad(GRAPH_CONTENT, ver, CONTENT, ContentCodec.encode(data.content()))),</span>
+<span class="fc" id="L366">                SparqlSupport.where(mine)));</span>
+<span class="fc" id="L367">        store.update(request);</span>
+<span class="fc" id="L368">        return tokenIs(ver, WRITE_TOKEN, token);</span>
+    }
+
+    private static List&lt;Quad&gt; versionQuads(Node ver, Node voc, NewVersion data, String token) {
+<span class="fc" id="L372">        Node now = dateTime(data.now());</span>
+<span class="fc" id="L373">        return List.of(</span>
+<span class="fc" id="L374">                quad(GRAPH_INTERNAL, ver, RDF_TYPE, INTERNAL_VOCABULARY_VERSION),</span>
+<span class="fc" id="L375">                quad(GRAPH_INTERNAL, ver, VOCABULARY, voc),</span>
+<span class="fc" id="L376">                quad(GRAPH_INTERNAL, ver, NAME, string(data.name())),</span>
+<span class="fc" id="L377">                quad(GRAPH_INTERNAL, ver, VERSION, integer(data.version())),</span>
+<span class="fc" id="L378">                quad(GRAPH_INTERNAL, ver, DESCRIPTION, string(data.description())),</span>
+<span class="fc" id="L379">                quad(GRAPH_INTERNAL, ver, CHANGELOG, string(data.changelog())),</span>
+<span class="fc" id="L380">                quad(GRAPH_INTERNAL, ver, STATUS, string(VocabularyStatus.ACTIVE.name())),</span>
+<span class="fc" id="L381">                quad(GRAPH_INTERNAL, ver, CREATED_BY, string(data.createdBy())),</span>
+<span class="fc" id="L382">                quad(GRAPH_INTERNAL, ver, CREATION_DATE, now),</span>
+<span class="fc" id="L383">                quad(GRAPH_INTERNAL, ver, LAST_UPDATE_DATE, now),</span>
+<span class="fc" id="L384">                quad(GRAPH_INTERNAL, ver, CONTENT_SHA256, string(data.sha256())),</span>
+<span class="fc" id="L385">                quad(GRAPH_INTERNAL, ver, CONTENT_LENGTH, integer(data.content().length)),</span>
+<span class="fc" id="L386">                quad(GRAPH_INTERNAL, ver, WRITE_TOKEN, string(token)));</span>
+    }
+
+    /** Sets the vocabulary status if it is still {@code current} (D3, D82). */
+    public boolean setVocabularyStatus(
+            String name, VocabularyStatus current, VocabularyStatus target, Instant now, String token) {
+<span class="fc" id="L392">        Node voc = vocabularyIri(name);</span>
+<span class="fc" id="L393">        return setStatus(voc, null, current, target, now, token);</span>
+    }
+
+    /** Sets a version status if it is still {@code current}; updates both dates (D4, D160). */
+    public boolean setVersionStatus(
+            String name, int version, VocabularyStatus current, VocabularyStatus target, Instant now, String token) {
+<span class="fc" id="L399">        return setStatus(versionIri(name, version), vocabularyIri(name), current, target, now, token);</span>
+    }
+
+    private boolean setStatus(
+            Node subject, Node parent, VocabularyStatus current, VocabularyStatus target, Instant now, String token) {
+<span class="fc" id="L404">        Var oldUpdated = Var.alloc(&quot;oldUpdated&quot;);</span>
+<span class="fc" id="L405">        Var oldToken = Var.alloc(&quot;oldToken&quot;);</span>
+<span class="fc" id="L406">        Var parentUpdated = Var.alloc(&quot;parentUpdated&quot;);</span>
+<span class="fc" id="L407">        List&lt;Quad&gt; deletes = new ArrayList&lt;&gt;(List.of(</span>
+<span class="fc" id="L408">                quad(GRAPH_INTERNAL, subject, STATUS, string(current.name())),</span>
+<span class="fc" id="L409">                quad(GRAPH_INTERNAL, subject, LAST_UPDATE_DATE, oldUpdated),</span>
+<span class="fc" id="L410">                quad(GRAPH_INTERNAL, subject, STATUS_TOKEN, oldToken)));</span>
+<span class="fc" id="L411">        List&lt;Quad&gt; inserts = new ArrayList&lt;&gt;(List.of(</span>
+<span class="fc" id="L412">                quad(GRAPH_INTERNAL, subject, STATUS, string(target.name())),</span>
+<span class="fc" id="L413">                quad(GRAPH_INTERNAL, subject, LAST_UPDATE_DATE, dateTime(now)),</span>
+<span class="fc" id="L414">                quad(GRAPH_INTERNAL, subject, STATUS_TOKEN, string(token))));</span>
+<span class="fc" id="L415">        String parentPattern = &quot;&quot;;</span>
+<span class="fc bfc" id="L416" title="All 2 branches covered.">        if (parent != null) {</span>
+<span class="fc" id="L417">            deletes.add(quad(GRAPH_INTERNAL, parent, LAST_UPDATE_DATE, parentUpdated));</span>
+<span class="fc" id="L418">            inserts.add(quad(GRAPH_INTERNAL, parent, LAST_UPDATE_DATE, dateTime(now)));</span>
+<span class="fc" id="L419">            parentPattern = &quot;?parent vm:lastUpdateDate ?parentUpdated .&quot;;</span>
+        }
+<span class="fc" id="L421">        ParameterizedSparqlString condition = SparqlSupport.query(&quot;SELECT * WHERE { GRAPH ?gInternal {\n&quot;</span>
+                + &quot;?subject vm:status ?current ; vm:lastUpdateDate ?oldUpdated .\n&quot;
+                + &quot;OPTIONAL { ?subject vm:statusToken ?oldToken }\n&quot; + parentPattern + &quot;} }&quot;);
+<span class="fc" id="L424">        condition.setParam(&quot;subject&quot;, subject);</span>
+<span class="fc" id="L425">        condition.setLiteral(&quot;current&quot;, current.name());</span>
+<span class="fc bfc" id="L426" title="All 2 branches covered.">        if (parent != null) {</span>
+<span class="fc" id="L427">            condition.setParam(&quot;parent&quot;, parent);</span>
+        }
+<span class="fc" id="L429">        UpdateRequest request = new UpdateRequest();</span>
+<span class="fc" id="L430">        request.add(SparqlSupport.modify(deletes, inserts, SparqlSupport.where(condition)));</span>
+<span class="fc" id="L431">        store.update(request);</span>
+<span class="fc" id="L432">        return tokenIs(subject, STATUS_TOKEN, token);</span>
+    }
+
+    private boolean tokenIs(Node subject, Node property, String token) {
+<span class="fc" id="L436">        ParameterizedSparqlString pss =</span>
+<span class="fc" id="L437">                SparqlSupport.query(&quot;SELECT ?token WHERE { GRAPH ?gInternal { ?subject ?property ?token } }&quot;);</span>
+<span class="fc" id="L438">        pss.setParam(&quot;subject&quot;, subject);</span>
+<span class="fc" id="L439">        pss.setParam(&quot;property&quot;, property);</span>
+<span class="fc" id="L440">        Query query = pss.asQuery();</span>
+<span class="fc" id="L441">        query.setLimit(2);</span>
+<span class="fc" id="L442">        return store.select(query).stream().anyMatch(row -&gt; token.equals(rowText(row, &quot;token&quot;)));</span>
+    }
+
+    private static Vocabulary toVocabulary(QuerySolution row) {
+<span class="fc" id="L446">        return new Vocabulary(</span>
+<span class="fc" id="L447">                rowText(row, &quot;name&quot;),</span>
+<span class="fc" id="L448">                VocabularyStatus.parse(rowText(row, &quot;status&quot;)),</span>
+<span class="fc" id="L449">                rowInt(row, &quot;latest&quot;),</span>
+<span class="fc" id="L450">                rowText(row, &quot;description&quot;),</span>
+<span class="fc" id="L451">                rowText(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L452">                instant(row, &quot;created&quot;),</span>
+<span class="fc" id="L453">                instant(row, &quot;updated&quot;));</span>
+    }
+
+    private static VocabularyVersion toVersion(QuerySolution row) {
+<span class="fc" id="L457">        return new VocabularyVersion(</span>
+<span class="fc" id="L458">                rowText(row, &quot;name&quot;),</span>
+<span class="fc" id="L459">                rowInt(row, &quot;version&quot;),</span>
+<span class="fc" id="L460">                rowText(row, &quot;description&quot;),</span>
+<span class="fc" id="L461">                rowText(row, &quot;changelog&quot;),</span>
+<span class="fc" id="L462">                VocabularyStatus.parse(rowText(row, &quot;status&quot;)),</span>
+<span class="fc" id="L463">                rowText(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L464">                instant(row, &quot;created&quot;),</span>
+<span class="fc" id="L465">                instant(row, &quot;updated&quot;),</span>
+<span class="fc" id="L466">                rowText(row, &quot;sha&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

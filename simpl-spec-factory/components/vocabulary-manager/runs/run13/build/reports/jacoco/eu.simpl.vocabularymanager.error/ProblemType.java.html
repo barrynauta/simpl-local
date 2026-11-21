@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProblemType.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.error</a> &gt; <span class="el_source">ProblemType.java</span></div><h1>ProblemType.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.error;
+
+/**
+ * The problem types of the API (decisions D48, D104). Each type is an error code: it fixes the URN, the
+ * title and the HTTP status of the problem detail (RFC 9457) that the client receives.
+ */
+<span class="fc" id="L7">public enum ProblemType {</span>
+<span class="fc" id="L8">    BAD_REQUEST(&quot;urn:problem-type:belgif:badRequest&quot;, &quot;Bad Request&quot;, 400, belgifProblem(&quot;badRequest&quot;)),</span>
+<span class="fc" id="L9">    UNAUTHORIZED(&quot;urn:problem-type:simpl:unauthorized&quot;, &quot;Unauthorized&quot;, 401, null),</span>
+<span class="fc" id="L10">    FORBIDDEN(&quot;urn:problem-type:simpl:forbidden&quot;, &quot;Forbidden&quot;, 403, null),</span>
+<span class="fc" id="L11">    NOT_FOUND(&quot;urn:problem-type:belgif:resourceNotFound&quot;, &quot;Resource Not Found&quot;, 404, belgifProblem(&quot;resourceNotFound&quot;)),</span>
+<span class="fc" id="L12">    METHOD_NOT_ALLOWED(&quot;urn:problem-type:simpl:methodNotAllowed&quot;, &quot;Method Not Allowed&quot;, 405, null),</span>
+<span class="fc" id="L13">    NOT_ACCEPTABLE(&quot;urn:problem-type:simpl:notAcceptable&quot;, &quot;Not Acceptable&quot;, 406, null),</span>
+<span class="fc" id="L14">    CONFLICT(&quot;urn:problem-type:simpl:conflict&quot;, &quot;Conflict&quot;, 409, null),</span>
+<span class="fc" id="L15">    PAYLOAD_TOO_LARGE(&quot;urn:problem-type:simpl:payloadTooLarge&quot;, &quot;Payload Too Large&quot;, 413, null),</span>
+<span class="fc" id="L16">    URI_TOO_LONG(&quot;urn:problem-type:simpl:uriTooLong&quot;, &quot;URI Too Long&quot;, 414, null),</span>
+<span class="fc" id="L17">    UNSUPPORTED_MEDIA_TYPE(&quot;urn:problem-type:simpl:unsupportedMediaType&quot;, &quot;Unsupported Media Type&quot;, 415, null),</span>
+<span class="fc" id="L18">    HEADERS_TOO_LARGE(</span>
+            &quot;urn:problem-type:simpl:requestHeaderFieldsTooLarge&quot;, &quot;Request Header Fields Too Large&quot;, 431, null),
+<span class="fc" id="L20">    INTERNAL_SERVER_ERROR(</span>
+            &quot;urn:problem-type:belgif:internalServerError&quot;,
+            &quot;Internal Server Error&quot;,
+            500,
+<span class="fc" id="L24">            belgifProblem(&quot;internalServerError&quot;)),</span>
+<span class="fc" id="L25">    SERVICE_UNAVAILABLE(</span>
+            &quot;urn:problem-type:belgif:serviceUnavailable&quot;,
+            &quot;Service Unavailable&quot;,
+            503,
+<span class="fc" id="L29">            belgifProblem(&quot;serviceUnavailable&quot;));</span>
+
+    private final String type;
+    private final String title;
+    private final int status;
+    private final String href;
+
+<span class="fc" id="L36">    ProblemType(String type, String title, int status, String href) {</span>
+<span class="fc" id="L37">        this.type = type;</span>
+<span class="fc" id="L38">        this.title = title;</span>
+<span class="fc" id="L39">        this.status = status;</span>
+<span class="fc" id="L40">        this.href = href;</span>
+<span class="fc" id="L41">    }</span>
+
+    private static String belgifProblem(String name) {
+<span class="fc" id="L44">        return &quot;https://www.belgif.be/specification/rest/api-guide/problems/&quot; + name + &quot;.html&quot;;</span>
+    }
+
+    public String type() {
+<span class="fc" id="L48">        return type;</span>
+    }
+
+    public String title() {
+<span class="fc" id="L52">        return title;</span>
+    }
+
+    public int status() {
+<span class="fc" id="L56">        return status;</span>
+    }
+
+    /** Link to the problem type documentation, or null when there is none. */
+    public String href() {
+<span class="fc" id="L61">        return href;</span>
+    }
+
+    /** The problem type for an HTTP status, used for answers that no handler produced. */
+    public static ProblemType forStatus(int status) {
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        for (ProblemType candidate : values()) {</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">            if (candidate.status == status) {</span>
+<span class="nc" id="L68">                return candidate;</span>
+            }
+        }
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        return status &gt;= 500 ? INTERNAL_SERVER_ERROR : BAD_REQUEST;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

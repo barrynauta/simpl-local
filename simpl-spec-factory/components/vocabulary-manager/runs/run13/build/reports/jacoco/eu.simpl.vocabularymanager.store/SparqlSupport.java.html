@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SparqlSupport.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">SparqlSupport.java</span></div><h1>SparqlSupport.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import java.time.Instant;
+import java.util.List;
+import org.apache.jena.graph.Node;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.modify.request.UpdateDeleteWhere;
+import org.apache.jena.sparql.modify.request.UpdateModify;
+import org.apache.jena.sparql.syntax.Element;
+
+/**
+ * Helpers that build SPARQL with Jena (D94): queries through ParameterizedSparqlString with typed values,
+ * updates as Jena update objects whose templates are lists of quads. Values are never joined into text.
+ */
+final class SparqlSupport {
+
+    static final String PREFIXES = &quot;PREFIX vm: &lt;&quot; + StoreModel.NS + &quot;&gt;\n&quot;
+            + &quot;PREFIX xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;\n&quot;
+            + &quot;PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;\n&quot;;
+
+    private SparqlSupport() {}
+
+    /** A query template with the common prefixes and the named graphs bound. */
+    static ParameterizedSparqlString query(String text) {
+<span class="fc" id="L29">        ParameterizedSparqlString pss = new ParameterizedSparqlString(PREFIXES + text);</span>
+<span class="fc" id="L30">        pss.setParam(&quot;gInternal&quot;, StoreModel.GRAPH_INTERNAL);</span>
+<span class="fc" id="L31">        pss.setParam(&quot;gExternal&quot;, StoreModel.GRAPH_EXTERNAL);</span>
+<span class="fc" id="L32">        pss.setParam(&quot;gContent&quot;, StoreModel.GRAPH_CONTENT);</span>
+<span class="fc" id="L33">        return pss;</span>
+    }
+
+    /** The WHERE pattern of a SELECT template, for use in an update. */
+    static Element where(ParameterizedSparqlString pss) {
+<span class="fc" id="L38">        Query parsed = pss.asQuery();</span>
+<span class="fc" id="L39">        return parsed.getQueryPattern();</span>
+    }
+
+    /** DELETE { deletes } INSERT { inserts } WHERE { where }. */
+    static UpdateModify modify(List&lt;Quad&gt; deletes, List&lt;Quad&gt; inserts, Element where) {
+<span class="fc" id="L44">        UpdateModify modify = new UpdateModify();</span>
+<span class="fc" id="L45">        deletes.forEach(modify.getDeleteAcc()::addQuad);</span>
+<span class="fc" id="L46">        inserts.forEach(modify.getInsertAcc()::addQuad);</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        modify.setHasDeleteClause(!deletes.isEmpty());</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        modify.setHasInsertClause(!inserts.isEmpty());</span>
+<span class="fc" id="L49">        modify.setElement(where);</span>
+<span class="fc" id="L50">        return modify;</span>
+    }
+
+    static UpdateDeleteWhere deleteWhere(List&lt;Quad&gt; pattern) {
+<span class="fc" id="L54">        org.apache.jena.sparql.modify.request.QuadAcc acc = new org.apache.jena.sparql.modify.request.QuadAcc();</span>
+<span class="fc" id="L55">        pattern.forEach(acc::addQuad);</span>
+<span class="fc" id="L56">        return new UpdateDeleteWhere(acc);</span>
+    }
+
+    static Quad quad(Node graph, Node subject, Node predicate, Node object) {
+<span class="fc" id="L60">        return new Quad(graph, subject, predicate, object);</span>
+    }
+
+    static String rowText(QuerySolution row, String variable) {
+<span class="fc" id="L64">        RDFNode node = row.get(variable);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        return node == null ? null : node.asLiteral().getLexicalForm();</span>
+    }
+
+    static int rowInt(QuerySolution row, String variable) {
+<span class="fc" id="L69">        return Integer.parseInt(row.getLiteral(variable).getLexicalForm());</span>
+    }
+
+    static long longValue(QuerySolution row, String variable) {
+<span class="fc" id="L73">        return Long.parseLong(row.getLiteral(variable).getLexicalForm());</span>
+    }
+
+    static Instant instant(QuerySolution row, String variable) {
+<span class="fc" id="L77">        return Instant.parse(row.getLiteral(variable).getLexicalForm());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

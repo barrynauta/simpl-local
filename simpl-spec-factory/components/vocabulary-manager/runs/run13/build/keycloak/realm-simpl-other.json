@@ -1,0 +1,106 @@
+{
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "bruteForceProtected": false,
+  "accessTokenLifespan": 900,
+  "roles": {
+    "realm": [
+      {
+        "name": "GA_VOCABULARY_ADMIN",
+        "description": "Vocabulary management: read and write (D16)"
+      },
+      {
+        "name": "GA_VOCABULARY_VIEWER",
+        "description": "Vocabulary management: read only (D16)"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "ga-admin",
+      "email": "ga-admin@example.com",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "GA",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GA_VOCABULARY_ADMIN"
+      ],
+      "requiredActions": []
+    },
+    {
+      "username": "ga-viewer",
+      "email": "ga-viewer@example.com",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "GA",
+      "lastName": "Viewer",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GA_VOCABULARY_VIEWER"
+      ],
+      "requiredActions": []
+    },
+    {
+      "username": "ga-norole",
+      "email": "ga-norole@example.com",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "GA",
+      "lastName": "Norole",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [],
+      "requiredActions": []
+    }
+  ],
+  "realm": "simpl-other",
+  "clients": [
+    {
+      "clientId": "vocabulary-tests",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "redirectUris": [],
+      "webOrigins": [],
+      "protocolMappers": [
+        {
+          "name": "audience-vocabulary-manager-be",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "vocabulary-manager-be",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ]
+}

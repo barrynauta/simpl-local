@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OperationCatalog.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">OperationCatalog.java</span></div><h1>OperationCatalog.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+/**
+ * Every operation of the decided contract with its access rule (D16, D84). The request gate routes on this
+ * table: a known path with an undeclared method gets 405, an unknown path never reaches a handler without a
+ * valid token, and each handler of the application must match exactly one entry (checked at start).
+ */
+public final class OperationCatalog {
+
+    public static final String API_BASE = &quot;/v1&quot;;
+
+    /** Who may call an operation. */
+<span class="fc" id="L20">    public enum Access {</span>
+<span class="fc" id="L21">        PUBLIC,</span>
+<span class="fc" id="L22">        READ,</span>
+<span class="fc" id="L23">        WRITE</span>
+    }
+
+    /** What the operation answers on success, for the Accept check of D63. */
+<span class="fc" id="L27">    public enum Produces {</span>
+<span class="fc" id="L28">        JSON,</span>
+<span class="fc" id="L29">        TURTLE,</span>
+<span class="fc" id="L30">        NONE</span>
+    }
+
+    /** One declared operation. */
+<span class="fc" id="L34">    public record Operation(String method, String template, String operationId, Access access, Produces produces) {</span>
+
+        Pattern regex() {
+<span class="fc" id="L37">            String quoted = template.replaceAll(&quot;\\{[^/]+}&quot;, &quot;[^/]+&quot;);</span>
+<span class="fc" id="L38">            return Pattern.compile(&quot;^&quot; + quoted + &quot;$&quot;);</span>
+        }
+
+        boolean literal() {
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            return !template.contains(&quot;{&quot;);</span>
+        }
+    }
+
+    /** Result of routing a request path. */
+<span class="fc" id="L47">    public record Route(Optional&lt;Operation&gt; operation, Set&lt;String&gt; allowedMethods, boolean pathKnown) {}</span>
+
+<span class="fc" id="L49">    private static final List&lt;Operation&gt; OPERATIONS = List.of(</span>
+<span class="fc" id="L50">            op(&quot;GET&quot;, &quot;/health&quot;, &quot;getHealth&quot;, Access.PUBLIC, Produces.JSON),</span>
+<span class="fc" id="L51">            op(&quot;GET&quot;, &quot;/vocabularies&quot;, &quot;getVocabularies&quot;, Access.READ, Produces.JSON),</span>
+<span class="fc" id="L52">            op(&quot;POST&quot;, &quot;/vocabularies&quot;, &quot;createVocabulary&quot;, Access.WRITE, Produces.JSON),</span>
+<span class="fc" id="L53">            op(&quot;POST&quot;, &quot;/vocabularies/searches&quot;, &quot;searchVocabularies&quot;, Access.READ, Produces.JSON),</span>
+<span class="fc" id="L54">            op(&quot;GET&quot;, &quot;/vocabularies/{vocabularyName}&quot;, &quot;getVocabulary&quot;, Access.READ, Produces.JSON),</span>
+<span class="fc" id="L55">            op(&quot;PATCH&quot;, &quot;/vocabularies/{vocabularyName}&quot;, &quot;updateVocabularyStatus&quot;, Access.WRITE, Produces.JSON),</span>
+<span class="fc" id="L56">            op(&quot;GET&quot;, &quot;/vocabularies/{vocabularyName}/versions&quot;, &quot;getVocabularyVersions&quot;, Access.READ, Produces.JSON),</span>
+<span class="fc" id="L57">            op(</span>
+                    &quot;POST&quot;,
+                    &quot;/vocabularies/{vocabularyName}/versions&quot;,
+                    &quot;createVocabularyVersion&quot;,
+                    Access.WRITE,
+                    Produces.JSON),
+<span class="fc" id="L63">            op(</span>
+                    &quot;GET&quot;,
+                    &quot;/vocabularies/{vocabularyName}/versions/{version}&quot;,
+                    &quot;getVocabularyVersion&quot;,
+                    Access.READ,
+                    Produces.JSON),
+<span class="fc" id="L69">            op(</span>
+                    &quot;PATCH&quot;,
+                    &quot;/vocabularies/{vocabularyName}/versions/{version}&quot;,
+                    &quot;updateVocabularyVersionStatus&quot;,
+                    Access.WRITE,
+                    Produces.JSON),
+<span class="fc" id="L75">            op(&quot;GET&quot;, &quot;/content/{vocabularyName}&quot;, &quot;downloadVocabulary&quot;, Access.READ, Produces.TURTLE),</span>
+<span class="fc" id="L76">            op(</span>
+                    &quot;GET&quot;,
+                    &quot;/content/{vocabularyName}/versions/{version}&quot;,
+                    &quot;downloadVocabularyVersion&quot;,
+                    Access.READ,
+                    Produces.TURTLE),
+<span class="fc" id="L82">            op(&quot;GET&quot;, &quot;/external-vocabularies&quot;, &quot;getExternalVocabularies&quot;, Access.READ, Produces.JSON),</span>
+<span class="fc" id="L83">            op(&quot;POST&quot;, &quot;/external-vocabularies&quot;, &quot;createExternalVocabulary&quot;, Access.WRITE, Produces.JSON),</span>
+<span class="fc" id="L84">            op(&quot;POST&quot;, &quot;/external-vocabulary/searches&quot;, &quot;searchExternalVocabularies&quot;, Access.READ, Produces.JSON),</span>
+<span class="fc" id="L85">            op(</span>
+                    &quot;POST&quot;,
+                    &quot;/external-vocabularies/content&quot;,
+                    &quot;downloadExternalVocabularyContent&quot;,
+                    Access.READ,
+                    Produces.TURTLE),
+<span class="fc" id="L91">            op(</span>
+                    &quot;GET&quot;,
+                    &quot;/external-vocabularies/{name}/content&quot;,
+                    &quot;getExternalVocabularyContentByName&quot;,
+                    Access.READ,
+                    Produces.TURTLE),
+<span class="fc" id="L97">            op(&quot;GET&quot;, &quot;/external-vocabularies/{name}&quot;, &quot;getExternalVocabulary&quot;, Access.READ, Produces.JSON),</span>
+<span class="fc" id="L98">            op(&quot;DELETE&quot;, &quot;/external-vocabularies/{name}&quot;, &quot;deleteExternalVocabulary&quot;, Access.WRITE, Produces.NONE));</span>
+
+    /** HTTP methods the server knows; any other method is refused with 405 before routing (D67). */
+<span class="fc" id="L101">    public static final Set&lt;String&gt; KNOWN_METHODS =</span>
+<span class="fc" id="L102">            Set.of(&quot;GET&quot;, &quot;HEAD&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;, &quot;TRACE&quot;, &quot;CONNECT&quot;);</span>
+
+<span class="fc" id="L104">    private static final java.util.Map&lt;Operation, Pattern&gt; PATTERNS =</span>
+<span class="fc" id="L105">            OPERATIONS.stream().collect(java.util.stream.Collectors.toUnmodifiableMap(op -&gt; op, Operation::regex));</span>
+
+    private OperationCatalog() {}
+
+    private static Operation op(String method, String path, String id, Access access, Produces produces) {
+<span class="fc" id="L110">        return new Operation(method, API_BASE + path, id, access, produces);</span>
+    }
+
+    public static List&lt;Operation&gt; operations() {
+<span class="fc" id="L114">        return OPERATIONS;</span>
+    }
+
+    /**
+     * Routes a decoded request path. A literal path wins over a template (D77): when a literal template
+     * matches, only its methods count.
+     */
+    public static Route route(String method, String path) {
+<span class="fc" id="L122">        List&lt;Operation&gt; literalMatches = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L123">        List&lt;Operation&gt; templateMatches = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        for (Operation operation : OPERATIONS) {</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">            if (PATTERNS.get(operation).matcher(path).matches()) {</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">                (operation.literal() ? literalMatches : templateMatches).add(operation);</span>
+            }
+<span class="fc" id="L128">        }</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        List&lt;Operation&gt; candidates = literalMatches.isEmpty() ? templateMatches : literalMatches;</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        if (candidates.isEmpty()) {</span>
+<span class="fc" id="L131">            return new Route(Optional.empty(), Set.of(), false);</span>
+        }
+<span class="fc" id="L133">        Set&lt;String&gt; allowed = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L134">        Operation chosen = null;</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        for (Operation operation : candidates) {</span>
+<span class="fc" id="L136">            allowed.add(operation.method());</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">            if (operation.method().equals(method)) {</span>
+<span class="fc" id="L138">                chosen = operation;</span>
+            }
+<span class="fc" id="L140">        }</span>
+<span class="fc" id="L141">        return new Route(Optional.ofNullable(chosen), allowed, true);</span>
+    }
+
+    /** Finds the operation by method and template, used by the start-up rule check. */
+    public static Optional&lt;Operation&gt; byTemplate(String method, String template) {
+<span class="fc" id="L146">        return OPERATIONS.stream()</span>
+<span class="fc bfc" id="L147" title="All 4 branches covered.">                .filter(op -&gt; op.method().equals(method) &amp;&amp; op.template().equals(template))</span>
+<span class="fc" id="L148">                .findFirst();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

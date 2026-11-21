@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StoreModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">StoreModel.java</span></div><h1>StoreModel.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+
+/**
+ * The physical model in the RDF store (D87, docs/physical-model.md): three named graphs and the
+ * vocabulary of the stored resources.
+ */
+public final class StoreModel {
+
+    public static final String NS = &quot;https://w3id.org/simpl/vocabulary-manager#&quot;;
+<span class="fc" id="L16">    public static final Node GRAPH_INTERNAL = NodeFactory.createURI(&quot;urn:simpl:vocabulary-manager:graph:internal&quot;);</span>
+<span class="fc" id="L17">    public static final Node GRAPH_EXTERNAL = NodeFactory.createURI(&quot;urn:simpl:vocabulary-manager:graph:external&quot;);</span>
+<span class="fc" id="L18">    public static final Node GRAPH_CONTENT = NodeFactory.createURI(&quot;urn:simpl:vocabulary-manager:graph:content&quot;);</span>
+
+<span class="fc" id="L20">    public static final Node RDF_TYPE = NodeFactory.createURI(&quot;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&quot;);</span>
+<span class="fc" id="L21">    public static final Node INTERNAL_VOCABULARY = term(&quot;InternalVocabulary&quot;);</span>
+<span class="fc" id="L22">    public static final Node INTERNAL_VOCABULARY_VERSION = term(&quot;InternalVocabularyVersion&quot;);</span>
+<span class="fc" id="L23">    public static final Node EXTERNAL_VOCABULARY = term(&quot;ExternalVocabulary&quot;);</span>
+
+<span class="fc" id="L25">    public static final Node NAME = term(&quot;name&quot;);</span>
+<span class="fc" id="L26">    public static final Node NAME_KEY = term(&quot;nameKey&quot;);</span>
+<span class="fc" id="L27">    public static final Node STATUS = term(&quot;status&quot;);</span>
+<span class="fc" id="L28">    public static final Node LATEST_VERSION = term(&quot;latestVersion&quot;);</span>
+<span class="fc" id="L29">    public static final Node VOCABULARY = term(&quot;vocabulary&quot;);</span>
+<span class="fc" id="L30">    public static final Node VERSION = term(&quot;version&quot;);</span>
+<span class="fc" id="L31">    public static final Node DESCRIPTION = term(&quot;description&quot;);</span>
+<span class="fc" id="L32">    public static final Node CHANGELOG = term(&quot;changelog&quot;);</span>
+<span class="fc" id="L33">    public static final Node CREATED_BY = term(&quot;createdBy&quot;);</span>
+<span class="fc" id="L34">    public static final Node CREATION_DATE = term(&quot;creationDate&quot;);</span>
+<span class="fc" id="L35">    public static final Node LAST_UPDATE_DATE = term(&quot;lastUpdateDate&quot;);</span>
+<span class="fc" id="L36">    public static final Node CONTENT = term(&quot;content&quot;);</span>
+<span class="fc" id="L37">    public static final Node CONTENT_SHA256 = term(&quot;contentSha256&quot;);</span>
+<span class="fc" id="L38">    public static final Node CONTENT_LENGTH = term(&quot;contentLength&quot;);</span>
+<span class="fc" id="L39">    public static final Node WRITE_TOKEN = term(&quot;writeToken&quot;);</span>
+<span class="fc" id="L40">    public static final Node STATUS_TOKEN = term(&quot;statusToken&quot;);</span>
+<span class="fc" id="L41">    public static final Node NAMESPACE_URI = term(&quot;namespaceUri&quot;);</span>
+<span class="fc" id="L42">    public static final Node NAMESPACE_KEY = term(&quot;namespaceKey&quot;);</span>
+<span class="fc" id="L43">    public static final Node ALIAS_LIST = term(&quot;aliasList&quot;);</span>
+<span class="fc" id="L44">    public static final Node ALIAS_KEY = term(&quot;aliasKey&quot;);</span>
+<span class="fc" id="L45">    public static final Node SOURCE_URI = term(&quot;sourceUri&quot;);</span>
+
+    private static final String VOCABULARY_IRI = &quot;urn:simpl:vocabulary-manager:vocabulary:&quot;;
+    private static final String EXTERNAL_IRI = &quot;urn:simpl:vocabulary-manager:external:&quot;;
+
+    private StoreModel() {}
+
+    private static Node term(String local) {
+<span class="fc" id="L53">        return NodeFactory.createURI(NS + local);</span>
+    }
+
+    /** IRI of a vocabulary. Names are checked against the name pattern before they get here. */
+    public static Node vocabularyIri(String name) {
+<span class="fc" id="L58">        return NodeFactory.createURI(VOCABULARY_IRI + name);</span>
+    }
+
+    public static Node versionIri(String name, int version) {
+<span class="fc" id="L62">        return NodeFactory.createURI(VOCABULARY_IRI + name + &quot;:version:&quot; + version);</span>
+    }
+
+    public static Node externalIri(String name) {
+<span class="fc" id="L66">        return NodeFactory.createURI(EXTERNAL_IRI + name);</span>
+    }
+
+    public static Node string(String value) {
+<span class="fc" id="L70">        return NodeFactory.createLiteralString(value);</span>
+    }
+
+    public static Node integer(long value) {
+<span class="fc" id="L74">        return NodeFactory.createLiteralDT(Long.toString(value), XSDDatatype.XSDinteger);</span>
+    }
+
+    /** Times are stored in UTC to the second (D58). */
+    public static Node dateTime(Instant value) {
+<span class="fc" id="L79">        return NodeFactory.createLiteralDT(value.truncatedTo(ChronoUnit.SECONDS).toString(), XSDDatatype.XSDdateTime);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

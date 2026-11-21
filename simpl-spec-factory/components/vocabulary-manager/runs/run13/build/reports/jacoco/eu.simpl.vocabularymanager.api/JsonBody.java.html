@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonBody.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">JsonBody.java</span></div><h1>JsonBody.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.ProblemIssue;
+import eu.simpl.vocabularymanager.error.Problems;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Set;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
+/**
+ * Reads a JSON request body as a tree with Jackson, at most 1 MB (D110, D150), with duplicate keys
+ * refused. The handlers then check the tree against the decided schema.
+ */
+public final class JsonBody {
+
+    public static final int LIMIT = 1024 * 1024;
+<span class="fc" id="L22">    private static final JsonMapper MAPPER = JsonMapper.builder()</span>
+<span class="fc" id="L23">            .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)</span>
+<span class="fc" id="L24">            .build();</span>
+
+    private JsonBody() {}
+
+    /** Reads the body; 413 above 1 MB, 400 when it is not one JSON object. */
+    public static JsonNode readObject(HttpServletRequest request) {
+<span class="fc" id="L30">        long declared = request.getContentLengthLong();</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        if (declared &gt; LIMIT) {</span>
+<span class="fc" id="L32">            throw Problems.jsonTooLarge();</span>
+        }
+        byte[] bytes;
+<span class="fc" id="L35">        try (InputStream in = request.getInputStream()) {</span>
+<span class="fc" id="L36">            bytes = in.readNBytes(LIMIT + 1);</span>
+<span class="nc" id="L37">        } catch (IOException e) {</span>
+<span class="nc" id="L38">            throw Problems.badRequest(invalid(&quot;The request body could not be read.&quot;));</span>
+<span class="fc" id="L39">        }</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (bytes.length &gt; LIMIT) {</span>
+<span class="nc" id="L41">            throw Problems.jsonTooLarge();</span>
+        }
+        JsonNode node;
+        try {
+<span class="fc" id="L45">            node = MAPPER.readTree(bytes);</span>
+<span class="fc" id="L46">        } catch (JacksonException e) {</span>
+<span class="fc" id="L47">            throw Problems.badRequest(invalid(&quot;The request body is not valid JSON.&quot;));</span>
+<span class="fc" id="L48">        }</span>
+<span class="pc bpc" id="L49" title="1 of 4 branches missed.">        if (node == null || !node.isObject()) {</span>
+<span class="fc" id="L50">            throw Problems.badRequest(invalid(&quot;The request body must be a JSON object.&quot;));</span>
+        }
+<span class="fc" id="L52">        return node;</span>
+    }
+
+    private static ProblemIssue invalid(String detail) {
+<span class="fc" id="L56">        return ProblemIssue.schemaViolation(&quot;body&quot;, &quot;body&quot;, detail, null);</span>
+    }
+
+    /** One issue per property the schema does not define (D52). */
+    public static void unknownProperties(
+            JsonNode object, Set&lt;String&gt; allowed, String prefix, List&lt;ProblemIssue&gt; issues) {
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        for (String name : object.propertyNames()) {</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc" id="L64">                issues.add(ProblemIssue.schemaViolation(</span>
+                        &quot;body&quot;, prefix + name, &quot;Property '&quot; + prefix + name + &quot;' is not supported.&quot;, null));
+            }
+<span class="fc" id="L67">        }</span>
+<span class="fc" id="L68">    }</span>
+
+    /** A JSON integer without fraction or exponent (D112) in the int32 range, at least 1. */
+    public static Integer positiveInt(JsonNode node, String field, List&lt;ProblemIssue&gt; issues) {
+<span class="pc bpc" id="L72" title="3 of 8 branches missed.">        if (node != null &amp;&amp; node.isIntegralNumber() &amp;&amp; node.canConvertToInt() &amp;&amp; node.intValue() &gt;= 1) {</span>
+<span class="fc" id="L73">            return node.intValue();</span>
+        }
+<span class="fc" id="L75">        issues.add(ProblemIssue.schemaViolation(</span>
+                &quot;body&quot;, field, &quot;'&quot; + field + &quot;' must be a whole number from 1 to 2147483647.&quot;, null));
+<span class="fc" id="L77">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

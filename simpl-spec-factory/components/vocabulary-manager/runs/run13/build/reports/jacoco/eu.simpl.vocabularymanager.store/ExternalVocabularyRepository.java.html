@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalVocabularyRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">ExternalVocabularyRepository.java</span></div><h1>ExternalVocabularyRepository.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import static eu.simpl.vocabularymanager.store.SparqlSupport.instant;
+import static eu.simpl.vocabularymanager.store.SparqlSupport.quad;
+import static eu.simpl.vocabularymanager.store.SparqlSupport.rowText;
+import static eu.simpl.vocabularymanager.store.StoreModel.*;
+
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.Page;
+import eu.simpl.vocabularymanager.domain.UriKeys;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import org.apache.jena.graph.Node;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.update.UpdateRequest;
+
+/** Store access for external vocabularies (D30, D41, D42, D56). */
+public class ExternalVocabularyRepository {
+
+    private static final String PATTERN = &quot;&quot;&quot;
+            GRAPH ?gExternal {
+              ?ext a vm:ExternalVocabulary ; vm:name ?name ; vm:namespaceUri ?namespaceUri ;
+                   vm:aliasList ?aliasList ; vm:createdBy ?createdBy ; vm:creationDate ?created .
+              OPTIONAL { ?ext vm:sourceUri ?sourceUri }
+              OPTIONAL { ?ext vm:description ?description }
+            }
+            &quot;&quot;&quot;;
+
+    /** Conflicts found for a registration, in the order of D147. */
+<span class="fc" id="L42">    public record Conflicts(boolean nameTaken, Set&lt;String&gt; takenKeys) {}</span>
+
+    private final SparqlStoreClient store;
+
+<span class="fc" id="L46">    public ExternalVocabularyRepository(SparqlStoreClient store) {</span>
+<span class="fc" id="L47">        this.store = store;</span>
+<span class="fc" id="L48">    }</span>
+
+    public Optional&lt;ExternalVocabulary&gt; find(String name) {
+<span class="fc" id="L51">        ParameterizedSparqlString pss = SparqlSupport.query(&quot;SELECT * WHERE {\n&quot; + PATTERN + &quot;}&quot;);</span>
+<span class="fc" id="L52">        pss.setParam(&quot;ext&quot;, externalIri(name));</span>
+<span class="fc" id="L53">        Query query = pss.asQuery();</span>
+<span class="fc" id="L54">        query.setLimit(1);</span>
+<span class="fc" id="L55">        return store.select(query).stream().findFirst().map(ExternalVocabularyRepository::toExternal);</span>
+    }
+
+    public Page&lt;ExternalVocabulary&gt; list(int page, int pageSize) {
+<span class="fc" id="L59">        ParameterizedSparqlString pss =</span>
+<span class="fc" id="L60">                SparqlSupport.query(&quot;SELECT * WHERE {\n&quot; + PATTERN + &quot;} ORDER BY ASC(STR(?name))&quot;);</span>
+<span class="fc" id="L61">        Query query = pss.asQuery();</span>
+<span class="fc" id="L62">        query.setLimit(Math.min(pageSize, VocabularyRepository.MAX_PAGE_ROWS));</span>
+<span class="fc" id="L63">        query.setOffset((long) (page - 1) * pageSize);</span>
+<span class="fc" id="L64">        List&lt;ExternalVocabulary&gt; items = store.select(query).stream()</span>
+<span class="fc" id="L65">                .map(ExternalVocabularyRepository::toExternal)</span>
+<span class="fc" id="L66">                .toList();</span>
+<span class="fc" id="L67">        Query count = SparqlSupport.query(</span>
+                        &quot;SELECT (COUNT(?ext) AS ?total) WHERE { GRAPH ?gExternal { ?ext a vm:ExternalVocabulary } }&quot;)
+<span class="fc" id="L69">                .asQuery();</span>
+<span class="fc" id="L70">        count.setLimit(1);</span>
+<span class="fc" id="L71">        long total = store.select(count).stream()</span>
+<span class="fc" id="L72">                .findFirst()</span>
+<span class="fc" id="L73">                .map(row -&gt; SparqlSupport.longValue(row, &quot;total&quot;))</span>
+<span class="fc" id="L74">                .orElse(0L);</span>
+<span class="fc" id="L75">        return new Page&lt;&gt;(items, total);</span>
+    }
+
+    /**
+     * External vocabularies whose namespace URI or an alias has one of these keys, with the keys each one
+     * matched. Bounded by the 100 URIs of a search (D38).
+     */
+    public Map&lt;String, ExternalMatch&gt; findByKeys(Collection&lt;String&gt; keys) {
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">        if (keys.isEmpty()) {</span>
+<span class="nc" id="L84">            return Map.of();</span>
+        }
+<span class="fc" id="L86">        Query query = SparqlSupport.query(&quot;SELECT * WHERE {\n VALUES ?key { }\n&quot;</span>
+                        + &quot;GRAPH ?gExternal { { ?ext vm:namespaceKey ?key } UNION { ?ext vm:aliasKey ?key } }\n&quot;
+                        + PATTERN + &quot;}&quot;)
+<span class="fc" id="L89">                .asQuery();</span>
+<span class="fc" id="L90">        ValuesBinder.bind(query, &quot;key&quot;, keys.stream().map(StoreModel::string).toList());</span>
+<span class="fc" id="L91">        query.setLimit(VocabularyRepository.MAX_LOOKUP_ROWS);</span>
+<span class="fc" id="L92">        Map&lt;String, ExternalMatch&gt; matches = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        for (QuerySolution row : store.select(query)) {</span>
+<span class="fc" id="L94">            ExternalVocabulary external = toExternal(row);</span>
+<span class="fc" id="L95">            matches.computeIfAbsent(external.name(), n -&gt; new ExternalMatch(external, new HashSet&lt;&gt;()))</span>
+<span class="fc" id="L96">                    .keys()</span>
+<span class="fc" id="L97">                    .add(rowText(row, &quot;key&quot;));</span>
+<span class="fc" id="L98">        }</span>
+<span class="fc" id="L99">        return matches;</span>
+    }
+
+    /** An external vocabulary and the lookup keys that matched it. */
+<span class="fc" id="L103">    public record ExternalMatch(ExternalVocabulary vocabulary, Set&lt;String&gt; keys) {}</span>
+
+    public Optional&lt;byte[]&gt; content(String name) {
+<span class="fc" id="L106">        ParameterizedSparqlString pss =</span>
+<span class="fc" id="L107">                SparqlSupport.query(&quot;SELECT ?content WHERE { GRAPH ?gContent { ?ext vm:content ?content } }&quot;);</span>
+<span class="fc" id="L108">        pss.setParam(&quot;ext&quot;, externalIri(name));</span>
+<span class="fc" id="L109">        Query query = pss.asQuery();</span>
+<span class="fc" id="L110">        query.setLimit(1);</span>
+<span class="fc" id="L111">        return store.select(query).stream()</span>
+<span class="fc" id="L112">                .findFirst()</span>
+<span class="fc" id="L113">                .map(row -&gt; ContentCodec.decode(row.get(&quot;content&quot;).asNode()));</span>
+    }
+
+    /** Which of the name and URI keys are already registered (D30, D56, D147). */
+    public Conflicts conflicts(String name, Collection&lt;String&gt; keys) {
+<span class="fc" id="L118">        Query query = SparqlSupport.query(&quot;SELECT ?hit ?key WHERE {\n&quot;</span>
+                        + &quot;{ GRAPH ?gExternal { ?e vm:nameKey ?nameKey } BIND(\&quot;name\&quot; AS ?hit) }\n&quot;
+                        + &quot;UNION { VALUES ?key { }\n&quot;
+                        + &quot;  GRAPH ?gExternal { { ?e2 vm:namespaceKey ?key } UNION { ?e2 vm:aliasKey ?key } }\n&quot;
+                        + &quot;  BIND(\&quot;key\&quot; AS ?hit) } }&quot;)
+<span class="fc" id="L123">                .asQuery();</span>
+<span class="fc" id="L124">        query = rebind(query, &quot;nameKey&quot;, string(name.toLowerCase(Locale.ROOT)));</span>
+<span class="fc" id="L125">        ValuesBinder.bind(query, &quot;key&quot;, keys.stream().map(StoreModel::string).toList());</span>
+<span class="fc" id="L126">        query.setLimit(1000);</span>
+<span class="fc" id="L127">        boolean nameTaken = false;</span>
+<span class="fc" id="L128">        Set&lt;String&gt; taken = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        for (QuerySolution row : store.select(query)) {</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">            if (&quot;name&quot;.equals(rowText(row, &quot;hit&quot;))) {</span>
+<span class="fc" id="L131">                nameTaken = true;</span>
+            } else {
+<span class="fc" id="L133">                taken.add(rowText(row, &quot;key&quot;));</span>
+            }
+<span class="fc" id="L135">        }</span>
+<span class="fc" id="L136">        return new Conflicts(nameTaken, taken);</span>
+    }
+
+    private static Query rebind(Query query, String variable, Node value) {
+<span class="fc" id="L140">        return org.apache.jena.sparql.syntax.syntaxtransform.QueryTransformOps.replaceVars(</span>
+<span class="fc" id="L141">                query, Map.of(Var.alloc(variable), value));</span>
+    }
+
+    /** Registers unless the name or a key is taken in the meantime (D43, D82). */
+    public boolean insert(ExternalVocabulary external, byte[] content, String token) {
+<span class="fc" id="L146">        Node ext = externalIri(external.name());</span>
+<span class="fc" id="L147">        Node nameKey = string(external.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L148">        List&lt;Quad&gt; inserts = new ArrayList&lt;&gt;(List.of(</span>
+<span class="fc" id="L149">                quad(GRAPH_EXTERNAL, ext, RDF_TYPE, EXTERNAL_VOCABULARY),</span>
+<span class="fc" id="L150">                quad(GRAPH_EXTERNAL, ext, NAME, string(external.name())),</span>
+<span class="fc" id="L151">                quad(GRAPH_EXTERNAL, ext, NAME_KEY, nameKey),</span>
+<span class="fc" id="L152">                quad(GRAPH_EXTERNAL, ext, NAMESPACE_URI, string(external.namespaceUri())),</span>
+<span class="fc" id="L153">                quad(GRAPH_EXTERNAL, ext, NAMESPACE_KEY, string(UriKeys.key(external.namespaceUri()))),</span>
+<span class="fc" id="L154">                quad(GRAPH_EXTERNAL, ext, ALIAS_LIST, string(String.join(&quot; &quot;, external.aliasUris()))),</span>
+<span class="fc" id="L155">                quad(GRAPH_EXTERNAL, ext, CREATED_BY, string(external.createdBy())),</span>
+<span class="fc" id="L156">                quad(GRAPH_EXTERNAL, ext, CREATION_DATE, dateTime(external.creationDate())),</span>
+<span class="fc" id="L157">                quad(GRAPH_EXTERNAL, ext, WRITE_TOKEN, string(token)),</span>
+<span class="fc" id="L158">                quad(GRAPH_CONTENT, ext, CONTENT, ContentCodec.encode(content))));</span>
+<span class="fc" id="L159">        Set&lt;String&gt; keys = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L160">        keys.add(UriKeys.key(external.namespaceUri()));</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">        for (String alias : external.aliasUris()) {</span>
+<span class="fc" id="L162">            inserts.add(quad(GRAPH_EXTERNAL, ext, ALIAS_KEY, string(UriKeys.key(alias))));</span>
+<span class="fc" id="L163">            keys.add(UriKeys.key(alias));</span>
+<span class="fc" id="L164">        }</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        if (external.sourceUri() != null) {</span>
+<span class="fc" id="L166">            inserts.add(quad(GRAPH_EXTERNAL, ext, SOURCE_URI, string(external.sourceUri())));</span>
+        }
+<span class="fc bfc" id="L168" title="All 2 branches covered.">        if (external.description() != null) {</span>
+<span class="fc" id="L169">            inserts.add(quad(GRAPH_EXTERNAL, ext, DESCRIPTION, string(external.description())));</span>
+        }
+<span class="fc" id="L171">        Query condition = SparqlSupport.query(&quot;SELECT * WHERE {\n&quot;</span>
+                        + &quot;FILTER NOT EXISTS { GRAPH ?gExternal { ?o vm:nameKey ?nameKey } }\n&quot;
+                        + &quot;FILTER NOT EXISTS { VALUES ?key { }\n&quot;
+                        + &quot;  GRAPH ?gExternal { { ?o2 vm:namespaceKey ?key } UNION { ?o2 vm:aliasKey ?key } } } }&quot;)
+<span class="fc" id="L175">                .asQuery();</span>
+<span class="fc" id="L176">        condition = rebind(condition, &quot;nameKey&quot;, nameKey);</span>
+<span class="fc" id="L177">        ValuesBinder.bind(</span>
+<span class="fc" id="L178">                condition, &quot;key&quot;, keys.stream().map(StoreModel::string).toList());</span>
+<span class="fc" id="L179">        UpdateRequest request = new UpdateRequest();</span>
+<span class="fc" id="L180">        request.add(SparqlSupport.modify(List.of(), inserts, condition.getQueryPattern()));</span>
+<span class="fc" id="L181">        store.update(request);</span>
+
+<span class="fc" id="L183">        ParameterizedSparqlString check =</span>
+<span class="fc" id="L184">                SparqlSupport.query(&quot;SELECT ?token WHERE { GRAPH ?gExternal { ?ext vm:writeToken ?token } }&quot;);</span>
+<span class="fc" id="L185">        check.setParam(&quot;ext&quot;, ext);</span>
+<span class="fc" id="L186">        Query checkQuery = check.asQuery();</span>
+<span class="fc" id="L187">        checkQuery.setLimit(2);</span>
+<span class="fc" id="L188">        return store.select(checkQuery).stream().anyMatch(row -&gt; token.equals(rowText(row, &quot;token&quot;)));</span>
+    }
+
+    /** Removes metadata and content in one transaction (D41, D42). */
+    public void delete(String name) {
+<span class="fc" id="L193">        Node ext = externalIri(name);</span>
+<span class="fc" id="L194">        Var p = Var.alloc(&quot;p&quot;);</span>
+<span class="fc" id="L195">        Var o = Var.alloc(&quot;o&quot;);</span>
+<span class="fc" id="L196">        UpdateRequest request = new UpdateRequest();</span>
+<span class="fc" id="L197">        request.add(SparqlSupport.deleteWhere(List.of(quad(GRAPH_EXTERNAL, ext, p, o))));</span>
+<span class="fc" id="L198">        request.add(SparqlSupport.deleteWhere(List.of(quad(GRAPH_CONTENT, ext, p, o))));</span>
+<span class="fc" id="L199">        store.update(request);</span>
+<span class="fc" id="L200">    }</span>
+
+    private static ExternalVocabulary toExternal(QuerySolution row) {
+<span class="fc" id="L203">        String aliasList = rowText(row, &quot;aliasList&quot;);</span>
+        List&lt;String&gt; aliases =
+<span class="pc bpc" id="L205" title="1 of 4 branches missed.">                aliasList == null || aliasList.isEmpty() ? List.of() : Arrays.asList(aliasList.split(&quot; &quot;));</span>
+<span class="fc" id="L206">        return new ExternalVocabulary(</span>
+<span class="fc" id="L207">                rowText(row, &quot;name&quot;),</span>
+<span class="fc" id="L208">                rowText(row, &quot;namespaceUri&quot;),</span>
+                aliases,
+<span class="fc" id="L210">                rowText(row, &quot;sourceUri&quot;),</span>
+<span class="fc" id="L211">                rowText(row, &quot;description&quot;),</span>
+<span class="fc" id="L212">                rowText(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L213">                instant(row, &quot;created&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

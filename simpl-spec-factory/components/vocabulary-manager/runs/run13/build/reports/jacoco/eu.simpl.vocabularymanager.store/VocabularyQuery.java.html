@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyQuery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">VocabularyQuery.java</span></div><h1>VocabularyQuery.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import java.time.Instant;
+
+/**
+ * Filters, sort and page of the vocabulary list (D19, D20, D22, D23, D58). Null filter values are absent.
+ *
+ * @param nameContains lower-case text the name must contain, case-insensitively
+ * @param creation creation date range, from inclusive, to exclusive
+ * @param lastUpdate last update date range, from inclusive, to exclusive
+ */
+<span class="fc" id="L13">public record VocabularyQuery(</span>
+        String nameContains,
+        VocabularyStatus status,
+        TimeRange creation,
+        TimeRange lastUpdate,
+        SortField sort,
+        boolean descending,
+        int page,
+        int pageSize) {
+
+    /** Sortable fields of GET /vocabularies. */
+<span class="fc" id="L24">    public enum SortField {</span>
+<span class="fc" id="L25">        NAME,</span>
+<span class="fc" id="L26">        STATUS,</span>
+<span class="fc" id="L27">        CREATION_DATE,</span>
+<span class="fc" id="L28">        LAST_UPDATED</span>
+    }
+
+    /** A UTC time range: a whole day (date filter) or one second (date-time filter). */
+<span class="fc" id="L32">    public record TimeRange(Instant from, Instant toExclusive) {}</span>
+
+    public long offset() {
+<span class="fc" id="L35">        return (long) (page - 1) * pageSize;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

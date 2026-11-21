@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AcceptCheck.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">AcceptCheck.java</span></div><h1>AcceptCheck.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.web.OperationCatalog.Produces;
+import java.util.List;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
+
+/**
+ * The Accept rule of D63 and D127. A JSON operation accepts application/json, application/problem+json,
+ * application/* and *&amp;#47;*; a content download accepts text/turtle, text/*, application/* and *&amp;#47;*. No
+ * Accept header is accepted. Media ranges with q=0 do not count.
+ */
+public final class AcceptCheck {
+
+<span class="fc" id="L15">    private static final List&lt;MediaType&gt; JSON_ACCEPTED = List.of(</span>
+            MediaType.ALL,
+<span class="fc" id="L17">            MediaType.parseMediaType(&quot;application/*&quot;),</span>
+            MediaType.APPLICATION_JSON,
+            MediaType.APPLICATION_PROBLEM_JSON);
+<span class="fc" id="L20">    private static final List&lt;MediaType&gt; TURTLE_ACCEPTED = List.of(</span>
+            MediaType.ALL,
+<span class="fc" id="L22">            MediaType.parseMediaType(&quot;application/*&quot;),</span>
+<span class="fc" id="L23">            MediaType.parseMediaType(&quot;text/*&quot;),</span>
+<span class="fc" id="L24">            MediaType.parseMediaType(&quot;text/turtle&quot;));</span>
+
+    private AcceptCheck() {}
+
+    public static boolean acceptable(List&lt;String&gt; headerValues, Produces produces) {
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (headerValues.isEmpty()) {</span>
+<span class="fc" id="L30">            return true;</span>
+        }
+<span class="fc" id="L32">        String joined = String.join(&quot;,&quot;, headerValues);</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        if (joined.isBlank()) {</span>
+<span class="fc" id="L34">            return true;</span>
+        }
+        List&lt;MediaType&gt; requested;
+        try {
+<span class="fc" id="L38">            requested = MediaType.parseMediaTypes(joined);</span>
+<span class="fc" id="L39">        } catch (InvalidMediaTypeException e) {</span>
+<span class="fc" id="L40">            return false;</span>
+<span class="fc" id="L41">        }</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        List&lt;MediaType&gt; accepted = produces == Produces.TURTLE ? TURTLE_ACCEPTED : JSON_ACCEPTED;</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        for (MediaType media : requested) {</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">            if (media.getQualityValue() &lt;= 0.0) {</span>
+<span class="fc" id="L45">                continue;</span>
+            }
+<span class="fc" id="L47">            MediaType bare = new MediaType(media.getType(), media.getSubtype());</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">            if (accepted.contains(bare)) {</span>
+<span class="fc" id="L49">                return true;</span>
+            }
+<span class="fc" id="L51">        }</span>
+<span class="fc" id="L52">        return false;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

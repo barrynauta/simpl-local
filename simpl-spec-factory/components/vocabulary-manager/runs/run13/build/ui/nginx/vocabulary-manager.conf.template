@@ -1,0 +1,76 @@
+# Allow header for the 405 answers nginx gives itself, for example to TRACE (D126, D139, D166).
+# Literal paths come first, so they win over the templates (D77).
+map $uri $vm_allow {
+    default "";
+    ~^/v1/health$ "GET";
+    ~^/v1/vocabularies$ "GET, POST";
+    ~^/v1/vocabularies/searches$ "POST";
+    ~^/v1/external-vocabularies$ "GET, POST";
+    ~^/v1/external-vocabularies/content$ "POST";
+    ~^/v1/external-vocabulary/searches$ "POST";
+    ~^/v1/vocabularies/[^/]+$ "GET, PATCH";
+    ~^/v1/vocabularies/[^/]+/versions$ "GET, POST";
+    ~^/v1/vocabularies/[^/]+/versions/[^/]+$ "GET, PATCH";
+    ~^/v1/content/[^/]+$ "GET";
+    ~^/v1/content/[^/]+/versions/[^/]+$ "GET";
+    ~^/v1/external-vocabularies/[^/]+/content$ "GET";
+    ~^/v1/external-vocabularies/[^/]+$ "GET, DELETE";
+}
+
+resolver 127.0.0.11 valid=10s ipv6=off;
+server_tokens off;
+client_max_body_size 7m;
+large_client_header_buffers 4 32k;
+
+# UI and same-origin API (host port 4433).
+server {
+    listen 8080;
+    server_name _;
+    root /usr/share/nginx/html;
+    include /etc/nginx/conf.d/ui-headers.inc;
+    include /etc/nginx/snippets/problem-pages.inc;
+
+    location /v1/ {
+        include /etc/nginx/snippets/proxy.inc;
+    }
+
+    location = /config.json {
+        include /etc/nginx/conf.d/ui-headers.inc;
+        add_header Cache-Control "no-store" always;
+        default_type application/json;
+        return 200 '{"keycloakUrl":"${KEYCLOAK_URL}","realm":"${KEYCLOAK_REALM}","clientId":"${KEYCLOAK_CLIENT_ID}"}';
+    }
+
+    location /assets/ {
+        include /etc/nginx/conf.d/ui-headers.inc;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        try_files $uri =404;
+    }
+
+    location / {
+        include /etc/nginx/conf.d/ui-headers.inc;
+        add_header Cache-Control "no-cache" always;
+        try_files $uri /index.html;
+    }
+}
+
+# API only (host port 8196): every path goes to the backend unchanged.
+server {
+    listen 8081;
+    server_name _;
+    include /etc/nginx/snippets/problem-pages.inc;
+
+    location / {
+        include /etc/nginx/snippets/proxy.inc;
+    }
+}
+
+# Container health check, reachable only inside the container (D155).
+server {
+    listen 127.0.0.1:8082;
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 'ok';
+    }
+}

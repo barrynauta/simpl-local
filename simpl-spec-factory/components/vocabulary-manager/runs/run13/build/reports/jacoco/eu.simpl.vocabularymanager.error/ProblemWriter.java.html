@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProblemWriter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.error</a> &gt; <span class="el_source">ProblemWriter.java</span></div><h1>ProblemWriter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.error;
+
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import tools.jackson.databind.json.JsonMapper;
+
+/**
+ * Writes RFC 9457 problem details. Used by the exception handler, by the request gate (before routing)
+ * and by the Tomcat error valve, so every answer of the service has the same shape (D48, D158).
+ */
+public final class ProblemWriter {
+
+    public static final String PROBLEM_JSON = &quot;application/problem+json&quot;;
+<span class="fc" id="L18">    private static final JsonMapper MAPPER = JsonMapper.builder().build();</span>
+
+    private ProblemWriter() {}
+
+    /** The problem body as a map, with absent values left out (BLG-jsn-null). */
+    public static Map&lt;String, Object&gt; body(
+            ProblemType type, String detail, List&lt;ProblemIssue&gt; issues, boolean truncated) {
+<span class="fc" id="L25">        Map&lt;String, Object&gt; body = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L26">        body.put(&quot;type&quot;, type.type());</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        if (type.href() != null) {</span>
+<span class="fc" id="L28">            body.put(&quot;href&quot;, type.href());</span>
+        }
+<span class="fc" id="L30">        body.put(&quot;title&quot;, type.title());</span>
+<span class="fc" id="L31">        body.put(&quot;status&quot;, type.status());</span>
+<span class="fc" id="L32">        body.put(&quot;detail&quot;, detail);</span>
+<span class="fc" id="L33">        body.put(&quot;instance&quot;, &quot;urn:uuid:&quot; + UUID.randomUUID());</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L35">            body.put(&quot;issues&quot;, issues);</span>
+        }
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        if (truncated) {</span>
+<span class="nc" id="L38">            body.put(&quot;truncated&quot;, true);</span>
+        }
+<span class="fc" id="L40">        return body;</span>
+    }
+
+    public static byte[] bytes(ApiException exception) {
+<span class="fc" id="L44">        return MAPPER.writeValueAsBytes(</span>
+<span class="fc" id="L45">                body(exception.problemType(), exception.detail(), exception.issues(), exception.truncated()));</span>
+    }
+
+    /** Writes the problem to a servlet response that has not been committed yet. */
+    public static void write(HttpServletResponse response, ApiException exception) throws IOException {
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">        if (response.isCommitted()) {</span>
+<span class="nc" id="L51">            return;</span>
+        }
+<span class="fc" id="L53">        response.resetBuffer();</span>
+<span class="fc" id="L54">        response.setStatus(exception.problemType().status());</span>
+<span class="fc" id="L55">        response.setContentType(PROBLEM_JSON);</span>
+<span class="fc" id="L56">        exception.headers().forEach(response::setHeader);</span>
+<span class="fc" id="L57">        byte[] payload = bytes(exception);</span>
+<span class="fc" id="L58">        response.setContentLength(payload.length);</span>
+<span class="fc" id="L59">        response.getOutputStream().write(payload);</span>
+<span class="fc" id="L60">        response.flushBuffer();</span>
+<span class="fc" id="L61">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

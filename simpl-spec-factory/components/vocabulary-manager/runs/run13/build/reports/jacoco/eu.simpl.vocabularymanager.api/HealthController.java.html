@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HealthController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">HealthController.java</span></div><h1>HealthController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.api.dto.HealthResponse;
+import eu.simpl.vocabularymanager.config.VocabularyManagerProperties;
+import eu.simpl.vocabularymanager.error.ProblemIssue;
+import eu.simpl.vocabularymanager.security.RealmKeyProvider;
+import eu.simpl.vocabularymanager.store.SparqlStoreClient;
+import jakarta.servlet.http.HttpServletRequest;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * GET /health, the readiness view of D44, D108, D134 and D152: DOWN (503) when the store does not answer
+ * within 2 s; DEGRADED when the store answers but no realm keys are loaded after a failed fetch; else UP.
+ * It never fetches keys.
+ */
+@RestController
+public class HealthController {
+
+<span class="fc" id="L30">    private static final Logger LOG = LoggerFactory.getLogger(HealthController.class);</span>
+<span class="fc" id="L31">    private static final Query PING = QueryFactory.create(&quot;SELECT (1 AS ?ok) WHERE {} LIMIT 1&quot;);</span>
+
+    private final SparqlStoreClient store;
+    private final RealmKeyProvider keys;
+    private final Duration timeout;
+
+<span class="fc" id="L37">    public HealthController(SparqlStoreClient store, RealmKeyProvider keys, VocabularyManagerProperties properties) {</span>
+<span class="fc" id="L38">        this.store = store;</span>
+<span class="fc" id="L39">        this.keys = keys;</span>
+<span class="fc" id="L40">        this.timeout = properties.store().healthTimeout();</span>
+<span class="fc" id="L41">    }</span>
+
+    @GetMapping(
+            path = &quot;/v1/health&quot;,
+            produces = {ApiSupport.JSON, ApiSupport.PROBLEM_JSON})
+    public ResponseEntity&lt;HealthResponse&gt; getHealth(HttpServletRequest request) {
+<span class="fc" id="L47">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L48">        ApiSupport.noQuery(request, issues);</span>
+<span class="fc" id="L49">        ApiSupport.failOnIssues(issues);</span>
+        try {
+<span class="fc" id="L51">            store.selectOnce(PING, timeout);</span>
+<span class="fc" id="L52">        } catch (RuntimeException e) {</span>
+<span class="fc" id="L53">            LOG.warn(&quot;Health: store not available ({})&quot;, e.getClass().getSimpleName());</span>
+<span class="fc" id="L54">            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)</span>
+<span class="fc" id="L55">                    .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L56">                    .body(new HealthResponse(&quot;DOWN&quot;));</span>
+<span class="fc" id="L57">        }</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">        String status = keys.state() == RealmKeyProvider.KeyState.FETCH_FAILED ? &quot;DEGRADED&quot; : &quot;UP&quot;;</span>
+<span class="fc" id="L59">        return ApiSupport.json(new HealthResponse(status));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

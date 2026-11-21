@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Representations.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">Representations.java</span></div><h1>Representations.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.api.dto.CollectionResponse;
+import eu.simpl.vocabularymanager.api.dto.ExternalVocabularyResponse;
+import eu.simpl.vocabularymanager.api.dto.SearchItemResponse;
+import eu.simpl.vocabularymanager.api.dto.VersionCreatedResponse;
+import eu.simpl.vocabularymanager.api.dto.VersionResponse;
+import eu.simpl.vocabularymanager.api.dto.VocabularyResponse;
+import eu.simpl.vocabularymanager.api.dto.WarningResponse;
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.ValidationWarning;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import org.springframework.web.util.UriUtils;
+
+/**
+ * Maps domain objects to their wire form (D25, D26, D29). href values and paging links are relative to the
+ * API base (E2); contentHref is under the content base URL.
+ */
+public final class Representations {
+
+    private final String contentBase;
+
+<span class="fc" id="L29">    public Representations(String contentBase) {</span>
+<span class="fc" id="L30">        this.contentBase = contentBase;</span>
+<span class="fc" id="L31">    }</span>
+
+    public static String vocabularyHref(String name) {
+<span class="fc" id="L34">        return &quot;/vocabularies/&quot; + name;</span>
+    }
+
+    public static String versionHref(String name, int version) {
+<span class="fc" id="L38">        return &quot;/vocabularies/&quot; + name + &quot;/versions/&quot; + version;</span>
+    }
+
+    public static String externalHref(String name) {
+<span class="fc" id="L42">        return &quot;/external-vocabularies/&quot; + name;</span>
+    }
+
+    public String contentHref(String name) {
+<span class="fc" id="L46">        return contentBase + &quot;/content/&quot; + name;</span>
+    }
+
+    public String contentHref(String name, int version) {
+<span class="fc" id="L50">        return contentBase + &quot;/content/&quot; + name + &quot;/versions/&quot; + version;</span>
+    }
+
+    public VocabularyResponse vocabulary(Vocabulary vocabulary) {
+<span class="fc" id="L54">        return new VocabularyResponse(</span>
+<span class="fc" id="L55">                vocabularyHref(vocabulary.name()),</span>
+<span class="fc" id="L56">                contentHref(vocabulary.name()),</span>
+<span class="fc" id="L57">                vocabulary.name(),</span>
+<span class="fc" id="L58">                vocabulary.latestVersion(),</span>
+<span class="fc" id="L59">                vocabulary.description(),</span>
+<span class="fc" id="L60">                vocabulary.status().name(),</span>
+<span class="fc" id="L61">                vocabulary.createdBy(),</span>
+<span class="fc" id="L62">                time(vocabulary.creationDate()),</span>
+<span class="fc" id="L63">                time(vocabulary.lastUpdateDate()));</span>
+    }
+
+    public VersionResponse version(VocabularyVersion version, int latestVersion) {
+<span class="fc" id="L67">        return new VersionResponse(</span>
+<span class="fc" id="L68">                versionHref(version.name(), version.version()),</span>
+<span class="fc" id="L69">                contentHref(version.name(), version.version()),</span>
+<span class="fc" id="L70">                versionHref(version.name(), latestVersion),</span>
+<span class="fc" id="L71">                version.name(),</span>
+<span class="fc" id="L72">                version.version(),</span>
+<span class="fc" id="L73">                version.description(),</span>
+<span class="fc" id="L74">                version.changelog(),</span>
+<span class="fc" id="L75">                version.status().name(),</span>
+<span class="fc" id="L76">                version.createdBy(),</span>
+<span class="fc" id="L77">                time(version.creationDate()),</span>
+<span class="fc" id="L78">                time(version.lastUpdateDate()));</span>
+    }
+
+    public VersionCreatedResponse created(VocabularyVersion version, List&lt;ValidationWarning&gt; warnings) {
+<span class="fc" id="L82">        return new VersionCreatedResponse(</span>
+<span class="fc" id="L83">                versionHref(version.name(), version.version()),</span>
+<span class="fc" id="L84">                contentHref(version.name(), version.version()),</span>
+<span class="fc" id="L85">                versionHref(version.name(), version.version()),</span>
+<span class="fc" id="L86">                version.name(),</span>
+<span class="fc" id="L87">                version.version(),</span>
+<span class="fc" id="L88">                version.description(),</span>
+<span class="fc" id="L89">                version.changelog(),</span>
+<span class="fc" id="L90">                version.status().name(),</span>
+<span class="fc" id="L91">                version.createdBy(),</span>
+<span class="fc" id="L92">                time(version.creationDate()),</span>
+<span class="fc" id="L93">                time(version.lastUpdateDate()),</span>
+<span class="fc" id="L94">                warnings.stream()</span>
+<span class="fc" id="L95">                        .map(w -&gt; new WarningResponse(w.code(), w.description(), w.location()))</span>
+<span class="fc" id="L96">                        .toList());</span>
+    }
+
+    public SearchItemResponse latestItem(String name, int latestVersion, VocabularyStatus vocabularyStatus) {
+<span class="fc" id="L100">        return new SearchItemResponse(</span>
+<span class="fc" id="L101">                vocabularyHref(name), contentHref(name), name, latestVersion, vocabularyStatus.name(), true);</span>
+    }
+
+    public SearchItemResponse versionItem(String name, int version, VocabularyStatus versionStatus) {
+<span class="fc" id="L105">        return new SearchItemResponse(</span>
+<span class="fc" id="L106">                versionHref(name, version), contentHref(name, version), name, version, versionStatus.name(), false);</span>
+    }
+
+    public static ExternalVocabularyResponse external(ExternalVocabulary external) {
+<span class="fc" id="L110">        return new ExternalVocabularyResponse(</span>
+<span class="fc" id="L111">                externalHref(external.name()),</span>
+<span class="fc" id="L112">                external.name(),</span>
+<span class="fc" id="L113">                external.namespaceUri(),</span>
+<span class="fc" id="L114">                external.aliasUris(),</span>
+<span class="fc" id="L115">                external.sourceUri(),</span>
+<span class="fc" id="L116">                external.description(),</span>
+<span class="fc" id="L117">                external.createdBy(),</span>
+<span class="fc" id="L118">                time(external.creationDate()));</span>
+    }
+
+    public static String time(Instant instant) {
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        return instant == null ? null : instant.toString();</span>
+    }
+
+    /**
+     * A page with its links (D22, D59, D78, D110, D111): page and pageSize first, then the other parameters
+     * in request order; prev on a page beyond the last points to the last page; no last when total is 0.
+     */
+    public static &lt;T&gt; CollectionResponse&lt;T&gt; page(
+            String path, int page, int pageSize, long total, Map&lt;String, String&gt; others, List&lt;T&gt; items) {
+<span class="fc" id="L131">        int totalPages = (int) Math.min(Integer.MAX_VALUE, (total + pageSize - 1) / pageSize);</span>
+<span class="fc" id="L132">        String prev = null;</span>
+<span class="fc bfc" id="L133" title="All 4 branches covered.">        if (total &gt; 0 &amp;&amp; page &gt; 1) {</span>
+<span class="fc" id="L134">            prev = link(path, Math.min(page - 1, totalPages), pageSize, others);</span>
+        }
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        String next = page &lt; totalPages ? link(path, page + 1, pageSize, others) : null;</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        String last = totalPages &gt;= 1 ? link(path, totalPages, pageSize, others) : null;</span>
+<span class="fc" id="L138">        return new CollectionResponse&lt;&gt;(</span>
+                page,
+                totalPages,
+                total,
+                pageSize,
+<span class="fc" id="L143">                link(path, page, pageSize, others),</span>
+<span class="fc" id="L144">                link(path, 1, pageSize, others),</span>
+                prev,
+                next,
+                last,
+                items);
+    }
+
+    /** A result list that is not paged (D38, D153). */
+    public static &lt;T&gt; CollectionResponse&lt;T&gt; unpaged(List&lt;T&gt; items) {
+<span class="fc" id="L153">        return new CollectionResponse&lt;&gt;(</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">                1, items.isEmpty() ? 0 : 1, items.size(), 100, null, null, null, null, null, items);</span>
+    }
+
+    private static String link(String path, int page, int pageSize, Map&lt;String, String&gt; others) {
+<span class="fc" id="L158">        StringBuilder link = new StringBuilder(path)</span>
+<span class="fc" id="L159">                .append(&quot;?page=&quot;)</span>
+<span class="fc" id="L160">                .append(page)</span>
+<span class="fc" id="L161">                .append(&quot;&amp;pageSize=&quot;)</span>
+<span class="fc" id="L162">                .append(pageSize);</span>
+<span class="fc" id="L163">        others.forEach((name, value) -&gt; link.append('&amp;')</span>
+<span class="fc" id="L164">                .append(UriUtils.encodeQueryParam(name, StandardCharsets.UTF_8))</span>
+<span class="fc" id="L165">                .append('=')</span>
+<span class="fc" id="L166">                .append(UriUtils.encodeQueryParam(value, StandardCharsets.UTF_8)));</span>
+<span class="fc" id="L167">        return link.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

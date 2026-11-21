@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Problems.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.error</a> &gt; <span class="el_source">Problems.java</span></div><h1>Problems.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.error;
+
+import java.util.List;
+import java.util.Map;
+
+/** Factory methods for the problems whose texts the decisions fix. */
+public final class Problems {
+
+    public static final String BAD_REQUEST_DETAIL = &quot;The input message is incorrect&quot;;
+    public static final String STORE_UNAVAILABLE = &quot;The vocabulary store is not available. Retry later.&quot;;
+    public static final String IDP_UNAVAILABLE = &quot;The identity provider is not available. Retry later.&quot;;
+    public static final String TOO_MANY_UPLOADS = &quot;Too many uploads in progress. Retry later.&quot;;
+    public static final String FILE_TOO_LARGE =
+            &quot;Uploaded vocabulary file is too large. The maximum allowed upload size is&quot;
+                    + &quot; 5 MB. Please upload a smaller Turtle file.&quot;;
+    public static final String JSON_TOO_LARGE = &quot;The request body is larger than 1 MB.&quot;;
+    public static final String RETRY_AFTER_SECONDS = &quot;5&quot;;
+
+    private Problems() {}
+
+    public static ApiException badRequest(List&lt;ProblemIssue&gt; issues) {
+<span class="fc" id="L22">        return new ApiException(ProblemType.BAD_REQUEST, BAD_REQUEST_DETAIL, issues);</span>
+    }
+
+    public static ApiException badRequest(ProblemIssue issue) {
+<span class="fc" id="L26">        return badRequest(List.of(issue));</span>
+    }
+
+    public static ApiException vocabularyNotFound(String name) {
+<span class="fc" id="L30">        String detail = &quot;Vocabulary with name '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L31">        return new ApiException(</span>
+<span class="fc" id="L32">                ProblemType.NOT_FOUND, detail, List.of(ProblemIssue.reference(&quot;path&quot;, &quot;vocabularyName&quot;, detail)));</span>
+    }
+
+    public static ApiException versionNotFound(String name, int version) {
+<span class="fc" id="L36">        String detail = &quot;Version &quot; + version + &quot; of vocabulary '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L37">        return new ApiException(</span>
+<span class="fc" id="L38">                ProblemType.NOT_FOUND, detail, List.of(ProblemIssue.reference(&quot;path&quot;, &quot;version&quot;, detail)));</span>
+    }
+
+    public static ApiException externalNotFound(String name) {
+<span class="fc" id="L42">        String detail = &quot;External vocabulary with name '&quot; + name + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L43">        return new ApiException(ProblemType.NOT_FOUND, detail, List.of(ProblemIssue.reference(&quot;path&quot;, &quot;name&quot;, detail)));</span>
+    }
+
+    public static ApiException externalNamespaceNotFound(String uri) {
+<span class="fc" id="L47">        String detail = &quot;External vocabulary with namespaceUri '&quot; + uri + &quot;' was not found.&quot;;</span>
+<span class="fc" id="L48">        return new ApiException(</span>
+<span class="fc" id="L49">                ProblemType.NOT_FOUND, detail, List.of(ProblemIssue.reference(&quot;body&quot;, &quot;namespaceUri&quot;, detail)));</span>
+    }
+
+    public static ApiException conflict(String detail) {
+<span class="fc" id="L53">        return new ApiException(ProblemType.CONFLICT, detail);</span>
+    }
+
+    public static ApiException fileTooLarge() {
+<span class="fc" id="L57">        return new ApiException(</span>
+                ProblemType.PAYLOAD_TOO_LARGE,
+                FILE_TOO_LARGE,
+<span class="fc" id="L60">                List.of(ProblemIssue.invalidInput(&quot;body&quot;, &quot;vocabularyFile&quot;, FILE_TOO_LARGE, null)));</span>
+    }
+
+    public static ApiException jsonTooLarge() {
+<span class="fc" id="L64">        return new ApiException(ProblemType.PAYLOAD_TOO_LARGE, JSON_TOO_LARGE);</span>
+    }
+
+    public static ApiException storeUnavailable() {
+<span class="fc" id="L68">        return serviceUnavailable(STORE_UNAVAILABLE);</span>
+    }
+
+    public static ApiException identityProviderUnavailable() {
+<span class="fc" id="L72">        return serviceUnavailable(IDP_UNAVAILABLE);</span>
+    }
+
+    public static ApiException tooManyUploads() {
+<span class="nc" id="L76">        return serviceUnavailable(TOO_MANY_UPLOADS);</span>
+    }
+
+    private static ApiException serviceUnavailable(String detail) {
+<span class="fc" id="L80">        return new ApiException(</span>
+<span class="fc" id="L81">                ProblemType.SERVICE_UNAVAILABLE, detail, List.of(), Map.of(&quot;Retry-After&quot;, RETRY_AFTER_SECONDS), false);</span>
+    }
+
+    public static ApiException unsupportedMediaType() {
+<span class="fc" id="L85">        return new ApiException(ProblemType.UNSUPPORTED_MEDIA_TYPE, &quot;Request content type is not supported.&quot;);</span>
+    }
+
+    public static ApiException internal() {
+<span class="nc" id="L89">        return new ApiException(ProblemType.INTERNAL_SERVER_ERROR, &quot;Internal Server Error&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

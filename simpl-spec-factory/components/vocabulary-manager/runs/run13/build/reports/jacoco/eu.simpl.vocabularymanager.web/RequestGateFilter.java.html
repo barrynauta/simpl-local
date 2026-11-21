@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestGateFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">RequestGateFilter.java</span></div><h1>RequestGateFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import eu.simpl.vocabularymanager.security.AuthenticatedUser;
+import eu.simpl.vocabularymanager.security.TokenVerifier;
+import eu.simpl.vocabularymanager.web.OperationCatalog.Access;
+import eu.simpl.vocabularymanager.web.OperationCatalog.Operation;
+import eu.simpl.vocabularymanager.web.OperationCatalog.Route;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.RequestRejectedException;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.UrlPathHelper;
+
+/**
+ * The request gate. It runs before routing and applies the decided order of checks (D17, D51, D63, D67,
+ * D84, D139, D162): unknown method 405, firewall 400, declared path with another method 405, token 401 or
+ * 503, role 403, Accept 406. Requests to unknown paths are passed on only with a valid token, so they end
+ * in 404; without a token they get 401.
+ */
+public class RequestGateFilter extends OncePerRequestFilter {
+
+    public static final String OPERATION_ATTRIBUTE = &quot;vm.operationId&quot;;
+    public static final String OPERATION_MDC = &quot;operationId&quot;;
+<span class="fc" id="L42">    private static final Logger LOG = LoggerFactory.getLogger(RequestGateFilter.class);</span>
+<span class="fc" id="L43">    private static final Logger SECURITY_LOG = LoggerFactory.getLogger(&quot;security&quot;);</span>
+<span class="fc" id="L44">    private static final Pattern CORRELATION_ID = Pattern.compile(&quot;^[A-Za-z0-9._:-]{1,128}$&quot;);</span>
+    private static final String BEARER = &quot;bearer &quot;;
+
+    private final TokenVerifier tokenVerifier;
+    private final HttpFirewall firewall;
+<span class="fc" id="L49">    private final UrlPathHelper pathHelper = new UrlPathHelper();</span>
+
+<span class="fc" id="L51">    public RequestGateFilter(TokenVerifier tokenVerifier) {</span>
+<span class="fc" id="L52">        this.tokenVerifier = tokenVerifier;</span>
+<span class="fc" id="L53">        StrictHttpFirewall strict = new StrictHttpFirewall();</span>
+<span class="fc" id="L54">        strict.setUnsafeAllowAnyHttpMethod(true);</span>
+<span class="fc" id="L55">        this.firewall = strict;</span>
+<span class="fc" id="L56">        pathHelper.setRemoveSemicolonContent(false);</span>
+<span class="fc" id="L57">    }</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L62">        String correlationId = correlationId(request);</span>
+<span class="fc" id="L63">        MDC.put(TraceHeaders.CORRELATION_MDC, correlationId);</span>
+<span class="fc" id="L64">        response.setHeader(TraceHeaders.CORRELATION_HEADER, correlationId);</span>
+<span class="fc" id="L65">        addSecurityHeaders(response);</span>
+        try {
+<span class="fc" id="L67">            HttpServletRequest checked = check(request, response);</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">            if (checked != null) {</span>
+<span class="fc" id="L69">                chain.doFilter(checked, response);</span>
+            }
+<span class="fc" id="L71">        } catch (ApiException e) {</span>
+<span class="fc" id="L72">            ProblemWriter.write(response, e);</span>
+        } finally {
+<span class="fc" id="L74">            MDC.clear();</span>
+        }
+<span class="fc" id="L76">    }</span>
+
+    /** Runs the checks; returns the request to pass on, or null when an answer was written. */
+    private HttpServletRequest check(HttpServletRequest request, HttpServletResponse response) throws IOException {
+<span class="fc" id="L80">        String method = request.getMethod();</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (!OperationCatalog.KNOWN_METHODS.contains(method)) {</span>
+<span class="fc" id="L82">            throw methodNotAllowed(List.of(), method);</span>
+        }
+        try {
+<span class="fc" id="L85">            firewall.getFirewalledRequest(request);</span>
+<span class="fc" id="L86">        } catch (RequestRejectedException e) {</span>
+<span class="fc" id="L87">            throw new ApiException(ProblemType.BAD_REQUEST, &quot;The request was rejected.&quot;);</span>
+<span class="fc" id="L88">        }</span>
+<span class="fc" id="L89">        String path = pathHelper.getPathWithinApplication(request);</span>
+<span class="fc" id="L90">        Route route = OperationCatalog.route(method, path);</span>
+<span class="fc bfc" id="L91" title="All 4 branches covered.">        if (route.pathKnown() &amp;&amp; route.operation().isEmpty()) {</span>
+<span class="fc" id="L92">            throw methodNotAllowed(List.copyOf(route.allowedMethods()), method);</span>
+        }
+<span class="fc" id="L94">        Operation operation = route.operation().orElse(null);</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (operation != null) {</span>
+<span class="fc" id="L96">            request.setAttribute(OPERATION_ATTRIBUTE, operation.operationId());</span>
+<span class="fc" id="L97">            MDC.put(OPERATION_MDC, operation.operationId());</span>
+        }
+<span class="fc bfc" id="L99" title="All 4 branches covered.">        if (operation != null &amp;&amp; operation.access() == Access.PUBLIC) {</span>
+<span class="fc" id="L100">            checkAccept(request, operation);</span>
+<span class="fc" id="L101">            return withoutAccept(request);</span>
+        }
+<span class="fc" id="L103">        AuthenticatedUser user = authenticate(request);</span>
+<span class="fc" id="L104">        request.setAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE, user);</span>
+<span class="fc" id="L105">        MDC.put(&quot;userId&quot;, user.subject());</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (operation == null) {</span>
+<span class="fc" id="L107">            return request;</span>
+        }
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        boolean allowed = operation.access() == Access.READ ? user.canRead() : user.canWrite();</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (!allowed) {</span>
+<span class="fc" id="L111">            SECURITY_LOG.warn(&quot;Access denied to {}&quot;, operation.operationId());</span>
+<span class="fc" id="L112">            throw new ApiException(ProblemType.FORBIDDEN, &quot;You are not authorized to perform this action.&quot;);</span>
+        }
+<span class="fc" id="L114">        checkAccept(request, operation);</span>
+<span class="fc" id="L115">        return withoutAccept(request);</span>
+    }
+
+    private AuthenticatedUser authenticate(HttpServletRequest request) {
+<span class="fc" id="L119">        Enumeration&lt;String&gt; headers = request.getHeaders(&quot;Authorization&quot;);</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        List&lt;String&gt; values = headers == null ? List.of() : Collections.list(headers);</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        if (values.size() != 1) {</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">            throw unauthorized(values.isEmpty() ? null : &quot;invalid_request&quot;);</span>
+        }
+<span class="fc" id="L124">        String value = values.get(0);</span>
+<span class="pc bpc" id="L125" title="2 of 4 branches missed.">        if (value.length() &lt;= BEARER.length() || !value.regionMatches(true, 0, BEARER, 0, BEARER.length())) {</span>
+<span class="nc" id="L126">            throw unauthorized(&quot;invalid_request&quot;);</span>
+        }
+        try {
+<span class="fc" id="L129">            return tokenVerifier.verify(value.substring(BEARER.length()).trim());</span>
+<span class="fc" id="L130">        } catch (TokenVerifier.InvalidTokenException e) {</span>
+<span class="fc" id="L131">            SECURITY_LOG.warn(&quot;Token rejected: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L132">            throw unauthorized(&quot;invalid_token&quot;);</span>
+        }
+    }
+
+    private static ApiException unauthorized(String error) {
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        String challenge = error == null ? &quot;Bearer realm=\&quot;simpl\&quot;&quot; : &quot;Bearer realm=\&quot;simpl\&quot;, error=\&quot;&quot; + error + &quot;\&quot;&quot;;</span>
+<span class="fc" id="L138">        return new ApiException(</span>
+                ProblemType.UNAUTHORIZED,
+                &quot;A valid bearer token is required.&quot;,
+<span class="fc" id="L141">                List.of(),</span>
+<span class="fc" id="L142">                Map.of(&quot;WWW-Authenticate&quot;, challenge),</span>
+                false);
+    }
+
+    private static ApiException methodNotAllowed(List&lt;String&gt; allowed, String method) {
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        LOG.debug(&quot;Method {} not allowed&quot;, method.length() &gt; 16 ? method.substring(0, 16) : method);</span>
+<span class="fc" id="L148">        return new ApiException(</span>
+                ProblemType.METHOD_NOT_ALLOWED,
+                &quot;The method is not allowed on this resource.&quot;,
+<span class="fc" id="L151">                List.of(),</span>
+<span class="fc" id="L152">                Map.of(&quot;Allow&quot;, String.join(&quot;, &quot;, allowed)),</span>
+                false);
+    }
+
+    private static void checkAccept(HttpServletRequest request, Operation operation) {
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        if (!AcceptCheck.acceptable(Collections.list(request.getHeaders(&quot;Accept&quot;)), operation.produces())) {</span>
+<span class="fc" id="L158">            throw new ApiException(ProblemType.NOT_ACCEPTABLE, &quot;Requested media type cannot be served.&quot;);</span>
+        }
+<span class="fc" id="L160">    }</span>
+
+    /** After the Accept check the handlers choose the media type themselves (D127, D151). */
+    private static HttpServletRequest withoutAccept(HttpServletRequest request) {
+<span class="fc" id="L164">        return new HttpServletRequestWrapper(request) {</span>
+            @Override
+            public String getHeader(String name) {
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">                return &quot;accept&quot;.equalsIgnoreCase(name) ? null : super.getHeader(name);</span>
+            }
+
+            @Override
+            public Enumeration&lt;String&gt; getHeaders(String name) {
+<span class="fc bfc" id="L172" title="All 2 branches covered.">                return &quot;accept&quot;.equalsIgnoreCase(name) ? Collections.emptyEnumeration() : super.getHeaders(name);</span>
+            }
+        };
+    }
+
+    private static String correlationId(HttpServletRequest request) {
+<span class="fc" id="L178">        String given = request.getHeader(TraceHeaders.CORRELATION_HEADER);</span>
+<span class="pc bpc" id="L179" title="1 of 4 branches missed.">        if (given != null &amp;&amp; CORRELATION_ID.matcher(given).matches()) {</span>
+<span class="fc" id="L180">            return given;</span>
+        }
+<span class="fc" id="L182">        return UUID.randomUUID().toString();</span>
+    }
+
+    private static void addSecurityHeaders(HttpServletResponse response) {
+<span class="fc" id="L186">        response.setHeader(&quot;X-Content-Type-Options&quot;, &quot;nosniff&quot;);</span>
+<span class="fc" id="L187">        response.setHeader(&quot;X-Frame-Options&quot;, &quot;DENY&quot;);</span>
+<span class="fc" id="L188">        response.setHeader(&quot;Cache-Control&quot;, &quot;no-store&quot;);</span>
+<span class="fc" id="L189">        response.setHeader(&quot;Content-Security-Policy&quot;, &quot;default-src 'none'; frame-ancestors 'none'&quot;);</span>
+<span class="fc" id="L190">        response.setHeader(&quot;Referrer-Policy&quot;, &quot;no-referrer&quot;);</span>
+<span class="fc" id="L191">        response.setHeader(&quot;Vary&quot;, &quot;Accept&quot;);</span>
+<span class="fc" id="L192">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

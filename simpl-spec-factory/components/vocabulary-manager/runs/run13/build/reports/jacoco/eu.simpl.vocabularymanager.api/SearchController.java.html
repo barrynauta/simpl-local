@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">SearchController.java</span></div><h1>SearchController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import static eu.simpl.vocabularymanager.api.ApiSupport.JSON;
+import static eu.simpl.vocabularymanager.api.ApiSupport.PROBLEM_JSON;
+
+import eu.simpl.vocabularymanager.api.dto.CollectionResponse;
+import eu.simpl.vocabularymanager.api.dto.ExternalVocabularyResponse;
+import eu.simpl.vocabularymanager.api.dto.SearchItemResponse;
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.error.ProblemIssue;
+import eu.simpl.vocabularymanager.service.ExternalVocabularyService;
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import eu.simpl.vocabularymanager.store.ReferenceState;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+
+/** The read-only search operations (D38, D66, D68, D137, D153). */
+@RestController
+public class SearchController {
+
+    static final int MAX_REFERENCES = 100;
+<span class="fc" id="L31">    private static final Set&lt;String&gt; EXTERNAL_SEARCH_FIELDS =</span>
+<span class="fc" id="L32">            Set.of(&quot;namespaceUri&quot;, &quot;aliasUri&quot;, &quot;namespaceUris&quot;, &quot;aliasUris&quot;);</span>
+
+    private final VocabularyService vocabularies;
+    private final ExternalVocabularyService externals;
+    private final Representations representations;
+
+    public SearchController(
+<span class="fc" id="L39">            VocabularyService vocabularies, ExternalVocabularyService externals, Representations representations) {</span>
+<span class="fc" id="L40">        this.vocabularies = vocabularies;</span>
+<span class="fc" id="L41">        this.externals = externals;</span>
+<span class="fc" id="L42">        this.representations = representations;</span>
+<span class="fc" id="L43">    }</span>
+
+    /** One requested reference: a name, with a version or for the latest version. */
+<span class="fc" id="L46">    record SearchReference(String name, Integer version) {}</span>
+
+    @PostMapping(
+            path = &quot;/v1/vocabularies/searches&quot;,
+            consumes = JSON,
+            produces = {JSON, PROBLEM_JSON})
+    public ResponseEntity&lt;CollectionResponse&lt;SearchItemResponse&gt;&gt; searchVocabularies(HttpServletRequest request) {
+<span class="fc" id="L53">        JsonNode body = JsonBody.readObject(request);</span>
+<span class="fc" id="L54">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L55">        ApiSupport.noQuery(request, issues);</span>
+<span class="fc" id="L56">        List&lt;SearchReference&gt; references = searchReferences(body, issues);</span>
+<span class="fc" id="L57">        ApiSupport.failOnIssues(issues);</span>
+
+<span class="fc" id="L59">        Set&lt;String&gt; names = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L60">        references.forEach(reference -&gt; names.add(reference.name()));</span>
+<span class="fc" id="L61">        ReferenceState state = vocabularies.searchState(names);</span>
+<span class="fc" id="L62">        List&lt;SearchItemResponse&gt; items = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L63">        Set&lt;SearchReference&gt; seen = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        for (SearchReference reference : references) {</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">            if (!seen.add(reference)) {</span>
+<span class="nc" id="L66">                continue;</span>
+            }
+<span class="fc" id="L68">            ReferenceState.InternalState vocabulary = state.internal().get(reference.name());</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            if (vocabulary == null) {</span>
+<span class="fc" id="L70">                continue;</span>
+            }
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (reference.version() == null) {</span>
+<span class="fc" id="L73">                items.add(</span>
+<span class="fc" id="L74">                        representations.latestItem(vocabulary.name(), vocabulary.latestVersion(), vocabulary.status()));</span>
+            } else {
+<span class="fc" id="L76">                VocabularyStatus status = vocabulary.versions().get(reference.version());</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">                if (status != null) {</span>
+<span class="fc" id="L78">                    items.add(representations.versionItem(vocabulary.name(), reference.version(), status));</span>
+                }
+            }
+<span class="fc" id="L81">        }</span>
+<span class="fc" id="L82">        return ApiSupport.json(Representations.unpaged(items));</span>
+    }
+
+    private static List&lt;SearchReference&gt; searchReferences(JsonNode body, List&lt;ProblemIssue&gt; issues) {
+<span class="fc" id="L86">        JsonBody.unknownProperties(body, Set.of(&quot;items&quot;), &quot;&quot;, issues);</span>
+<span class="fc" id="L87">        JsonNode items = body.get(&quot;items&quot;);</span>
+<span class="pc bpc" id="L88" title="2 of 8 branches missed.">        if (items == null || !items.isArray() || items.isEmpty() || items.size() &gt; MAX_REFERENCES) {</span>
+<span class="fc" id="L89">            issues.add(ProblemIssue.schemaViolation(</span>
+                    &quot;body&quot;, &quot;items&quot;, &quot;'items' must be an array of 1 to 100 references.&quot;, null));
+<span class="fc" id="L91">            return List.of();</span>
+        }
+<span class="fc" id="L93">        List&lt;SearchReference&gt; references = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        for (int index = 0; index &lt; items.size(); index++) {</span>
+<span class="fc" id="L95">            String prefix = &quot;items[&quot; + index + &quot;]&quot;;</span>
+<span class="fc" id="L96">            JsonNode item = items.get(index);</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">            if (!item.isObject()) {</span>
+<span class="nc" id="L98">                issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, prefix, &quot;'&quot; + prefix + &quot;' must be an object.&quot;, null));</span>
+<span class="nc" id="L99">                continue;</span>
+            }
+<span class="fc" id="L101">            JsonBody.unknownProperties(item, Set.of(&quot;name&quot;, &quot;version&quot;), prefix + &quot;.&quot;, issues);</span>
+<span class="fc" id="L102">            JsonNode name = item.get(&quot;name&quot;);</span>
+<span class="pc bpc" id="L103" title="2 of 4 branches missed.">            String nameValue = name != null &amp;&amp; name.isString() ? name.asString() : null;</span>
+<span class="fc" id="L104">            String checked = RequestRules.name(nameValue, &quot;body&quot;, prefix + &quot;.name&quot;, issues);</span>
+<span class="fc" id="L105">            Integer version = null;</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">            if (item.has(&quot;version&quot;)) {</span>
+<span class="fc" id="L107">                version = JsonBody.positiveInt(item.get(&quot;version&quot;), prefix + &quot;.version&quot;, issues);</span>
+            }
+<span class="fc bfc" id="L109" title="All 2 branches covered.">            if (checked != null) {</span>
+<span class="fc" id="L110">                references.add(new SearchReference(checked, version));</span>
+            }
+        }
+<span class="fc" id="L113">        return references;</span>
+    }
+
+    @PostMapping(
+            path = &quot;/v1/external-vocabulary/searches&quot;,
+            consumes = JSON,
+            produces = {JSON, PROBLEM_JSON})
+    public ResponseEntity&lt;CollectionResponse&lt;ExternalVocabularyResponse&gt;&gt; searchExternalVocabularies(
+            HttpServletRequest request) {
+<span class="fc" id="L122">        JsonNode body = JsonBody.readObject(request);</span>
+<span class="fc" id="L123">        List&lt;ProblemIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L124">        ApiSupport.noQuery(request, issues);</span>
+<span class="fc" id="L125">        List&lt;String&gt; uris = externalSearchUris(body, issues);</span>
+<span class="fc" id="L126">        ApiSupport.failOnIssues(issues);</span>
+<span class="fc" id="L127">        List&lt;ExternalVocabulary&gt; found = externals.search(uris);</span>
+<span class="fc" id="L128">        return ApiSupport.json(Representations.unpaged(</span>
+<span class="fc" id="L129">                found.stream().map(Representations::external).toList()));</span>
+    }
+
+    /** The oneOf of ExternalVocabularySearchRequest with the limits of D38 and the issue names of D68. */
+    static List&lt;String&gt; externalSearchUris(JsonNode body, List&lt;ProblemIssue&gt; issues) {
+<span class="fc" id="L134">        JsonBody.unknownProperties(body, EXTERNAL_SEARCH_FIELDS, &quot;&quot;, issues);</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L136">            return List.of();</span>
+        }
+<span class="fc" id="L138">        boolean single = body.has(&quot;namespaceUri&quot;);</span>
+<span class="fc" id="L139">        boolean alias = body.has(&quot;aliasUri&quot;);</span>
+<span class="fc bfc" id="L140" title="All 4 branches covered.">        boolean batch = body.has(&quot;namespaceUris&quot;) || body.has(&quot;aliasUris&quot;);</span>
+<span class="fc bfc" id="L141" title="All 6 branches covered.">        int branches = (single ? 1 : 0) + (alias ? 1 : 0) + (batch ? 1 : 0);</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">        if (branches != 1) {</span>
+<span class="fc" id="L143">            issues.add(ProblemIssue.schemaViolation(</span>
+                    &quot;body&quot;,
+                    &quot;body&quot;,
+                    &quot;Give exactly one of namespaceUri, aliasUri, or namespaceUris and aliasUris.&quot;,
+                    null));
+<span class="fc" id="L148">            return List.of();</span>
+        }
+<span class="pc bpc" id="L150" title="1 of 4 branches missed.">        if (single || alias) {</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">            String field = single ? &quot;namespaceUri&quot; : &quot;aliasUri&quot;;</span>
+<span class="fc" id="L152">            String uri = uri(body.get(field), field, issues);</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">            return uri == null ? List.of() : List.of(uri);</span>
+        }
+<span class="fc" id="L155">        List&lt;String&gt; uris = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L156">        uris.addAll(uriArray(body, &quot;namespaceUris&quot;, issues));</span>
+<span class="fc" id="L157">        uris.addAll(uriArray(body, &quot;aliasUris&quot;, issues));</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        if (uris.size() &gt; MAX_REFERENCES) {</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">            String field = body.has(&quot;aliasUris&quot;) ? &quot;aliasUris&quot; : &quot;namespaceUris&quot;;</span>
+<span class="fc" id="L160">            issues.add(ProblemIssue.schemaViolation(</span>
+                    &quot;body&quot;, field, &quot;At most 100 URIs may be searched in one request.&quot;, null));
+        }
+<span class="fc" id="L163">        return uris;</span>
+    }
+
+    private static List&lt;String&gt; uriArray(JsonNode body, String field, List&lt;ProblemIssue&gt; issues) {
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        if (!body.has(field)) {</span>
+<span class="fc" id="L168">            return List.of();</span>
+        }
+<span class="fc" id="L170">        JsonNode array = body.get(field);</span>
+<span class="pc bpc" id="L171" title="1 of 4 branches missed.">        if (!array.isArray() || array.isEmpty()) {</span>
+<span class="fc" id="L172">            issues.add(ProblemIssue.schemaViolation(</span>
+                    &quot;body&quot;, field, &quot;'&quot; + field + &quot;' must be an array with at least one URI.&quot;, null));
+<span class="fc" id="L174">            return List.of();</span>
+        }
+<span class="fc" id="L176">        List&lt;String&gt; uris = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        for (int index = 0; index &lt; array.size(); index++) {</span>
+<span class="fc" id="L178">            String uri = uri(array.get(index), field + &quot;[&quot; + index + &quot;]&quot;, issues);</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">            if (uri != null) {</span>
+<span class="fc" id="L180">                uris.add(uri);</span>
+            }
+        }
+<span class="fc" id="L183">        return uris;</span>
+    }
+
+    private static String uri(JsonNode node, String field, List&lt;ProblemIssue&gt; issues) {
+<span class="pc bpc" id="L187" title="1 of 6 branches missed.">        if (node == null || !node.isString() || !RequestRules.absoluteUri(node.asString())) {</span>
+<span class="fc" id="L188">            issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, field, &quot;'&quot; + field + &quot;' must be an absolute URI.&quot;, null));</span>
+<span class="fc" id="L189">            return null;</span>
+        }
+<span class="fc" id="L191">        return node.asString();</span>
+    }
+
+    /** Used by POST /external-vocabularies/content. */
+    static String contentRequestUri(JsonNode body, List&lt;ProblemIssue&gt; issues) {
+<span class="fc" id="L196">        JsonBody.unknownProperties(body, Set.of(&quot;namespaceUri&quot;), &quot;&quot;, issues);</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">        if (!body.has(&quot;namespaceUri&quot;)) {</span>
+<span class="fc" id="L198">            issues.add(ProblemIssue.schemaViolation(&quot;body&quot;, &quot;namespaceUri&quot;, &quot;'namespaceUri' is required.&quot;, null));</span>
+<span class="fc" id="L199">            return null;</span>
+        }
+<span class="fc" id="L201">        return uri(body.get(&quot;namespaceUri&quot;), &quot;namespaceUri&quot;, issues);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

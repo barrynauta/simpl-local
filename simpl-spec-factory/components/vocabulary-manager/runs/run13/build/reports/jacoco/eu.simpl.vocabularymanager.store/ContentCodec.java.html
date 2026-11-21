@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContentCodec.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">ContentCodec.java</span></div><h1>ContentCodec.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+
+/**
+ * Keeps the uploaded bytes exactly as uploaded inside one store literal (D29, D106). Valid UTF-8 text
+ * without control characters is stored as a string; anything else as xsd:base64Binary.
+ */
+public final class ContentCodec {
+
+    private ContentCodec() {}
+
+    public static Node encode(byte[] bytes) {
+<span class="fc" id="L21">        String text = strictUtf8(bytes);</span>
+<span class="pc bpc" id="L22" title="1 of 4 branches missed.">        if (text != null &amp;&amp; plainText(text)) {</span>
+<span class="fc" id="L23">            return NodeFactory.createLiteralString(text);</span>
+        }
+<span class="fc" id="L25">        return NodeFactory.createLiteralDT(Base64.getEncoder().encodeToString(bytes), XSDDatatype.XSDbase64Binary);</span>
+    }
+
+    public static byte[] decode(Node literal) {
+<span class="fc" id="L29">        String lexical = literal.getLiteralLexicalForm();</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (XSDDatatype.XSDbase64Binary.getURI().equals(literal.getLiteralDatatypeURI())) {</span>
+<span class="fc" id="L31">            return Base64.getDecoder().decode(lexical);</span>
+        }
+<span class="fc" id="L33">        return lexical.getBytes(StandardCharsets.UTF_8);</span>
+    }
+
+    /** Decodes strictly; returns null when the bytes are not valid UTF-8. */
+    public static String strictUtf8(byte[] bytes) {
+        try {
+<span class="fc" id="L39">            return StandardCharsets.UTF_8</span>
+<span class="fc" id="L40">                    .newDecoder()</span>
+<span class="fc" id="L41">                    .onMalformedInput(CodingErrorAction.REPORT)</span>
+<span class="fc" id="L42">                    .onUnmappableCharacter(CodingErrorAction.REPORT)</span>
+<span class="fc" id="L43">                    .decode(ByteBuffer.wrap(bytes))</span>
+<span class="fc" id="L44">                    .toString();</span>
+<span class="fc" id="L45">        } catch (CharacterCodingException e) {</span>
+<span class="fc" id="L46">            return null;</span>
+        }
+    }
+
+    private static boolean plainText(String text) {
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        for (int i = 0; i &lt; text.length(); i++) {</span>
+<span class="fc" id="L52">            char c = text.charAt(i);</span>
+<span class="pc bpc" id="L53" title="3 of 12 branches missed.">            if ((c &lt; 0x20 &amp;&amp; c != '\n' &amp;&amp; c != '\r' &amp;&amp; c != '\t') || c == 0x7f || Character.isSurrogate(c)) {</span>
+<span class="nc" id="L54">                return false;</span>
+            }
+        }
+<span class="fc" id="L57">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

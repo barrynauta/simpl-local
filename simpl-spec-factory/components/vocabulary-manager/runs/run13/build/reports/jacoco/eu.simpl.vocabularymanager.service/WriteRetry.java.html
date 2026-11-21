@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WriteRetry.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">WriteRetry.java</span></div><h1>WriteRetry.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.error.Problems;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.concurrent.ThreadLocalRandom;
+
+/**
+ * Retry policy of the conditional writes (D82, D157): waits 50, 100, 200, 400 and 800 ms, each with up to
+ * 50 % random jitter, within the write budget of D71; after that the request gets 503.
+ */
+public class WriteRetry {
+
+<span class="fc" id="L15">    private static final long[] BACKOFF_MILLIS = {50, 100, 200, 400, 800};</span>
+
+    private final int maxAttempts;
+    private final Duration budget;
+    private final Clock clock;
+
+<span class="fc" id="L21">    public WriteRetry(int maxAttempts, Duration budget, Clock clock) {</span>
+<span class="fc" id="L22">        this.maxAttempts = maxAttempts;</span>
+<span class="fc" id="L23">        this.budget = budget;</span>
+<span class="fc" id="L24">        this.clock = clock;</span>
+<span class="fc" id="L25">    }</span>
+
+    /** One attempt of a conditional write. */
+    @FunctionalInterface
+    public interface Attempt&lt;T&gt; {
+        /** Returns the result, or null when the store condition failed and the write must be tried again. */
+        T run();
+    }
+
+    public &lt;T&gt; T run(Attempt&lt;T&gt; attempt) {
+<span class="fc" id="L35">        Instant deadline = clock.instant().plus(budget);</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        for (int number = 0; number &lt; maxAttempts; number++) {</span>
+<span class="fc" id="L37">            T result = attempt.run();</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">            if (result != null) {</span>
+<span class="fc" id="L39">                return result;</span>
+            }
+<span class="fc bfc" id="L41" title="All 2 branches covered.">            if (number == maxAttempts - 1) {</span>
+<span class="fc" id="L42">                break;</span>
+            }
+<span class="fc" id="L44">            long base = BACKOFF_MILLIS[Math.min(number, BACKOFF_MILLIS.length - 1)];</span>
+<span class="fc" id="L45">            long wait = base + ThreadLocalRandom.current().nextLong(base / 2 + 1);</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (clock.instant().plusMillis(wait).isAfter(deadline)) {</span>
+<span class="fc" id="L47">                break;</span>
+            }
+<span class="fc" id="L49">            sleep(wait);</span>
+        }
+<span class="fc" id="L51">        throw Problems.storeUnavailable();</span>
+    }
+
+    private static void sleep(long millis) {
+        try {
+<span class="fc" id="L56">            Thread.sleep(millis);</span>
+<span class="nc" id="L57">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L58">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L59">            throw Problems.storeUnavailable();</span>
+<span class="fc" id="L60">        }</span>
+<span class="fc" id="L61">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

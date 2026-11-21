@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QueryParameters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">vocabulary-manager-be</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.api</a> &gt; <span class="el_source">QueryParameters.java</span></div><h1>QueryParameters.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.api;
+
+import eu.simpl.vocabularymanager.error.ProblemIssue;
+import eu.simpl.vocabularymanager.error.Problems;
+import jakarta.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
+
+/**
+ * The query parameters of a request in request order, read with Spring's URI parser. Unknown and repeated
+ * parameters are rejected (D21, D52, D138, D149).
+ */
+public final class QueryParameters {
+
+    private final Map&lt;String, String&gt; values;
+
+<span class="fc" id="L24">    private QueryParameters(Map&lt;String, String&gt; values) {</span>
+<span class="fc" id="L25">        this.values = values;</span>
+<span class="fc" id="L26">    }</span>
+
+    /**
+     * Reads the query string.
+     *
+     * @param allowed the parameter names of the operation; any other name is an issue
+     * @param issues collects one issue per unknown or repeated parameter
+     */
+    public static QueryParameters read(HttpServletRequest request, Set&lt;String&gt; allowed, List&lt;ProblemIssue&gt; issues) {
+<span class="fc" id="L35">        Map&lt;String, String&gt; values = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L36">        String raw = request.getQueryString();</span>
+<span class="pc bpc" id="L37" title="1 of 4 branches missed.">        if (raw == null || raw.isEmpty()) {</span>
+<span class="fc" id="L38">            return new QueryParameters(values);</span>
+        }
+        MultiValueMap&lt;String, String&gt; parsed;
+        try {
+<span class="fc" id="L42">            parsed = UriComponentsBuilder.newInstance().query(raw).build().getQueryParams();</span>
+<span class="nc" id="L43">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L44">            throw Problems.badRequest(ProblemIssue.schemaViolation(&quot;query&quot;, &quot;query&quot;, &quot;Malformed query string.&quot;, null));</span>
+<span class="fc" id="L45">        }</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        for (Map.Entry&lt;String, List&lt;String&gt;&gt; entry : parsed.entrySet()) {</span>
+<span class="fc" id="L47">            String name = decode(entry.getKey(), issues);</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">            if (name == null) {</span>
+<span class="nc" id="L49">                continue;</span>
+            }
+<span class="fc" id="L51">            List&lt;String&gt; raws = entry.getValue();</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc" id="L53">                issues.add(ProblemIssue.schemaViolation(</span>
+                        &quot;query&quot;, name, &quot;Query parameter '&quot; + name + &quot;' is not supported.&quot;, null));
+<span class="pc bpc" id="L55" title="1 of 4 branches missed.">            } else if (raws.size() &gt; 1 || values.containsKey(name)) {</span>
+<span class="fc" id="L56">                issues.add(ProblemIssue.schemaViolation(</span>
+                        &quot;query&quot;, name, &quot;Query parameter '&quot; + name + &quot;' must be given only once.&quot;, null));
+<span class="fc" id="L58">                values.remove(name);</span>
+            } else {
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">                String value = raws.get(0) == null ? &quot;&quot; : decode(raws.get(0), issues);</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">                if (value != null) {</span>
+<span class="fc" id="L62">                    values.put(name, value);</span>
+                }
+            }
+<span class="fc" id="L65">        }</span>
+<span class="fc" id="L66">        return new QueryParameters(values);</span>
+    }
+
+    private static String decode(String text, List&lt;ProblemIssue&gt; issues) {
+        try {
+<span class="fc" id="L71">            return UriUtils.decode(text, StandardCharsets.UTF_8);</span>
+<span class="nc" id="L72">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L73">            issues.add(ProblemIssue.schemaViolation(&quot;query&quot;, &quot;query&quot;, &quot;Malformed query string.&quot;, null));</span>
+<span class="nc" id="L74">            return null;</span>
+        }
+    }
+
+    public String get(String name) {
+<span class="fc" id="L79">        return values.get(name);</span>
+    }
+
+    /** The parameters other than page and pageSize, in request order, for paging links (D78, D110). */
+    public Map&lt;String, String&gt; others() {
+<span class="fc" id="L84">        Map&lt;String, String&gt; others = new LinkedHashMap&lt;&gt;(values);</span>
+<span class="fc" id="L85">        others.remove(&quot;page&quot;);</span>
+<span class="fc" id="L86">        others.remove(&quot;pageSize&quot;);</span>
+<span class="fc" id="L87">        return others;</span>
+    }
+
+    public List&lt;String&gt; names() {
+<span class="nc" id="L91">        return new ArrayList&lt;&gt;(values.keySet());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>
