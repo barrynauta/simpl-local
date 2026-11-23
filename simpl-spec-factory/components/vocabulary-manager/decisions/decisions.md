@@ -454,6 +454,79 @@ Earlier decisions changed by these:
 - D67: refined by D166, backend refuses TRACE itself.
 - E6: refined by D167, PrimeVue and Tailwind from npm, build.yaml aligned.
 
+## Feedback from runs 12 and 13 (added 23 Nov 2026)
+
+Run 12 raised 23 owner questions (R-175 to R-197) and run 13 raised 25 (R-198 to R-222), both in report section 6. Run 13 had the same input as run 12, so several questions repeat; 40 decisions and one environment choice answer all 48. Seven questions were already answered by an earlier decision (D23, D38, D55, D69, D120, D128, D134); the new decisions repeat the answer where the writers looked for it.
+
+| Id | Topic | Decision | Status | Closes |
+|---|---|---|---|---|
+| D168 | Plus sign in query values | A '+' in a query value is a plus sign (RFC 3986), not a space. A space is sent as %20. So '+01:00' in a date-time filter is an offset, and a name filter with '+' gives 400 by D19's pattern. | provisional | R-175 |
+| D169 | Multipart size and part limits | Only the vocabularyFile part has a size limit of its own: above 5 MB it gets 413, UploadTooLargeResponse, one issue in: body, name: vocabularyFile. A whole request above 6 MB gets 413 with the same type and no issues, whatever its parts. Any other part has no size limit of its own inside the 6 MB: an unknown part gives 400 as D52 (issue named after the part), a known text field gives 400 by its field rule (D37). The build must not let the servlet per-part limit cut non-file parts. More than 64 parts gives 400 with one issue in: body, name: body, checked before the unknown-field check. Size comes before shape (D51), so a request over 6 MB with more than 64 parts gets 413. | provisional | R-176, R-185, R-190, R-198, R-207 |
+| D170 | Upload slots in the check order | The D92 503 comes after 401, 403, 406, 415 and the 413 that the Content-Length header already shows, and before the body is read. A request refused for a slot is not read at all. | provisional | R-177 |
+| D171 | Retried writes and the base IRI | Validation is not repeated on a retry (D92). Warning locations write the namespace as declared in the file, not resolved against the base, so they do not depend on the version number. A relative namespace that resolves under the vocabulary's own content URL is the vocabulary itself and is ignored (D12), for n+1 and n+2 alike. | provisional | R-178 |
+| D172 | HEAD, OPTIONS and unknown methods on unknown paths | A method the server does not know (for example QUERY) gets 405 on every path, before the token, without Allow on an unknown path. HEAD and OPTIONS are known methods: on an unknown path they behave as any unknown path, 401 without a token and 404 with one (D67). On declared paths D126 stays. | provisional | R-179 |
+| D173 | Personal data in every log | D80 covers the logs of every container the stack ships, including the store and the proxy. The store keeps its request log but without query or update text; the proxy log has no Authorization header and no form content. | provisional | R-180 |
+| D174 | Parallel requests during the first key fetch | One fetch runs at a time. Requests that need the keys while it runs wait for it, at most its 2 s timeout (D44), and then follow its outcome: verified, 401 (D88) or 503 (D129). They do not start fetches of their own. | provisional | R-181 |
+| D175 | Third-party images under Q5 | Q5's 0 HIGH and 0 CRITICAL holds for own images and dependencies. A third-party image used unchanged (Keycloak) uses the newest patch release; a CRITICAL with a fixed version there must be fixed by upgrading. Remaining HIGH findings are listed in SECURITY-SCAN.md with a reason and do not fail Q5. | provisional | R-182 |
+| D176 | Cleanup of status-change receipts | Required: a receipt is removed once it is older than 1 hour, in the same store update as a later write to that vocabulary or by the compaction script of D156. A receipt is never read after the D71 budget. | provisional | R-183 |
+| D177 | UI texts without a decision | Texts that no decision fixes are free, as D55 says for field messages: the build lists them in ui/UI-NOTES.md and tests do not check their wording. With 0 vocabularies the list shows the empty state of D24's style and no page counter. | provisional | R-184 |
+| D178 | Answers at the front proxy | The client sees one contract, whichever layer answers: a URL that is too long gets 414, headers that are too large get 431, TRACE gets 405 with an Allow header listing the path's methods (or no Allow on an unknown path, D172); all are problem+json (D122, D158). 400 instead of 414 or 431 is a build bug. The suite tests the exact codes; the wider check of step 45 (SR-04) is withdrawn. | provisional | R-186, R-216 |
+| D179 | SIMPL-18162/AC4 (500 with details) | No fault injection. AC4 is met by the handler code with its unit tests and by the suite's D44 503 cases; the suite keeps its @wip scenario as the record. The coverage figures count AC4 as covered by unit tests. | provisional | R-188 |
+| D180 | Route after a new version | After a successful new version the UI goes to /vocabularies/<Name>/versions/<n>, the details page with that version selected (D163), and shows the D14 notification and warnings there (D113). | provisional | R-189, R-217 |
+| D181 | IRIs and literals in S1 and S2 locations | Locations are in N-Triples form: IRIs in angle brackets, the literal as D140 says. A plain literal carries no ^^xsd:string. | provisional | R-191 |
+| D182 | Names of array elements | D110's '<array>[<index>]' naming holds for every array in a JSON body: the internal search items (D68) and the external URI arrays alike. | provisional | R-192 |
+| D183 | Uploads in the load test | The load test sends writes at the D99 rate without its own concurrency control and does not retry. A D92 503 counts as an error. At 1 write per second the 4 slots per instance are not expected to fill. | provisional | R-193 |
+| D184 | Href of a search result for the latest version | A search result with latest true carries href /vocabularies/<Name>/versions/<n> of the latest version, as every version object (D26). | provisional | R-194 |
+| D185 | Items deferred to the platform | TLS in transit, encryption at rest, failed-token limiting and alerting belong to the Simpl-Open platform (gateway, ingress, storage, monitoring), not to the component. The local stack runs plain HTTP on 127.0.0.1 and on internal networks as an accepted risk. The build records each MUST rule it leaves open (OWT-A04, API-25, ARCH-17, OWT-A07, OWT-A09) as a deviation with this decision as reason. | provisional | R-195, R-221 |
+| D186 | Threat model and alert path | The build delivers THREATS.md: a short threat model (STRIDE per operation group, at most two pages) with the mitigation or the decision behind each threat. The alert path is the platform's (D185); the build only names the metrics an alert would use (D86). | provisional | R-196 |
+| D187 | MUST rules set aside by provisional decisions | The rules stay MUST. D95 and D135 stay provisional until the owners answer; until then the build records the deviation with the decision as reason, as now. | provisional | R-197 |
+| D188 | Store size for Q1 | Q1 is measured in step 70 on the store as it is then: the D99 seed plus what the suite and the build left, about 1 500 vocabularies. Every read target holds there. The list may not sort or scan every vocabulary per call: paging is done in the store with an index on the sort key, so its cost does not grow with the number of vocabularies. | provisional | R-199 |
+| D189 | Q4 text on instances | Q4's sentence 'One backend instance (D81); scale up, not out, until a store-side check exists.' is replaced in Q4 itself by 'Two or more backend instances on one store (D82, D102).' | provisional | R-200 |
+| D190 | Management port on the front network | D120 answers this: the management port may sit on the front network when no host port publishes it and the proxy never forwards /actuator. The build states both in QUALITY.md and smoke.sh checks that /actuator through the proxy gives 404. | provisional | R-201 |
+| D191 | Availability in a factory build | Accepted: QUALITY.md states 'Availability: not measured; needs production monitoring' for the 99.5 % target. Recovery (RTO, RPO, backup round trip) stays measured on every build (Q3). | provisional | R-202 |
+| D192 | Namespace ending in /versions/ | '<contentBase>/content/<Name>/versions/' with nothing after it has an empty <v>, which is not a positive integer, so it is S7 by D69 with <v> given as empty. | provisional | R-203 |
+| D193 | Compaction and store users | Accepted for this build: Fuseki 6.2.0 cannot limit /$/compact to one user, so the read and update users can start a compaction. The store is on an internal network only (D83), so only the backend can reach it. The build records this against D83. | provisional | R-204 |
+| D194 | Identical-version check by hash | Accepted: the build stores a SHA-256 of the content bytes and compares hashes; equal hashes count as equal bytes. | provisional | R-205 |
+| D195 | A form field sent twice | A single-valued form field given twice gets 400 with one issue in: body, named after the field, as D138 does for query parameters. | provisional | R-206 |
+| D196 | Sort by status on versions | D128 holds for versions too: status ascending puts ACTIVE first, -status puts DEPRECATED first; ties are broken by version descending (D23). | provisional | R-208 |
+| D197 | 401 and 403 texts | The detail of 401 and 403 is free text without token content. Tests check status, type and title only (D17). | provisional | R-209 |
+| D198 | W3C namespaces by IRI | A W3C namespace of D12 is recognised by its namespace IRI (after removing a trailing '#' or '/'), never by its prefix name. A file may bind any prefix to them. | provisional | R-210 |
+| D199 | Blank nodes in locations | A blank node is written as _:<label> with the label from the file; an anonymous blank node ([ ] or a collection) is written as [] . | provisional | R-211 |
+| D200 | Browser and server Turtle checks | Confirmed: the server check is authoritative. The browser blocks only on its own syntax errors (D13, D62). A valid Turtle file that the browser refuses is a build bug; known parser differences go in ui/UI-NOTES.md. | provisional | R-212 |
+| D201 | Store 401 or 403 | A 401 or 403 from the store stays 500 for the client and does not count for the breaker (D134). The backend logs it as an error that names the store user, never the password. | provisional | R-213 |
+| D202 | CPU and memory defaults | Defaults for the D98 variables: backend 2 CPU and 1.5 GB per instance, store 2 CPU and 2 GB, Keycloak 1 CPU and 1 GB, proxy and UI 0.5 CPU and 256 MB. Q1 and D92 are measured with these values. | provisional | R-214 |
+| D203 | Integers in the published contract | The published OpenAPI is input and the factory does not change it. The decided contract (D91) carries format int32 and the maximum on every integer, also items[].version. Fuzz runs against the published file, so fuzz-known lists D91 for integers in JSON bodies too. | provisional | R-215 |
+| D204 | Issue detail inside a 404 | The problem detail of a 404 is fixed by D41 and D66; the detail of its issue is free text (D55). Tests check the issue's in and name only. | provisional | R-218 |
+| D205 | Empty internal search array | {"items": []} gives 400 with one issue in: body, name: items (D38 requires 1 to 100 items). | provisional | R-219 |
+| D206 | Status-code order and routing tables | The order of D63, D67 and D139 stays. The build keeps one operation table derived from the OpenAPI, or a build test that fails when Spring MVC, the operation table and the proxy map disagree with the OpenAPI. | provisional | R-220 |
+| D207 | CDM points for the CDM owners | The build keeps the CDM differences as they are. The four points (DATA-10, DATA-12, DATA-14, and the old warning codes against D10) go to the CDM owners through the owner questions; D10 stays. | provisional | R-222 |
+| E8 | Test client for token expiry | The realm 'simpl' gets a public client 'vocabulary-tests-short' with the audience mapper, the password grant and an access token lifespan of 10 s. The suite gets its token, waits until it has expired and expects 401. The build profile gives its name to the suite (TOKEN_CLIENT_SHORT). | provisional | R-187 |
+
+Earlier decisions changed by these:
+
+- D76: refined by D169, non-file parts and 64 parts.
+- D110: refined by D169, 64-part issue name; D182, array names everywhere.
+- D51: refined by D170, D92 503 position.
+- D65: refined by D171, warning namespaces as declared; D181, N-Triples IRIs; D199, blank nodes.
+- D67: refined by D172, unknown methods and HEAD/OPTIONS on unknown paths.
+- D80: refined by D173, every container's log.
+- D108: refined by D174, one key fetch at a time.
+- Q5: refined by D175, third-party images listed, not counted.
+- D82: refined by D176, receipts removed after 1 hour.
+- D122: refined by D178, 414, 431, 405 with Allow at the proxy.
+- D113: refined by D180, route /vocabularies/<Name>/versions/<n>.
+- D26: refined by D184, search href of the latest version.
+- Q1: refined by D188, measured on the step 70 store, list paged in the store.
+- Q4: refined by D189, instance sentence replaced in the text.
+- Q3: refined by D191, availability not measured, stated.
+- D69: refined by D192, empty version segment.
+- D83: refined by D193, compaction open to all store users.
+- D98: refined by D202, CPU and memory defaults.
+- D91: refined by D203, fuzz list covers JSON bodies.
+- D12: refined by D198, W3C namespaces by IRI.
+- D13: refined by D200, valid file refused by the browser is a build bug.
+- E7: refined by E8, short-lived test client.
+
 ## Environment choices
 
 | Id | Topic | Choice |
@@ -464,6 +537,7 @@ Earlier decisions changed by these:
 | E5 | Tokens: audience and issuer | Tokens must carry the audience 'vocabulary-manager-be'; Keycloak adds it with an audience mapper on the clients that call the API (vocabulary-manager-ui and the test client). Tokens without it get 401. The accepted issuer is one configured URL (ISSUER_URI, default http://localhost:<KEYCLOAK_PORT>/realms/simpl); other issuers get 401. |
 | E6 | Reuse choices | From guidelines/reuse-catalogue.yaml: identity provider Keycloak (E1); RDF store Apache Jena Fuseki (E3); in production the Tier 1 gateway (Spring Cloud Gateway) does authorisation first, the build checks tokens itself (D17); secrets from environment variables locally, OpenBao in production; UI on the stack of participant-fe-components (Vue 3, PrimeVue unstyled, TailwindCSS), built here because the library is not available to the factory. Not needed: relational store, messaging (pull only, D45), object storage, connector, http-client (no outgoing calls except the realm keys). |
 | E7 | Test clients for token checks | The realm 'simpl' has a second public client 'vocabulary-tests-noaud' without the audience mapper, and a second realm 'simpl-other' with client 'vocabulary-tests' (with the mapper) and the same three test users of E1. Both allow the password grant. A token from 'vocabulary-tests-noaud' gets 401 (wrong audience); a token from realm 'simpl-other' gets 401 (wrong issuer). The build profile gives their token URLs to the suite. |
+| E8 | Test client for token expiry | The realm 'simpl' gets a public client 'vocabulary-tests-short' with the audience mapper, the password grant and an access token lifespan of 10 s. The suite gets its token, waits until it has expired and expects 401. The build profile gives its name to the suite (TOKEN_CLIENT_SHORT). |
 
 ## Questions for the spec owners, by impact
 

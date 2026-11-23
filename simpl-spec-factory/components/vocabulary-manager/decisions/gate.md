@@ -4,9 +4,9 @@
 
 | Check | Result |
 |---|---|
-| Decisions | 180 (follows the specs 13, provisional 166, withdrawn 1) |
+| Decisions | 221 (follows the specs 13, provisional 207, withdrawn 1) |
 | Blockers closed | 14 of 14 (0 only as accepted risk) |
-| Majors with a default | 201 of 201 |
+| Majors with a default | 249 of 249 |
 | Glossary terms decided | 27 of 27 |
 | Decisions citing unknown finding ids | 0 |
 
