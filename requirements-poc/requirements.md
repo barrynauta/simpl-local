@@ -53,6 +53,20 @@ A first-time reader must understand where they are, from any page.
 | 14 | Each L1 and L2 links to its **public page on the requirements site**, and each business process folder to its **public process page**. | Traceability works without a login. |
 | 15 | Under an L2, each Epic shows **one line from its story card** (*As a ..., I want to ...*), so the reader knows what it is about before opening it. | Every Epic with a story card has its line. |
 
+## Differences with Model 1
+
+For PSO's estimate, what these requirements change compared with the Model 1 plan:
+
+| Model 1 | These requirements |
+| --- | --- |
+| Flat folders per level, hierarchy in README tables | Nested folders: each item inside its parent, business process at the top (1 to 4) |
+| Items that drop out move to `zz_out_of_scope` | Items that drop out are removed; git keeps the history (5) |
+| Items from Defined onwards, all levels | Only approved Epics and user stories, each on its own status; L0 to L2 follow the requirements site (5a, 10) |
+| Jira key, summary, description, parent and children; the test repository also shows the status of every item | The same plus the level; status only as the development status of user stories (6, 16) |
+| File names with the key and the full title (test repository) | Folder names with level and key only (2) |
+| Layout not addressed | One layout for user stories and acceptance criteria (9) |
+| README index, if feasible | Start page, context line and links to the public pages (11 to 15), as priority 2 |
+
 ## Not in this scope
 
 - Tasks, bugs and tests.
@@ -64,7 +78,7 @@ A first-time reader must understand where they are, from any page.
 - **Location.** A `requirements` folder in `foundations` (Model 1), a separate repository, or inside each business process folder (as in the example below).
 - **Process steps.** Linking a detailed requirement to a process step (for example 5B.2.3 to BP05B.02) needs a field in Jira. Today it is done by hand.
 - **One text.** Jira and the requirements site have almost the same texts, with small differences. The publication should use one source.
-- **Reopened Epics.** An Epic that is reopened for correction goes back to In Preparation. Under requirement 5a, its user stories then disappear from the publication, even the ones already developed, until the Epic is approved again. Example: SIMPL-10199. Is that what we want, or should the last approved version stay published?
+- **Reopened Epics.** An Epic that is reopened for correction goes back to In Preparation (example: SIMPL-10199, with user stories already developed). Two options, to refine: (a) the Epic and its user stories disappear until the Epic is approved again, which is consistent, since the content is under correction; (b) the Epic stays with its key and title only, without its text, and its approved user stories stay under it.
 - **FOR SC TO RESPOND.** This user story status can come after PBI Defined as well. PSO to confirm where it sits in the workflow, so the story is not dropped by mistake.
 
 ## Examples
