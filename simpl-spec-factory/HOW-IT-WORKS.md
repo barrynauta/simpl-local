@@ -130,3 +130,5 @@ These are the limits as they stand today. They matter for how far the results ca
 - **A second component** through the full pipeline: Schema Manager, Catalogue or Contract Management.
 - **Answers from the owners of the specifications.** This is what would help most. The [decision list](./components/vocabulary-manager/decisions/decisions.md) ends with the open questions, sorted by impact. Every answer turns a provisional decision into a real one, or corrects it.
 - **Feedback on the approach.** What is unclear, what is missing, where the factory could be useful.
+
+The same story as slides: see [presentations](./presentations/README.md).

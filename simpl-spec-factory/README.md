@@ -6,7 +6,7 @@ Status: **run 1 done** (2026-10-27): the generated build passes 74 of 74 black-b
 
 **Engine and instance (since 17 Nov 2026).** The generic pipeline (steps 10 to 30: scripts and agent briefs) lives in its own repository, [`spec-factory`](https://github.com/barrynauta/spec-factory), at `~/src/spec-factory`. This folder is the **Simpl-Open instance**: [`project.yaml`](./project.yaml) (Simpl settings and the pinned engine commit), the [`factory`](./factory) wrapper (`./factory check_acs catalogue`, `./factory all-checks all`), the Simpl guidelines and rules, the CDM snapshot, and one folder per component under [`components/`](./components/) (the Vocabulary Manager, the first candidate, moved from the root to `components/vocabulary-manager/`). The prompts of runs 1 to 3 are kept in [`runs/run1-pipeline/`](./runs/run1-pipeline/README.md). Results of the new pipeline: [spec feedback](./spec-feedback-overview.md), [decisions compared with run 1](./decisions-overview.md).
 
-**New here?** Read [How the spec factory works](./HOW-IT-WORKS.md): the steps, the results, the possibilities and the limits, in plain words.
+**New here?** Read [How the spec factory works](./HOW-IT-WORKS.md): the steps, the results, the possibilities and the limits, in plain words. Slides: [presentations](./presentations/README.md).
 
 **Personal test project.** This is a personal experiment, for testing purposes only. It is not commissioned by, endorsed by or speaking for the European Commission, the Simpl programme or any of its contractors. **Purpose:** see how feasible spec-driven generation is, and learn which parts of the specs could be made more precise. It is not meant to show what is wrong with Simpl. Every gap found is a pointer to where the specs can be improved.
 
