@@ -9,7 +9,7 @@ No upstream Simpl-Open code is committed to this repo. Each subproject's `start.
 The [spec factory](./simpl-spec-factory/README.md) checks if specifications are good enough to build from, by letting AI agents test and build a component from them. A personal experiment, not commissioned by DG Connect or a Simpl contractor.
 
 - **General deck:** [PowerPoint](./simpl-spec-factory/presentations/spec-factory.pptx) · [PDF](./simpl-spec-factory/presentations/spec-factory.pdf)
-- **Simpl deck:** [PDF](./simpl-spec-factory/presentations/spec-factory-simpl.pdf), the method applied to Simpl-Open and the results so far
+- **Simpl deck:** [PowerPoint](./simpl-spec-factory/presentations/spec-factory-simpl.pptx) · [PDF](./simpl-spec-factory/presentations/spec-factory-simpl.pdf), the question, the answer so far, the method applied to Simpl-Open and the results
 - **In plain words:** [How the spec factory works](./simpl-spec-factory/HOW-IT-WORKS.md)
 
 ---
