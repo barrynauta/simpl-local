@@ -4,6 +4,14 @@ A monorepo of **local-evaluation stacks for Simpl-Open components**, designed to
 
 No upstream Simpl-Open code is committed to this repo. Each subproject's `start.sh` clones what it needs into a gitignored `repos/` directory.
 
+## Spec factory: presentations
+
+The [spec factory](./simpl-spec-factory/README.md) checks if specifications are good enough to build from, by letting AI agents test and build a component from them. A personal experiment, not commissioned by DG Connect or a Simpl contractor.
+
+- **General deck:** [PowerPoint](./simpl-spec-factory/presentations/spec-factory.pptx) · [PDF](./simpl-spec-factory/presentations/spec-factory.pdf)
+- **Simpl deck:** [PDF](./simpl-spec-factory/presentations/spec-factory-simpl.pdf), the method applied to Simpl-Open and the results so far
+- **In plain words:** [How the spec factory works](./simpl-spec-factory/HOW-IT-WORKS.md)
+
 ---
 
 ## Subprojects
