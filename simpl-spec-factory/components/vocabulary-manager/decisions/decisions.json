@@ -62,7 +62,7 @@
   ],
   "basis": "CDM: 'status is the vocabulary-level lifecycle status' and 'updating the vocabulary-level status or the version-level status does not create a new version'; SIMPL-18170/AC2 and SIMPL-18175/AC1 change the vocabulary status alone; BP 2B.6 'a deprecated vocabulary can still be used and referenced, but this will be discouraged'. Simplest to build and test.",
   "status": "provisional",
-  "owner_question": "Should deprecating a vocabulary also write DEPRECATED to each of its versions, and should a new version be refused for a DEPRECATED vocabulary?",
+  "owner_question": "Should deprecating a vocabulary also write DEPRECATED to each of its versions, and should a new version be refused for a DEPRECATED vocabulary? The existing build cascades (D208).",
   "affects": [
    "api",
    "ui",
@@ -696,8 +696,8 @@
    "ui",
    "tests"
   ],
-  "refined_by": "D74",
-  "later_change": "form routes added (D74)"
+  "refined_by": "D74, D210",
+  "later_change": "form routes added (D74); external vocabularies screen (D210)"
  },
  {
   "id": "D32",
@@ -1306,8 +1306,8 @@
    "ui",
    "tests"
   ],
-  "refined_by": "D72, D141",
-  "later_change": "failed status change and load texts (D72); required markers (D141)"
+  "refined_by": "D72, D141, D209",
+  "later_change": "failed status change and load texts (D72); required markers (D141); confirmation dialog on status change (D209)"
  },
  {
   "id": "D61",
@@ -4398,6 +4398,58 @@
   "owner_question": "Type the CDM attributes, use specific dates, drop the search classes or add them to the LDM, and remove syntaxError and semanticError as warning codes.",
   "affects": [
    "build"
+  ]
+ },
+ {
+  "id": "D208",
+  "topic": "Deprecation compared with the existing build",
+  "closes": [],
+  "decision": "D3 stays: deprecating a vocabulary does not write DEPRECATED to its versions; they count as effectively deprecated (D3, D36). The existing Simpl build does cascade: after a vocabulary is deprecated, every version shows DEPRECATED. The two builds differ here until the owners answer D3's question.",
+  "options": [
+   "Keep D3, versions unchanged",
+   "Cascade as the existing build"
+  ],
+  "basis": "Side-by-side click-through of the run 13 build and the existing build (23 Nov 2026). D3 follows the CDM ('updating the vocabulary-level status ... does not create a new version') and BP 2B.6; the existing build is not a specification (D1).",
+  "status": "provisional",
+  "owner_question": "The existing build cascades a vocabulary deprecation to every version; this build keeps the version statuses (D3). Which is intended?",
+  "affects": [
+   "api",
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D209",
+  "topic": "Confirmation before a status change",
+  "closes": [],
+  "decision": "A status change in the UI asks for confirmation in a dialog: title 'Update vocabulary status', text 'Do you want to deprecate '<Name>'?' or 'Do you want to activate '<Name>'?', buttons 'Confirm' and 'Cancel'. Cancel, Escape and closing the dialog change nothing and send no request. Confirm sends the PATCH; the success message of D60 follows. The dialog is a modal with focus on 'Cancel' and is reachable by keyboard (Q6).",
+  "options": [
+   "Confirmation dialog, as the existing build",
+   "No confirmation (D60)"
+  ],
+  "basis": "The existing build asks for confirmation; a status change affects every consumer of the vocabulary (BP 2B.6), so one extra click is cheap. Found in the side-by-side click-through of 23 Nov 2026.",
+  "status": "provisional",
+  "owner_question": "UX owner: confirm the dialog and its texts.",
+  "affects": [
+   "ui",
+   "tests"
+  ]
+ },
+ {
+  "id": "D210",
+  "topic": "External vocabularies screen",
+  "closes": [],
+  "decision": "The UI gets a third screen, External vocabularies: route /external-vocabularies, menu item 'External vocabularies' after 'Vocabularies'. It lists the registered external vocabularies with the columns Name, Namespace URI, Alias URIs, Description, Created by and Date created, paged as D22, in name order only (D41). A user with GA_VOCABULARY_ADMIN sees the button 'Register external vocabulary +', which opens a form at /external-vocabularies/new with Name, Namespace URI, Alias URIs (one per line), Description and Vocabulary file (rules D30, D37, D56; syntax check in the browser as D13), and per row a 'Remove' action with a confirmation dialog as D209 ('Do you want to remove '<Name>'?'). Every user with a role sees 'Download' per row. A viewer does not see register or remove (D18). Success messages: 'External vocabulary <Name> was registered.' and 'External vocabulary <Name> was removed.'; errors as D101 and D161.",
+  "options": [
+   "Screen for the D41 operations, as the existing build",
+   "API only"
+  ],
+  "basis": "The API offers register, list, download and remove (D41), but no story asks for a screen, so run 13 had none. The existing build has one. Without it a Governance Authority user cannot clear externalReferenceSkipped warnings (D42) from the UI. Found in the side-by-side click-through of 23 Nov 2026.",
+  "status": "provisional",
+  "owner_question": "Add a story for the external vocabularies screen, or confirm that registration stays API-only.",
+  "affects": [
+   "ui",
+   "tests"
   ]
  }
 ]

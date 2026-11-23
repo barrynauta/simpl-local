@@ -527,6 +527,22 @@ Earlier decisions changed by these:
 - D13: refined by D200, valid file refused by the browser is a build bug.
 - E7: refined by E8, short-lived test client.
 
+## From the comparison with the existing build (added 23 Nov 2026)
+
+The run 13 build and the existing Simpl build were clicked through side by side: create, new version, a broken file, deprecation and external vocabularies. The main flow behaves the same. Three differences became decisions.
+
+| Id | Topic | Decision | Status | Closes |
+|---|---|---|---|---|
+| D208 | Deprecation compared with the existing build | D3 stays: deprecating a vocabulary does not write DEPRECATED to its versions; they count as effectively deprecated (D3, D36). The existing Simpl build does cascade: after a vocabulary is deprecated, every version shows DEPRECATED. The two builds differ here until the owners answer D3's question. | provisional | side-by-side check |
+| D209 | Confirmation before a status change | A status change in the UI asks for confirmation in a dialog: title 'Update vocabulary status', text 'Do you want to deprecate '<Name>'?' or 'Do you want to activate '<Name>'?', buttons 'Confirm' and 'Cancel'. Cancel, Escape and closing the dialog change nothing and send no request. Confirm sends the PATCH; the success message of D60 follows. The dialog is a modal with focus on 'Cancel' and is reachable by keyboard (Q6). | provisional | side-by-side check |
+| D210 | External vocabularies screen | The UI gets a third screen, External vocabularies: route /external-vocabularies, menu item 'External vocabularies' after 'Vocabularies'. It lists the registered external vocabularies with the columns Name, Namespace URI, Alias URIs, Description, Created by and Date created, paged as D22, in name order only (D41). A user with GA_VOCABULARY_ADMIN sees the button 'Register external vocabulary +', which opens a form at /external-vocabularies/new with Name, Namespace URI, Alias URIs (one per line), Description and Vocabulary file (rules D30, D37, D56; syntax check in the browser as D13), and per row a 'Remove' action with a confirmation dialog as D209 ('Do you want to remove '<Name>'?'). Every user with a role sees 'Download' per row. A viewer does not see register or remove (D18). Success messages: 'External vocabulary <Name> was registered.' and 'External vocabulary <Name> was removed.'; errors as D101 and D161. | provisional | side-by-side check |
+
+Earlier decisions changed by these:
+
+- D60: refined by D209, confirmation dialog on status change.
+- D31: refined by D210, external vocabularies screen.
+- D3: owner question notes the existing build cascades (D208).
+
 ## Environment choices
 
 | Id | Topic | Choice |
@@ -542,7 +558,7 @@ Earlier decisions changed by these:
 ## Questions for the spec owners, by impact
 
 1. **D11 Reference to a deprecated internal version.** Confirm that a deprecated reference is a warning; SIMPL-18184/AC2 then needs rewording.
-2. **D3 Vocabulary status and version status.** Should deprecating a vocabulary also write DEPRECATED to each of its versions, and should a new version be refused for a DEPRECATED vocabulary?
+2. **D3 Vocabulary status and version status.** Should deprecating a vocabulary also write DEPRECATED to each of its versions, and should a new version be refused for a DEPRECATED vocabulary? The existing build cascades (D208).
 3. **D43 Concurrent changes to one vocabulary.** Confirm that overlapping changes to one vocabulary are serialised rather than refused, and whether production runs several backend instances.
 4. **D9 Validation steps and rules.** Give the real list of semantic and structure rules, with one example each; confirm that reporting only the first syntax error is acceptable.
 5. **D16 Roles and what they allow.** Confirm the role names and that the read-only POST searches are open to the viewer.
@@ -580,3 +596,5 @@ Earlier decisions changed by these:
 37. **D2 CDM snapshot.** Approve the CDM with the changes in D3, D10, D25 to D28, or say which ones to drop.
 38. **D14 Validation report and success feedback.** Confirm the CDM may name the validation report as a transient concept.
 39. **D26 The vocabulary version object.** Rename VocabularyMetadata to VocabularyVersion in a later API version.
+40. **D210 External vocabularies screen.** Add a story for the external vocabularies screen, or confirm that registration stays API-only.
+41. **D209 Confirmation before a status change.** UX owner: confirm the dialog and its texts.
