@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HandlerRuleVerifier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">HandlerRuleVerifier.java</span></div><h1>HandlerRuleVerifier.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+/**
+ * Default deny at start (D84, D206): the application fails to start when a Spring MVC handler has no row in the
+ * operation table (and so no role rule), or a row has no handler.
+ */
+@Component
+public class HandlerRuleVerifier {
+
+    private final RequestMappingHandlerMapping handlerMapping;
+
+<span class="fc" id="L23">    public HandlerRuleVerifier(RequestMappingHandlerMapping requestMappingHandlerMapping) {</span>
+<span class="fc" id="L24">        this.handlerMapping = requestMappingHandlerMapping;</span>
+<span class="fc" id="L25">    }</span>
+
+    /** Runs the check once the context is up. */
+    @EventListener(ApplicationStartedEvent.class)
+    public void verify() {
+<span class="fc" id="L30">        Set&lt;String&gt; handlers = handlerKeys(handlerMapping);</span>
+<span class="fc" id="L31">        Set&lt;String&gt; table = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        for (Operation operation : Operation.values()) {</span>
+<span class="fc" id="L33">            table.add(operation.method() + &quot; &quot; + operation.path());</span>
+        }
+<span class="fc" id="L35">        Set&lt;String&gt; withoutRule = new HashSet&lt;&gt;(handlers);</span>
+<span class="fc" id="L36">        withoutRule.removeAll(table);</span>
+<span class="fc" id="L37">        Set&lt;String&gt; withoutHandler = new HashSet&lt;&gt;(table);</span>
+<span class="fc" id="L38">        withoutHandler.removeAll(handlers);</span>
+<span class="pc bpc" id="L39" title="2 of 4 branches missed.">        if (!withoutRule.isEmpty() || !withoutHandler.isEmpty()) {</span>
+<span class="nc" id="L40">            throw new IllegalStateException(&quot;Handlers without a role rule: &quot; + withoutRule</span>
+                    + &quot;; operations without a handler: &quot; + withoutHandler);
+        }
+<span class="fc" id="L43">    }</span>
+
+    /** All method and path pairs of the handler mapping. */
+    public static Set&lt;String&gt; handlerKeys(RequestMappingHandlerMapping mapping) {
+<span class="fc" id="L47">        Set&lt;String&gt; keys = new HashSet&lt;&gt;();</span>
+        for (Map.Entry&lt;RequestMappingInfo, HandlerMethod&gt; entry :
+<span class="fc bfc" id="L49" title="All 2 branches covered.">                mapping.getHandlerMethods().entrySet()) {</span>
+<span class="fc" id="L50">            RequestMappingInfo info = entry.getKey();</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">            for (RequestMethod method : info.getMethodsCondition().getMethods()) {</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">                for (String pattern : info.getPatternValues()) {</span>
+<span class="fc" id="L53">                    keys.add(method.name() + &quot; &quot; + pattern);</span>
+<span class="fc" id="L54">                }</span>
+<span class="fc" id="L55">            }</span>
+<span class="fc" id="L56">        }</span>
+<span class="fc" id="L57">        return keys;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

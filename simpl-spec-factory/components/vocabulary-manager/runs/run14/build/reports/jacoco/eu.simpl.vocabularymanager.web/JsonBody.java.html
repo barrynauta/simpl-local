@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonBody.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">JsonBody.java</span></div><h1>JsonBody.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
+/**
+ * Reads a JSON request body strictly (D52, D110, D112, D150): at most 1 MB, a JSON object, no duplicate keys, no
+ * unknown properties.
+ */
+public final class JsonBody {
+
+<span class="fc" id="L24">    private static final JsonMapper STRICT = JsonMapper.builder()</span>
+<span class="fc" id="L25">            .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)</span>
+<span class="fc" id="L26">            .build();</span>
+
+    private JsonBody() {}
+
+    /**
+     * Reads the body as a JSON object.
+     *
+     * @param request the request
+     * @return the object node
+     * @throws ApiException 413 above 1 MB, 400 when the body is not one JSON object
+     */
+    public static JsonNode readObject(HttpServletRequest request) {
+        byte[] body;
+<span class="fc" id="L39">        try (InputStream input = request.getInputStream()) {</span>
+<span class="fc" id="L40">            body = input.readNBytes((int) GatekeeperFilter.JSON_LIMIT + 1);</span>
+<span class="nc" id="L41">        } catch (IOException e) {</span>
+<span class="nc" id="L42">            throw new ApiException(ProblemType.BAD_REQUEST, &quot;The request body could not be read.&quot;, List.of());</span>
+<span class="fc" id="L43">        }</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        if (body.length &gt; GatekeeperFilter.JSON_LIMIT) {</span>
+<span class="nc" id="L45">            throw new ApiException(ProblemType.PAYLOAD_TOO_LARGE, GatekeeperFilter.JSON_TOO_LARGE, List.of());</span>
+        }
+        JsonNode node;
+        try {
+<span class="fc bfc" id="L49" title="All 2 branches covered.">            node = body.length == 0 ? null : STRICT.readTree(body);</span>
+<span class="fc" id="L50">        } catch (JacksonException e) {</span>
+<span class="fc" id="L51">            throw ApiException.badRequest(&quot;body&quot;, &quot;body&quot;, &quot;The request body is not valid JSON.&quot;);</span>
+<span class="fc" id="L52">        }</span>
+<span class="fc bfc" id="L53" title="All 4 branches covered.">        if (node == null || !node.isObject()) {</span>
+<span class="fc" id="L54">            throw ApiException.badRequest(&quot;body&quot;, &quot;body&quot;, &quot;The request body must be a JSON object.&quot;);</span>
+        }
+<span class="fc" id="L56">        return node;</span>
+    }
+
+    /**
+     * Rejects properties the schema does not define, one issue per name (D52).
+     *
+     * @param node the object
+     * @param prefix issue name prefix, empty at the root, for example &quot;items[0].&quot;
+     * @param allowed the defined properties
+     */
+    public static void requireOnly(JsonNode node, String prefix, Set&lt;String&gt; allowed) {
+<span class="fc" id="L67">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L68">        Iterator&lt;String&gt; names = node.propertyNames().iterator();</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        while (names.hasNext()) {</span>
+<span class="fc" id="L70">            String name = names.next();</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (!allowed.contains(name)) {</span>
+<span class="fc" id="L72">                issues.add(Issue.schemaViolation(</span>
+                        &quot;body&quot;, prefix + name, &quot;Property '&quot; + prefix + name + &quot;' is not supported.&quot;));
+            }
+<span class="fc" id="L75">        }</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L77">            throw ApiException.badRequest(issues);</span>
+        }
+<span class="fc" id="L79">    }</span>
+
+    /** True for a JSON integer without fraction or exponent in the int32 range from min (D91, D112). */
+    public static boolean isInteger(JsonNode node, long min) {
+<span class="pc bpc" id="L83" title="3 of 8 branches missed.">        return node != null &amp;&amp; node.isIntegralNumber() &amp;&amp; node.canConvertToInt() &amp;&amp; node.asLong() &gt;= min;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiException.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.error</a> &gt; <span class="el_source">ApiException.java</span></div><h1>ApiException.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.error;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * The one base exception of the component (D104). It carries the problem type, the detail, the issues and
+ * extra response headers; {@link ProblemHandler} maps it to problem+json.
+ */
+public class ApiException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+    private static final int MAX_ISSUES = 1000;
+
+    private final ProblemType type;
+    private final String detail;
+    private final transient List&lt;Issue&gt; issues;
+    private final boolean truncated;
+    private final transient Map&lt;String, String&gt; headers;
+
+    public ApiException(ProblemType type, String detail, List&lt;Issue&gt; issues) {
+<span class="fc" id="L24">        this(type, detail, issues, Map.of(), null);</span>
+<span class="fc" id="L25">    }</span>
+
+    public ApiException(
+            ProblemType type, String detail, List&lt;Issue&gt; issues, Map&lt;String, String&gt; headers, Throwable cause) {
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        super(detail == null ? type.defaultDetail() : detail, cause);</span>
+<span class="fc" id="L30">        this.type = type;</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        this.detail = detail == null ? type.defaultDetail() : detail;</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        List&lt;Issue&gt; all = issues == null ? List.of() : issues;</span>
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">        this.truncated = all.size() &gt; MAX_ISSUES;</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        this.issues = truncated ? List.copyOf(all.subList(0, MAX_ISSUES)) : List.copyOf(all);</span>
+<span class="fc" id="L35">        this.headers = new LinkedHashMap&lt;&gt;(headers);</span>
+<span class="fc" id="L36">    }</span>
+
+    public ProblemType type() {
+<span class="fc" id="L39">        return type;</span>
+    }
+
+    public String detail() {
+<span class="fc" id="L43">        return detail;</span>
+    }
+
+    public List&lt;Issue&gt; issues() {
+<span class="fc" id="L47">        return issues;</span>
+    }
+
+    public Map&lt;String, String&gt; headers() {
+<span class="fc" id="L51">        return headers;</span>
+    }
+
+    /** Builds the response body of this exception. */
+    public Problem toProblem() {
+<span class="fc" id="L56">        return new Problem(</span>
+<span class="fc" id="L57">                type.uri(),</span>
+<span class="fc" id="L58">                type.href(),</span>
+<span class="fc" id="L59">                type.title(),</span>
+<span class="fc" id="L60">                type.status(),</span>
+                detail,
+<span class="fc" id="L62">                &quot;urn:uuid:&quot; + UUID.randomUUID(),</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">                issues.isEmpty() ? null : issues,</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">                truncated ? Boolean.TRUE : null);</span>
+    }
+
+    /** 400 with schema issues. */
+    public static ApiException badRequest(List&lt;Issue&gt; issues) {
+<span class="fc" id="L69">        return new ApiException(ProblemType.BAD_REQUEST, null, issues);</span>
+    }
+
+    /** 400 with one schema violation issue. */
+    public static ApiException badRequest(String in, String name, String detail) {
+<span class="fc" id="L74">        return badRequest(List.of(Issue.schemaViolation(in, name, detail)));</span>
+    }
+
+    /** 404 with one issue. */
+    public static ApiException notFound(String detail, String in, String name) {
+<span class="fc" id="L79">        return new ApiException(ProblemType.NOT_FOUND, detail, List.of(Issue.notFound(in, name, detail)));</span>
+    }
+
+    /** 409 with the given detail. */
+    public static ApiException conflict(String detail) {
+<span class="fc" id="L84">        return new ApiException(ProblemType.CONFLICT, detail, List.of());</span>
+    }
+
+    /** 503 with Retry-After: 5 (D44). */
+    public static ApiException unavailable(String detail, Throwable cause) {
+<span class="fc" id="L89">        return new ApiException(ProblemType.SERVICE_UNAVAILABLE, detail, List.of(), Map.of(&quot;Retry-After&quot;, &quot;5&quot;), cause);</span>
+    }
+
+    /** 500 without internal details. */
+    public static ApiException internal(Throwable cause) {
+<span class="fc" id="L94">        return new ApiException(ProblemType.INTERNAL_SERVER_ERROR, null, List.of(), Map.of(), cause);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

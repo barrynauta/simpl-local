@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Paging.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">Paging.java</span></div><h1>Paging.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.api.PageResponse;
+import java.util.List;
+
+/**
+ * Paging fields and links (D22, D59, D78, D111): every link carries page and pageSize first, then the other query
+ * parameters of the request in request order with the value as sent; only page changes.
+ */
+public final class Paging {
+
+    public static final int DEFAULT_PAGE_SIZE = 20;
+    public static final int MAX_PAGE_SIZE = 100;
+
+    private Paging() {}
+
+    /**
+     * Builds a page response.
+     *
+     * @param path the collection path relative to the API base, for example /vocabularies
+     * @param query the request query
+     * @param page the page number
+     * @param pageSize the page size
+     * @param total the total count
+     * @param items the items
+     * @param &lt;T&gt; the item type
+     * @return the page
+     */
+    public static &lt;T&gt; PageResponse&lt;T&gt; page(
+            String path, QueryParameters query, int page, int pageSize, long total, List&lt;T&gt; items) {
+<span class="fc" id="L31">        long totalPages = (total + pageSize - 1) / pageSize;</span>
+<span class="fc" id="L32">        String others = others(query);</span>
+<span class="fc" id="L33">        String self = link(path, page, pageSize, others);</span>
+<span class="fc" id="L34">        String first = link(path, 1, pageSize, others);</span>
+<span class="fc" id="L35">        String prev = null;</span>
+<span class="fc bfc" id="L36" title="All 4 branches covered.">        if (total &gt; 0 &amp;&amp; page &gt; 1) {</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            prev = link(path, page &gt; totalPages ? totalPages : page - 1, pageSize, others);</span>
+        }
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        String next = page &lt; totalPages ? link(path, page + 1L, pageSize, others) : null;</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        String last = total &gt; 0 ? link(path, totalPages, pageSize, others) : null;</span>
+<span class="fc" id="L41">        return new PageResponse&lt;&gt;(page, pageSize, total, totalPages, self, first, prev, next, last, items);</span>
+    }
+
+    /**
+     * A search result page (D38, D153): page 1, pageSize 100, no links.
+     *
+     * @param items the results
+     * @param &lt;T&gt; the item type
+     * @return the page
+     */
+    public static &lt;T&gt; PageResponse&lt;T&gt; searchPage(List&lt;T&gt; items) {
+<span class="fc" id="L52">        return new PageResponse&lt;&gt;(</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">                1, MAX_PAGE_SIZE, items.size(), items.isEmpty() ? 0 : 1, null, null, null, null, null, items);</span>
+    }
+
+    private static String others(QueryParameters query) {
+<span class="fc" id="L57">        StringBuilder text = new StringBuilder();</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        for (String name : query.names()) {</span>
+<span class="fc bfc" id="L59" title="All 4 branches covered.">            if (&quot;page&quot;.equals(name) || &quot;pageSize&quot;.equals(name)) {</span>
+<span class="fc" id="L60">                continue;</span>
+            }
+<span class="fc" id="L62">            text.append('&amp;').append(name).append('=').append(query.raw(name));</span>
+<span class="fc" id="L63">        }</span>
+<span class="fc" id="L64">        return text.toString();</span>
+    }
+
+    private static String link(String path, long page, int pageSize, String others) {
+<span class="fc" id="L68">        return path + &quot;?page=&quot; + page + &quot;&amp;pageSize=&quot; + pageSize + others;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,202 @@
+{
+  "realm": "simpl",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "bruteForceProtected": false,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "roles": {
+    "realm": [
+      {
+        "name": "GA_VOCABULARY_ADMIN",
+        "description": "Vocabulary management: read and write (D16)"
+      },
+      {
+        "name": "GA_VOCABULARY_VIEWER",
+        "description": "Vocabulary management: read only (D16)"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "vocabulary-manager-ui",
+      "name": "Vocabulary Manager UI",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "rootUrl": "http://localhost:4433",
+      "baseUrl": "/",
+      "redirectUris": [
+        "http://localhost:4433/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4433"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:4433/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience vocabulary-manager-be",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "vocabulary-manager-be",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "vocabulary-manager-be",
+      "name": "Vocabulary Manager backend (audience)",
+      "enabled": true,
+      "bearerOnly": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "vocabulary-tests",
+      "name": "vocabulary-tests",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "attributes": {},
+      "protocolMappers": [
+        {
+          "name": "audience vocabulary-manager-be",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "vocabulary-manager-be",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "vocabulary-tests-noaud",
+      "name": "vocabulary-tests-noaud",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "attributes": {},
+      "protocolMappers": []
+    },
+    {
+      "clientId": "vocabulary-tests-short",
+      "name": "vocabulary-tests-short",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "attributes": {
+        "access.token.lifespan": "10"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience vocabulary-manager-be",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "vocabulary-manager-be",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "ga-admin",
+      "enabled": true,
+      "email": "ga-admin@example.com",
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-simpl",
+        "GA_VOCABULARY_ADMIN"
+      ]
+    },
+    {
+      "username": "ga-viewer",
+      "enabled": true,
+      "email": "ga-viewer@example.com",
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "Viewer",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-simpl",
+        "GA_VOCABULARY_VIEWER"
+      ]
+    },
+    {
+      "username": "ga-norole",
+      "enabled": true,
+      "email": "ga-norole@example.com",
+      "emailVerified": true,
+      "firstName": "GA",
+      "lastName": "Norole",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Password1!",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-simpl"
+      ]
+    }
+  ]
+}

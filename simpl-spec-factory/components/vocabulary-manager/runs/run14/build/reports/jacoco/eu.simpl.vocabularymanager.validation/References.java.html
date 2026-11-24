@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>References.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">References.java</span></div><h1>References.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import eu.simpl.vocabularymanager.domain.VocabularyNames;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+import org.apache.jena.graph.Triple;
+
+/**
+ * Finds the vocabulary references of uploaded content (D12, D69, D145, D146, D171, D192, D198): each distinct
+ * declared namespace is internal, external or ignored.
+ */
+public final class References {
+
+    /** W3C core namespaces of D12, compared without a trailing '#' or '/' (D198). */
+<span class="fc" id="L19">    public static final Set&lt;String&gt; W3C_NAMESPACES = Set.of(</span>
+            &quot;http://www.w3.org/1999/02/22-rdf-syntax-ns&quot;,
+            &quot;http://www.w3.org/2000/01/rdf-schema&quot;,
+            &quot;http://www.w3.org/2002/07/owl&quot;,
+            &quot;http://www.w3.org/2001/XMLSchema&quot;,
+            &quot;http://www.w3.org/2004/02/skos/core&quot;);
+
+<span class="fc" id="L26">    private static final Pattern POSITIVE_INTEGER = Pattern.compile(&quot;^[1-9][0-9]{0,17}$&quot;);</span>
+
+    private References() {}
+
+    /**
+     * An internal reference.
+     *
+     * @param declaration the prefix declaration
+     * @param name the referenced vocabulary name
+     * @param versionText the version as written, or null for the latest version
+     * @param version the version number, or null when there is none or it is not a positive integer
+     */
+<span class="fc" id="L38">    public record Internal(</span>
+            ParsedContent.PrefixDeclaration declaration, String name, String versionText, Long version) {}
+
+    /**
+     * The references of one upload.
+     *
+     * @param internal internal references in file order
+     * @param external external namespaces to look up, in file order
+     */
+<span class="fc" id="L47">    public record Found(List&lt;Internal&gt; internal, List&lt;ParsedContent.PrefixDeclaration&gt; external) {}</span>
+
+    /**
+     * Classifies the prefix declarations.
+     *
+     * @param content the parsed content
+     * @param contentBase contentBase of E2, without trailing slash
+     * @param ownName the vocabulary being created or versioned; references to it are ignored
+     * @return the references
+     */
+    public static Found find(ParsedContent content, String contentBase, String ownName) {
+<span class="fc" id="L58">        String internalPrefix = contentBase + &quot;/content/&quot;;</span>
+<span class="fc" id="L59">        Set&lt;String&gt; seen = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L60">        Set&lt;String&gt; subjects = subjectIris(content.triples());</span>
+<span class="fc" id="L61">        List&lt;Internal&gt; internal = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L62">        List&lt;ParsedContent.PrefixDeclaration&gt; external = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        for (ParsedContent.PrefixDeclaration declaration : content.prefixes()) {</span>
+<span class="fc" id="L64">            String namespace = declaration.resolved();</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            if (!seen.add(namespace)) {</span>
+<span class="fc" id="L66">                continue;</span>
+            }
+<span class="fc" id="L68">            Internal reference = internalReference(declaration, internalPrefix);</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            if (reference != null) {</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">                if (!reference.name().equals(ownName)) {</span>
+<span class="fc" id="L71">                    internal.add(reference);</span>
+                }
+                continue;
+            }
+<span class="fc bfc" id="L75" title="All 4 branches covered.">            if (W3C_NAMESPACES.contains(normalise(namespace)) || isOwnNamespace(namespace, subjects)) {</span>
+<span class="fc" id="L76">                continue;</span>
+            }
+<span class="fc" id="L78">            external.add(declaration);</span>
+<span class="fc" id="L79">        }</span>
+<span class="fc" id="L80">        return new Found(internal, external);</span>
+    }
+
+    /** Removes one trailing '#' or '/' for comparisons (D30, D73). */
+    public static String normalise(String uri) {
+<span class="fc bfc" id="L85" title="All 4 branches covered.">        if (uri.endsWith(&quot;#&quot;) || uri.endsWith(&quot;/&quot;)) {</span>
+<span class="fc" id="L86">            return uri.substring(0, uri.length() - 1);</span>
+        }
+<span class="fc" id="L88">        return uri;</span>
+    }
+
+    private static Internal internalReference(ParsedContent.PrefixDeclaration declaration, String internalPrefix) {
+<span class="fc" id="L92">        String namespace = declaration.resolved();</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (!namespace.startsWith(internalPrefix)) {</span>
+<span class="fc" id="L94">            return null;</span>
+        }
+<span class="fc" id="L96">        String rest = namespace.substring(internalPrefix.length());</span>
+<span class="fc" id="L97">        int end = 0;</span>
+<span class="pc bpc" id="L98" title="1 of 6 branches missed.">        while (end &lt; rest.length() &amp;&amp; Character.isLetterOrDigit(rest.charAt(end)) &amp;&amp; rest.charAt(end) &lt; 128) {</span>
+<span class="fc" id="L99">            end++;</span>
+        }
+<span class="fc" id="L101">        String name = rest.substring(0, end);</span>
+<span class="fc" id="L102">        String after = rest.substring(end);</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        if (!VocabularyNames.isValid(name)) {</span>
+<span class="fc" id="L104">            return null;</span>
+        }
+<span class="fc bfc" id="L106" title="All 6 branches covered.">        if (!after.isEmpty() &amp;&amp; !after.startsWith(&quot;#&quot;) &amp;&amp; !after.startsWith(&quot;/&quot;)) {</span>
+<span class="fc" id="L107">            return null;</span>
+        }
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (!after.startsWith(&quot;/versions/&quot;)) {</span>
+<span class="fc" id="L110">            return new Internal(declaration, name, null, null);</span>
+        }
+<span class="fc" id="L112">        String tail = after.substring(&quot;/versions/&quot;.length());</span>
+<span class="fc" id="L113">        int stop = 0;</span>
+<span class="fc bfc" id="L114" title="All 6 branches covered.">        while (stop &lt; tail.length() &amp;&amp; tail.charAt(stop) != '#' &amp;&amp; tail.charAt(stop) != '/') {</span>
+<span class="fc" id="L115">            stop++;</span>
+        }
+<span class="fc" id="L117">        String versionText = tail.substring(0, stop);</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        Long version = POSITIVE_INTEGER.matcher(versionText).matches() ? Long.valueOf(versionText) : null;</span>
+<span class="fc" id="L119">        return new Internal(declaration, name, versionText, version);</span>
+    }
+
+    private static boolean isOwnNamespace(String namespace, Set&lt;String&gt; subjects) {
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        for (String subject : subjects) {</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">            if (subject.startsWith(namespace)) {</span>
+<span class="fc" id="L125">                return true;</span>
+            }
+<span class="fc" id="L127">        }</span>
+<span class="fc" id="L128">        return false;</span>
+    }
+
+    private static Set&lt;String&gt; subjectIris(List&lt;Triple&gt; triples) {
+<span class="fc" id="L132">        Set&lt;String&gt; subjects = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        for (Triple triple : triples) {</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">            if (triple.getSubject().isURI()) {</span>
+<span class="fc" id="L135">                subjects.add(triple.getSubject().getURI());</span>
+            }
+<span class="fc" id="L137">        }</span>
+<span class="fc" id="L138">        return subjects;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

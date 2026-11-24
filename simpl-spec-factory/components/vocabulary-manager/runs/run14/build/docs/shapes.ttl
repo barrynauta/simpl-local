@@ -1,0 +1,58 @@
+# Physical model of the RDF store as SHACL shapes (D87). The backend's own test ShaclStoreTest validates the
+# stored data of every named graph against these shapes.
+#   urn:simpl:vm:graph:meta                      vocabularies, versions, external vocabularies (metadata)
+#   urn:simpl:vm:graph:content:<Name>:v<n>       content of one vocabulary version
+#   urn:simpl:vm:graph:external-content:<Name>   content of one external vocabulary
+#   urn:simpl:vm:graph:receipts                  receipts of conditional writes (D82, D176)
+PREFIX sh:  <http://www.w3.org/ns/shacl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX vm:  <https://w3id.org/simpl/vocabulary-manager#>
+
+vm:InternalVocabularyShape a sh:NodeShape ;
+  sh:targetClass vm:InternalVocabulary ;
+  sh:property [ sh:path vm:vocabularyName ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+                sh:pattern "^[A-Z][a-zA-Z0-9]*$" ; sh:minLength 3 ; sh:maxLength 64 ] ;
+  sh:property [ sh:path vm:nameKey ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:status ; sh:in ( "ACTIVE" "DEPRECATED" ) ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:latestVersion ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:latestDescription ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ; sh:maxLength 1000 ] ;
+  sh:property [ sh:path vm:createdBy ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:creationDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:lastUpdateDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+vm:InternalVocabularyVersionShape a sh:NodeShape ;
+  sh:targetClass vm:InternalVocabularyVersion ;
+  sh:property [ sh:path vm:ofVocabulary ; sh:class vm:InternalVocabulary ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:version ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:status ; sh:in ( "ACTIVE" "DEPRECATED" ) ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:description ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ; sh:maxLength 1000 ] ;
+  sh:property [ sh:path vm:changelog ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ; sh:maxLength 1000 ] ;
+  sh:property [ sh:path vm:createdBy ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:creationDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:lastUpdateDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:contentSha256 ; sh:datatype xsd:string ; sh:pattern "^[0-9a-f]{64}$" ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:contentGraph ; sh:nodeKind sh:IRI ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:contentLength ; sh:datatype xsd:integer ; sh:minInclusive 0 ; sh:maxInclusive 5242880 ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+vm:ExternalVocabularyShape a sh:NodeShape ;
+  sh:targetClass vm:ExternalVocabulary ;
+  sh:property [ sh:path vm:externalName ; sh:datatype xsd:string ; sh:pattern "^[A-Z][a-zA-Z0-9]*$" ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:externalNameKey ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:namespaceUri ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:aliasUris ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:lookupKey ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 21 ] ;
+  sh:property [ sh:path vm:sourceUri ; sh:datatype xsd:string ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:description ; sh:datatype xsd:string ; sh:maxCount 1 ; sh:maxLength 1000 ] ;
+  sh:property [ sh:path vm:createdBy ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path vm:creationDate ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+# Content graphs: exactly one subject with one base64 content literal.
+vm:ContentShape a sh:NodeShape ;
+  sh:targetSubjectsOf vm:rdfContent ;
+  sh:property [ sh:path vm:rdfContent ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ;
+                sh:pattern "^[A-Za-z0-9+/]*={0,2}$" ] .
+
+# Receipt graph.
+vm:ReceiptShape a sh:NodeShape ;
+  sh:targetSubjectsOf vm:at ;
+  sh:property [ sh:path vm:at ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:maxCount 1 ] .

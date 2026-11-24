@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">VocabularyRepository.java</span></div><h1>VocabularyRepository.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSetRewindable;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.riot.out.NodeFmtLib;
+import org.springframework.stereotype.Repository;
+
+/**
+ * Store access for vocabularies and vocabulary versions. Every list query runs filter, order, LIMIT and OFFSET in
+ * the store (D85). Every write is one SPARQL update request, which is one store transaction (D8, D43), and is
+ * conditional (D82): its first operation writes a receipt only when the state read before is still current, and
+ * every further operation runs only when that receipt exists. The caller asks for the receipt afterwards.
+ */
+@Repository
+public class VocabularyRepository {
+
+    /** Maximum rows of the bounded lookups that a decision fixes (D38, Q5). */
+    private static final int LOOKUP_LIMIT = 20_000;
+
+<span class="fc" id="L35">    private static final String VOCABULARY_PATTERN = &quot;&quot;&quot;</span>
+            GRAPH &lt;%s&gt; {
+              ?voc a vm:InternalVocabulary ; vm:vocabularyName ?name ; vm:nameKey ?key ; vm:status ?status ;
+                   vm:latestVersion ?latest ; vm:latestDescription ?desc ; vm:createdBy ?createdBy ;
+                   vm:creationDate ?created ; vm:lastUpdateDate ?updated .
+            }
+<span class="fc" id="L41">            &quot;&quot;&quot;.formatted(Sparql.META_GRAPH);</span>
+
+<span class="fc" id="L43">    private static final String VERSION_PATTERN = &quot;&quot;&quot;</span>
+            GRAPH &lt;%s&gt; {
+              ?ver vm:ofVocabulary ?voc ; vm:version ?n ; vm:status ?vstatus ; vm:description ?vdesc ;
+                   vm:changelog ?changelog ; vm:createdBy ?vcreatedBy ; vm:creationDate ?vcreated ;
+                   vm:lastUpdateDate ?vupdated ; vm:contentSha256 ?hash .
+            }
+<span class="fc" id="L49">            &quot;&quot;&quot;.formatted(Sparql.META_GRAPH);</span>
+
+    private final StoreClient store;
+
+<span class="fc" id="L53">    public VocabularyRepository(StoreClient store) {</span>
+<span class="fc" id="L54">        this.store = store;</span>
+<span class="fc" id="L55">    }</span>
+
+    /**
+     * Filters of the vocabulary list (D19, D20). Null fields do not filter.
+     *
+     * @param nameContains lower-case text the name must contain
+     * @param status vocabulary status
+     * @param createdFrom inclusive lower bound of the creation date
+     * @param createdTo exclusive upper bound of the creation date
+     * @param updatedFrom inclusive lower bound of the last update date
+     * @param updatedTo exclusive upper bound of the last update date
+     */
+<span class="fc" id="L67">    public record ListFilter(</span>
+            String nameContains,
+            VocabularyStatus status,
+            Instant createdFrom,
+            Instant createdTo,
+            Instant updatedFrom,
+            Instant updatedTo) {}
+
+    /** Finds a vocabulary by its exact name (D54). */
+    public Optional&lt;Vocabulary&gt; findVocabulary(String name) {
+<span class="fc" id="L77">        SparqlTemplate pss = Sparql.command(&quot;SELECT ?name ?status ?latest ?desc ?createdBy ?created ?updated WHERE {\n&quot;</span>
+                + VOCABULARY_PATTERN + &quot;} LIMIT 1&quot;);
+<span class="fc" id="L79">        pss.setIri(&quot;voc&quot;, Sparql.vocabularyIri(name));</span>
+<span class="fc" id="L80">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        return rows.hasNext() ? Optional.of(toVocabulary(rows.next())) : Optional.empty();</span>
+    }
+
+    /** True when a vocabulary with this name exists, compared case-insensitively (D37). */
+    public boolean nameTaken(String nameKey) {
+<span class="fc" id="L86">        SparqlTemplate pss = Sparql.command(&quot;ASK { GRAPH &lt;&quot; + Sparql.META_GRAPH + &quot;&gt; { ?voc vm:nameKey ?nameKey } }&quot;);</span>
+<span class="fc" id="L87">        pss.setLiteral(&quot;nameKey&quot;, nameKey);</span>
+<span class="fc" id="L88">        return store.ask(pss.toString());</span>
+    }
+
+    /** Counts the vocabularies that match the filter. */
+    public long count(ListFilter filter) {
+<span class="fc" id="L93">        SparqlTemplate pss = Sparql.command(</span>
+<span class="fc" id="L94">                &quot;SELECT (COUNT(?voc) AS ?total) WHERE {\n&quot; + VOCABULARY_PATTERN + filters(filter) + &quot;} LIMIT 1&quot;);</span>
+<span class="fc" id="L95">        bindFilters(pss, filter);</span>
+<span class="fc" id="L96">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">        return rows.hasNext() ? Sparql.number(rows.next(), &quot;total&quot;) : 0;</span>
+    }
+
+    /**
+     * Lists one page of vocabularies.
+     *
+     * @param filter the filters
+     * @param orderBy the ORDER BY clause, from a fixed set
+     * @param offset rows to skip
+     * @param limit rows to return, at most 100
+     * @return the vocabularies
+     */
+    public List&lt;Vocabulary&gt; list(ListFilter filter, String orderBy, long offset, int limit) {
+<span class="fc" id="L110">        SparqlTemplate pss = Sparql.command(&quot;SELECT ?name ?status ?latest ?desc ?createdBy ?created ?updated WHERE {\n&quot;</span>
+<span class="fc" id="L111">                + VOCABULARY_PATTERN + filters(filter) + &quot;} ORDER BY &quot; + orderBy + &quot; LIMIT &quot; + limit</span>
+                + &quot; OFFSET &quot; + offset);
+<span class="fc" id="L113">        bindFilters(pss, filter);</span>
+<span class="fc" id="L114">        List&lt;Vocabulary&gt; result = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L115">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">        while (rows.hasNext()) {</span>
+<span class="fc" id="L117">            result.add(toVocabulary(rows.next()));</span>
+        }
+<span class="fc" id="L119">        return result;</span>
+    }
+
+    /** Finds one version. */
+    public Optional&lt;VocabularyVersion&gt; findVersion(String name, long version) {
+<span class="fc" id="L124">        SparqlTemplate pss =</span>
+<span class="fc" id="L125">                Sparql.command(&quot;SELECT ?n ?vstatus ?vdesc ?changelog ?vcreatedBy ?vcreated ?vupdated ?hash WHERE {\n&quot;</span>
+                        + VERSION_PATTERN + &quot;} LIMIT 1&quot;);
+<span class="fc" id="L127">        pss.setIri(&quot;ver&quot;, Sparql.versionIri(name, version));</span>
+<span class="fc" id="L128">        pss.setIri(&quot;voc&quot;, Sparql.vocabularyIri(name));</span>
+<span class="fc" id="L129">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        return rows.hasNext() ? Optional.of(toVersion(name, rows.next())) : Optional.empty();</span>
+    }
+
+    /**
+     * Lists one page of versions of a vocabulary.
+     *
+     * @param name the vocabulary name
+     * @param orderBy the ORDER BY clause, from a fixed set
+     * @param offset rows to skip
+     * @param limit rows to return, at most 100
+     * @return the versions
+     */
+    public List&lt;VocabularyVersion&gt; listVersions(String name, String orderBy, long offset, int limit) {
+<span class="fc" id="L143">        SparqlTemplate pss =</span>
+<span class="fc" id="L144">                Sparql.command(&quot;SELECT ?n ?vstatus ?vdesc ?changelog ?vcreatedBy ?vcreated ?vupdated ?hash WHERE {\n&quot;</span>
+                        + VERSION_PATTERN + &quot;} ORDER BY &quot; + orderBy + &quot; LIMIT &quot; + limit + &quot; OFFSET &quot; + offset);
+<span class="fc" id="L146">        pss.setIri(&quot;voc&quot;, Sparql.vocabularyIri(name));</span>
+<span class="fc" id="L147">        List&lt;VocabularyVersion&gt; result = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L148">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">        while (rows.hasNext()) {</span>
+<span class="fc" id="L150">            result.add(toVersion(name, rows.next()));</span>
+        }
+<span class="fc" id="L152">        return result;</span>
+    }
+
+    /** Reads the stored content bytes of one version (D29, D106). */
+    public Optional&lt;byte[]&gt; content(String name, long version) {
+<span class="fc" id="L157">        SparqlTemplate pss =</span>
+<span class="fc" id="L158">                Sparql.command(&quot;SELECT ?content WHERE { GRAPH ?graph { ?ver vm:rdfContent ?content } } LIMIT 1&quot;);</span>
+<span class="fc" id="L159">        pss.setIri(&quot;graph&quot;, Sparql.contentGraph(name, version));</span>
+<span class="fc" id="L160">        pss.setIri(&quot;ver&quot;, Sparql.versionIri(name, version));</span>
+<span class="fc" id="L161">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">        if (!rows.hasNext()) {</span>
+<span class="nc" id="L163">            return Optional.empty();</span>
+        }
+<span class="fc" id="L165">        return Optional.of(Base64.getDecoder().decode(Sparql.string(rows.next(), &quot;content&quot;)));</span>
+    }
+
+    /**
+     * A row of the bounded lookup used by the search (D38) and by the reference check (D12, Q5).
+     *
+     * @param name vocabulary name
+     * @param vocabularyStatus vocabulary status
+     * @param latestVersion latest version number
+     * @param version a version number, or -1 when the vocabulary has no matching version
+     * @param versionStatus that version's status, or null when there is no version row
+     */
+<span class="fc" id="L177">    public record VersionRow(</span>
+            String name,
+            VocabularyStatus vocabularyStatus,
+            long latestVersion,
+            long version,
+            VocabularyStatus versionStatus) {}
+
+    /**
+     * One query for many names: each vocabulary with its latest version, the requested versions and its ACTIVE
+     * versions. External lookup keys that are registered come back in {@code registeredKeys}.
+     *
+     * @param names vocabulary names
+     * @param versions version numbers of interest (any vocabulary)
+     * @param externalKeys normalised external namespace keys to look up, may be empty
+     * @return the rows and the registered keys
+     */
+    public Lookup lookup(Collection&lt;String&gt; names, Collection&lt;Long&gt; versions, Collection&lt;String&gt; externalKeys) {
+<span class="fc bfc" id="L194" title="All 4 branches covered.">        if (names.isEmpty() &amp;&amp; externalKeys.isEmpty()) {</span>
+<span class="fc" id="L195">            return new Lookup(List.of(), List.of());</span>
+        }
+<span class="fc" id="L197">        List&lt;String&gt; branches = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        if (!names.isEmpty()) {</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">            String versionFilter = versions.isEmpty()</span>
+<span class="fc" id="L200">                    ? &quot;&quot;</span>
+<span class="fc" id="L201">                    : &quot; || ?n IN (&quot; + versions.stream().map(String::valueOf).collect(Collectors.joining(&quot;, &quot;)) + &quot;)&quot;;</span>
+<span class="fc" id="L202">            branches.add(&quot;{ VALUES ?name { &quot; + values(names) + &quot; } GRAPH &lt;&quot; + Sparql.META_GRAPH + &quot;&gt; {&quot;</span>
+                    + &quot; ?voc vm:vocabularyName ?name ; vm:status ?status ; vm:latestVersion ?latest .&quot;
+                    + &quot; OPTIONAL { ?ver vm:ofVocabulary ?voc ; vm:version ?n ; vm:status ?vstatus .&quot;
+                    + &quot; FILTER(?n = ?latest || ?vstatus = \&quot;ACTIVE\&quot;&quot; + versionFilter + &quot;) } } }&quot;);
+        }
+<span class="fc bfc" id="L207" title="All 2 branches covered.">        if (!externalKeys.isEmpty()) {</span>
+<span class="fc" id="L208">            branches.add(&quot;{ VALUES ?key { &quot; + values(externalKeys) + &quot; } GRAPH &lt;&quot; + Sparql.META_GRAPH + &quot;&gt; {&quot;</span>
+                    + &quot; ?ext vm:lookupKey ?key } }&quot;);
+        }
+<span class="fc" id="L211">        String query = Sparql.PREFIXES + &quot;SELECT ?name ?status ?latest ?n ?vstatus ?key WHERE {\n&quot;</span>
+<span class="fc" id="L212">                + String.join(&quot;\nUNION\n&quot;, branches) + &quot;\n} LIMIT &quot; + LOOKUP_LIMIT;</span>
+<span class="fc" id="L213">        List&lt;VersionRow&gt; rows = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L214">        List&lt;String&gt; keys = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L215">        ResultSetRewindable results = store.select(query);</span>
+<span class="fc bfc" id="L216" title="All 2 branches covered.">        while (results.hasNext()) {</span>
+<span class="fc" id="L217">            QuerySolution row = results.next();</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">            if (row.contains(&quot;key&quot;)) {</span>
+<span class="fc" id="L219">                keys.add(Sparql.string(row, &quot;key&quot;));</span>
+<span class="fc" id="L220">                continue;</span>
+            }
+<span class="fc" id="L222">            RDFNode n = row.get(&quot;n&quot;);</span>
+<span class="fc" id="L223">            rows.add(new VersionRow(</span>
+<span class="fc" id="L224">                    Sparql.string(row, &quot;name&quot;),</span>
+<span class="fc" id="L225">                    VocabularyStatus.valueOf(Sparql.string(row, &quot;status&quot;)),</span>
+<span class="fc" id="L226">                    Sparql.number(row, &quot;latest&quot;),</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">                    n == null ? -1 : n.asLiteral().getLong(),</span>
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">                    n == null ? null : VocabularyStatus.valueOf(Sparql.string(row, &quot;vstatus&quot;))));</span>
+<span class="fc" id="L229">        }</span>
+<span class="fc" id="L230">        return new Lookup(rows, keys);</span>
+    }
+
+    /**
+     * Result of {@link #lookup}.
+     *
+     * @param rows version rows
+     * @param registeredKeys external keys that are registered
+     */
+<span class="fc" id="L239">    public record Lookup(List&lt;VersionRow&gt; rows, List&lt;String&gt; registeredKeys) {}</span>
+
+    /**
+     * Creates a vocabulary with version 1, only when no vocabulary has the same name case-insensitively.
+     *
+     * @return true when this request stored it
+     */
+    public boolean insertVocabulary(Vocabulary vocabulary, VocabularyVersion version, byte[] content) {
+<span class="fc" id="L247">        String receipt = Sparql.receiptIri(UUID.randomUUID().toString());</span>
+<span class="fc" id="L248">        SparqlTemplate pss = Sparql.command(&quot;&quot;&quot;</span>
+                INSERT { GRAPH &lt;%1$s&gt; { ?receipt vm:at ?now } }
+                WHERE { FILTER NOT EXISTS { GRAPH &lt;%2$s&gt; { ?other vm:nameKey ?nameKey } } } ;
+                INSERT {
+                  GRAPH ?contentGraph { ?ver vm:rdfContent ?content }
+                  GRAPH &lt;%2$s&gt; {
+                    ?voc a vm:InternalVocabulary ; vm:vocabularyName ?name ; vm:nameKey ?nameKey ; vm:status ?status ;
+                         vm:latestVersion ?n ; vm:latestDescription ?description ; vm:createdBy ?createdBy ;
+                         vm:creationDate ?now ; vm:lastUpdateDate ?now .
+                    ?ver a vm:InternalVocabularyVersion ; vm:ofVocabulary ?voc ; vm:version ?n ; vm:status ?status ;
+                         vm:description ?description ; vm:changelog ?changelog ; vm:createdBy ?createdBy ;
+                         vm:creationDate ?now ; vm:lastUpdateDate ?now ; vm:contentSha256 ?hash ;
+                         vm:contentGraph ?contentGraph ; vm:contentLength ?length .
+                  }
+                }
+                WHERE { GRAPH &lt;%1$s&gt; { ?receipt vm:at ?anyTime } } ;
+<span class="fc" id="L264">                &quot;&quot;&quot;.formatted(Sparql.RECEIPT_GRAPH, Sparql.META_GRAPH) + cleanupReceipts());</span>
+<span class="fc" id="L265">        pss.setIri(&quot;receipt&quot;, receipt);</span>
+<span class="fc" id="L266">        pss.setIri(&quot;voc&quot;, Sparql.vocabularyIri(vocabulary.name()));</span>
+<span class="fc" id="L267">        pss.setIri(&quot;ver&quot;, Sparql.versionIri(vocabulary.name(), 1));</span>
+<span class="fc" id="L268">        pss.setIri(&quot;contentGraph&quot;, Sparql.contentGraph(vocabulary.name(), 1));</span>
+<span class="fc" id="L269">        pss.setLiteral(&quot;name&quot;, vocabulary.name());</span>
+<span class="fc" id="L270">        pss.setLiteral(&quot;nameKey&quot;, vocabulary.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L271">        pss.setLiteral(&quot;status&quot;, VocabularyStatus.ACTIVE.name());</span>
+<span class="fc" id="L272">        pss.setLiteral(&quot;n&quot;, Sparql.integer(1));</span>
+<span class="fc" id="L273">        pss.setLiteral(&quot;description&quot;, version.description());</span>
+<span class="fc" id="L274">        pss.setLiteral(&quot;changelog&quot;, version.changelog());</span>
+<span class="fc" id="L275">        pss.setLiteral(&quot;createdBy&quot;, version.createdBy());</span>
+<span class="fc" id="L276">        pss.setLiteral(&quot;hash&quot;, version.contentSha256());</span>
+<span class="fc" id="L277">        pss.setLiteral(&quot;length&quot;, Sparql.integer(content.length));</span>
+<span class="fc" id="L278">        bindTimes(pss, version.creationDate());</span>
+<span class="fc" id="L279">        pss.setLiteral(&quot;content&quot;, Base64.getEncoder().encodeToString(content));</span>
+<span class="fc" id="L280">        store.update(pss.toString());</span>
+<span class="fc" id="L281">        return receiptExists(receipt);</span>
+    }
+
+    /**
+     * Stores a new version when the latest version is still {@code expectedLatest}; deprecates every older ACTIVE
+     * version in the same transaction (D4).
+     *
+     * @return true when this request stored it
+     */
+    public boolean insertVersion(String name, long expectedLatest, VocabularyVersion version, byte[] content) {
+<span class="fc" id="L291">        String receipt = Sparql.receiptIri(UUID.randomUUID().toString());</span>
+<span class="fc" id="L292">        SparqlTemplate pss = Sparql.command(&quot;&quot;&quot;</span>
+                INSERT { GRAPH &lt;%1$s&gt; { ?receipt vm:at ?now } }
+                WHERE { GRAPH &lt;%2$s&gt; { ?voc vm:latestVersion ?current } FILTER(?current = ?expected) } ;
+                INSERT {
+                  GRAPH ?contentGraph { ?ver vm:rdfContent ?content }
+                  GRAPH &lt;%2$s&gt; {
+                    ?ver a vm:InternalVocabularyVersion ; vm:ofVocabulary ?voc ; vm:version ?n ; vm:status &quot;ACTIVE&quot; ;
+                         vm:description ?description ; vm:changelog ?changelog ; vm:createdBy ?createdBy ;
+                         vm:creationDate ?now ; vm:lastUpdateDate ?now ; vm:contentSha256 ?hash ;
+                         vm:contentGraph ?contentGraph ; vm:contentLength ?length .
+                  }
+                }
+                WHERE { GRAPH &lt;%1$s&gt; { ?receipt vm:at ?anyTime } } ;
+                DELETE { GRAPH &lt;%2$s&gt; { ?older vm:status &quot;ACTIVE&quot; ; vm:lastUpdateDate ?olderUpdated } }
+                INSERT { GRAPH &lt;%2$s&gt; { ?older vm:status &quot;DEPRECATED&quot; ; vm:lastUpdateDate ?now } }
+                WHERE {
+                  GRAPH &lt;%1$s&gt; { ?receipt vm:at ?anyTime }
+                  GRAPH &lt;%2$s&gt; { ?older vm:ofVocabulary ?voc ; vm:status &quot;ACTIVE&quot; ; vm:version ?olderNumber ;
+                                        vm:lastUpdateDate ?olderUpdated . FILTER(?olderNumber &lt; ?n) }
+                } ;
+                DELETE { GRAPH &lt;%2$s&gt; { ?voc vm:latestVersion ?oldLatest ; vm:latestDescription ?oldDescription ;
+                                             vm:lastUpdateDate ?oldUpdated } }
+                INSERT { GRAPH &lt;%2$s&gt; { ?voc vm:latestVersion ?n ; vm:latestDescription ?description ;
+                                             vm:lastUpdateDate ?now } }
+                WHERE {
+                  GRAPH &lt;%1$s&gt; { ?receipt vm:at ?anyTime }
+                  GRAPH &lt;%2$s&gt; { ?voc vm:latestVersion ?oldLatest ; vm:latestDescription ?oldDescription ;
+                                      vm:lastUpdateDate ?oldUpdated }
+                } ;
+<span class="fc" id="L321">                &quot;&quot;&quot;.formatted(Sparql.RECEIPT_GRAPH, Sparql.META_GRAPH) + cleanupReceipts());</span>
+<span class="fc" id="L322">        pss.setIri(&quot;receipt&quot;, receipt);</span>
+<span class="fc" id="L323">        pss.setIri(&quot;voc&quot;, Sparql.vocabularyIri(name));</span>
+<span class="fc" id="L324">        pss.setIri(&quot;ver&quot;, Sparql.versionIri(name, version.version()));</span>
+<span class="fc" id="L325">        pss.setIri(&quot;contentGraph&quot;, Sparql.contentGraph(name, version.version()));</span>
+<span class="fc" id="L326">        pss.setLiteral(&quot;expected&quot;, Sparql.integer(expectedLatest));</span>
+<span class="fc" id="L327">        pss.setLiteral(&quot;n&quot;, Sparql.integer(version.version()));</span>
+<span class="fc" id="L328">        pss.setLiteral(&quot;description&quot;, version.description());</span>
+<span class="fc" id="L329">        pss.setLiteral(&quot;changelog&quot;, version.changelog());</span>
+<span class="fc" id="L330">        pss.setLiteral(&quot;createdBy&quot;, version.createdBy());</span>
+<span class="fc" id="L331">        pss.setLiteral(&quot;hash&quot;, version.contentSha256());</span>
+<span class="fc" id="L332">        pss.setLiteral(&quot;length&quot;, Sparql.integer(content.length));</span>
+<span class="fc" id="L333">        bindTimes(pss, version.creationDate());</span>
+<span class="fc" id="L334">        pss.setLiteral(&quot;content&quot;, Base64.getEncoder().encodeToString(content));</span>
+<span class="fc" id="L335">        store.update(pss.toString());</span>
+<span class="fc" id="L336">        return receiptExists(receipt);</span>
+    }
+
+    /**
+     * Sets the vocabulary status when it is still {@code from} (D4, D43).
+     *
+     * @return true when this request changed it
+     */
+    public boolean updateVocabularyStatus(String name, VocabularyStatus from, VocabularyStatus to, Instant now) {
+<span class="fc" id="L345">        String receipt = Sparql.receiptIri(UUID.randomUUID().toString());</span>
+<span class="fc" id="L346">        SparqlTemplate pss = Sparql.command(&quot;&quot;&quot;</span>
+                INSERT { GRAPH &lt;%1$s&gt; { ?receipt vm:at ?now } }
+                WHERE { GRAPH &lt;%2$s&gt; { ?voc vm:status ?from } } ;
+                DELETE { GRAPH &lt;%2$s&gt; { ?voc vm:status ?oldStatus ; vm:lastUpdateDate ?oldUpdated } }
+                INSERT { GRAPH &lt;%2$s&gt; { ?voc vm:status ?to ; vm:lastUpdateDate ?now } }
+                WHERE {
+                  GRAPH &lt;%1$s&gt; { ?receipt vm:at ?anyTime }
+                  GRAPH &lt;%2$s&gt; { ?voc vm:status ?oldStatus ; vm:lastUpdateDate ?oldUpdated }
+                } ;
+<span class="fc" id="L355">                &quot;&quot;&quot;.formatted(Sparql.RECEIPT_GRAPH, Sparql.META_GRAPH) + cleanupReceipts());</span>
+<span class="fc" id="L356">        pss.setIri(&quot;receipt&quot;, receipt);</span>
+<span class="fc" id="L357">        pss.setIri(&quot;voc&quot;, Sparql.vocabularyIri(name));</span>
+<span class="fc" id="L358">        pss.setLiteral(&quot;from&quot;, from.name());</span>
+<span class="fc" id="L359">        pss.setLiteral(&quot;to&quot;, to.name());</span>
+<span class="fc" id="L360">        bindTimes(pss, now);</span>
+<span class="fc" id="L361">        store.update(pss.toString());</span>
+<span class="fc" id="L362">        return receiptExists(receipt);</span>
+    }
+
+    /**
+     * Sets a version status when it is still {@code from}; also sets the last update date of the version and of
+     * the vocabulary (D160).
+     *
+     * @return true when this request changed it
+     */
+    public boolean updateVersionStatus(
+            String name, long version, VocabularyStatus from, VocabularyStatus to, Instant now) {
+<span class="fc" id="L373">        String receipt = Sparql.receiptIri(UUID.randomUUID().toString());</span>
+<span class="fc" id="L374">        SparqlTemplate pss = Sparql.command(&quot;&quot;&quot;</span>
+                INSERT { GRAPH &lt;%1$s&gt; { ?receipt vm:at ?now } }
+                WHERE { GRAPH &lt;%2$s&gt; { ?ver vm:status ?from } } ;
+                DELETE { GRAPH &lt;%2$s&gt; { ?ver vm:status ?oldStatus ; vm:lastUpdateDate ?oldUpdated .
+                                        ?voc vm:lastUpdateDate ?oldVocUpdated } }
+                INSERT { GRAPH &lt;%2$s&gt; { ?ver vm:status ?to ; vm:lastUpdateDate ?now . ?voc vm:lastUpdateDate ?now } }
+                WHERE {
+                  GRAPH &lt;%1$s&gt; { ?receipt vm:at ?anyTime }
+                  GRAPH &lt;%2$s&gt; { ?ver vm:status ?oldStatus ; vm:lastUpdateDate ?oldUpdated .
+                                 ?voc vm:lastUpdateDate ?oldVocUpdated }
+                } ;
+<span class="fc" id="L385">                &quot;&quot;&quot;.formatted(Sparql.RECEIPT_GRAPH, Sparql.META_GRAPH) + cleanupReceipts());</span>
+<span class="fc" id="L386">        pss.setIri(&quot;receipt&quot;, receipt);</span>
+<span class="fc" id="L387">        pss.setIri(&quot;voc&quot;, Sparql.vocabularyIri(name));</span>
+<span class="fc" id="L388">        pss.setIri(&quot;ver&quot;, Sparql.versionIri(name, version));</span>
+<span class="fc" id="L389">        pss.setLiteral(&quot;from&quot;, from.name());</span>
+<span class="fc" id="L390">        pss.setLiteral(&quot;to&quot;, to.name());</span>
+<span class="fc" id="L391">        bindTimes(pss, now);</span>
+<span class="fc" id="L392">        store.update(pss.toString());</span>
+<span class="fc" id="L393">        return receiptExists(receipt);</span>
+    }
+
+    /** Asks whether the receipt of a conditional write exists. */
+    boolean receiptExists(String receipt) {
+<span class="fc" id="L398">        SparqlTemplate pss = Sparql.command(&quot;ASK { GRAPH &lt;&quot; + Sparql.RECEIPT_GRAPH + &quot;&gt; { ?receipt vm:at ?anyTime } }&quot;);</span>
+<span class="fc" id="L399">        pss.setIri(&quot;receipt&quot;, receipt);</span>
+<span class="fc" id="L400">        return store.ask(pss.toString());</span>
+    }
+
+    /** Removes receipts older than one hour in the same update (D176). */
+    static String cleanupReceipts() {
+<span class="fc" id="L405">        return &quot;&quot;&quot;</span>
+                DELETE { GRAPH &lt;%1$s&gt; { ?oldReceipt vm:at ?oldTime } }
+                WHERE { GRAPH &lt;%1$s&gt; { ?oldReceipt vm:at ?oldTime } FILTER(?oldTime &lt; ?cutoff) }
+<span class="fc" id="L408">                &quot;&quot;&quot;.formatted(Sparql.RECEIPT_GRAPH);</span>
+    }
+
+    private static void bindTimes(SparqlTemplate pss, Instant now) {
+<span class="fc" id="L412">        pss.setLiteral(&quot;now&quot;, Sparql.dateTime(now));</span>
+<span class="fc" id="L413">        pss.setLiteral(&quot;cutoff&quot;, Sparql.dateTime(now.minus(1, ChronoUnit.HOURS)));</span>
+<span class="fc" id="L414">    }</span>
+
+    private static String filters(ListFilter filter) {
+<span class="fc" id="L417">        StringBuilder text = new StringBuilder();</span>
+<span class="fc bfc" id="L418" title="All 2 branches covered.">        if (filter.nameContains() != null) {</span>
+<span class="fc" id="L419">            text.append(&quot;FILTER(CONTAINS(?key, ?nameFilter))\n&quot;);</span>
+        }
+<span class="fc bfc" id="L421" title="All 2 branches covered.">        if (filter.status() != null) {</span>
+<span class="fc" id="L422">            text.append(&quot;FILTER(?status = ?statusFilter)\n&quot;);</span>
+        }
+<span class="fc bfc" id="L424" title="All 2 branches covered.">        if (filter.createdFrom() != null) {</span>
+<span class="fc" id="L425">            text.append(&quot;FILTER(?created &gt;= ?createdFrom &amp;&amp; ?created &lt; ?createdTo)\n&quot;);</span>
+        }
+<span class="fc bfc" id="L427" title="All 2 branches covered.">        if (filter.updatedFrom() != null) {</span>
+<span class="fc" id="L428">            text.append(&quot;FILTER(?updated &gt;= ?updatedFrom &amp;&amp; ?updated &lt; ?updatedTo)\n&quot;);</span>
+        }
+<span class="fc" id="L430">        return text.toString();</span>
+    }
+
+    private static void bindFilters(SparqlTemplate pss, ListFilter filter) {
+<span class="fc bfc" id="L434" title="All 2 branches covered.">        if (filter.nameContains() != null) {</span>
+<span class="fc" id="L435">            pss.setLiteral(&quot;nameFilter&quot;, filter.nameContains());</span>
+        }
+<span class="fc bfc" id="L437" title="All 2 branches covered.">        if (filter.status() != null) {</span>
+<span class="fc" id="L438">            pss.setLiteral(&quot;statusFilter&quot;, filter.status().name());</span>
+        }
+<span class="fc bfc" id="L440" title="All 2 branches covered.">        if (filter.createdFrom() != null) {</span>
+<span class="fc" id="L441">            pss.setLiteral(&quot;createdFrom&quot;, Sparql.dateTime(filter.createdFrom()));</span>
+<span class="fc" id="L442">            pss.setLiteral(&quot;createdTo&quot;, Sparql.dateTime(filter.createdTo()));</span>
+        }
+<span class="fc bfc" id="L444" title="All 2 branches covered.">        if (filter.updatedFrom() != null) {</span>
+<span class="fc" id="L445">            pss.setLiteral(&quot;updatedFrom&quot;, Sparql.dateTime(filter.updatedFrom()));</span>
+<span class="fc" id="L446">            pss.setLiteral(&quot;updatedTo&quot;, Sparql.dateTime(filter.updatedTo()));</span>
+        }
+<span class="fc" id="L448">    }</span>
+
+    private static String values(Collection&lt;String&gt; texts) {
+<span class="fc" id="L451">        StringBuilder text = new StringBuilder();</span>
+<span class="fc bfc" id="L452" title="All 2 branches covered.">        for (String value : texts) {</span>
+<span class="fc" id="L453">            text.append(NodeFmtLib.strNT(NodeFactory.createLiteralString(value)))</span>
+<span class="fc" id="L454">                    .append(' ');</span>
+<span class="fc" id="L455">        }</span>
+<span class="fc" id="L456">        return text.toString();</span>
+    }
+
+    private static Vocabulary toVocabulary(QuerySolution row) {
+<span class="fc" id="L460">        return new Vocabulary(</span>
+<span class="fc" id="L461">                Sparql.string(row, &quot;name&quot;),</span>
+<span class="fc" id="L462">                VocabularyStatus.valueOf(Sparql.string(row, &quot;status&quot;)),</span>
+<span class="fc" id="L463">                Sparql.number(row, &quot;latest&quot;),</span>
+<span class="fc" id="L464">                Sparql.string(row, &quot;desc&quot;),</span>
+<span class="fc" id="L465">                Sparql.string(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L466">                Sparql.instant(row, &quot;created&quot;),</span>
+<span class="fc" id="L467">                Sparql.instant(row, &quot;updated&quot;));</span>
+    }
+
+    private static VocabularyVersion toVersion(String name, QuerySolution row) {
+<span class="fc" id="L471">        return new VocabularyVersion(</span>
+                name,
+<span class="fc" id="L473">                Sparql.number(row, &quot;n&quot;),</span>
+<span class="fc" id="L474">                VocabularyStatus.valueOf(Sparql.string(row, &quot;vstatus&quot;)),</span>
+<span class="fc" id="L475">                Sparql.string(row, &quot;vdesc&quot;),</span>
+<span class="fc" id="L476">                Sparql.string(row, &quot;changelog&quot;),</span>
+<span class="fc" id="L477">                Sparql.string(row, &quot;vcreatedBy&quot;),</span>
+<span class="fc" id="L478">                Sparql.instant(row, &quot;vcreated&quot;),</span>
+<span class="fc" id="L479">                Sparql.instant(row, &quot;vupdated&quot;),</span>
+<span class="fc" id="L480">                Sparql.string(row, &quot;hash&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

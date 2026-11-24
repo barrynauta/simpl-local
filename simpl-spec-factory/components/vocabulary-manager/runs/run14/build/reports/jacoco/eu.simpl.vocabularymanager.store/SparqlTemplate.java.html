@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SparqlTemplate.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">SparqlTemplate.java</span></div><h1>SparqlTemplate.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.riot.out.NodeFmtLib;
+
+/**
+ * A SPARQL command with bound values (D94). Values are written as RDF terms by Jena's NodeFmtLib, which escapes
+ * them, and substituted in one pass, so a value is never read again as query text. Jena's
+ * ParameterizedSparqlString is not used because it refuses (with an exception) any literal value that contains a
+ * text like '?now' that equals a variable name, which a description may legitimately contain (REUSE.md).
+ */
+public final class SparqlTemplate {
+
+<span class="fc" id="L22">    private static final Pattern VARIABLE = Pattern.compile(&quot;\\?([A-Za-z_][A-Za-z0-9_]*)&quot;);</span>
+
+    private final String template;
+<span class="fc" id="L25">    private final Map&lt;String, String&gt; values = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L27">    SparqlTemplate(String template) {</span>
+<span class="fc" id="L28">        this.template = template;</span>
+<span class="fc" id="L29">    }</span>
+
+    /** Binds an IRI. */
+    public void setIri(String variable, String iri) {
+<span class="fc" id="L33">        values.put(variable, NodeFmtLib.strNT(NodeFactory.createURI(iri)));</span>
+<span class="fc" id="L34">    }</span>
+
+    /** Binds a plain string literal. */
+    public void setLiteral(String variable, String value) {
+<span class="fc" id="L38">        values.put(variable, NodeFmtLib.strNT(NodeFactory.createLiteralString(value)));</span>
+<span class="fc" id="L39">    }</span>
+
+    /** Binds a typed literal. */
+    public void setLiteral(String variable, Literal value) {
+<span class="fc" id="L43">        values.put(variable, NodeFmtLib.strNT(value.asNode()));</span>
+<span class="fc" id="L44">    }</span>
+
+    /** Binds a list of terms, for a VALUES block written as { ?variable }. */
+    public void setValues(String variable, Collection&lt;? extends RDFNode&gt; nodes) {
+<span class="fc" id="L48">        StringBuilder text = new StringBuilder();</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        for (RDFNode node : nodes) {</span>
+<span class="fc" id="L50">            text.append(NodeFmtLib.strNT(node.asNode())).append(' ');</span>
+<span class="fc" id="L51">        }</span>
+<span class="fc" id="L52">        values.put(variable, text.toString());</span>
+<span class="fc" id="L53">    }</span>
+
+    /** Binds a list of plain string literals. */
+    public void setStrings(String variable, Collection&lt;String&gt; strings) {
+<span class="nc" id="L57">        StringBuilder text = new StringBuilder();</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        for (String value : strings) {</span>
+<span class="nc" id="L59">            Node node = NodeFactory.createLiteralString(value);</span>
+<span class="nc" id="L60">            text.append(NodeFmtLib.strNT(node)).append(' ');</span>
+<span class="nc" id="L61">        }</span>
+<span class="nc" id="L62">        values.put(variable, text.toString());</span>
+<span class="nc" id="L63">    }</span>
+
+    /** The command text with all bound variables replaced. */
+    @Override
+    public String toString() {
+<span class="fc" id="L68">        Matcher matcher = VARIABLE.matcher(template);</span>
+<span class="fc" id="L69">        StringBuilder result = new StringBuilder(template.length() + 256);</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        while (matcher.find()) {</span>
+<span class="fc" id="L71">            String value = values.get(matcher.group(1));</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            matcher.appendReplacement(result, Matcher.quoteReplacement(value == null ? matcher.group() : value));</span>
+<span class="fc" id="L73">        }</span>
+<span class="fc" id="L74">        matcher.appendTail(result);</span>
+<span class="fc" id="L75">        return result.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

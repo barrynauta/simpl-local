@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyNames.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.domain</a> &gt; <span class="el_source">VocabularyNames.java</span></div><h1>VocabularyNames.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.domain;
+
+import java.util.Locale;
+import java.util.regex.Pattern;
+
+/** Rules of the vocabulary name (D37, glossary). */
+public final class VocabularyNames {
+
+<span class="fc" id="L9">    public static final Pattern PATTERN = Pattern.compile(&quot;^[A-Z][a-zA-Z0-9]*$&quot;);</span>
+    public static final int MIN_LENGTH = 3;
+    public static final int MAX_LENGTH = 64;
+
+    private VocabularyNames() {}
+
+    /** True when the name follows D37. */
+    public static boolean isValid(String name) {
+<span class="pc bpc" id="L17" title="1 of 2 branches missed.">        return name != null</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">                &amp;&amp; name.length() &gt;= MIN_LENGTH</span>
+<span class="pc bpc" id="L19" title="1 of 2 branches missed.">                &amp;&amp; name.length() &lt;= MAX_LENGTH</span>
+<span class="fc bfc" id="L20" title="All 2 branches covered.">                &amp;&amp; PATTERN.matcher(name).matches();</span>
+    }
+
+    /** The key for case-insensitive uniqueness (D37). */
+    public static String key(String name) {
+<span class="fc" id="L25">        return name.toLowerCase(Locale.ROOT);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

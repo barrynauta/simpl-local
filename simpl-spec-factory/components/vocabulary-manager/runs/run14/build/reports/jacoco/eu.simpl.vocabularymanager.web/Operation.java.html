@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Operation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">Operation.java</span></div><h1>Operation.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import java.util.List;
+
+/**
+ * The operation table (D84, D206): every operation of the decided OpenAPI with its method, path, access rule,
+ * request body kind and response kind. The gatekeeper filter routes and checks access with this table only; a
+ * request that matches no row never reaches a handler. A build test compares the table with Spring MVC and with
+ * openapi-decided.yaml.
+ */
+<span class="fc" id="L11">public enum Operation {</span>
+<span class="fc" id="L12">    GET_HEALTH(&quot;getHealth&quot;, &quot;GET&quot;, &quot;/v1/health&quot;, Access.PUBLIC, Body.NONE, Reply.JSON),</span>
+<span class="fc" id="L13">    GET_VOCABULARIES(&quot;getVocabularies&quot;, &quot;GET&quot;, &quot;/v1/vocabularies&quot;, Access.VIEWER, Body.NONE, Reply.JSON),</span>
+<span class="fc" id="L14">    CREATE_VOCABULARY(&quot;createVocabulary&quot;, &quot;POST&quot;, &quot;/v1/vocabularies&quot;, Access.ADMIN, Body.MULTIPART, Reply.JSON),</span>
+<span class="fc" id="L15">    SEARCH_VOCABULARIES(</span>
+            &quot;searchVocabularies&quot;, &quot;POST&quot;, &quot;/v1/vocabularies/searches&quot;, Access.VIEWER, Body.JSON, Reply.JSON),
+<span class="fc" id="L17">    GET_VOCABULARY(&quot;getVocabulary&quot;, &quot;GET&quot;, &quot;/v1/vocabularies/{vocabularyName}&quot;, Access.VIEWER, Body.NONE, Reply.JSON),</span>
+<span class="fc" id="L18">    UPDATE_VOCABULARY_STATUS(</span>
+            &quot;updateVocabularyStatus&quot;,
+            &quot;PATCH&quot;,
+            &quot;/v1/vocabularies/{vocabularyName}&quot;,
+            Access.ADMIN,
+            Body.JSON,
+            Reply.JSON),
+<span class="fc" id="L25">    GET_VOCABULARY_VERSIONS(</span>
+            &quot;getVocabularyVersions&quot;,
+            &quot;GET&quot;,
+            &quot;/v1/vocabularies/{vocabularyName}/versions&quot;,
+            Access.VIEWER,
+            Body.NONE,
+            Reply.JSON),
+<span class="fc" id="L32">    CREATE_VOCABULARY_VERSION(</span>
+            &quot;createVocabularyVersion&quot;,
+            &quot;POST&quot;,
+            &quot;/v1/vocabularies/{vocabularyName}/versions&quot;,
+            Access.ADMIN,
+            Body.MULTIPART,
+            Reply.JSON),
+<span class="fc" id="L39">    GET_VOCABULARY_VERSION(</span>
+            &quot;getVocabularyVersion&quot;,
+            &quot;GET&quot;,
+            &quot;/v1/vocabularies/{vocabularyName}/versions/{version}&quot;,
+            Access.VIEWER,
+            Body.NONE,
+            Reply.JSON),
+<span class="fc" id="L46">    UPDATE_VOCABULARY_VERSION_STATUS(</span>
+            &quot;updateVocabularyVersionStatus&quot;,
+            &quot;PATCH&quot;,
+            &quot;/v1/vocabularies/{vocabularyName}/versions/{version}&quot;,
+            Access.ADMIN,
+            Body.JSON,
+            Reply.JSON),
+<span class="fc" id="L53">    DOWNLOAD_VOCABULARY(</span>
+            &quot;downloadVocabulary&quot;, &quot;GET&quot;, &quot;/v1/content/{vocabularyName}&quot;, Access.VIEWER, Body.NONE, Reply.TURTLE),
+<span class="fc" id="L55">    DOWNLOAD_VOCABULARY_VERSION(</span>
+            &quot;downloadVocabularyVersion&quot;,
+            &quot;GET&quot;,
+            &quot;/v1/content/{vocabularyName}/versions/{version}&quot;,
+            Access.VIEWER,
+            Body.NONE,
+            Reply.TURTLE),
+<span class="fc" id="L62">    GET_EXTERNAL_VOCABULARIES(</span>
+            &quot;getExternalVocabularies&quot;, &quot;GET&quot;, &quot;/v1/external-vocabularies&quot;, Access.VIEWER, Body.NONE, Reply.JSON),
+<span class="fc" id="L64">    CREATE_EXTERNAL_VOCABULARY(</span>
+            &quot;createExternalVocabulary&quot;, &quot;POST&quot;, &quot;/v1/external-vocabularies&quot;, Access.ADMIN, Body.MULTIPART, Reply.JSON),
+<span class="fc" id="L66">    SEARCH_EXTERNAL_VOCABULARIES(</span>
+            &quot;searchExternalVocabularies&quot;,
+            &quot;POST&quot;,
+            &quot;/v1/external-vocabulary/searches&quot;,
+            Access.VIEWER,
+            Body.JSON,
+            Reply.JSON),
+<span class="fc" id="L73">    DOWNLOAD_EXTERNAL_VOCABULARY_CONTENT(</span>
+            &quot;downloadExternalVocabularyContent&quot;,
+            &quot;POST&quot;,
+            &quot;/v1/external-vocabularies/content&quot;,
+            Access.VIEWER,
+            Body.JSON,
+            Reply.TURTLE),
+<span class="fc" id="L80">    GET_EXTERNAL_VOCABULARY_CONTENT_BY_NAME(</span>
+            &quot;getExternalVocabularyContentByName&quot;,
+            &quot;GET&quot;,
+            &quot;/v1/external-vocabularies/{name}/content&quot;,
+            Access.VIEWER,
+            Body.NONE,
+            Reply.TURTLE),
+<span class="fc" id="L87">    GET_EXTERNAL_VOCABULARY(</span>
+            &quot;getExternalVocabulary&quot;, &quot;GET&quot;, &quot;/v1/external-vocabularies/{name}&quot;, Access.VIEWER, Body.NONE, Reply.JSON),
+<span class="fc" id="L89">    DELETE_EXTERNAL_VOCABULARY(</span>
+            &quot;deleteExternalVocabulary&quot;,
+            &quot;DELETE&quot;,
+            &quot;/v1/external-vocabularies/{name}&quot;,
+            Access.ADMIN,
+            Body.NONE,
+            Reply.NONE);
+
+    /** Who may call an operation (D16). */
+<span class="fc" id="L98">    public enum Access {</span>
+<span class="fc" id="L99">        PUBLIC,</span>
+<span class="fc" id="L100">        VIEWER,</span>
+<span class="fc" id="L101">        ADMIN</span>
+    }
+
+    /** Kind of request body. */
+<span class="fc" id="L105">    public enum Body {</span>
+<span class="fc" id="L106">        NONE,</span>
+<span class="fc" id="L107">        JSON,</span>
+<span class="fc" id="L108">        MULTIPART</span>
+    }
+
+    /** Kind of success response. */
+<span class="fc" id="L112">    public enum Reply {</span>
+<span class="fc" id="L113">        JSON,</span>
+<span class="fc" id="L114">        TURTLE,</span>
+<span class="fc" id="L115">        NONE</span>
+    }
+
+    private final String operationId;
+    private final String method;
+    private final String path;
+    private final Access access;
+    private final Body body;
+    private final Reply reply;
+    private final List&lt;String&gt; segments;
+
+<span class="fc" id="L126">    Operation(String operationId, String method, String path, Access access, Body body, Reply reply) {</span>
+<span class="fc" id="L127">        this.operationId = operationId;</span>
+<span class="fc" id="L128">        this.method = method;</span>
+<span class="fc" id="L129">        this.path = path;</span>
+<span class="fc" id="L130">        this.access = access;</span>
+<span class="fc" id="L131">        this.body = body;</span>
+<span class="fc" id="L132">        this.reply = reply;</span>
+<span class="fc" id="L133">        this.segments = List.of(path.substring(1).split(&quot;/&quot;));</span>
+<span class="fc" id="L134">    }</span>
+
+    public String operationId() {
+<span class="fc" id="L137">        return operationId;</span>
+    }
+
+    public String method() {
+<span class="fc" id="L141">        return method;</span>
+    }
+
+    public String path() {
+<span class="fc" id="L145">        return path;</span>
+    }
+
+    public Access access() {
+<span class="fc" id="L149">        return access;</span>
+    }
+
+    public Body body() {
+<span class="fc" id="L153">        return body;</span>
+    }
+
+    public Reply reply() {
+<span class="fc" id="L157">        return reply;</span>
+    }
+
+    List&lt;String&gt; segments() {
+<span class="fc" id="L161">        return segments;</span>
+    }
+
+    /** True when this operation changes data (D51 order of checks for writes). */
+    public boolean isWrite() {
+<span class="pc bpc" id="L166" title="1 of 4 branches missed.">        return !&quot;GET&quot;.equals(method) &amp;&amp; access == Access.ADMIN;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

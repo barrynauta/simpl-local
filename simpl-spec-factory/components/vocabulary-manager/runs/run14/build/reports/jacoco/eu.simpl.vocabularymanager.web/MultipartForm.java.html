@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MultipartForm.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">MultipartForm.java</span></div><h1>MultipartForm.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Reads a multipart/form-data body with the checks of D15, D52, D76, D121, D169 and D195, in this order: request
+ * size (413), file part size (413 with an issue), number of parts (400 body), unknown fields (400 per name),
+ * repeated single-valued fields (400). The servlet container parses the parts (no own multipart parser, D121).
+ */
+public final class MultipartForm {
+
+    public static final String FILE_FIELD = &quot;vocabularyFile&quot;;
+    public static final long FILE_LIMIT = 5L * 1024 * 1024;
+    public static final int MAX_PARTS = 64;
+    public static final String FILE_TOO_LARGE = &quot;Uploaded vocabulary file is too large. The maximum allowed upload&quot;
+            + &quot; size is 5 MB. Please upload a smaller Turtle file.&quot;;
+
+    private final Collection&lt;Part&gt; parts;
+<span class="fc" id="L34">    private final Map&lt;String, List&lt;byte[]&gt;&gt; values = new LinkedHashMap&lt;&gt;();</span>
+
+<span class="fc" id="L36">    private MultipartForm(Collection&lt;Part&gt; parts) {</span>
+<span class="fc" id="L37">        this.parts = parts;</span>
+<span class="fc" id="L38">    }</span>
+
+    /**
+     * Reads the parts and checks the file part size (D169: size comes before shape).
+     *
+     * @param request the request
+     * @return the form
+     * @throws ApiException 413 for a request over 6 MB or a file part over 5 MB, 400 for an unreadable body
+     */
+    public static MultipartForm read(HttpServletRequest request) {
+<span class="fc" id="L48">        Collection&lt;Part&gt; parts = parts(request);</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        for (Part part : parts) {</span>
+<span class="fc bfc" id="L50" title="All 4 branches covered.">            if (FILE_FIELD.equals(part.getName()) &amp;&amp; part.getSize() &gt; FILE_LIMIT) {</span>
+<span class="fc" id="L51">                throw new ApiException(</span>
+                        ProblemType.PAYLOAD_TOO_LARGE,
+                        FILE_TOO_LARGE,
+<span class="fc" id="L54">                        List.of(Issue.invalidInput(&quot;body&quot;, FILE_FIELD, FILE_TOO_LARGE, null)));</span>
+            }
+<span class="fc" id="L56">        }</span>
+<span class="fc" id="L57">        return new MultipartForm(parts);</span>
+    }
+
+    /**
+     * Checks the shape: number of parts, unknown fields, repeated single-valued fields.
+     *
+     * @param singleFields fields that may appear once
+     * @param multiFields fields that may repeat
+     * @throws ApiException 400 as described
+     */
+    public void checkShape(Set&lt;String&gt; singleFields, Set&lt;String&gt; multiFields) {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (parts.size() &gt; MAX_PARTS) {</span>
+<span class="fc" id="L69">            throw ApiException.badRequest(</span>
+                    &quot;body&quot;, &quot;body&quot;, &quot;The request has more than &quot; + MAX_PARTS + &quot; multipart parts.&quot;);
+        }
+<span class="fc" id="L72">        Set&lt;String&gt; unknown = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        for (Part part : parts) {</span>
+<span class="fc" id="L74">            String name = part.getName();</span>
+<span class="pc bpc" id="L75" title="2 of 4 branches missed.">            if (name == null || name.isEmpty()) {</span>
+<span class="nc" id="L76">                continue;</span>
+            }
+<span class="fc bfc" id="L78" title="All 4 branches covered.">            if (!singleFields.contains(name) &amp;&amp; !multiFields.contains(name)) {</span>
+<span class="fc" id="L79">                unknown.add(name);</span>
+<span class="fc" id="L80">                continue;</span>
+            }
+<span class="fc" id="L82">            values.computeIfAbsent(name, key -&gt; new ArrayList&lt;&gt;()).add(bytes(part));</span>
+<span class="fc" id="L83">        }</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (!unknown.isEmpty()) {</span>
+<span class="fc" id="L85">            List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            for (String name : unknown) {</span>
+<span class="fc" id="L87">                issues.add(Issue.schemaViolation(&quot;body&quot;, name, &quot;Field '&quot; + name + &quot;' is not supported.&quot;));</span>
+<span class="fc" id="L88">            }</span>
+<span class="fc" id="L89">            throw ApiException.badRequest(issues);</span>
+        }
+<span class="fc" id="L91">        List&lt;Issue&gt; repeated = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        for (Map.Entry&lt;String, List&lt;byte[]&gt;&gt; entry : values.entrySet()) {</span>
+<span class="fc bfc" id="L93" title="All 4 branches covered.">            if (singleFields.contains(entry.getKey()) &amp;&amp; entry.getValue().size() &gt; 1) {</span>
+<span class="fc" id="L94">                repeated.add(Issue.schemaViolation(</span>
+<span class="fc" id="L95">                        &quot;body&quot;, entry.getKey(), &quot;Field '&quot; + entry.getKey() + &quot;' is given more than once.&quot;));</span>
+            }
+<span class="fc" id="L97">        }</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        if (!repeated.isEmpty()) {</span>
+<span class="fc" id="L99">            throw ApiException.badRequest(repeated);</span>
+        }
+<span class="fc" id="L101">    }</span>
+
+    /** The UTF-8 text of a single field, or null when absent. */
+    public String text(String name) {
+<span class="fc" id="L105">        List&lt;byte[]&gt; list = values.get(name);</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        return list == null ? null : new String(list.get(0), StandardCharsets.UTF_8);</span>
+    }
+
+    /** The UTF-8 texts of a repeatable field, in request order. */
+    public List&lt;String&gt; texts(String name) {
+<span class="fc" id="L111">        List&lt;byte[]&gt; list = values.get(name);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        if (list == null) {</span>
+<span class="fc" id="L113">            return List.of();</span>
+        }
+<span class="fc" id="L115">        return list.stream()</span>
+<span class="fc" id="L116">                .map(bytes -&gt; new String(bytes, StandardCharsets.UTF_8))</span>
+<span class="fc" id="L117">                .toList();</span>
+    }
+
+    /** The bytes of a single field, or null when absent. */
+    public byte[] bytes(String name) {
+<span class="fc" id="L122">        List&lt;byte[]&gt; list = values.get(name);</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        return list == null ? null : list.get(0);</span>
+    }
+
+    private static Collection&lt;Part&gt; parts(HttpServletRequest request) {
+        try {
+<span class="fc" id="L128">            return request.getParts();</span>
+<span class="fc" id="L129">        } catch (IOException | ServletException | RuntimeException e) {</span>
+<span class="fc" id="L130">            throw classify(e);</span>
+        }
+    }
+
+    private static ApiException classify(Exception exception) {
+<span class="fc" id="L135">        Throwable cause = exception;</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        while (cause != null) {</span>
+<span class="fc" id="L137">            String type = cause.getClass().getSimpleName();</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">            if (type.contains(&quot;FileCountLimitExceeded&quot;)) {</span>
+<span class="nc" id="L139">                return ApiException.badRequest(</span>
+                        &quot;body&quot;, &quot;body&quot;, &quot;The request has more than &quot; + MAX_PARTS + &quot; multipart parts.&quot;);
+            }
+<span class="pc bpc" id="L142" title="2 of 4 branches missed.">            if (type.contains(&quot;SizeLimitExceeded&quot;) || type.contains(&quot;MaxUploadSizeExceeded&quot;)) {</span>
+<span class="nc" id="L143">                return new ApiException(</span>
+                        ProblemType.PAYLOAD_TOO_LARGE,
+                        &quot;The request is larger than the maximum allowed size of 6 MB.&quot;,
+<span class="nc" id="L146">                        List.of());</span>
+            }
+<span class="fc" id="L148">            cause = cause.getCause();</span>
+<span class="fc" id="L149">        }</span>
+<span class="fc" id="L150">        return new ApiException(ProblemType.BAD_REQUEST, &quot;The multipart body could not be read.&quot;, List.of());</span>
+    }
+
+    private static byte[] bytes(Part part) {
+<span class="fc" id="L154">        try (InputStream input = part.getInputStream()) {</span>
+<span class="fc" id="L155">            return input.readAllBytes();</span>
+<span class="nc" id="L156">        } catch (IOException e) {</span>
+<span class="nc" id="L157">            throw new ApiException(ProblemType.BAD_REQUEST, &quot;The multipart body could not be read.&quot;, List.of());</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

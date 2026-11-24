@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalVocabularyRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">ExternalVocabularyRepository.java</span></div><h1>ExternalVocabularyRepository.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSetRewindable;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.riot.out.NodeFmtLib;
+import org.springframework.stereotype.Repository;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
+
+/**
+ * Store access for external vocabularies (D30, D41, D56). The namespace URI and the alias URIs are stored as sent
+ * (D73); their normalised forms are stored as lookup keys.
+ */
+@Repository
+public class ExternalVocabularyRepository {
+
+<span class="fc" id="L30">    private static final JsonMapper JSON = JsonMapper.builder().build();</span>
+    private static final int SEARCH_LIMIT = 101;
+
+<span class="fc" id="L33">    private static final String PATTERN = &quot;&quot;&quot;</span>
+            GRAPH &lt;%s&gt; {
+              ?ext a vm:ExternalVocabulary ; vm:externalName ?name ; vm:namespaceUri ?namespace ;
+                   vm:aliasUris ?aliases ; vm:createdBy ?createdBy ; vm:creationDate ?created .
+              OPTIONAL { ?ext vm:sourceUri ?source }
+              OPTIONAL { ?ext vm:description ?description }
+            }
+<span class="fc" id="L40">            &quot;&quot;&quot;.formatted(Sparql.META_GRAPH);</span>
+
+    private final StoreClient store;
+
+<span class="fc" id="L44">    public ExternalVocabularyRepository(StoreClient store) {</span>
+<span class="fc" id="L45">        this.store = store;</span>
+<span class="fc" id="L46">    }</span>
+
+    /** Finds an external vocabulary by its exact name. */
+    public Optional&lt;ExternalVocabulary&gt; find(String name) {
+<span class="fc" id="L50">        SparqlTemplate pss =</span>
+<span class="fc" id="L51">                Sparql.command(&quot;SELECT ?name ?namespace ?aliases ?createdBy ?created ?source ?description WHERE {\n&quot;</span>
+                        + PATTERN + &quot;} LIMIT 1&quot;);
+<span class="fc" id="L53">        pss.setIri(&quot;ext&quot;, Sparql.externalIri(name));</span>
+<span class="fc" id="L54">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        return rows.hasNext() ? Optional.of(toExternal(rows.next())) : Optional.empty();</span>
+    }
+
+    /** True when an external vocabulary has this name, compared case-insensitively (D56). */
+    public boolean nameTaken(String name) {
+<span class="fc" id="L60">        SparqlTemplate pss =</span>
+<span class="fc" id="L61">                Sparql.command(&quot;ASK { GRAPH &lt;&quot; + Sparql.META_GRAPH + &quot;&gt; { ?ext vm:externalNameKey ?key } }&quot;);</span>
+<span class="fc" id="L62">        pss.setLiteral(&quot;key&quot;, name.toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L63">        return store.ask(pss.toString());</span>
+    }
+
+    /** The lookup keys among the given ones that are already registered. */
+    public List&lt;String&gt; registeredKeys(Collection&lt;String&gt; keys) {
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">        if (keys.isEmpty()) {</span>
+<span class="nc" id="L69">            return List.of();</span>
+        }
+<span class="fc" id="L71">        SparqlTemplate pss = Sparql.command(&quot;SELECT ?key WHERE { VALUES ?key { &quot;</span>
+<span class="fc" id="L72">                + literals(keys) + &quot; } GRAPH &lt;&quot; + Sparql.META_GRAPH + &quot;&gt; { ?ext vm:lookupKey ?key } } LIMIT &quot;</span>
+                + SEARCH_LIMIT);
+<span class="fc" id="L74">        List&lt;String&gt; found = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L75">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        while (rows.hasNext()) {</span>
+<span class="fc" id="L77">            found.add(Sparql.string(rows.next(), &quot;key&quot;));</span>
+        }
+<span class="fc" id="L79">        return found;</span>
+    }
+
+    /** Counts the external vocabularies. */
+    public long count() {
+<span class="fc" id="L84">        SparqlTemplate pss = Sparql.command(&quot;SELECT (COUNT(?ext) AS ?total) WHERE { GRAPH &lt;&quot; + Sparql.META_GRAPH</span>
+                + &quot;&gt; { ?ext a vm:ExternalVocabulary } } LIMIT 1&quot;);
+<span class="fc" id="L86">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        return rows.hasNext() ? Sparql.number(rows.next(), &quot;total&quot;) : 0;</span>
+    }
+
+    /** One page in name order (D41). */
+    public List&lt;ExternalVocabulary&gt; list(long offset, int limit) {
+<span class="fc" id="L92">        SparqlTemplate pss =</span>
+<span class="fc" id="L93">                Sparql.command(&quot;SELECT ?name ?namespace ?aliases ?createdBy ?created ?source ?description WHERE {\n&quot;</span>
+                        + PATTERN + &quot;} ORDER BY ASC(?name) LIMIT &quot; + limit + &quot; OFFSET &quot; + offset);
+<span class="fc" id="L95">        List&lt;ExternalVocabulary&gt; result = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L96">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        while (rows.hasNext()) {</span>
+<span class="fc" id="L98">            result.add(toExternal(rows.next()));</span>
+        }
+<span class="fc" id="L100">        return result;</span>
+    }
+
+    /**
+     * The external vocabularies matching normalised lookup keys, with the key that matched.
+     *
+     * @param keys normalised URIs, at most 100 (D38)
+     * @return key to external vocabulary
+     */
+    public Map&lt;String, ExternalVocabulary&gt; findByKeys(Collection&lt;String&gt; keys) {
+<span class="fc" id="L110">        Map&lt;String, ExternalVocabulary&gt; result = new LinkedHashMap&lt;&gt;();</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if (keys.isEmpty()) {</span>
+<span class="nc" id="L112">            return result;</span>
+        }
+<span class="fc" id="L114">        SparqlTemplate pss = Sparql.command(</span>
+                &quot;SELECT ?key ?name ?namespace ?aliases ?createdBy ?created ?source ?description WHERE {\n VALUES ?key { &quot;
+<span class="fc" id="L116">                        + literals(keys) + &quot; }\n GRAPH &lt;&quot; + Sparql.META_GRAPH + &quot;&gt; { ?ext vm:lookupKey ?key }\n&quot;</span>
+                        + PATTERN + &quot;} LIMIT &quot; + SEARCH_LIMIT);
+<span class="fc" id="L118">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        while (rows.hasNext()) {</span>
+<span class="fc" id="L120">            QuerySolution row = rows.next();</span>
+<span class="fc" id="L121">            result.put(Sparql.string(row, &quot;key&quot;), toExternal(row));</span>
+<span class="fc" id="L122">        }</span>
+<span class="fc" id="L123">        return result;</span>
+    }
+
+    /** Reads the stored content bytes (D41). */
+    public Optional&lt;byte[]&gt; content(String name) {
+<span class="fc" id="L128">        SparqlTemplate pss =</span>
+<span class="fc" id="L129">                Sparql.command(&quot;SELECT ?content WHERE { GRAPH ?graph { ?ext vm:rdfContent ?content } } LIMIT 1&quot;);</span>
+<span class="fc" id="L130">        pss.setIri(&quot;graph&quot;, Sparql.externalContentGraph(name));</span>
+<span class="fc" id="L131">        pss.setIri(&quot;ext&quot;, Sparql.externalIri(name));</span>
+<span class="fc" id="L132">        ResultSetRewindable rows = store.select(pss.toString());</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">        if (!rows.hasNext()) {</span>
+<span class="nc" id="L134">            return Optional.empty();</span>
+        }
+<span class="fc" id="L136">        return Optional.of(Base64.getDecoder().decode(Sparql.string(rows.next(), &quot;content&quot;)));</span>
+    }
+
+    /**
+     * Registers an external vocabulary when no name or lookup key is taken (D30, D56, D82).
+     *
+     * @param vocabulary the metadata
+     * @param keys the normalised lookup keys of the namespace and the aliases
+     * @param content the content bytes
+     * @return true when this request stored it
+     */
+    public boolean insert(ExternalVocabulary vocabulary, Collection&lt;String&gt; keys, byte[] content) {
+<span class="fc" id="L148">        String receipt = Sparql.receiptIri(UUID.randomUUID().toString());</span>
+<span class="fc" id="L149">        StringBuilder optional = new StringBuilder();</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        if (vocabulary.sourceUri() != null) {</span>
+<span class="fc" id="L151">            optional.append(&quot; ?ext vm:sourceUri ?source .&quot;);</span>
+        }
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        if (vocabulary.description() != null) {</span>
+<span class="fc" id="L154">            optional.append(&quot; ?ext vm:description ?description .&quot;);</span>
+        }
+<span class="fc" id="L156">        SparqlTemplate pss = Sparql.command(&quot;&quot;&quot;</span>
+                INSERT { GRAPH &lt;%1$s&gt; { ?receipt vm:at ?now } }
+                WHERE {
+                  FILTER NOT EXISTS { GRAPH &lt;%2$s&gt; { ?other vm:externalNameKey ?nameKey } }
+                  FILTER NOT EXISTS { VALUES ?anyKey { ?keyList } GRAPH &lt;%2$s&gt; { ?taken vm:lookupKey ?anyKey } }
+                } ;
+                INSERT {
+                  GRAPH ?contentGraph { ?ext vm:rdfContent ?content }
+                  GRAPH &lt;%2$s&gt; {
+                    ?ext a vm:ExternalVocabulary ; vm:externalName ?name ; vm:externalNameKey ?nameKey ;
+                         vm:namespaceUri ?namespace ; vm:aliasUris ?aliases ; vm:createdBy ?createdBy ;
+                         vm:creationDate ?now .%3$s
+                  }
+                }
+                WHERE { GRAPH &lt;%1$s&gt; { ?receipt vm:at ?anyTime } } ;
+                INSERT { GRAPH &lt;%2$s&gt; { ?ext vm:lookupKey ?newKey } }
+                WHERE { GRAPH &lt;%1$s&gt; { ?receipt vm:at ?anyTime } VALUES ?newKey { ?newKeyList } } ;
+<span class="fc" id="L173">                &quot;&quot;&quot;.formatted(Sparql.RECEIPT_GRAPH, Sparql.META_GRAPH, optional)</span>
+<span class="fc" id="L174">                + VocabularyRepository.cleanupReceipts());</span>
+<span class="fc" id="L175">        List&lt;RDFNode&gt; keyNodes =</span>
+<span class="fc" id="L176">                keys.stream().map(key -&gt; (RDFNode) Sparql.text(key)).toList();</span>
+<span class="fc" id="L177">        pss.setValues(&quot;keyList&quot;, keyNodes);</span>
+<span class="fc" id="L178">        pss.setValues(&quot;newKeyList&quot;, keyNodes);</span>
+<span class="fc" id="L179">        pss.setIri(&quot;receipt&quot;, receipt);</span>
+<span class="fc" id="L180">        pss.setIri(&quot;ext&quot;, Sparql.externalIri(vocabulary.name()));</span>
+<span class="fc" id="L181">        pss.setIri(&quot;contentGraph&quot;, Sparql.externalContentGraph(vocabulary.name()));</span>
+<span class="fc" id="L182">        pss.setLiteral(&quot;name&quot;, vocabulary.name());</span>
+<span class="fc" id="L183">        pss.setLiteral(&quot;nameKey&quot;, vocabulary.name().toLowerCase(Locale.ROOT));</span>
+<span class="fc" id="L184">        pss.setLiteral(&quot;namespace&quot;, vocabulary.namespaceUri());</span>
+<span class="fc" id="L185">        pss.setLiteral(&quot;aliases&quot;, JSON.writeValueAsString(vocabulary.aliasUris()));</span>
+<span class="fc" id="L186">        pss.setLiteral(&quot;createdBy&quot;, vocabulary.createdBy());</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">        if (vocabulary.sourceUri() != null) {</span>
+<span class="fc" id="L188">            pss.setLiteral(&quot;source&quot;, vocabulary.sourceUri());</span>
+        }
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        if (vocabulary.description() != null) {</span>
+<span class="fc" id="L191">            pss.setLiteral(&quot;description&quot;, vocabulary.description());</span>
+        }
+<span class="fc" id="L193">        pss.setLiteral(&quot;now&quot;, Sparql.dateTime(vocabulary.creationDate()));</span>
+<span class="fc" id="L194">        pss.setLiteral(&quot;cutoff&quot;, Sparql.dateTime(vocabulary.creationDate().minusSeconds(3600)));</span>
+<span class="fc" id="L195">        pss.setLiteral(&quot;content&quot;, Base64.getEncoder().encodeToString(content));</span>
+<span class="fc" id="L196">        store.update(pss.toString());</span>
+<span class="fc" id="L197">        SparqlTemplate ask = Sparql.command(&quot;ASK { GRAPH &lt;&quot; + Sparql.RECEIPT_GRAPH + &quot;&gt; { ?receipt vm:at ?anyTime } }&quot;);</span>
+<span class="fc" id="L198">        ask.setIri(&quot;receipt&quot;, receipt);</span>
+<span class="fc" id="L199">        return store.ask(ask.toString());</span>
+    }
+
+    /** Removes metadata and content in one transaction (D41, D42). */
+    public void delete(String name) {
+<span class="fc" id="L204">        SparqlTemplate pss = Sparql.command(</span>
+                &quot;DELETE WHERE { GRAPH &lt;&quot; + Sparql.META_GRAPH + &quot;&gt; { ?ext ?p ?o } } ;\nDROP SILENT GRAPH ?contentGraph&quot;);
+<span class="fc" id="L206">        pss.setIri(&quot;ext&quot;, Sparql.externalIri(name));</span>
+<span class="fc" id="L207">        pss.setIri(&quot;contentGraph&quot;, Sparql.externalContentGraph(name));</span>
+<span class="fc" id="L208">        store.update(pss.toString());</span>
+<span class="fc" id="L209">    }</span>
+
+    private static String literals(Collection&lt;String&gt; values) {
+<span class="fc" id="L212">        StringBuilder text = new StringBuilder();</span>
+<span class="fc bfc" id="L213" title="All 2 branches covered.">        for (String value : values) {</span>
+<span class="fc" id="L214">            text.append(NodeFmtLib.strNT(NodeFactory.createLiteralString(value)))</span>
+<span class="fc" id="L215">                    .append(' ');</span>
+<span class="fc" id="L216">        }</span>
+<span class="fc" id="L217">        return text.toString();</span>
+    }
+
+    private static ExternalVocabulary toExternal(QuerySolution row) {
+<span class="fc" id="L221">        List&lt;String&gt; aliases = JSON.readValue(Sparql.string(row, &quot;aliases&quot;), new TypeReference&lt;List&lt;String&gt;&gt;() {});</span>
+<span class="fc" id="L222">        return new ExternalVocabulary(</span>
+<span class="fc" id="L223">                Sparql.string(row, &quot;name&quot;),</span>
+<span class="fc" id="L224">                Sparql.string(row, &quot;namespace&quot;),</span>
+<span class="fc" id="L225">                List.copyOf(aliases),</span>
+<span class="fc" id="L226">                Sparql.string(row, &quot;source&quot;),</span>
+<span class="fc" id="L227">                Sparql.string(row, &quot;description&quot;),</span>
+<span class="fc" id="L228">                Sparql.string(row, &quot;createdBy&quot;),</span>
+<span class="fc" id="L229">                Instant.parse(Sparql.string(row, &quot;created&quot;)));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

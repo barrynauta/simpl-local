@@ -1,0 +1,5 @@
+# Example schedule (D89, D156). Installing it is an operations task.
+# Daily backup at 01:30 UTC, copied outside the host:
+30 1 * * *  BACKUP_COPY_TARGET=backup@backup-host:/srv/vocabulary-manager /opt/vocabulary-manager/scripts/backup.sh >> /var/log/vm-backup.log 2>&1
+# Weekly compaction on Sunday at 03:00 UTC, after the backup:
+0 3 * * 0   /opt/vocabulary-manager/scripts/compact.sh >> /var/log/vm-compact.log 2>&1

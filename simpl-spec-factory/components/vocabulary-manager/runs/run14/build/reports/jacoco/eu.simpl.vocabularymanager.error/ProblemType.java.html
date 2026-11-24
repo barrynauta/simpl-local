@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProblemType.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.error</a> &gt; <span class="el_source">ProblemType.java</span></div><h1>ProblemType.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.error;
+
+/**
+ * The problem types of the component (D48, D104). Each type is the error code of one outcome.
+ */
+<span class="fc" id="L6">public enum ProblemType {</span>
+<span class="fc" id="L7">    BAD_REQUEST(</span>
+            400,
+            &quot;urn:problem-type:belgif:badRequest&quot;,
+            &quot;Bad Request&quot;,
+            &quot;https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html&quot;,
+            &quot;The input message is incorrect&quot;),
+<span class="fc" id="L13">    UNAUTHORIZED(401, &quot;urn:problem-type:simpl:unauthorized&quot;, &quot;Unauthorized&quot;, null, &quot;No valid access token.&quot;),</span>
+<span class="fc" id="L14">    FORBIDDEN(</span>
+            403,
+            &quot;urn:problem-type:simpl:forbidden&quot;,
+            &quot;Forbidden&quot;,
+            null,
+            &quot;The access token does not grant the role this operation needs.&quot;),
+<span class="fc" id="L20">    NOT_FOUND(</span>
+            404,
+            &quot;urn:problem-type:belgif:resourceNotFound&quot;,
+            &quot;Resource Not Found&quot;,
+            &quot;https://www.belgif.be/specification/rest/api-guide/problems/resourceNotFound.html&quot;,
+            &quot;The requested resource was not found.&quot;),
+<span class="fc" id="L26">    METHOD_NOT_ALLOWED(</span>
+            405,
+            &quot;urn:problem-type:simpl:methodNotAllowed&quot;,
+            &quot;Method Not Allowed&quot;,
+            null,
+            &quot;The method is not allowed on this resource.&quot;),
+<span class="fc" id="L32">    NOT_ACCEPTABLE(</span>
+            406,
+            &quot;urn:problem-type:simpl:notAcceptable&quot;,
+            &quot;Not Acceptable&quot;,
+            null,
+            &quot;Requested media type cannot be served.&quot;),
+<span class="fc" id="L38">    CONFLICT(409, &quot;urn:problem-type:simpl:conflict&quot;, &quot;Conflict&quot;, null, &quot;Conflict.&quot;),</span>
+<span class="fc" id="L39">    PAYLOAD_TOO_LARGE(</span>
+            413,
+            &quot;urn:problem-type:simpl:payloadTooLarge&quot;,
+            &quot;Payload Too Large&quot;,
+            null,
+            &quot;The request is larger than the maximum allowed size of 6 MB.&quot;),
+<span class="fc" id="L45">    URI_TOO_LONG(414, &quot;urn:problem-type:simpl:uriTooLong&quot;, &quot;URI Too Long&quot;, null, &quot;The request URI is too long.&quot;),</span>
+<span class="fc" id="L46">    UNSUPPORTED_MEDIA_TYPE(</span>
+            415,
+            &quot;urn:problem-type:simpl:unsupportedMediaType&quot;,
+            &quot;Unsupported Media Type&quot;,
+            null,
+            &quot;Request content type is not supported.&quot;),
+<span class="fc" id="L52">    HEADERS_TOO_LARGE(</span>
+            431,
+            &quot;urn:problem-type:simpl:requestHeaderFieldsTooLarge&quot;,
+            &quot;Request Header Fields Too Large&quot;,
+            null,
+            &quot;The request headers are too large.&quot;),
+<span class="fc" id="L58">    INTERNAL_SERVER_ERROR(</span>
+            500,
+            &quot;urn:problem-type:belgif:internalServerError&quot;,
+            &quot;Internal Server Error&quot;,
+            &quot;https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html&quot;,
+            &quot;Internal Server Error&quot;),
+<span class="fc" id="L64">    SERVICE_UNAVAILABLE(</span>
+            503,
+            &quot;urn:problem-type:belgif:serviceUnavailable&quot;,
+            &quot;Service Unavailable&quot;,
+            &quot;https://www.belgif.be/specification/rest/api-guide/problems/serviceUnavailable.html&quot;,
+            &quot;The vocabulary store is not available. Retry later.&quot;);
+
+    private final int status;
+    private final String uri;
+    private final String title;
+    private final String href;
+    private final String defaultDetail;
+
+<span class="fc" id="L77">    ProblemType(int status, String uri, String title, String href, String defaultDetail) {</span>
+<span class="fc" id="L78">        this.status = status;</span>
+<span class="fc" id="L79">        this.uri = uri;</span>
+<span class="fc" id="L80">        this.title = title;</span>
+<span class="fc" id="L81">        this.href = href;</span>
+<span class="fc" id="L82">        this.defaultDetail = defaultDetail;</span>
+<span class="fc" id="L83">    }</span>
+
+    public int status() {
+<span class="fc" id="L86">        return status;</span>
+    }
+
+    public String uri() {
+<span class="fc" id="L90">        return uri;</span>
+    }
+
+    public String title() {
+<span class="fc" id="L94">        return title;</span>
+    }
+
+    public String href() {
+<span class="fc" id="L98">        return href;</span>
+    }
+
+    public String defaultDetail() {
+<span class="fc" id="L102">        return defaultDetail;</span>
+    }
+
+    /** Finds the type for an HTTP status, falling back to the generic 400 or 500 type. */
+    public static ProblemType forStatus(int status) {
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        for (ProblemType type : values()) {</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">            if (type.status == status) {</span>
+<span class="fc" id="L109">                return type;</span>
+            }
+        }
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        return status &gt;= 500 ? INTERNAL_SERVER_ERROR : BAD_REQUEST;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

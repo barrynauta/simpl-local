@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.config</a> &gt; <span class="el_source">AppConfig.java</span></div><h1>AppConfig.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.config;
+
+import eu.simpl.vocabularymanager.error.ProblemErrorReportValve;
+import eu.simpl.vocabularymanager.store.StoreFailureException;
+import eu.simpl.vocabularymanager.store.StoreUnavailableException;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.micrometer.tagged.TaggedCircuitBreakerMetrics;
+import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Clock;
+import java.time.Duration;
+import org.apache.catalina.core.StandardHost;
+import org.apache.tomcat.util.buf.EncodedSolidusHandling;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/** Beans of the component: clock, circuit breakers (D103) and the Tomcat settings of D158 and D169. */
+@Configuration
+@EnableConfigurationProperties(AppProperties.class)
+<span class="fc" id="L23">public class AppConfig {</span>
+
+    /** UTC clock. */
+    @Bean
+    public Clock clock() {
+<span class="fc" id="L28">        return Clock.systemUTC();</span>
+    }
+
+    /**
+     * Circuit breakers around the store and the key fetch (D103, D134): open when at least half of the last 20
+     * calls failed (at least 10 calls), open for 10 s, then 3 probe calls. Store 4xx do not count.
+     */
+    @Bean
+    public CircuitBreakerRegistry circuitBreakerRegistry(MeterRegistry meterRegistry) {
+<span class="fc" id="L37">        CircuitBreakerConfig config = CircuitBreakerConfig.custom()</span>
+<span class="fc" id="L38">                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)</span>
+<span class="fc" id="L39">                .slidingWindowSize(20)</span>
+<span class="fc" id="L40">                .minimumNumberOfCalls(10)</span>
+<span class="fc" id="L41">                .failureRateThreshold(50)</span>
+<span class="fc" id="L42">                .waitDurationInOpenState(Duration.ofSeconds(10))</span>
+<span class="fc" id="L43">                .permittedNumberOfCallsInHalfOpenState(3)</span>
+<span class="fc" id="L44">                .recordException(AppConfig::isBreakerFailure)</span>
+<span class="fc" id="L45">                .build();</span>
+<span class="fc" id="L46">        CircuitBreakerRegistry registry = CircuitBreakerRegistry.of(config);</span>
+<span class="fc" id="L47">        TaggedCircuitBreakerMetrics.ofCircuitBreakerRegistry(registry).bindTo(meterRegistry);</span>
+<span class="fc" id="L48">        return registry;</span>
+    }
+
+    static boolean isBreakerFailure(Throwable error) {
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        if (error instanceof StoreFailureException failure) {</span>
+<span class="nc" id="L53">            return failure.serverError();</span>
+        }
+<span class="nc bnc" id="L55" title="All 4 branches missed.">        return error instanceof StoreUnavailableException || error instanceof java.io.IOException;</span>
+    }
+
+    /**
+     * Tomcat: encoded slashes reach the gatekeeper firewall (D67), errors before routing are problem+json (D158),
+     * the server limits are above the service's own checks, and bodies of rejected requests are read to the end.
+     */
+    @Bean
+    public WebServerFactoryCustomizer&lt;TomcatServletWebServerFactory&gt; tomcatCustomizer() {
+<span class="fc" id="L64">        return factory -&gt; {</span>
+<span class="fc" id="L65">            factory.addConnectorCustomizers(connector -&gt; {</span>
+<span class="fc" id="L66">                connector.setEncodedSolidusHandling(EncodedSolidusHandling.PASS_THROUGH.getValue());</span>
+<span class="fc" id="L67">                connector.setMaxPostSize(7 * 1024 * 1024);</span>
+<span class="fc" id="L68">                connector.setAllowTrace(false);</span>
+<span class="fc" id="L69">            });</span>
+<span class="fc" id="L70">            factory.addContextCustomizers(context -&gt; {</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">                if (context.getParent() instanceof StandardHost host) {</span>
+<span class="fc" id="L72">                    host.setErrorReportValveClass(ProblemErrorReportValve.class.getName());</span>
+                }
+<span class="fc" id="L74">            });</span>
+<span class="fc" id="L75">        };</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

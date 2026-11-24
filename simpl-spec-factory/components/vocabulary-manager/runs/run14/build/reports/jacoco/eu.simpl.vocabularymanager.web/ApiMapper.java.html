@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">ApiMapper.java</span></div><h1>ApiMapper.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.api.ExternalVocabularyResponse;
+import eu.simpl.vocabularymanager.api.SearchItemResponse;
+import eu.simpl.vocabularymanager.api.VersionResponse;
+import eu.simpl.vocabularymanager.api.VocabularyResponse;
+import eu.simpl.vocabularymanager.api.WarningResponse;
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.domain.ValidationWarning;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import eu.simpl.vocabularymanager.validation.ContentValidator;
+import java.util.List;
+import org.springframework.stereotype.Component;
+
+/** Maps the domain to the wire format of the OpenAPI (D25, D26, D5, D184). */
+@Component
+public class ApiMapper {
+
+    private final String contentBase;
+
+<span class="fc" id="L23">    public ApiMapper(ContentValidator validator) {</span>
+<span class="fc" id="L24">        this.contentBase = validator.contentBase();</span>
+<span class="fc" id="L25">    }</span>
+
+    /** The vocabulary object. */
+    public VocabularyResponse vocabulary(Vocabulary vocabulary) {
+<span class="fc" id="L29">        return new VocabularyResponse(</span>
+<span class="fc" id="L30">                &quot;/vocabularies/&quot; + vocabulary.name(),</span>
+<span class="fc" id="L31">                contentBase + &quot;/content/&quot; + vocabulary.name(),</span>
+<span class="fc" id="L32">                vocabulary.name(),</span>
+<span class="fc" id="L33">                vocabulary.latestVersion(),</span>
+<span class="fc" id="L34">                vocabulary.latestDescription(),</span>
+<span class="fc" id="L35">                vocabulary.status().name(),</span>
+<span class="fc" id="L36">                vocabulary.createdBy(),</span>
+<span class="fc" id="L37">                vocabulary.creationDate().toString(),</span>
+<span class="fc" id="L38">                vocabulary.lastUpdateDate().toString());</span>
+    }
+
+    /** The version object; warnings null leaves validationWarnings out. */
+    public VersionResponse version(VocabularyVersion version, long latestVersion, List&lt;ValidationWarning&gt; warnings) {
+<span class="fc" id="L43">        String name = version.name();</span>
+<span class="fc" id="L44">        return new VersionResponse(</span>
+<span class="fc" id="L45">                versionHref(name, version.version()),</span>
+<span class="fc" id="L46">                contentBase + &quot;/content/&quot; + name + &quot;/versions/&quot; + version.version(),</span>
+<span class="fc" id="L47">                versionHref(name, latestVersion),</span>
+                name,
+<span class="fc" id="L49">                version.version(),</span>
+<span class="fc" id="L50">                version.description(),</span>
+<span class="fc" id="L51">                version.changelog(),</span>
+<span class="fc" id="L52">                version.status().name(),</span>
+<span class="fc" id="L53">                version.createdBy(),</span>
+<span class="fc" id="L54">                version.creationDate().toString(),</span>
+<span class="fc" id="L55">                version.lastUpdateDate().toString(),</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">                warnings == null</span>
+<span class="fc" id="L57">                        ? null</span>
+<span class="fc" id="L58">                        : warnings.stream()</span>
+<span class="fc" id="L59">                                .map(w -&gt; new WarningResponse(w.code(), w.description(), w.location()))</span>
+<span class="fc" id="L60">                                .toList());</span>
+    }
+
+    /** A search result. */
+    public SearchItemResponse searchItem(VocabularyService.SearchResult result) {
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        String contentHref = result.latest()</span>
+<span class="fc" id="L66">                ? contentBase + &quot;/content/&quot; + result.name()</span>
+<span class="fc" id="L67">                : contentBase + &quot;/content/&quot; + result.name() + &quot;/versions/&quot; + result.version();</span>
+<span class="fc" id="L68">        return new SearchItemResponse(</span>
+<span class="fc" id="L69">                versionHref(result.name(), result.version()),</span>
+                contentHref,
+<span class="fc" id="L71">                result.name(),</span>
+<span class="fc" id="L72">                result.version(),</span>
+<span class="fc" id="L73">                result.status().name(),</span>
+<span class="fc" id="L74">                result.latest());</span>
+    }
+
+    /** The external vocabulary object. */
+    public ExternalVocabularyResponse external(ExternalVocabulary vocabulary) {
+<span class="fc" id="L79">        return new ExternalVocabularyResponse(</span>
+<span class="fc" id="L80">                &quot;/external-vocabularies/&quot; + vocabulary.name(),</span>
+<span class="fc" id="L81">                vocabulary.name(),</span>
+<span class="fc" id="L82">                vocabulary.namespaceUri(),</span>
+<span class="fc" id="L83">                vocabulary.aliasUris(),</span>
+<span class="fc" id="L84">                vocabulary.sourceUri(),</span>
+<span class="fc" id="L85">                vocabulary.description(),</span>
+<span class="fc" id="L86">                vocabulary.createdBy(),</span>
+<span class="fc" id="L87">                vocabulary.creationDate().toString());</span>
+    }
+
+    /** The href of a version, also used as Location (D26). */
+    public static String versionHref(String name, long version) {
+<span class="fc" id="L92">        return &quot;/vocabularies/&quot; + name + &quot;/versions/&quot; + version;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

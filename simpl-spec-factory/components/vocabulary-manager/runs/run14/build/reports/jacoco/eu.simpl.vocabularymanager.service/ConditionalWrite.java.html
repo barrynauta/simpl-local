@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConditionalWrite.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">ConditionalWrite.java</span></div><h1>ConditionalWrite.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.store.StoreClient;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import org.springframework.stereotype.Component;
+
+/**
+ * Retry of conditional store writes (D82, D157, D71): when the condition failed, the caller reads again and
+ * retries, at most 5 times, with backoff 50, 100, 200, 400 and 800 ms and up to 50 % jitter, inside a 30 s budget;
+ * then 503.
+ */
+@Component
+public class ConditionalWrite {
+
+<span class="fc" id="L20">    private static final List&lt;Long&gt; BACKOFF_MS = List.of(50L, 100L, 200L, 400L, 800L);</span>
+<span class="fc" id="L21">    private static final Duration BUDGET = Duration.ofSeconds(30);</span>
+
+    private final Clock clock;
+
+<span class="fc" id="L25">    public ConditionalWrite(Clock clock) {</span>
+<span class="fc" id="L26">        this.clock = clock;</span>
+<span class="fc" id="L27">    }</span>
+
+    /** One attempt: returns a result, or null when the condition failed and the write must be retried. */
+    @FunctionalInterface
+    public interface Attempt&lt;T&gt; {
+        T run();
+    }
+
+    /**
+     * Runs attempts until one succeeds.
+     *
+     * @param attempt the attempt, which reads the current state itself
+     * @param &lt;T&gt; the result type
+     * @return the result of the successful attempt
+     * @throws ApiException 503 when every retry failed or the budget ran out
+     */
+    public &lt;T&gt; T run(Attempt&lt;T&gt; attempt) {
+<span class="fc" id="L44">        Instant deadline = clock.instant().plus(BUDGET);</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">        for (int retry = 0; retry &lt;= BACKOFF_MS.size(); retry++) {</span>
+<span class="fc" id="L46">            T result = attempt.run();</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">            if (result != null) {</span>
+<span class="fc" id="L48">                return result;</span>
+            }
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">            if (retry == BACKOFF_MS.size()) {</span>
+<span class="nc" id="L51">                break;</span>
+            }
+<span class="fc" id="L53">            long base = BACKOFF_MS.get(retry);</span>
+<span class="fc" id="L54">            long wait = base + ThreadLocalRandom.current().nextLong(base / 2 + 1);</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">            if (clock.instant().plusMillis(wait).isAfter(deadline)) {</span>
+<span class="nc" id="L56">                break;</span>
+            }
+<span class="fc" id="L58">            pause(wait);</span>
+        }
+<span class="nc" id="L60">        throw ApiException.unavailable(StoreClient.STORE_DOWN, null);</span>
+    }
+
+    private static void pause(long millis) {
+        try {
+<span class="fc" id="L65">            Thread.sleep(millis);</span>
+<span class="nc" id="L66">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L67">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L68">            throw ApiException.unavailable(StoreClient.STORE_DOWN, e);</span>
+<span class="fc" id="L69">        }</span>
+<span class="fc" id="L70">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

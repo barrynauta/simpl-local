@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VocabularyController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">VocabularyController.java</span></div><h1>VocabularyController.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.api.PageResponse;
+import eu.simpl.vocabularymanager.api.SearchItemResponse;
+import eu.simpl.vocabularymanager.api.VersionResponse;
+import eu.simpl.vocabularymanager.api.VocabularyResponse;
+import eu.simpl.vocabularymanager.domain.Vocabulary;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.domain.VocabularyVersion;
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.security.AuthenticatedUser;
+import eu.simpl.vocabularymanager.service.VocabularyService;
+import eu.simpl.vocabularymanager.store.VocabularyRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+
+/** Operations on internal vocabularies and their versions (OpenAPI tag &quot;Vocabulary management&quot;). */
+@RestController
+@RequestMapping(&quot;/v1&quot;)
+public class VocabularyController {
+
+    static final String JSON = &quot;application/json&quot;;
+    static final String PROBLEM = &quot;application/problem+json&quot;;
+
+<span class="fc" id="L40">    private static final Map&lt;String, String&gt; LIST_SORT = Map.of(</span>
+            &quot;name&quot;, &quot;ASC(?name)&quot;,
+            &quot;-name&quot;, &quot;DESC(?name)&quot;,
+            &quot;status&quot;, &quot;ASC(?status) ASC(?name)&quot;,
+            &quot;-status&quot;, &quot;DESC(?status) ASC(?name)&quot;,
+            &quot;creationDate&quot;, &quot;ASC(?created) ASC(?name)&quot;,
+            &quot;-creationDate&quot;, &quot;DESC(?created) ASC(?name)&quot;,
+            &quot;lastUpdated&quot;, &quot;ASC(?updated) ASC(?name)&quot;,
+            &quot;-lastUpdated&quot;, &quot;DESC(?updated) ASC(?name)&quot;);
+<span class="fc" id="L49">    private static final Map&lt;String, String&gt; VERSION_SORT = Map.of(</span>
+            &quot;name&quot;, &quot;DESC(?n)&quot;,
+            &quot;-name&quot;, &quot;DESC(?n)&quot;,
+            &quot;status&quot;, &quot;ASC(?vstatus) DESC(?n)&quot;,
+            &quot;-status&quot;, &quot;DESC(?vstatus) DESC(?n)&quot;,
+            &quot;creationDate&quot;, &quot;ASC(?vcreated) DESC(?n)&quot;,
+            &quot;-creationDate&quot;, &quot;DESC(?vcreated) DESC(?n)&quot;);
+<span class="fc" id="L56">    private static final Set&lt;String&gt; CREATE_FIELDS = Set.of(&quot;vocabularyFile&quot;, &quot;name&quot;, &quot;description&quot;, &quot;changelog&quot;);</span>
+<span class="fc" id="L57">    private static final Set&lt;String&gt; VERSION_FIELDS = Set.of(&quot;vocabularyFile&quot;, &quot;description&quot;, &quot;changelog&quot;);</span>
+    private static final int MAX_SEARCH_ITEMS = 100;
+
+    private final VocabularyService service;
+    private final ApiMapper mapper;
+
+<span class="fc" id="L63">    public VocabularyController(VocabularyService service, ApiMapper mapper) {</span>
+<span class="fc" id="L64">        this.service = service;</span>
+<span class="fc" id="L65">        this.mapper = mapper;</span>
+<span class="fc" id="L66">    }</span>
+
+    /** GET /vocabularies (SIMPL-18162, SIMPL-18164, D19 to D23). */
+    @GetMapping(
+            path = &quot;/vocabularies&quot;,
+            produces = {JSON, PROBLEM})
+    public ResponseEntity&lt;PageResponse&lt;VocabularyResponse&gt;&gt; getVocabularies(HttpServletRequest request) {
+<span class="fc" id="L73">        QueryParameters query = QueryParameters.parse(request.getQueryString());</span>
+<span class="fc" id="L74">        query.requireOnly(Set.of(&quot;name&quot;, &quot;status&quot;, &quot;creationDate&quot;, &quot;lastUpdated&quot;, &quot;sort&quot;, &quot;page&quot;, &quot;pageSize&quot;));</span>
+<span class="fc" id="L75">        String name = RequestRules.nameFilter(query.get(&quot;name&quot;));</span>
+<span class="fc" id="L76">        VocabularyStatus status = statusFilter(query.get(&quot;status&quot;));</span>
+<span class="fc" id="L77">        Instant[] created = RequestRules.dateFilter(&quot;creationDate&quot;, query.get(&quot;creationDate&quot;));</span>
+<span class="fc" id="L78">        Instant[] updated = RequestRules.dateFilter(&quot;lastUpdated&quot;, query.get(&quot;lastUpdated&quot;));</span>
+<span class="fc" id="L79">        String orderBy = sort(query.get(&quot;sort&quot;), LIST_SORT, &quot;name&quot;);</span>
+<span class="fc" id="L80">        int page = RequestRules.queryInteger(&quot;page&quot;, query.get(&quot;page&quot;), 1, RequestRules.MAX_INT);</span>
+<span class="fc" id="L81">        int pageSize = RequestRules.queryInteger(</span>
+<span class="fc" id="L82">                &quot;pageSize&quot;, query.get(&quot;pageSize&quot;), Paging.DEFAULT_PAGE_SIZE, Paging.MAX_PAGE_SIZE);</span>
+<span class="fc" id="L83">        VocabularyRepository.ListFilter filter = new VocabularyRepository.ListFilter(</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">                name == null ? null : name.toLowerCase(java.util.Locale.ROOT),</span>
+                status,
+<span class="fc bfc" id="L86" title="All 2 branches covered.">                created == null ? null : created[0],</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">                created == null ? null : created[1],</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">                updated == null ? null : updated[0],</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">                updated == null ? null : updated[1]);</span>
+<span class="fc" id="L90">        VocabularyService.Slice&lt;Vocabulary&gt; slice =</span>
+<span class="fc" id="L91">                service.list(filter, orderBy, (long) (page - 1) * pageSize, pageSize);</span>
+<span class="fc" id="L92">        List&lt;VocabularyResponse&gt; items =</span>
+<span class="fc" id="L93">                slice.items().stream().map(mapper::vocabulary).toList();</span>
+<span class="fc" id="L94">        return json(Paging.page(&quot;/vocabularies&quot;, query, page, pageSize, slice.total(), items));</span>
+    }
+
+    /** POST /vocabularies (SIMPL-18170, SIMPL-18187 AC1, D7 to D15, D37, D51). */
+    @PostMapping(
+            path = &quot;/vocabularies&quot;,
+            consumes = &quot;multipart/form-data&quot;,
+            produces = {JSON, PROBLEM})
+    public ResponseEntity&lt;VersionResponse&gt; createVocabulary(HttpServletRequest request) {
+<span class="fc" id="L103">        MultipartForm form = MultipartForm.read(request);</span>
+<span class="fc" id="L104">        QueryParameters.parse(request.getQueryString()).requireOnly(Set.of());</span>
+<span class="fc" id="L105">        form.checkShape(CREATE_FIELDS, Set.of());</span>
+<span class="fc" id="L106">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L107">        String name = RequestRules.nameField(form.text(&quot;name&quot;), issues);</span>
+<span class="fc" id="L108">        String description = RequestRules.requiredText(&quot;description&quot;, form.text(&quot;description&quot;), issues);</span>
+<span class="fc" id="L109">        String changelog = RequestRules.requiredText(&quot;changelog&quot;, form.text(&quot;changelog&quot;), issues);</span>
+<span class="fc" id="L110">        byte[] file = requiredFile(form, issues);</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L112">            throw ApiException.badRequest(issues);</span>
+        }
+<span class="fc" id="L114">        VocabularyService.Created created = service.create(name, description, changelog, file, user(request));</span>
+<span class="fc" id="L115">        return createdResponse(created);</span>
+    }
+
+    /** POST /vocabularies/searches (D38, D68, D110, D182, D205). */
+    @PostMapping(
+            path = &quot;/vocabularies/searches&quot;,
+            consumes = JSON,
+            produces = {JSON, PROBLEM})
+    public ResponseEntity&lt;PageResponse&lt;SearchItemResponse&gt;&gt; searchVocabularies(HttpServletRequest request) {
+<span class="fc" id="L124">        QueryParameters.parse(request.getQueryString()).requireOnly(Set.of());</span>
+<span class="fc" id="L125">        JsonNode body = JsonBody.readObject(request);</span>
+<span class="fc" id="L126">        JsonBody.requireOnly(body, &quot;&quot;, Set.of(&quot;items&quot;));</span>
+<span class="fc" id="L127">        JsonNode items = body.get(&quot;items&quot;);</span>
+<span class="pc bpc" id="L128" title="2 of 8 branches missed.">        if (items == null || !items.isArray() || items.isEmpty() || items.size() &gt; MAX_SEARCH_ITEMS) {</span>
+<span class="fc" id="L129">            throw ApiException.badRequest(&quot;body&quot;, &quot;items&quot;, &quot;Property 'items' must be an array of 1 to 100 items.&quot;);</span>
+        }
+<span class="fc" id="L131">        List&lt;VocabularyService.Reference&gt; references = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        for (int i = 0; i &lt; items.size(); i++) {</span>
+<span class="fc" id="L133">            references.add(searchReference(items.get(i), &quot;items[&quot; + i + &quot;]&quot;));</span>
+        }
+<span class="fc" id="L135">        List&lt;SearchItemResponse&gt; results =</span>
+<span class="fc" id="L136">                service.search(references).stream().map(mapper::searchItem).toList();</span>
+<span class="fc" id="L137">        return json(Paging.searchPage(results));</span>
+    }
+
+    /** GET /vocabularies/{vocabularyName} (D25). */
+    @GetMapping(
+            path = &quot;/vocabularies/{vocabularyName}&quot;,
+            produces = {JSON, PROBLEM})
+    public ResponseEntity&lt;VocabularyResponse&gt; getVocabulary(
+            @PathVariable(&quot;vocabularyName&quot;) String rawName, HttpServletRequest request) {
+<span class="fc" id="L146">        String name = RequestRules.vocabularyName(rawName);</span>
+<span class="fc" id="L147">        QueryParameters.parse(request.getQueryString()).requireOnly(Set.of());</span>
+<span class="fc" id="L148">        return json(mapper.vocabulary(service.get(name)));</span>
+    }
+
+    /** PATCH /vocabularies/{vocabularyName} (SIMPL-18175, D3, D4). */
+    @PatchMapping(
+            path = &quot;/vocabularies/{vocabularyName}&quot;,
+            consumes = JSON,
+            produces = {JSON, PROBLEM})
+    public ResponseEntity&lt;VocabularyResponse&gt; updateVocabularyStatus(
+            @PathVariable(&quot;vocabularyName&quot;) String rawName, HttpServletRequest request) {
+<span class="fc" id="L158">        String name = RequestRules.vocabularyName(rawName);</span>
+<span class="fc" id="L159">        QueryParameters.parse(request.getQueryString()).requireOnly(Set.of());</span>
+<span class="fc" id="L160">        VocabularyStatus target = statusBody(request);</span>
+<span class="fc" id="L161">        return json(mapper.vocabulary(service.changeStatus(name, target, user(request))));</span>
+    }
+
+    /** GET /vocabularies/{vocabularyName}/versions (SIMPL-18168, D23, D154, D196). */
+    @GetMapping(
+            path = &quot;/vocabularies/{vocabularyName}/versions&quot;,
+            produces = {JSON, PROBLEM})
+    public ResponseEntity&lt;PageResponse&lt;VersionResponse&gt;&gt; getVocabularyVersions(
+            @PathVariable(&quot;vocabularyName&quot;) String rawName, HttpServletRequest request) {
+<span class="fc" id="L170">        String name = RequestRules.vocabularyName(rawName);</span>
+<span class="fc" id="L171">        QueryParameters query = QueryParameters.parse(request.getQueryString());</span>
+<span class="fc" id="L172">        query.requireOnly(Set.of(&quot;sort&quot;, &quot;page&quot;, &quot;pageSize&quot;));</span>
+<span class="fc" id="L173">        String orderBy = sort(query.get(&quot;sort&quot;), VERSION_SORT, null);</span>
+<span class="fc" id="L174">        int page = RequestRules.queryInteger(&quot;page&quot;, query.get(&quot;page&quot;), 1, RequestRules.MAX_INT);</span>
+<span class="fc" id="L175">        int pageSize = RequestRules.queryInteger(</span>
+<span class="fc" id="L176">                &quot;pageSize&quot;, query.get(&quot;pageSize&quot;), Paging.DEFAULT_PAGE_SIZE, Paging.MAX_PAGE_SIZE);</span>
+<span class="fc" id="L177">        VocabularyService.Slice&lt;VocabularyVersion&gt; slice =</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">                service.versions(name, orderBy == null ? &quot;DESC(?n)&quot; : orderBy, (long) (page - 1) * pageSize, pageSize);</span>
+<span class="fc" id="L179">        List&lt;VersionResponse&gt; items = slice.items().stream()</span>
+<span class="fc" id="L180">                .map(version -&gt; mapper.version(version, slice.total(), null))</span>
+<span class="fc" id="L181">                .toList();</span>
+<span class="fc" id="L182">        return json(Paging.page(&quot;/vocabularies/&quot; + name + &quot;/versions&quot;, query, page, pageSize, slice.total(), items));</span>
+    }
+
+    /** POST /vocabularies/{vocabularyName}/versions (SIMPL-18173, SIMPL-18190, D4, D7, D43, D46). */
+    @PostMapping(
+            path = &quot;/vocabularies/{vocabularyName}/versions&quot;,
+            consumes = &quot;multipart/form-data&quot;,
+            produces = {JSON, PROBLEM})
+    public ResponseEntity&lt;VersionResponse&gt; createVocabularyVersion(
+            @PathVariable(&quot;vocabularyName&quot;) String rawName, HttpServletRequest request) {
+<span class="fc" id="L192">        MultipartForm form = MultipartForm.read(request);</span>
+<span class="fc" id="L193">        String name = RequestRules.vocabularyName(rawName);</span>
+<span class="fc" id="L194">        QueryParameters.parse(request.getQueryString()).requireOnly(Set.of());</span>
+<span class="fc" id="L195">        form.checkShape(VERSION_FIELDS, Set.of());</span>
+<span class="fc" id="L196">        List&lt;Issue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L197">        String description = RequestRules.requiredText(&quot;description&quot;, form.text(&quot;description&quot;), issues);</span>
+<span class="fc" id="L198">        String changelog = RequestRules.requiredText(&quot;changelog&quot;, form.text(&quot;changelog&quot;), issues);</span>
+<span class="fc" id="L199">        byte[] file = requiredFile(form, issues);</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L201">            throw ApiException.badRequest(issues);</span>
+        }
+<span class="fc" id="L203">        VocabularyService.Created created = service.createVersion(name, description, changelog, file, user(request));</span>
+<span class="fc" id="L204">        return createdResponse(created);</span>
+    }
+
+    /** GET /vocabularies/{vocabularyName}/versions/{version} (SIMPL-18166). */
+    @GetMapping(
+            path = &quot;/vocabularies/{vocabularyName}/versions/{version}&quot;,
+            produces = {JSON, PROBLEM})
+    public ResponseEntity&lt;VersionResponse&gt; getVocabularyVersion(
+            @PathVariable(&quot;vocabularyName&quot;) String rawName,
+            @PathVariable(&quot;version&quot;) String rawVersion,
+            HttpServletRequest request) {
+<span class="fc" id="L215">        String name = RequestRules.vocabularyName(rawName);</span>
+<span class="fc" id="L216">        long version = RequestRules.version(rawVersion);</span>
+<span class="fc" id="L217">        QueryParameters.parse(request.getQueryString()).requireOnly(Set.of());</span>
+<span class="fc" id="L218">        VocabularyService.Created found = service.version(name, version);</span>
+<span class="fc" id="L219">        return json(mapper.version(found.version(), found.latestVersion(), null));</span>
+    }
+
+    /** PATCH /vocabularies/{vocabularyName}/versions/{version} (D4, D41, D160). */
+    @PatchMapping(
+            path = &quot;/vocabularies/{vocabularyName}/versions/{version}&quot;,
+            consumes = JSON,
+            produces = {JSON, PROBLEM})
+    public ResponseEntity&lt;VersionResponse&gt; updateVocabularyVersionStatus(
+            @PathVariable(&quot;vocabularyName&quot;) String rawName,
+            @PathVariable(&quot;version&quot;) String rawVersion,
+            HttpServletRequest request) {
+<span class="fc" id="L231">        String name = RequestRules.vocabularyName(rawName);</span>
+<span class="fc" id="L232">        long version = RequestRules.version(rawVersion);</span>
+<span class="fc" id="L233">        QueryParameters.parse(request.getQueryString()).requireOnly(Set.of());</span>
+<span class="fc" id="L234">        VocabularyStatus target = statusBody(request);</span>
+<span class="fc" id="L235">        VocabularyService.Created changed = service.changeVersionStatus(name, version, target, user(request));</span>
+<span class="fc" id="L236">        return json(mapper.version(changed.version(), changed.latestVersion(), null));</span>
+    }
+
+    private ResponseEntity&lt;VersionResponse&gt; createdResponse(VocabularyService.Created created) {
+<span class="fc" id="L240">        VersionResponse body = mapper.version(created.version(), created.latestVersion(), created.warnings());</span>
+<span class="fc" id="L241">        return ResponseEntity.created(URI.create(body.href()))</span>
+<span class="fc" id="L242">                .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L243">                .body(body);</span>
+    }
+
+    private static VocabularyService.Reference searchReference(JsonNode item, String prefix) {
+<span class="pc bpc" id="L247" title="1 of 4 branches missed.">        if (item == null || !item.isObject()) {</span>
+<span class="fc" id="L248">            throw ApiException.badRequest(&quot;body&quot;, prefix, &quot;Item '&quot; + prefix + &quot;' must be an object.&quot;);</span>
+        }
+<span class="fc" id="L250">        JsonBody.requireOnly(item, prefix + &quot;.&quot;, Set.of(&quot;name&quot;, &quot;version&quot;));</span>
+<span class="fc" id="L251">        JsonNode name = item.get(&quot;name&quot;);</span>
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        if (name == null</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">                || !name.isString()</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">                || !eu.simpl.vocabularymanager.domain.VocabularyNames.isValid(name.asString())) {</span>
+<span class="nc" id="L255">            throw ApiException.badRequest(</span>
+                    &quot;body&quot;, prefix + &quot;.name&quot;, &quot;Property '&quot; + prefix + &quot;.name' must be a valid vocabulary name.&quot;);
+        }
+<span class="fc" id="L258">        JsonNode version = item.get(&quot;version&quot;);</span>
+<span class="fc bfc" id="L259" title="All 2 branches covered.">        if (version == null) {</span>
+<span class="fc" id="L260">            return new VocabularyService.Reference(name.asString(), null);</span>
+        }
+<span class="fc bfc" id="L262" title="All 2 branches covered.">        if (!JsonBody.isInteger(version, 1)) {</span>
+<span class="fc" id="L263">            throw ApiException.badRequest(</span>
+                    &quot;body&quot;,
+                    prefix + &quot;.version&quot;,
+                    &quot;Property '&quot; + prefix + &quot;.version' must be an integer from 1 to 2147483647.&quot;);
+        }
+<span class="fc" id="L268">        return new VocabularyService.Reference(name.asString(), version.asLong());</span>
+    }
+
+    private static VocabularyStatus statusBody(HttpServletRequest request) {
+<span class="fc" id="L272">        JsonNode body = JsonBody.readObject(request);</span>
+<span class="fc" id="L273">        JsonBody.requireOnly(body, &quot;&quot;, Set.of(&quot;status&quot;));</span>
+<span class="fc" id="L274">        JsonNode status = body.get(&quot;status&quot;);</span>
+        VocabularyStatus target =
+<span class="pc bpc" id="L276" title="2 of 4 branches missed.">                status != null &amp;&amp; status.isString() ? VocabularyStatus.parse(status.asString()) : null;</span>
+<span class="fc bfc" id="L277" title="All 2 branches covered.">        if (target == null) {</span>
+<span class="fc" id="L278">            throw ApiException.badRequest(&quot;body&quot;, &quot;status&quot;, &quot;Property 'status' must be ACTIVE or DEPRECATED.&quot;);</span>
+        }
+<span class="fc" id="L280">        return target;</span>
+    }
+
+    private static VocabularyStatus statusFilter(String value) {
+<span class="fc bfc" id="L284" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L285">            return null;</span>
+        }
+<span class="fc" id="L287">        VocabularyStatus status = VocabularyStatus.parse(value);</span>
+<span class="fc bfc" id="L288" title="All 2 branches covered.">        if (status == null) {</span>
+<span class="fc" id="L289">            throw ApiException.badRequest(&quot;query&quot;, &quot;status&quot;, &quot;Query parameter 'status' must be ACTIVE or DEPRECATED.&quot;);</span>
+        }
+<span class="fc" id="L291">        return status;</span>
+    }
+
+    private static String sort(String value, Map&lt;String, String&gt; allowed, String fallback) {
+<span class="fc bfc" id="L295" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc bfc" id="L296" title="All 2 branches covered.">            return fallback == null ? null : allowed.get(fallback);</span>
+        }
+<span class="fc" id="L298">        String orderBy = allowed.get(value);</span>
+<span class="fc bfc" id="L299" title="All 2 branches covered.">        if (orderBy == null) {</span>
+<span class="fc" id="L300">            throw ApiException.badRequest(</span>
+<span class="fc" id="L301">                    &quot;query&quot;, &quot;sort&quot;, &quot;Query parameter 'sort' must be one of &quot; + allowed.keySet() + &quot;.&quot;);</span>
+        }
+<span class="fc" id="L303">        return orderBy;</span>
+    }
+
+    private static byte[] requiredFile(MultipartForm form, List&lt;Issue&gt; issues) {
+<span class="fc" id="L307">        byte[] file = form.bytes(MultipartForm.FILE_FIELD);</span>
+<span class="fc bfc" id="L308" title="All 2 branches covered.">        if (file == null) {</span>
+<span class="fc" id="L309">            issues.add(Issue.schemaViolation(&quot;body&quot;, MultipartForm.FILE_FIELD, &quot;Field 'vocabularyFile' is required.&quot;));</span>
+        }
+<span class="fc" id="L311">        return file;</span>
+    }
+
+    static AuthenticatedUser user(HttpServletRequest request) {
+<span class="fc" id="L315">        return (AuthenticatedUser) request.getAttribute(GatekeeperFilter.USER);</span>
+    }
+
+    static &lt;T&gt; ResponseEntity&lt;T&gt; json(T body) {
+<span class="fc" id="L319">        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

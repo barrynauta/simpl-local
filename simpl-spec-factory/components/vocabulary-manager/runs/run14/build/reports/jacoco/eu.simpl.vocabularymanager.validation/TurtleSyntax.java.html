@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TurtleSyntax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">TurtleSyntax.java</span></div><h1>TurtleSyntax.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import org.apache.jena.atlas.lib.Pair;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RiotException;
+import org.apache.jena.riot.RiotParseException;
+import org.apache.jena.riot.lang.LabelToNode;
+import org.apache.jena.riot.system.ErrorHandler;
+import org.apache.jena.riot.system.StreamRDFBase;
+import org.apache.jena.riot.tokens.Token;
+import org.apache.jena.riot.tokens.TokenType;
+import org.apache.jena.riot.tokens.Tokenizer;
+import org.apache.jena.riot.tokens.TokenizerText;
+
+/**
+ * Syntax validation (D9): parses the content as Turtle (RDF 1.1) with Jena RIOT. The first error stops the parse.
+ * A second pass with the Jena tokenizer reads the prefix namespaces as written and the blank node labels.
+ */
+public final class TurtleSyntax {
+
+    private TurtleSyntax() {}
+
+    /** A Turtle syntax error with its position; line and column are -1 when the parser gives none. */
+    public static final class SyntaxError extends Exception {
+        private static final long serialVersionUID = 1L;
+        private final long line;
+        private final long column;
+
+        public SyntaxError(String message, long line, long column) {
+<span class="fc" id="L38">            super(message);</span>
+<span class="fc" id="L39">            this.line = line;</span>
+<span class="fc" id="L40">            this.column = column;</span>
+<span class="fc" id="L41">        }</span>
+
+        public long line() {
+<span class="fc" id="L44">            return line;</span>
+        }
+
+        public long column() {
+<span class="nc" id="L48">            return column;</span>
+        }
+
+        /** The location text of D9 and D60: 'line N, column M', the column only when known. */
+        public String location() {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">            if (line &lt; 1) {</span>
+<span class="fc" id="L54">                return &quot;document&quot;;</span>
+            }
+<span class="fc bfc" id="L56" title="All 2 branches covered.">            return column &lt; 1 ? &quot;line &quot; + line : &quot;line &quot; + line + &quot;, column &quot; + column;</span>
+        }
+    }
+
+    /**
+     * Parses the content.
+     *
+     * @param content the uploaded bytes
+     * @param base the base IRI for relative IRIs (D57, D124)
+     * @return the parsed content
+     * @throws SyntaxError on the first syntax error
+     */
+    public static ParsedContent parse(byte[] content, String base) throws SyntaxError {
+<span class="fc" id="L69">        List&lt;Triple&gt; triples = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L70">        List&lt;Pair&lt;String, String&gt;&gt; prefixEvents = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L71">        List&lt;Integer&gt; prefixPositions = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L72">        StreamRDFBase collector = new StreamRDFBase() {</span>
+            @Override
+            public void triple(Triple triple) {
+<span class="fc" id="L75">                triples.add(triple);</span>
+<span class="fc" id="L76">            }</span>
+
+            @Override
+            public void prefix(String prefix, String iri) {
+<span class="fc" id="L80">                prefixEvents.add(Pair.create(prefix, iri));</span>
+<span class="fc" id="L81">                prefixPositions.add(triples.size());</span>
+<span class="fc" id="L82">            }</span>
+        };
+        try {
+<span class="fc" id="L85">            RDFParser.create()</span>
+<span class="fc" id="L86">                    .source(new ByteArrayInputStream(content))</span>
+<span class="fc" id="L87">                    .lang(Lang.TURTLE)</span>
+<span class="fc" id="L88">                    .base(base)</span>
+<span class="fc" id="L89">                    .labelToNode(LabelToNode.createUseLabelAsGiven())</span>
+<span class="fc" id="L90">                    .errorHandler(new FailFast())</span>
+<span class="fc" id="L91">                    .parse(collector);</span>
+<span class="fc" id="L92">        } catch (RiotParseException e) {</span>
+<span class="fc" id="L93">            throw new SyntaxError(e.getOriginalMessage(), e.getLine(), e.getCol());</span>
+<span class="nc" id="L94">        } catch (RiotException e) {</span>
+<span class="nc" id="L95">            throw new SyntaxError(e.getMessage(), -1, -1);</span>
+<span class="fc" id="L96">        }</span>
+<span class="fc" id="L97">        Lexical lexical = lexicalPass(content);</span>
+<span class="fc" id="L98">        List&lt;ParsedContent.PrefixDeclaration&gt; prefixes = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        for (int i = 0; i &lt; prefixEvents.size(); i++) {</span>
+<span class="fc" id="L100">            Pair&lt;String, String&gt; event = prefixEvents.get(i);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">            String declared = i &lt; lexical.declared().size() ? lexical.declared().get(i) : event.getRight();</span>
+<span class="fc" id="L102">            prefixes.add(new ParsedContent.PrefixDeclaration(</span>
+<span class="fc" id="L103">                    event.getLeft(), declared, event.getRight(), prefixPositions.get(i)));</span>
+        }
+<span class="fc" id="L105">        return new ParsedContent(List.copyOf(triples), List.copyOf(prefixes), lexical.blankNodeLabels());</span>
+    }
+
+<span class="fc" id="L108">    private record Lexical(List&lt;String&gt; declared, Set&lt;String&gt; blankNodeLabels) {}</span>
+
+    private static Lexical lexicalPass(byte[] content) {
+<span class="fc" id="L111">        List&lt;String&gt; declared = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L112">        Set&lt;String&gt; labels = new HashSet&lt;&gt;();</span>
+        Tokenizer tokenizer =
+<span class="fc" id="L114">                TokenizerText.create().source(new ByteArrayInputStream(content)).build();</span>
+<span class="fc" id="L115">        boolean inPrefix = false;</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">        while (tokenizer.hasNext()) {</span>
+<span class="fc" id="L117">            Token token = tokenizer.next();</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">            if (isPrefixDirective(token)) {</span>
+<span class="fc" id="L119">                inPrefix = true;</span>
+<span class="fc bfc" id="L120" title="All 4 branches covered.">            } else if (inPrefix &amp;&amp; token.getType() == TokenType.IRI) {</span>
+<span class="fc" id="L121">                declared.add(token.getImage());</span>
+<span class="fc" id="L122">                inPrefix = false;</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">            } else if (token.getType() == TokenType.BNODE) {</span>
+<span class="fc" id="L124">                labels.add(token.getImage());</span>
+            }
+<span class="fc" id="L126">        }</span>
+<span class="fc" id="L127">        return new Lexical(declared, labels);</span>
+    }
+
+    private static boolean isPrefixDirective(Token token) {
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        if (token.getType() == TokenType.DIRECTIVE) {</span>
+<span class="fc" id="L132">            return &quot;prefix&quot;.equals(token.getImage());</span>
+        }
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        return token.getType() == TokenType.KEYWORD</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">                &amp;&amp; &quot;prefix&quot;.equals(token.getImage().toLowerCase(Locale.ROOT));</span>
+    }
+
+    /** Ignores warnings, stops at the first error (D9: one issue for the first parse error). */
+    private static final class FailFast implements ErrorHandler {
+        @Override
+        public void warning(String message, long line, long col) {
+            // Warnings never block (for example IRI advice); only errors are syntax errors.
+<span class="nc" id="L143">        }</span>
+
+        @Override
+        public void error(String message, long line, long col) {
+<span class="nc" id="L147">            throw new RiotParseException(message, line, col);</span>
+        }
+
+        @Override
+        public void fatal(String message, long line, long col) {
+<span class="fc" id="L152">            throw new RiotParseException(message, line, col);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

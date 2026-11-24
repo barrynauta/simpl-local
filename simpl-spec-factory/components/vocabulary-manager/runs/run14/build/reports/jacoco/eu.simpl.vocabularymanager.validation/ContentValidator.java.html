@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContentValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">ContentValidator.java</span></div><h1>ContentValidator.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.domain.ValidationWarning;
+import eu.simpl.vocabularymanager.domain.VocabularyStatus;
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import eu.simpl.vocabularymanager.store.VocabularyRepository;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.stereotype.Component;
+
+/**
+ * Validation of uploaded content (D9 to D12, D47, D65, D125): syntax first, then the semantic rules S1 to S7 with
+ * all errors in one report, then the warnings of the reference check. The reference check uses one store query
+ * per upload (Q5).
+ */
+@Component
+public class ContentValidator {
+
+    public static final String SYNTAX_PREFIX = &quot;Encountered invalid Turtle syntax&quot;;
+
+    private final String contentBase;
+    private final VocabularyRepository repository;
+
+<span class="fc" id="L33">    public ContentValidator(AppProperties properties, VocabularyRepository repository) {</span>
+<span class="fc" id="L34">        String base = properties.contentBaseUrl();</span>
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">        this.contentBase = base.endsWith(&quot;/&quot;) ? base.substring(0, base.length() - 1) : base;</span>
+<span class="fc" id="L36">        this.repository = repository;</span>
+<span class="fc" id="L37">    }</span>
+
+    /** contentBase without trailing slash. */
+    public String contentBase() {
+<span class="fc" id="L41">        return contentBase;</span>
+    }
+
+    /**
+     * Validates internal vocabulary content.
+     *
+     * @param content the uploaded bytes
+     * @param name the vocabulary being created or versioned
+     * @param version the version number it will get (base IRI, D57)
+     * @return the validation warnings
+     * @throws ApiException 400 with the validation report when there are errors
+     */
+    public List&lt;ValidationWarning&gt; validateInternal(byte[] content, String name, long version) {
+<span class="fc" id="L54">        ParsedContent parsed = parseOrReject(content, contentBase + &quot;/content/&quot; + name + &quot;/versions/&quot; + version);</span>
+<span class="fc" id="L55">        List&lt;SemanticRules.PositionedIssue&gt; issues = new ArrayList&lt;&gt;(SemanticRules.check(parsed));</span>
+<span class="fc" id="L56">        References.Found references = References.find(parsed, contentBase, name);</span>
+<span class="fc" id="L57">        List&lt;ValidationWarning&gt; warnings = checkReferences(references, issues);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (!issues.isEmpty()) {</span>
+<span class="fc" id="L59">            issues.sort(Comparator.comparingInt(SemanticRules.PositionedIssue::position));</span>
+<span class="fc" id="L60">            throw ApiException.badRequest(</span>
+<span class="fc" id="L61">                    issues.stream().map(SemanticRules.PositionedIssue::issue).toList());</span>
+        }
+<span class="fc" id="L63">        return warnings;</span>
+    }
+
+    /**
+     * Validates external vocabulary content: syntax only and not empty (D30, D70, D124).
+     *
+     * @param content the uploaded bytes
+     * @param namespaceUri the base for relative IRIs
+     * @throws ApiException 400 with one issue
+     */
+    public void validateExternal(byte[] content, String namespaceUri) {
+<span class="fc" id="L74">        ParsedContent parsed = parseOrReject(content, namespaceUri);</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (parsed.triples().isEmpty()) {</span>
+<span class="fc" id="L76">            throw ApiException.badRequest(</span>
+<span class="fc" id="L77">                    List.of(Issue.invalidInput(&quot;body&quot;, &quot;vocabularyFile&quot;, SemanticRules.S6, &quot;document&quot;)));</span>
+        }
+<span class="fc" id="L79">    }</span>
+
+    private static ParsedContent parseOrReject(byte[] content, String base) {
+        try {
+<span class="fc" id="L83">            return TurtleSyntax.parse(content, base);</span>
+<span class="fc" id="L84">        } catch (TurtleSyntax.SyntaxError e) {</span>
+<span class="pc bpc" id="L85" title="2 of 4 branches missed.">            String message = e.getMessage() == null || e.getMessage().isBlank() ? &quot;&quot; : &quot;: &quot; + e.getMessage();</span>
+<span class="fc" id="L86">            String detail = SYNTAX_PREFIX + sanitise(message);</span>
+<span class="fc" id="L87">            throw new ApiException(</span>
+                    ProblemType.BAD_REQUEST,
+                    null,
+<span class="fc" id="L90">                    List.of(Issue.invalidInput(&quot;body&quot;, &quot;vocabularyFile&quot;, detail, e.location())));</span>
+        }
+    }
+
+    private List&lt;ValidationWarning&gt; checkReferences(
+            References.Found references, List&lt;SemanticRules.PositionedIssue&gt; issues) {
+<span class="fc" id="L96">        Set&lt;String&gt; names = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L97">        Set&lt;Long&gt; versions = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        for (References.Internal reference : references.internal()) {</span>
+<span class="fc" id="L99">            names.add(reference.name());</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">            if (reference.version() != null) {</span>
+<span class="fc" id="L101">                versions.add(reference.version());</span>
+            }
+<span class="fc" id="L103">        }</span>
+<span class="fc" id="L104">        Set&lt;String&gt; keys = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        for (ParsedContent.PrefixDeclaration declaration : references.external()) {</span>
+<span class="fc" id="L106">            keys.add(References.normalise(declaration.resolved()));</span>
+<span class="fc" id="L107">        }</span>
+<span class="fc" id="L108">        VocabularyRepository.Lookup lookup = repository.lookup(names, versions, keys);</span>
+<span class="fc" id="L109">        Map&lt;String, Known&gt; known = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        for (VocabularyRepository.VersionRow row : lookup.rows()) {</span>
+<span class="fc" id="L111">            Known entry = known.computeIfAbsent(</span>
+<span class="fc" id="L112">                    row.name(), key -&gt; new Known(row.vocabularyStatus(), row.latestVersion(), new HashMap&lt;&gt;()));</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">            if (row.version() &gt; 0) {</span>
+<span class="fc" id="L114">                entry.versions().put(row.version(), row.versionStatus());</span>
+            }
+<span class="fc" id="L116">        }</span>
+<span class="fc" id="L117">        List&lt;ValidationWarning&gt; warnings = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        for (References.Internal reference : references.internal()) {</span>
+<span class="fc" id="L119">            internalOutcome(reference, known.get(reference.name()), issues, warnings);</span>
+<span class="fc" id="L120">        }</span>
+<span class="fc" id="L121">        Set&lt;String&gt; registered = new HashSet&lt;&gt;(lookup.registeredKeys());</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        for (ParsedContent.PrefixDeclaration declaration : references.external()) {</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">            if (!registered.contains(References.normalise(declaration.resolved()))) {</span>
+<span class="fc" id="L124">                warnings.add(new ValidationWarning(</span>
+                        ValidationWarning.EXTERNAL_REFERENCE_SKIPPED,
+<span class="fc" id="L126">                        &quot;Cannot resolve external namespace '&quot; + declaration.declared()</span>
+                                + &quot;' because no cached external vocabulary is registered.&quot;,
+<span class="fc" id="L128">                        location(declaration)));</span>
+            }
+<span class="fc" id="L130">        }</span>
+<span class="fc" id="L131">        return warnings;</span>
+    }
+
+<span class="fc" id="L134">    private record Known(VocabularyStatus status, long latest, Map&lt;Long, VocabularyStatus&gt; versions) {}</span>
+
+    private static void internalOutcome(
+            References.Internal reference,
+            Known known,
+            List&lt;SemanticRules.PositionedIssue&gt; issues,
+            List&lt;ValidationWarning&gt; warnings) {
+<span class="fc" id="L141">        String name = reference.name();</span>
+<span class="fc" id="L142">        String location = location(reference.declaration());</span>
+<span class="fc" id="L143">        int position = reference.declaration().position();</span>
+<span class="fc bfc" id="L144" title="All 6 branches covered.">        if (known == null || (reference.versionText() != null &amp;&amp; reference.version() == null)) {</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">            String detail = reference.versionText() == null</span>
+<span class="fc" id="L146">                    ? &quot;Referenced internal vocabulary '&quot; + name + &quot;' does not exist.&quot;</span>
+<span class="fc" id="L147">                    : &quot;Referenced internal vocabulary '&quot; + name + &quot;' version &quot; + reference.versionText()</span>
+<span class="fc" id="L148">                            + &quot; does not exist.&quot;;</span>
+<span class="fc" id="L149">            issues.add(new SemanticRules.PositionedIssue(position, missing(detail, location)));</span>
+<span class="fc" id="L150">            return;</span>
+        }
+<span class="fc bfc" id="L152" title="All 2 branches covered.">        long version = reference.version() == null ? known.latest() : reference.version();</span>
+<span class="fc" id="L153">        VocabularyStatus versionStatus = known.versions().get(version);</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        if (versionStatus == null) {</span>
+<span class="fc" id="L155">            String detail = &quot;Referenced internal vocabulary '&quot; + name + &quot;' version &quot; + reference.versionText()</span>
+                    + &quot; does not exist.&quot;;
+<span class="fc" id="L157">            issues.add(new SemanticRules.PositionedIssue(position, missing(detail, location)));</span>
+<span class="fc" id="L158">            return;</span>
+        }
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        boolean vocabularyDeprecated = known.status() == VocabularyStatus.DEPRECATED;</span>
+<span class="pc bpc" id="L161" title="1 of 4 branches missed.">        if (versionStatus != VocabularyStatus.DEPRECATED &amp;&amp; !vocabularyDeprecated) {</span>
+<span class="nc" id="L162">            return;</span>
+        }
+<span class="fc" id="L164">        StringBuilder description = new StringBuilder(&quot;Referenced internal vocabulary '&quot;)</span>
+<span class="fc" id="L165">                .append(name)</span>
+<span class="fc" id="L166">                .append(&quot;' version &quot;)</span>
+<span class="fc" id="L167">                .append(version)</span>
+<span class="fc" id="L168">                .append(&quot; is deprecated.&quot;);</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">        if (vocabularyDeprecated) {</span>
+<span class="fc" id="L170">            description.append(&quot; The vocabulary '&quot;).append(name).append(&quot;' is deprecated.&quot;);</span>
+        } else {
+<span class="fc" id="L172">            long latestActive = known.versions().entrySet().stream()</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">                    .filter(entry -&gt; entry.getValue() == VocabularyStatus.ACTIVE)</span>
+<span class="fc" id="L174">                    .mapToLong(Map.Entry::getKey)</span>
+<span class="fc" id="L175">                    .max()</span>
+<span class="fc" id="L176">                    .orElse(-1);</span>
+<span class="pc bpc" id="L177" title="2 of 4 branches missed.">            if (latestActive &gt; 0 &amp;&amp; latestActive != version) {</span>
+<span class="fc" id="L178">                description.append(&quot; Use version &quot;).append(latestActive).append(&quot;, the latest ACTIVE version.&quot;);</span>
+            }
+        }
+<span class="fc" id="L181">        warnings.add(new ValidationWarning(</span>
+<span class="fc" id="L182">                ValidationWarning.DEPRECATED_VOCABULARY_REFERENCE, description.toString(), location));</span>
+<span class="fc" id="L183">    }</span>
+
+    private static Issue missing(String detail, String location) {
+<span class="fc" id="L186">        return Issue.invalidInput(&quot;body&quot;, &quot;vocabularyFile&quot;, detail, location);</span>
+    }
+
+    private static String location(ParsedContent.PrefixDeclaration declaration) {
+<span class="fc" id="L190">        return &quot;prefix '&quot; + declaration.prefix() + &quot;' -&gt; '&quot; + declaration.declared() + &quot;'&quot;;</span>
+    }
+
+    private static String sanitise(String message) {
+<span class="fc" id="L194">        String text = message.replaceAll(&quot;[\\r\\n\\t]+&quot;, &quot; &quot;);</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">        return text.length() &gt; 300 ? text.substring(0, 300) : text;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtAuthenticator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.security</a> &gt; <span class="el_source">JwtAuthenticator.java</span></div><h1>JwtAuthenticator.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.security;
+
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.proc.JWSVerificationKeySelector;
+import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
+import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+import eu.simpl.vocabularymanager.config.AppProperties;
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+/**
+ * Validates bearer tokens locally with the realm keys (D17, D44, D132): signature with Nimbus, then issuer,
+ * audience, expiry and not-before with the Nimbus claims verifier, without clock skew.
+ */
+@Component
+public class JwtAuthenticator {
+
+<span class="fc" id="L31">    private static final Logger LOG = LoggerFactory.getLogger(JwtAuthenticator.class);</span>
+
+<span class="fc" id="L33">    private static final Set&lt;JWSAlgorithm&gt; ALGORITHMS = Set.of(</span>
+            JWSAlgorithm.RS256,
+            JWSAlgorithm.RS384,
+            JWSAlgorithm.RS512,
+            JWSAlgorithm.PS256,
+            JWSAlgorithm.PS384,
+            JWSAlgorithm.PS512,
+            JWSAlgorithm.ES256,
+            JWSAlgorithm.ES384,
+            JWSAlgorithm.ES512);
+    private static final String IDP_DOWN = &quot;The identity provider is not available. Retry later.&quot;;
+
+    private final RealmKeyCache keyCache;
+    private final DefaultJWTClaimsVerifier&lt;SecurityContext&gt; claimsVerifier;
+
+<span class="fc" id="L48">    public JwtAuthenticator(AppProperties properties, RealmKeyCache keyCache) {</span>
+<span class="fc" id="L49">        this.keyCache = keyCache;</span>
+<span class="fc" id="L50">        this.claimsVerifier = new DefaultJWTClaimsVerifier&lt;&gt;(</span>
+<span class="fc" id="L51">                properties.identity().audience(),</span>
+                new JWTClaimsSet.Builder()
+<span class="fc" id="L53">                        .issuer(properties.identity().issuer())</span>
+<span class="fc" id="L54">                        .build(),</span>
+<span class="fc" id="L55">                Set.of(&quot;exp&quot;, &quot;iss&quot;));</span>
+<span class="fc" id="L56">        this.claimsVerifier.setMaxClockSkew(0);</span>
+<span class="fc" id="L57">    }</span>
+
+    /**
+     * Authenticates the Authorization header value.
+     *
+     * @param authorization the header value, may be null
+     * @return the user
+     * @throws ApiException 401 for a missing or invalid token, 503 when the keys cannot be fetched
+     */
+    public AuthenticatedUser authenticate(String authorization) {
+<span class="fc" id="L67">        String token = bearerToken(authorization);</span>
+        SignedJWT jwt;
+        try {
+<span class="fc" id="L70">            jwt = SignedJWT.parse(token);</span>
+<span class="fc" id="L71">        } catch (ParseException e) {</span>
+<span class="fc" id="L72">            throw unauthorized();</span>
+<span class="fc" id="L73">        }</span>
+<span class="fc" id="L74">        RealmKeyCache.Lookup lookup = keyCache.lookup(jwt.getHeader().getKeyID());</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (lookup == RealmKeyCache.Lookup.UNAVAILABLE) {</span>
+<span class="fc" id="L76">            throw ApiException.unavailable(IDP_DOWN, null);</span>
+        }
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        if (lookup == RealmKeyCache.Lookup.NOT_FOUND) {</span>
+<span class="fc" id="L79">            throw unauthorized();</span>
+        }
+<span class="fc" id="L81">        DefaultJWTProcessor&lt;SecurityContext&gt; processor = new DefaultJWTProcessor&lt;&gt;();</span>
+<span class="fc" id="L82">        processor.setJWSKeySelector(</span>
+<span class="fc" id="L83">                new JWSVerificationKeySelector&lt;&gt;(ALGORITHMS, new ImmutableJWKSet&lt;&gt;(keyCache.keys())));</span>
+<span class="fc" id="L84">        processor.setJWTClaimsSetVerifier(claimsVerifier);</span>
+        try {
+<span class="fc" id="L86">            JWTClaimsSet claims = processor.process(jwt, null);</span>
+<span class="fc" id="L87">            return toUser(claims);</span>
+<span class="fc" id="L88">        } catch (Exception e) {</span>
+<span class="fc" id="L89">            throw unauthorized();</span>
+        }
+    }
+
+    private static AuthenticatedUser toUser(JWTClaimsSet claims) throws ParseException {
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">        String subject = claims.getSubject() == null ? &quot;unknown&quot; : claims.getSubject();</span>
+<span class="fc" id="L95">        String email = claims.getStringClaim(&quot;email&quot;);</span>
+<span class="fc" id="L96">        String username = claims.getStringClaim(&quot;preferred_username&quot;);</span>
+<span class="pc bpc" id="L97" title="2 of 4 branches missed.">        String creator = email != null &amp;&amp; !email.isBlank() ? email : username;</span>
+<span class="fc" id="L98">        List&lt;String&gt; roles = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L99">        Map&lt;String, Object&gt; realmAccess = claims.getJSONObjectClaim(&quot;realm_access&quot;);</span>
+<span class="pc bpc" id="L100" title="2 of 4 branches missed.">        if (realmAccess != null &amp;&amp; realmAccess.get(&quot;roles&quot;) instanceof List&lt;?&gt; list) {</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">            for (Object role : list) {</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">                if (role instanceof String name) {</span>
+<span class="fc" id="L103">                    roles.add(name);</span>
+                }
+<span class="fc" id="L105">            }</span>
+        }
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        return new AuthenticatedUser(subject, creator == null ? subject : creator, Set.copyOf(roles));</span>
+    }
+
+    private static String bearerToken(String authorization) {
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (authorization == null) {</span>
+<span class="fc" id="L112">            throw unauthorized();</span>
+        }
+<span class="fc" id="L114">        String value = authorization.trim();</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        if (value.length() &lt; 8</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">                || !value.substring(0, 7).toLowerCase(Locale.ROOT).equals(&quot;bearer &quot;)) {</span>
+<span class="fc" id="L117">            throw unauthorized();</span>
+        }
+<span class="fc" id="L119">        String token = value.substring(7).trim();</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        if (token.isEmpty()) {</span>
+<span class="nc" id="L121">            throw unauthorized();</span>
+        }
+<span class="fc" id="L123">        return token;</span>
+    }
+
+    private static ApiException unauthorized() {
+<span class="fc" id="L127">        LOG.warn(&quot;Authentication failed: no valid bearer token&quot;);</span>
+<span class="fc" id="L128">        return new ApiException(ProblemType.UNAUTHORIZED, null, List.of());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

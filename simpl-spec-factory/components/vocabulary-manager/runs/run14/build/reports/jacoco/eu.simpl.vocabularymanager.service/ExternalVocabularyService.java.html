@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExternalVocabularyService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.service</a> &gt; <span class="el_source">ExternalVocabularyService.java</span></div><h1>ExternalVocabularyService.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.service;
+
+import eu.simpl.vocabularymanager.domain.ExternalVocabulary;
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.security.AuthenticatedUser;
+import eu.simpl.vocabularymanager.store.ExternalVocabularyRepository;
+import eu.simpl.vocabularymanager.validation.ContentValidator;
+import eu.simpl.vocabularymanager.validation.References;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+/** Use cases of external vocabularies (D30, D38, D41, D42, D56, D66, D73, D147, D148). */
+@Service
+public class ExternalVocabularyService {
+
+<span class="fc" id="L27">    private static final Logger LOG = LoggerFactory.getLogger(ExternalVocabularyService.class);</span>
+
+    private final ExternalVocabularyRepository repository;
+    private final ContentValidator validator;
+    private final ConditionalWrite conditionalWrite;
+    private final Clock clock;
+
+    public ExternalVocabularyService(
+            ExternalVocabularyRepository repository,
+            ContentValidator validator,
+            ConditionalWrite conditionalWrite,
+<span class="fc" id="L38">            Clock clock) {</span>
+<span class="fc" id="L39">        this.repository = repository;</span>
+<span class="fc" id="L40">        this.validator = validator;</span>
+<span class="fc" id="L41">        this.conditionalWrite = conditionalWrite;</span>
+<span class="fc" id="L42">        this.clock = clock;</span>
+<span class="fc" id="L43">    }</span>
+
+    /**
+     * A registration request after the field checks.
+     *
+     * @param name name
+     * @param namespaceUri namespace URI as sent
+     * @param aliasUris alias URIs as sent
+     * @param sourceUri source URI or null
+     * @param description description or null
+     * @param content the file bytes
+     */
+<span class="fc" id="L55">    public record Registration(</span>
+            String name,
+            String namespaceUri,
+            List&lt;String&gt; aliasUris,
+            String sourceUri,
+            String description,
+            byte[] content) {}
+
+    /**
+     * Registers an external vocabulary.
+     *
+     * @throws ApiException 409 on a name or URI conflict (D147 order), 400 on invalid content
+     */
+    public ExternalVocabulary register(Registration registration, AuthenticatedUser user) {
+<span class="fc" id="L69">        Set&lt;String&gt; keys = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L70">        keys.add(References.normalise(registration.namespaceUri()));</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        for (String alias : registration.aliasUris()) {</span>
+<span class="fc" id="L72">            keys.add(References.normalise(alias));</span>
+<span class="fc" id="L73">        }</span>
+<span class="fc" id="L74">        checkConflicts(registration, keys);</span>
+<span class="fc" id="L75">        validator.validateExternal(registration.content(), registration.namespaceUri());</span>
+<span class="fc" id="L76">        Instant now = clock.instant().truncatedTo(ChronoUnit.SECONDS);</span>
+<span class="fc" id="L77">        ExternalVocabulary vocabulary = new ExternalVocabulary(</span>
+<span class="fc" id="L78">                registration.name(),</span>
+<span class="fc" id="L79">                registration.namespaceUri(),</span>
+<span class="fc" id="L80">                List.copyOf(registration.aliasUris()),</span>
+<span class="fc" id="L81">                registration.sourceUri(),</span>
+<span class="fc" id="L82">                registration.description(),</span>
+<span class="fc" id="L83">                user.creator(),</span>
+                now);
+<span class="fc" id="L85">        conditionalWrite.run(() -&gt; {</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">            if (repository.insert(vocabulary, keys, registration.content())) {</span>
+<span class="fc" id="L87">                return Boolean.TRUE;</span>
+            }
+<span class="nc" id="L89">            checkConflicts(registration, keys);</span>
+<span class="nc" id="L90">            return null;</span>
+        });
+<span class="fc" id="L92">        LOG.info(&quot;External vocabulary registered by user {}&quot;, user.subject());</span>
+<span class="fc" id="L93">        return vocabulary;</span>
+    }
+
+    private void checkConflicts(Registration registration, Set&lt;String&gt; keys) {
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        if (repository.nameTaken(registration.name())) {</span>
+<span class="fc" id="L98">            throw ApiException.conflict(</span>
+<span class="fc" id="L99">                    &quot;An external vocabulary with name '&quot; + registration.name() + &quot;' is already registered.&quot;);</span>
+        }
+<span class="fc" id="L101">        Set&lt;String&gt; taken = new HashSet&lt;&gt;(repository.registeredKeys(keys));</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        if (taken.isEmpty()) {</span>
+<span class="fc" id="L103">            return;</span>
+        }
+<span class="fc" id="L105">        List&lt;String&gt; candidates = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L106">        candidates.add(registration.namespaceUri());</span>
+<span class="fc" id="L107">        candidates.addAll(registration.aliasUris());</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        for (String uri : candidates) {</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">            if (taken.contains(References.normalise(uri))) {</span>
+<span class="fc" id="L110">                throw ApiException.conflict(</span>
+                        &quot;An external vocabulary with namespace or alias '&quot; + uri + &quot;' is already registered.&quot;);
+            }
+<span class="fc" id="L113">        }</span>
+<span class="nc" id="L114">    }</span>
+
+    /** Lists external vocabularies in name order (D41). */
+    public VocabularyService.Slice&lt;ExternalVocabulary&gt; list(long offset, int limit) {
+<span class="fc" id="L118">        long total = repository.count();</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        if (offset &gt;= total) {</span>
+<span class="fc" id="L120">            return new VocabularyService.Slice&lt;&gt;(List.of(), total);</span>
+        }
+<span class="fc" id="L122">        return new VocabularyService.Slice&lt;&gt;(repository.list(offset, limit), total);</span>
+    }
+
+    /**
+     * Gets an external vocabulary.
+     *
+     * @throws ApiException 404 with the text of D41
+     */
+    public ExternalVocabulary get(String name) {
+<span class="fc" id="L131">        return repository.find(name).orElseThrow(() -&gt; notFound(name));</span>
+    }
+
+    /**
+     * Reads the content by name.
+     *
+     * @throws ApiException 404 with the text of D41
+     */
+    public byte[] content(String name) {
+<span class="fc" id="L140">        get(name);</span>
+<span class="pc" id="L141">        return repository.content(name).orElseThrow(() -&gt; notFound(name));</span>
+    }
+
+    /**
+     * Reads the content by namespace or alias URI (D66).
+     *
+     * @param namespaceUri the URI as sent
+     * @return the vocabulary and its bytes
+     * @throws ApiException 404 with the text of D66
+     */
+    public Map.Entry&lt;ExternalVocabulary, byte[]&gt; contentByNamespace(String namespaceUri) {
+<span class="fc" id="L152">        Map&lt;String, ExternalVocabulary&gt; found = repository.findByKeys(List.of(References.normalise(namespaceUri)));</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        if (found.isEmpty()) {</span>
+<span class="fc" id="L154">            throw namespaceNotFound(namespaceUri);</span>
+        }
+<span class="fc" id="L156">        ExternalVocabulary vocabulary = found.values().iterator().next();</span>
+<span class="pc" id="L157">        byte[] bytes = repository.content(vocabulary.name()).orElseThrow(() -&gt; namespaceNotFound(namespaceUri));</span>
+<span class="fc" id="L158">        return Map.entry(vocabulary, bytes);</span>
+    }
+
+    /**
+     * Searches by URIs (D38): results in the order of the first matching URI, namespaceUris before aliasUris,
+     * each external vocabulary once.
+     *
+     * @param uris the URIs in that order
+     * @return the matching external vocabularies
+     */
+    public List&lt;ExternalVocabulary&gt; search(List&lt;String&gt; uris) {
+<span class="fc" id="L169">        Set&lt;String&gt; keys = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">        for (String uri : uris) {</span>
+<span class="fc" id="L171">            keys.add(References.normalise(uri));</span>
+<span class="fc" id="L172">        }</span>
+<span class="fc" id="L173">        Map&lt;String, ExternalVocabulary&gt; byKey = repository.findByKeys(keys);</span>
+<span class="fc" id="L174">        Map&lt;String, ExternalVocabulary&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        for (String key : keys) {</span>
+<span class="fc" id="L176">            ExternalVocabulary match = byKey.get(key);</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">            if (match != null) {</span>
+<span class="fc" id="L178">                results.putIfAbsent(match.name(), match);</span>
+            }
+<span class="fc" id="L180">        }</span>
+<span class="fc" id="L181">        return List.copyOf(results.values());</span>
+    }
+
+    /**
+     * Removes an external vocabulary without a reference check (D41, D42).
+     *
+     * @throws ApiException 404 with the text of D41
+     */
+    public void delete(String name, AuthenticatedUser user) {
+<span class="fc" id="L190">        get(name);</span>
+<span class="fc" id="L191">        repository.delete(name);</span>
+<span class="fc" id="L192">        LOG.info(&quot;External vocabulary removed by user {}&quot;, user.subject());</span>
+<span class="fc" id="L193">    }</span>
+
+    static ApiException notFound(String name) {
+<span class="fc" id="L196">        return ApiException.notFound(&quot;External vocabulary with name '&quot; + name + &quot;' was not found.&quot;, &quot;path&quot;, &quot;name&quot;);</span>
+    }
+
+    private static ApiException namespaceNotFound(String uri) {
+<span class="fc" id="L200">        return ApiException.notFound(</span>
+                &quot;External vocabulary with namespaceUri '&quot; + uri + &quot;' was not found.&quot;, &quot;body&quot;, &quot;namespaceUri&quot;);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

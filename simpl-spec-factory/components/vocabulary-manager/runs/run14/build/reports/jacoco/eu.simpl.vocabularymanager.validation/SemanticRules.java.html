@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SemanticRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.validation</a> &gt; <span class="el_source">SemanticRules.java</span></div><h1>SemanticRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.validation;
+
+import eu.simpl.vocabularymanager.error.Issue;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.riot.out.NodeFmtLib;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+
+/**
+ * Semantic validation rules S1 to S6 of D9 with the location texts of D65, D140, D142 to D144, D181 and D199. All
+ * rules run; every error is returned. Issues carry the file position for the order of the report (D125).
+ */
+public final class SemanticRules {
+
+    public static final String S1 = &quot;Literal value for object property&quot;;
+    public static final String S2 = &quot;Resource value for datatype property&quot;;
+    public static final String S3 = &quot;Property declared as both object and datatype property&quot;;
+    public static final String S4 = &quot;Duplicate preferred label for the same language&quot;;
+    public static final String S5 = &quot;Resource is an instance of disjoint classes&quot;;
+    public static final String S6 = &quot;Vocabulary contains no statements&quot;;
+
+<span class="fc" id="L31">    private static final Node PREF_LABEL =</span>
+<span class="fc" id="L32">            org.apache.jena.graph.NodeFactory.createURI(&quot;http://www.w3.org/2004/02/skos/core#prefLabel&quot;);</span>
+
+    private SemanticRules() {}
+
+    /**
+     * An issue with its position in the file.
+     *
+     * @param position number of triples before the offending statement
+     * @param issue the issue
+     */
+<span class="fc" id="L42">    public record PositionedIssue(int position, Issue issue) {}</span>
+
+    /**
+     * Runs S1 to S6.
+     *
+     * @param content the parsed content
+     * @return the issues, unsorted
+     */
+    public static List&lt;PositionedIssue&gt; check(ParsedContent content) {
+<span class="fc" id="L51">        List&lt;PositionedIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L52">        List&lt;Triple&gt; triples = content.triples();</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (triples.isEmpty()) {</span>
+<span class="fc" id="L54">            issues.add(new PositionedIssue(0, error(S6, &quot;document&quot;)));</span>
+<span class="fc" id="L55">            return issues;</span>
+        }
+<span class="fc" id="L57">        Map&lt;Node, Integer&gt; objectProperties = declarations(triples, OWL.ObjectProperty.asNode());</span>
+<span class="fc" id="L58">        Map&lt;Node, Integer&gt; datatypeProperties = declarations(triples, OWL.DatatypeProperty.asNode());</span>
+<span class="fc" id="L59">        Set&lt;String&gt; labels = content.blankNodeLabels();</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        for (int i = 0; i &lt; triples.size(); i++) {</span>
+<span class="fc" id="L61">            Triple triple = triples.get(i);</span>
+<span class="fc" id="L62">            Node predicate = triple.getPredicate();</span>
+<span class="fc" id="L63">            Node object = triple.getObject();</span>
+<span class="pc bpc" id="L64" title="1 of 4 branches missed.">            if (objectProperties.containsKey(predicate) &amp;&amp; object.isLiteral()) {</span>
+<span class="fc" id="L65">                issues.add(new PositionedIssue(i, error(S1, statement(triple, labels))));</span>
+            }
+<span class="pc bpc" id="L67" title="1 of 6 branches missed.">            if (datatypeProperties.containsKey(predicate) &amp;&amp; (object.isURI() || object.isBlank())) {</span>
+<span class="fc" id="L68">                issues.add(new PositionedIssue(i, error(S2, statement(triple, labels))));</span>
+            }
+        }
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        for (Map.Entry&lt;Node, Integer&gt; entry : objectProperties.entrySet()) {</span>
+<span class="fc" id="L72">            Integer other = datatypeProperties.get(entry.getKey());</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">            if (other != null) {</span>
+<span class="fc" id="L74">                int position = Math.min(entry.getValue(), other);</span>
+<span class="fc" id="L75">                issues.add(new PositionedIssue(</span>
+<span class="fc" id="L76">                        position, error(S3, &quot;resource '&quot; + plain(entry.getKey(), labels) + &quot;'&quot;)));</span>
+            }
+<span class="fc" id="L78">        }</span>
+<span class="fc" id="L79">        issues.addAll(duplicateLabels(triples, labels));</span>
+<span class="fc" id="L80">        issues.addAll(disjointInstances(triples, labels));</span>
+<span class="fc" id="L81">        return issues;</span>
+    }
+
+    private static List&lt;PositionedIssue&gt; duplicateLabels(List&lt;Triple&gt; triples, Set&lt;String&gt; labels) {
+<span class="fc" id="L85">        List&lt;PositionedIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L86">        Map&lt;Node, Map&lt;String, Set&lt;String&gt;&gt;&gt; seen = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L87">        Set&lt;String&gt; reported = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        for (int i = 0; i &lt; triples.size(); i++) {</span>
+<span class="fc" id="L89">            Triple triple = triples.get(i);</span>
+<span class="pc bpc" id="L90" title="1 of 4 branches missed.">            if (!triple.getPredicate().equals(PREF_LABEL) || !triple.getObject().isLiteral()) {</span>
+<span class="nc" id="L91">                continue;</span>
+            }
+<span class="fc" id="L93">            String language = triple.getObject().getLiteralLanguage();</span>
+<span class="pc bpc" id="L94" title="1 of 4 branches missed.">            String tag = language == null || language.isEmpty() ? &quot;none&quot; : language.toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L95">            Set&lt;String&gt; values = seen.computeIfAbsent(triple.getSubject(), key -&gt; new HashMap&lt;&gt;())</span>
+<span class="fc" id="L96">                    .computeIfAbsent(tag, key -&gt; new HashSet&lt;&gt;());</span>
+<span class="fc" id="L97">            values.add(triple.getObject().getLiteralLexicalForm());</span>
+<span class="fc" id="L98">            String key = triple.getSubject().toString() + &quot;\u0000&quot; + tag;</span>
+<span class="pc bpc" id="L99" title="1 of 4 branches missed.">            if (values.size() &gt; 1 &amp;&amp; reported.add(key)) {</span>
+<span class="fc" id="L100">                String location = &quot;resource '&quot; + plain(triple.getSubject(), labels) + &quot;', language '&quot; + tag + &quot;'&quot;;</span>
+<span class="fc" id="L101">                issues.add(new PositionedIssue(i, error(S4, location)));</span>
+            }
+        }
+<span class="fc" id="L104">        return issues;</span>
+    }
+
+    private static List&lt;PositionedIssue&gt; disjointInstances(List&lt;Triple&gt; triples, Set&lt;String&gt; labels) {
+<span class="fc" id="L108">        Map&lt;Node, Set&lt;Node&gt;&gt; disjoint = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        for (Triple triple : triples) {</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">            if (triple.getPredicate().equals(OWL.disjointWith.asNode())) {</span>
+<span class="fc" id="L111">                disjoint.computeIfAbsent(triple.getSubject(), key -&gt; new HashSet&lt;&gt;())</span>
+<span class="fc" id="L112">                        .add(triple.getObject());</span>
+<span class="fc" id="L113">                disjoint.computeIfAbsent(triple.getObject(), key -&gt; new HashSet&lt;&gt;())</span>
+<span class="fc" id="L114">                        .add(triple.getSubject());</span>
+            }
+<span class="fc" id="L116">        }</span>
+<span class="fc" id="L117">        List&lt;PositionedIssue&gt; issues = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if (disjoint.isEmpty()) {</span>
+<span class="fc" id="L119">            return issues;</span>
+        }
+<span class="fc" id="L121">        Map&lt;Node, Set&lt;Node&gt;&gt; types = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L122">        Set&lt;Node&gt; reported = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        for (int i = 0; i &lt; triples.size(); i++) {</span>
+<span class="fc" id="L124">            Triple triple = triples.get(i);</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">            if (!triple.getPredicate().equals(RDF.type.asNode())) {</span>
+<span class="fc" id="L126">                continue;</span>
+            }
+<span class="fc" id="L128">            Set&lt;Node&gt; known = types.computeIfAbsent(triple.getSubject(), key -&gt; new HashSet&lt;&gt;());</span>
+<span class="fc" id="L129">            Set&lt;Node&gt; disjointWithNew = disjoint.getOrDefault(triple.getObject(), Set.of());</span>
+<span class="fc" id="L130">            boolean clash = known.stream().anyMatch(disjointWithNew::contains);</span>
+<span class="fc" id="L131">            known.add(triple.getObject());</span>
+<span class="fc bfc" id="L132" title="All 4 branches covered.">            if (clash &amp;&amp; reported.add(triple.getSubject())) {</span>
+<span class="fc" id="L133">                issues.add(new PositionedIssue(i, error(S5, &quot;resource '&quot; + plain(triple.getSubject(), labels) + &quot;'&quot;)));</span>
+            }
+        }
+<span class="fc" id="L136">        return issues;</span>
+    }
+
+    private static Map&lt;Node, Integer&gt; declarations(List&lt;Triple&gt; triples, Node kind) {
+<span class="fc" id="L140">        Map&lt;Node, Integer&gt; declared = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        for (int i = 0; i &lt; triples.size(); i++) {</span>
+<span class="fc" id="L142">            Triple triple = triples.get(i);</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">            if (triple.getPredicate().equals(RDF.type.asNode())</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">                    &amp;&amp; triple.getObject().equals(kind)</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">                    &amp;&amp; triple.getSubject().isURI()) {</span>
+<span class="fc" id="L146">                declared.putIfAbsent(triple.getSubject(), i);</span>
+            }
+        }
+<span class="fc" id="L149">        return declared;</span>
+    }
+
+    /** The statement location of S1 and S2 in N-Triples form (D181, D140, D199). */
+    static String statement(Triple triple, Set&lt;String&gt; labels) {
+<span class="fc" id="L154">        return &quot;statement '&quot; + nTriples(triple.getSubject(), labels) + &quot; &quot; + nTriples(triple.getPredicate(), labels)</span>
+<span class="fc" id="L155">                + &quot; &quot; + nTriples(triple.getObject(), labels) + &quot;'&quot;;</span>
+    }
+
+    private static String nTriples(Node node, Set&lt;String&gt; labels) {
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        if (node.isBlank()) {</span>
+<span class="fc" id="L160">            return blank(node, labels);</span>
+        }
+<span class="fc" id="L162">        return NodeFmtLib.strNT(node);</span>
+    }
+
+    private static String plain(Node node, Set&lt;String&gt; labels) {
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">        if (node.isBlank()) {</span>
+<span class="nc" id="L167">            return blank(node, labels);</span>
+        }
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">        return node.isURI() ? node.getURI() : NodeFmtLib.strNT(node);</span>
+    }
+
+    private static String blank(Node node, Set&lt;String&gt; labels) {
+<span class="fc" id="L173">        String label = node.getBlankNodeLabel();</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        return labels.contains(label) ? &quot;_:&quot; + label : &quot;[]&quot;;</span>
+    }
+
+    private static Issue error(String detail, String location) {
+<span class="fc" id="L178">        return Issue.invalidInput(&quot;body&quot;, &quot;vocabularyFile&quot;, detail, location);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

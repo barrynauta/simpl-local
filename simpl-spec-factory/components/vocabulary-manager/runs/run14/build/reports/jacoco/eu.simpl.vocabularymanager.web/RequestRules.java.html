@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestRules.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">RequestRules.java</span></div><h1>RequestRules.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.domain.VocabularyNames;
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.regex.Pattern;
+import org.apache.jena.rfc3986.IRI3986;
+
+/**
+ * Field and parameter rules of the decided contract (D19, D20, D22, D37, D49, D56, D73, D91, D112, D130). Each
+ * method returns the checked value or throws 400 with one issue.
+ */
+public final class RequestRules {
+
+    public static final int MAX_TEXT = 1000;
+    public static final int MAX_INT = Integer.MAX_VALUE;
+
+<span class="fc" id="L27">    private static final Pattern DIGITS = Pattern.compile(&quot;^[0-9]+$&quot;);</span>
+<span class="fc" id="L28">    private static final Pattern NAME_FILTER = Pattern.compile(&quot;^[A-Za-z0-9]{1,64}$&quot;);</span>
+<span class="fc" id="L29">    private static final Pattern DATE_FILTER = Pattern.compile(&quot;^\\d{4}-\\d{2}-\\d{2}(T.*)?$&quot;);</span>
+
+    private RequestRules() {}
+
+    /** A vocabulary name in a path (D49). */
+    public static String vocabularyName(String raw) {
+<span class="fc" id="L35">        return pathName(raw, &quot;vocabularyName&quot;);</span>
+    }
+
+    /** An external vocabulary name in a path (D49). */
+    public static String externalName(String raw) {
+<span class="fc" id="L40">        return pathName(raw, &quot;name&quot;);</span>
+    }
+
+    private static String pathName(String raw, String parameter) {
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        String value = raw == null ? null : QueryParameters.decode(raw);</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (!VocabularyNames.isValid(value)) {</span>
+<span class="fc" id="L46">            throw ApiException.badRequest(</span>
+                    &quot;path&quot;,
+                    parameter,
+                    &quot;Path parameter '&quot; + parameter + &quot;' must have 3 to 64 characters and match ^[A-Z][a-zA-Z0-9]*$.&quot;);
+        }
+<span class="fc" id="L51">        return value;</span>
+    }
+
+    /** A version number in a path: digits only, 1 to 2147483647 (D49, D91, D112). */
+    public static long version(String raw) {
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        String value = raw == null ? null : QueryParameters.decode(raw);</span>
+<span class="fc" id="L57">        Long number = integer(value, 1, MAX_INT);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (number == null) {</span>
+<span class="fc" id="L59">            throw ApiException.badRequest(</span>
+                    &quot;path&quot;, &quot;version&quot;, &quot;Path parameter 'version' must be an integer from 1 to 2147483647.&quot;);
+        }
+<span class="fc" id="L62">        return number;</span>
+    }
+
+    /**
+     * An integer query parameter (D22, D91, D112).
+     *
+     * @param name parameter name
+     * @param value the value or null
+     * @param fallback the default
+     * @param max the maximum
+     * @return the value
+     */
+    public static int queryInteger(String name, String value, int fallback, int max) {
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L76">            return fallback;</span>
+        }
+<span class="fc" id="L78">        Long number = integer(value, 1, max);</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (number == null) {</span>
+<span class="fc" id="L80">            throw ApiException.badRequest(</span>
+                    &quot;query&quot;, name, &quot;Query parameter '&quot; + name + &quot;' must be an integer from 1 to &quot; + max + &quot;.&quot;);
+        }
+<span class="fc" id="L83">        return number.intValue();</span>
+    }
+
+    private static Long integer(String value, long min, long max) {
+<span class="pc bpc" id="L87" title="1 of 6 branches missed.">        if (value == null || !DIGITS.matcher(value).matches() || value.length() &gt; 12) {</span>
+<span class="fc" id="L88">            return null;</span>
+        }
+<span class="fc" id="L90">        long number = Long.parseLong(value);</span>
+<span class="fc bfc" id="L91" title="All 4 branches covered.">        return number &lt; min || number &gt; max ? null : number;</span>
+    }
+
+    /** The name filter of D19. */
+    public static String nameFilter(String value) {
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L97">            return null;</span>
+        }
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (!NAME_FILTER.matcher(value).matches()) {</span>
+<span class="fc" id="L100">            throw ApiException.badRequest(</span>
+                    &quot;query&quot;, &quot;name&quot;, &quot;Query parameter 'name' must have 1 to 64 letters or digits.&quot;);
+        }
+<span class="fc" id="L103">        return value;</span>
+    }
+
+    /**
+     * A date filter (D20, D110, D130): a date covers the whole UTC day; a date-time matches to the second.
+     *
+     * @param name parameter name
+     * @param value the value or null
+     * @return lower bound (inclusive) and upper bound (exclusive), or null
+     */
+    public static Instant[] dateFilter(String name, String value) {
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L115">            return null;</span>
+        }
+<span class="fc" id="L117">        String message = &quot;Query parameter '&quot; + name + &quot;' must be a date (YYYY-MM-DD) or a date-time.&quot;;</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if (!DATE_FILTER.matcher(value).matches()) {</span>
+<span class="fc" id="L119">            throw ApiException.badRequest(&quot;query&quot;, name, message);</span>
+        }
+        try {
+<span class="fc bfc" id="L122" title="All 2 branches covered.">            if (value.length() == 10) {</span>
+<span class="fc" id="L123">                Instant start =</span>
+<span class="fc" id="L124">                        LocalDate.parse(value).atStartOfDay(ZoneOffset.UTC).toInstant();</span>
+<span class="fc" id="L125">                return new Instant[] {start, start.plus(1, ChronoUnit.DAYS)};</span>
+            }
+<span class="fc" id="L127">            Instant at = parseDateTime(value).truncatedTo(ChronoUnit.SECONDS);</span>
+<span class="fc" id="L128">            return new Instant[] {at, at.plusSeconds(1)};</span>
+<span class="fc" id="L129">        } catch (DateTimeException e) {</span>
+<span class="fc" id="L130">            throw ApiException.badRequest(&quot;query&quot;, name, message);</span>
+        }
+    }
+
+    private static Instant parseDateTime(String value) {
+        try {
+<span class="fc" id="L136">            return OffsetDateTime.parse(value, DateTimeFormatter.ISO_OFFSET_DATE_TIME)</span>
+<span class="fc" id="L137">                    .toInstant();</span>
+<span class="fc" id="L138">        } catch (DateTimeException e) {</span>
+<span class="fc" id="L139">            return LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)</span>
+<span class="fc" id="L140">                    .toInstant(ZoneOffset.UTC);</span>
+        }
+    }
+
+    /**
+     * A required text field of 1 to 1000 characters after trimming (D37).
+     *
+     * @param field field name
+     * @param value the value or null
+     * @param issues collects the issue
+     * @return the trimmed value or null
+     */
+    public static String requiredText(String field, String value, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L154">            issues.add(Issue.schemaViolation(&quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' is required.&quot;));</span>
+<span class="fc" id="L155">            return null;</span>
+        }
+<span class="fc" id="L157">        String trimmed = value.strip();</span>
+<span class="fc" id="L158">        int length = trimmed.codePointCount(0, trimmed.length());</span>
+<span class="fc bfc" id="L159" title="All 4 branches covered.">        if (length &lt; 1 || length &gt; MAX_TEXT) {</span>
+<span class="fc" id="L160">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' must have 1 to 1000 characters after trimming.&quot;));
+<span class="fc" id="L162">            return null;</span>
+        }
+<span class="fc" id="L164">        return trimmed;</span>
+    }
+
+    /**
+     * An optional text field of at most 1000 characters; blank means absent (D56, D148).
+     *
+     * @return the trimmed value or null
+     */
+    public static String optionalText(String field, String value, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L174">            return null;</span>
+        }
+<span class="fc" id="L176">        String trimmed = value.strip();</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        if (trimmed.isEmpty()) {</span>
+<span class="fc" id="L178">            return null;</span>
+        }
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        if (trimmed.codePointCount(0, trimmed.length()) &gt; MAX_TEXT) {</span>
+<span class="fc" id="L181">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;, field, &quot;Field '&quot; + field + &quot;' must have at most 1000 characters after trimming.&quot;));
+<span class="fc" id="L183">            return null;</span>
+        }
+<span class="fc" id="L185">        return trimmed;</span>
+    }
+
+    /** A required name field (D37, D56). */
+    public static String nameField(String value, List&lt;Issue&gt; issues) {
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L191">            issues.add(Issue.schemaViolation(&quot;body&quot;, &quot;name&quot;, &quot;Field 'name' is required.&quot;));</span>
+<span class="fc" id="L192">            return null;</span>
+        }
+<span class="fc bfc" id="L194" title="All 2 branches covered.">        if (!VocabularyNames.isValid(value)) {</span>
+<span class="fc" id="L195">            issues.add(Issue.schemaViolation(</span>
+                    &quot;body&quot;, &quot;name&quot;, &quot;Field 'name' must have 3 to 64 characters and match ^[A-Z][a-zA-Z0-9]*$.&quot;));
+<span class="fc" id="L197">            return null;</span>
+        }
+<span class="fc" id="L199">        return value;</span>
+    }
+
+    /** True when the text is an absolute URI by RFC 3986 (D73). */
+    public static boolean isAbsoluteUri(String value) {
+<span class="pc bpc" id="L204" title="1 of 6 branches missed.">        if (value == null || value.isEmpty() || value.length() &gt; 4096) {</span>
+<span class="fc" id="L205">            return false;</span>
+        }
+        try {
+<span class="fc" id="L208">            IRI3986 iri = IRI3986.create(value);</span>
+<span class="fc" id="L209">            return iri.hasScheme();</span>
+<span class="fc" id="L210">        } catch (RuntimeException e) {</span>
+<span class="fc" id="L211">            return false;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

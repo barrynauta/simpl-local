@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GatekeeperFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.web</a> &gt; <span class="el_source">GatekeeperFilter.java</span></div><h1>GatekeeperFilter.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.web;
+
+import eu.simpl.vocabularymanager.error.ApiException;
+import eu.simpl.vocabularymanager.error.Issue;
+import eu.simpl.vocabularymanager.error.ProblemType;
+import eu.simpl.vocabularymanager.error.ProblemWriter;
+import eu.simpl.vocabularymanager.security.AuthenticatedUser;
+import eu.simpl.vocabularymanager.security.JwtAuthenticator;
+import eu.simpl.vocabularymanager.service.UploadSlots;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Runs the checks that come before any handler, in the decided order (D17, D51, D63, D67, D84, D139, D162, D170,
+ * D172): unknown method 405, firewall 400, undeclared method 405 with Allow, token 401 (or 404 for an unknown
+ * path), role 403, Accept 406, Content-Type 415, declared size 413 and the upload slot 503. A request that matches
+ * no declared operation never reaches a handler (default deny).
+ */
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE + 10)
+public class GatekeeperFilter extends OncePerRequestFilter {
+
+    public static final String OPERATION = &quot;vm.operation&quot;;
+    public static final String USER = &quot;vm.user&quot;;
+    public static final String PATH_VALUES = &quot;vm.pathValues&quot;;
+
+    public static final long MULTIPART_LIMIT = 6L * 1024 * 1024;
+    public static final long JSON_LIMIT = 1024L * 1024;
+    public static final String JSON_TOO_LARGE = &quot;The request body is larger than 1 MB.&quot;;
+    public static final String MULTIPART_TOO_LARGE = &quot;The request is larger than the maximum allowed size of 6 MB.&quot;;
+
+<span class="fc" id="L52">    private static final Logger LOG = LoggerFactory.getLogger(GatekeeperFilter.class);</span>
+<span class="fc" id="L53">    private static final Set&lt;String&gt; KNOWN_METHODS =</span>
+<span class="fc" id="L54">            Set.of(&quot;GET&quot;, &quot;HEAD&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;, &quot;TRACE&quot;, &quot;PATCH&quot;, &quot;CONNECT&quot;);</span>
+<span class="fc" id="L55">    private static final Pattern CORRELATION_ID = Pattern.compile(&quot;^[A-Za-z0-9._:-]{1,128}$&quot;);</span>
+<span class="fc" id="L56">    private static final Pattern FIREWALL = Pattern.compile(</span>
+            &quot;(?i)(%2f|%5c|%25|%2e|%00|%0[0-9a-f]|%1[0-9a-f]|%7f|;|\\\\|//|/\\./|/\\.\\./|/\\.$|/\\.\\.$|[\\x00-\\x1f\\x7f])&quot;);
+
+    private final RouteMatcher routeMatcher;
+    private final JwtAuthenticator authenticator;
+    private final UploadSlots uploadSlots;
+    private final MeterRegistry meterRegistry;
+
+    public GatekeeperFilter(
+            RouteMatcher routeMatcher,
+            JwtAuthenticator authenticator,
+            UploadSlots uploadSlots,
+<span class="fc" id="L68">            MeterRegistry meterRegistry) {</span>
+<span class="fc" id="L69">        this.routeMatcher = routeMatcher;</span>
+<span class="fc" id="L70">        this.authenticator = authenticator;</span>
+<span class="fc" id="L71">        this.uploadSlots = uploadSlots;</span>
+<span class="fc" id="L72">        this.meterRegistry = meterRegistry;</span>
+<span class="fc" id="L73">    }</span>
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+<span class="fc" id="L78">        String correlationId = correlationId(request);</span>
+<span class="fc" id="L79">        MDC.put(TraceHeaders.CORRELATION_MDC, correlationId);</span>
+<span class="fc" id="L80">        response.setHeader(TraceHeaders.CORRELATION_HEADER, correlationId);</span>
+<span class="fc" id="L81">        Timer.Sample sample = Timer.start(meterRegistry);</span>
+<span class="fc" id="L82">        String operationId = &quot;unknown&quot;;</span>
+<span class="fc" id="L83">        boolean slotHeld = false;</span>
+        try {
+<span class="fc" id="L85">            Operation operation = admit(request);</span>
+<span class="fc" id="L86">            operationId = operation.operationId();</span>
+<span class="fc" id="L87">            slotHeld = needsSlot(operation);</span>
+<span class="fc" id="L88">            chain.doFilter(request, response);</span>
+<span class="fc" id="L89">        } catch (ApiException e) {</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">            if (!response.isCommitted()) {</span>
+<span class="fc" id="L91">                ProblemWriter.write(response, e);</span>
+            }
+        } finally {
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            if (slotHeld) {</span>
+<span class="fc" id="L95">                uploadSlots.release();</span>
+            }
+<span class="fc" id="L97">            sample.stop(meterRegistry.timer(</span>
+                    &quot;vocabulary.api.requests&quot;,
+                    &quot;operation&quot;,
+                    operationId,
+                    &quot;status&quot;,
+<span class="fc" id="L102">                    String.valueOf(response.getStatus())));</span>
+<span class="fc" id="L103">            MDC.remove(TraceHeaders.CORRELATION_MDC);</span>
+<span class="fc" id="L104">            MDC.remove(&quot;operationId&quot;);</span>
+<span class="fc" id="L105">            MDC.remove(&quot;userId&quot;);</span>
+<span class="fc" id="L106">            MDC.remove(&quot;vocabularyName&quot;);</span>
+<span class="fc" id="L107">            MDC.remove(&quot;version&quot;);</span>
+        }
+<span class="fc" id="L109">    }</span>
+
+    @Override
+    protected boolean shouldNotFilterAsyncDispatch() {
+<span class="nc" id="L113">        return true;</span>
+    }
+
+    @Override
+    protected boolean shouldNotFilterErrorDispatch() {
+<span class="nc" id="L118">        return true;</span>
+    }
+
+    /**
+     * Runs all checks before the handler. Returns the operation when the request may proceed.
+     *
+     * @throws ApiException with the first failing check
+     */
+    private Operation admit(HttpServletRequest request) {
+<span class="fc" id="L127">        String method = request.getMethod();</span>
+<span class="fc" id="L128">        String rawPath = request.getRequestURI();</span>
+<span class="fc" id="L129">        RouteMatcher.Match match = routeMatcher.match(method, rawPath);</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        if (!KNOWN_METHODS.contains(method)) {</span>
+<span class="fc" id="L131">            throw methodNotAllowed(match);</span>
+        }
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        if (FIREWALL.matcher(rawPath).find()) {</span>
+<span class="fc" id="L134">            throw new ApiException(ProblemType.BAD_REQUEST, &quot;The request path is not allowed.&quot;, List.of());</span>
+        }
+<span class="fc bfc" id="L136" title="All 4 branches covered.">        if (match.pathDeclared() &amp;&amp; match.operation() == null) {</span>
+<span class="fc" id="L137">            throw methodNotAllowed(match);</span>
+        }
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        if (!match.pathDeclared()) {</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">            if (&quot;TRACE&quot;.equals(method)) {</span>
+<span class="nc" id="L141">                throw methodNotAllowed(match);</span>
+            }
+<span class="fc" id="L143">            authenticate(request);</span>
+<span class="fc" id="L144">            throw new ApiException(ProblemType.NOT_FOUND, &quot;The requested resource was not found.&quot;, List.of());</span>
+        }
+<span class="fc" id="L146">        Operation operation = match.operation();</span>
+<span class="fc" id="L147">        MDC.put(&quot;operationId&quot;, operation.operationId());</span>
+<span class="fc" id="L148">        putPathMdc(match.pathValues());</span>
+<span class="fc" id="L149">        request.setAttribute(OPERATION, operation);</span>
+<span class="fc" id="L150">        request.setAttribute(PATH_VALUES, match.pathValues());</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">        if (operation.access() != Operation.Access.PUBLIC) {</span>
+<span class="fc" id="L152">            AuthenticatedUser user = authenticate(request);</span>
+<span class="fc" id="L153">            authorize(operation, user);</span>
+<span class="fc" id="L154">            request.setAttribute(USER, user);</span>
+        }
+<span class="fc" id="L156">        checkAccept(operation, request);</span>
+<span class="fc" id="L157">        checkContentType(operation, request);</span>
+<span class="fc" id="L158">        checkSize(operation, request);</span>
+<span class="fc bfc" id="L159" title="All 4 branches covered.">        if (needsSlot(operation) &amp;&amp; !uploadSlots.tryAcquire()) {</span>
+<span class="fc" id="L160">            throw ApiException.unavailable(&quot;Too many uploads in progress. Retry later.&quot;, null);</span>
+        }
+<span class="fc" id="L162">        return operation;</span>
+    }
+
+    private AuthenticatedUser authenticate(HttpServletRequest request) {
+<span class="fc" id="L166">        List&lt;String&gt; headers = Collections.list(request.getHeaders(&quot;Authorization&quot;));</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">        if (headers.size() &gt; 1) {</span>
+<span class="nc" id="L168">            LOG.warn(&quot;Authentication failed: more than one Authorization header&quot;);</span>
+<span class="nc" id="L169">            throw new ApiException(ProblemType.UNAUTHORIZED, null, List.of());</span>
+        }
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        AuthenticatedUser user = authenticator.authenticate(headers.isEmpty() ? null : headers.get(0));</span>
+<span class="fc" id="L172">        MDC.put(&quot;userId&quot;, user.subject());</span>
+<span class="fc" id="L173">        return user;</span>
+    }
+
+    private static void authorize(Operation operation, AuthenticatedUser user) {
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        boolean allowed = operation.access() == Operation.Access.ADMIN ? user.canWrite() : user.canRead();</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if (!allowed) {</span>
+<span class="fc" id="L179">            LOG.warn(&quot;Access denied: user {} lacks the role for {}&quot;, user.subject(), operation.operationId());</span>
+<span class="fc" id="L180">            throw new ApiException(ProblemType.FORBIDDEN, null, List.of());</span>
+        }
+<span class="fc" id="L182">    }</span>
+
+    private static void checkAccept(Operation operation, HttpServletRequest request) {
+<span class="fc" id="L185">        List&lt;String&gt; values = Collections.list(request.getHeaders(&quot;Accept&quot;));</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">        if (values.isEmpty()) {</span>
+<span class="fc" id="L187">            return;</span>
+        }
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        Set&lt;String&gt; acceptable = operation.reply() == Operation.Reply.TURTLE</span>
+<span class="fc" id="L190">                ? Set.of(&quot;text/turtle&quot;, &quot;*/*&quot;, &quot;application/*&quot;)</span>
+<span class="fc" id="L191">                : Set.of(&quot;application/json&quot;, &quot;application/problem+json&quot;, &quot;*/*&quot;, &quot;application/*&quot;);</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        for (String value : values) {</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">            for (String range : value.split(&quot;,&quot;)) {</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">                if (rangeAccepted(range.trim(), acceptable)) {</span>
+<span class="fc" id="L195">                    return;</span>
+                }
+            }
+<span class="fc" id="L198">        }</span>
+<span class="fc" id="L199">        throw new ApiException(ProblemType.NOT_ACCEPTABLE, null, List.of());</span>
+    }
+
+    private static boolean rangeAccepted(String range, Set&lt;String&gt; acceptable) {
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">        if (range.isEmpty()) {</span>
+<span class="nc" id="L204">            return false;</span>
+        }
+        try {
+<span class="fc" id="L207">            MediaType mediaType = MediaType.parseMediaType(range);</span>
+<span class="fc bfc" id="L208" title="All 2 branches covered.">            if (mediaType.getQualityValue() &lt;= 0.0) {</span>
+<span class="fc" id="L209">                return false;</span>
+            }
+<span class="fc" id="L211">            String type = (mediaType.getType() + &quot;/&quot; + mediaType.getSubtype()).toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L212">            return acceptable.contains(type);</span>
+<span class="nc" id="L213">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L214">            return false;</span>
+        }
+    }
+
+    private static void checkContentType(Operation operation, HttpServletRequest request) {
+<span class="fc bfc" id="L219" title="All 2 branches covered.">        if (operation.body() == Operation.Body.NONE) {</span>
+<span class="fc" id="L220">            return;</span>
+        }
+<span class="fc bfc" id="L222" title="All 2 branches covered.">        String expected = operation.body() == Operation.Body.JSON ? &quot;application/json&quot; : &quot;multipart/form-data&quot;;</span>
+<span class="fc" id="L223">        String contentType = request.getContentType();</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">        if (contentType == null) {</span>
+<span class="fc" id="L225">            throw new ApiException(ProblemType.UNSUPPORTED_MEDIA_TYPE, null, List.of());</span>
+        }
+        try {
+<span class="fc" id="L228">            MediaType mediaType = MediaType.parseMediaType(contentType);</span>
+<span class="fc" id="L229">            String type = (mediaType.getType() + &quot;/&quot; + mediaType.getSubtype()).toLowerCase(Locale.ROOT);</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">            if (!expected.equals(type)) {</span>
+<span class="fc" id="L231">                throw new ApiException(ProblemType.UNSUPPORTED_MEDIA_TYPE, null, List.of());</span>
+            }
+<span class="nc" id="L233">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L234">            throw new ApiException(ProblemType.UNSUPPORTED_MEDIA_TYPE, null, List.of());</span>
+<span class="fc" id="L235">        }</span>
+<span class="fc" id="L236">    }</span>
+
+    private static void checkSize(Operation operation, HttpServletRequest request) {
+<span class="fc" id="L239">        long length = request.getContentLengthLong();</span>
+<span class="fc bfc" id="L240" title="All 4 branches covered.">        if (operation.body() == Operation.Body.JSON &amp;&amp; length &gt; JSON_LIMIT) {</span>
+<span class="fc" id="L241">            throw new ApiException(ProblemType.PAYLOAD_TOO_LARGE, JSON_TOO_LARGE, List.of());</span>
+        }
+<span class="fc bfc" id="L243" title="All 4 branches covered.">        if (operation.body() == Operation.Body.MULTIPART &amp;&amp; length &gt; MULTIPART_LIMIT) {</span>
+<span class="fc" id="L244">            throw new ApiException(ProblemType.PAYLOAD_TOO_LARGE, MULTIPART_TOO_LARGE, List.of());</span>
+        }
+<span class="fc" id="L246">    }</span>
+
+    private static boolean needsSlot(Operation operation) {
+<span class="fc bfc" id="L249" title="All 4 branches covered.">        return operation == Operation.CREATE_VOCABULARY || operation == Operation.CREATE_VOCABULARY_VERSION;</span>
+    }
+
+    private static ApiException methodNotAllowed(RouteMatcher.Match match) {
+        Map&lt;String, String&gt; headers =
+<span class="fc bfc" id="L254" title="All 2 branches covered.">                match.pathDeclared() ? Map.of(&quot;Allow&quot;, String.join(&quot;, &quot;, match.allowedMethods())) : Map.of();</span>
+<span class="fc" id="L255">        return new ApiException(ProblemType.METHOD_NOT_ALLOWED, null, List.&lt;Issue&gt;of(), headers, null);</span>
+    }
+
+    private static void putPathMdc(Map&lt;String, String&gt; pathValues) {
+<span class="fc" id="L259">        String name = pathValues.getOrDefault(&quot;vocabularyName&quot;, pathValues.get(&quot;name&quot;));</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">        if (name != null) {</span>
+<span class="fc" id="L261">            String decoded = QueryParameters.decode(name);</span>
+<span class="pc bpc" id="L262" title="2 of 4 branches missed.">            if (decoded != null &amp;&amp; decoded.matches(&quot;^[A-Za-z0-9]{1,64}$&quot;)) {</span>
+<span class="fc" id="L263">                MDC.put(&quot;vocabularyName&quot;, decoded);</span>
+            }
+        }
+<span class="fc" id="L266">        String version = pathValues.get(&quot;version&quot;);</span>
+<span class="fc bfc" id="L267" title="All 4 branches covered.">        if (version != null &amp;&amp; version.matches(&quot;^[0-9]{1,10}$&quot;)) {</span>
+<span class="fc" id="L268">            MDC.put(&quot;version&quot;, version);</span>
+        }
+<span class="fc" id="L270">    }</span>
+
+    private static String correlationId(HttpServletRequest request) {
+<span class="fc" id="L273">        String value = request.getHeader(TraceHeaders.CORRELATION_HEADER);</span>
+<span class="pc bpc" id="L274" title="1 of 4 branches missed.">        if (value != null &amp;&amp; CORRELATION_ID.matcher(value).matches()) {</span>
+<span class="fc" id="L275">            return value;</span>
+        }
+<span class="fc" id="L277">        return UUID.randomUUID().toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

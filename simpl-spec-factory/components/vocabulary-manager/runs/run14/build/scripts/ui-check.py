@@ -1,0 +1,77 @@
+"""Browser check of the UI (Playwright for Python, axe-core): login, list, create, new version, status change,
+external screens. Usage: AXE_JS=path/to/axe.min.js python scripts/ui-check.py [bypass]; with "bypass" the page CSP is
+bypassed so axe can run (D123)."""
+import json, os, re, sys, time, uuid, pathlib
+from playwright.sync_api import sync_playwright, expect
+AXE = pathlib.Path(os.environ.get("AXE_JS", "node_modules/axe-core/axe.min.js")).read_text()
+UI = "http://localhost:4433"
+name = "Ui" + uuid.uuid4().hex[:8]
+ttl = pathlib.Path("/tmp/v.ttl"); ttl.write_text(f"@prefix ex: <https://example.org/{name}#> .\n@prefix dc: <http://purl.org/dc/terms/> .\nex:a dc:title \"x\" .\n")
+bad = pathlib.Path("/tmp/bad.ttl"); bad.write_text("@prefix ex: <https://e/> .\nex:a ex:b .\n")
+errors = []
+BYPASS = len(sys.argv) > 1
+
+def axe(page, label):
+    if not BYPASS:
+        return
+    page.add_script_tag(content=AXE)
+    result = page.evaluate("async () => (await axe.run(document, {runOnly: ['wcag2a','wcag2aa','wcag21a','wcag21aa']})).violations.map(v => v.id + ':' + v.nodes.length)")
+    print(f"axe {label}: {result}")
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    ctx = browser.new_context(bypass_csp=BYPASS)
+    page = ctx.new_page()
+    page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+    page.goto(UI + "/vocabularies")
+    page.get_by_label("Username or email").fill("ga-admin")
+    page.get_by_label("Password", exact=True).fill("Password1!")
+    page.get_by_role("button", name="Sign In").click()
+    expect(page.get_by_role("heading", name="Vocabularies")).to_be_visible(timeout=15000)
+    print("list loaded, rows:", page.get_by_role("row").count())
+    axe(page, "list")
+    page.get_by_role("link", name="New Vocabulary +").click()
+    expect(page.get_by_label("Name")).to_be_visible()
+    axe(page, "create form")
+    page.get_by_label("Name").fill(name)
+    page.get_by_label("Description").fill("UI created")
+    page.get_by_label("Vocabulary file").set_input_files(str(bad))
+    expect(page.get_by_text(re.compile("Syntax error at line 2"))).to_be_visible()
+    print("submit disabled on syntax error:", page.get_by_role("button", name="Submit").is_disabled())
+    page.get_by_label("Vocabulary file").set_input_files(str(ttl))
+    expect(page.get_by_text("Syntax check passed.")).to_be_visible()
+    page.get_by_role("button", name="Submit").click()
+    expect(page.get_by_role("status").filter(has_text=f"Version 1 of {name} was created.")).to_be_visible(timeout=15000)
+    print("url after create:", page.url)
+    print("warnings:", page.get_by_role("region", name="Validation warnings").inner_text()[:120].replace("\n"," | "))
+    axe(page, "details")
+    page.get_by_role("link", name="Update").click()
+    expect(page.get_by_text(f"{name}.ttl (current content)")).to_be_visible(timeout=10000)
+    axe(page, "new version form")
+    page.get_by_label("Description").fill("UI second")
+    page.get_by_label("Change log").fill("Second")
+    page.get_by_role("button", name="Submit").click()
+    expect(page.get_by_role("status").filter(has_text=f"Version 2 of {name} was created.")).to_be_visible(timeout=15000)
+    print("url after new version:", page.url)
+    print("panel:", page.get_by_role("region", name="Version 2").is_visible())
+    page.goto(UI + f"/vocabularies/{name}/versions/1")
+    expect(page.get_by_role("region", name="Version 1")).to_be_visible()
+    print("v1 panel:", page.get_by_role("region", name="Version 1").inner_text()[:160].replace("\n", " | "))
+    page.goto(UI + "/vocabularies")
+    page.get_by_label("Name contains").fill(name)
+    expect(page.get_by_role("button", name=f"Actions for {name}")).to_be_visible(timeout=10000)
+    page.get_by_role("button", name=f"Actions for {name}").click()
+    page.get_by_role("menuitem", name="Deprecate").click()
+    dialog = page.get_by_role("dialog")
+    expect(dialog).to_contain_text(f"Do you want to deprecate '{name}'?")
+    print("focused:", page.evaluate("document.activeElement.textContent"))
+    axe(page, "dialog")
+    dialog.get_by_role("button", name="Confirm").click()
+    expect(page.get_by_role("status").filter(has_text=f"Status of {name} changed to Deprecated.")).to_be_visible()
+    page.goto(UI + "/external-vocabularies")
+    expect(page.get_by_role("heading", name="External vocabularies")).to_be_visible()
+    axe(page, "external list")
+    page.goto(UI + "/external-vocabularies/new")
+    expect(page.get_by_label("Namespace URI")).to_be_visible()
+    axe(page, "external form")
+    browser.close()
+print("console errors:", errors[:5])

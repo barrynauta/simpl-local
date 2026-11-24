@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Sparql.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Vocabulary Manager backend</a> &gt; <a href="index.source.html" class="el_package">eu.simpl.vocabularymanager.store</a> &gt; <span class="el_source">Sparql.java</span></div><h1>Sparql.java</h1><pre class="source lang-java linenums">package eu.simpl.vocabularymanager.store;
+
+import java.time.Instant;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResourceFactory;
+
+/**
+ * Names of the physical RDF model (docs/data-model.md, D87) and helpers to build SPARQL with
+ * {@link SparqlTemplate} (D94): values are never joined into query text unescaped.
+ */
+public final class Sparql {
+
+    public static final String VM = &quot;https://w3id.org/simpl/vocabulary-manager#&quot;;
+    public static final String META_GRAPH = &quot;urn:simpl:vm:graph:meta&quot;;
+    public static final String RECEIPT_GRAPH = &quot;urn:simpl:vm:graph:receipts&quot;;
+    public static final String PREFIXES = &quot;PREFIX vm: &lt;&quot; + VM + &quot;&gt;\nPREFIX xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;\n&quot;;
+
+    private Sparql() {}
+
+    /** A new parameterised command with the prefixes. */
+    public static SparqlTemplate command(String text) {
+<span class="fc" id="L25">        return new SparqlTemplate(PREFIXES + text);</span>
+    }
+
+    public static String vocabularyIri(String name) {
+<span class="fc" id="L29">        return &quot;urn:simpl:vm:vocabulary:&quot; + name;</span>
+    }
+
+    public static String versionIri(String name, long version) {
+<span class="fc" id="L33">        return &quot;urn:simpl:vm:vocabulary:&quot; + name + &quot;:v&quot; + version;</span>
+    }
+
+    public static String contentGraph(String name, long version) {
+<span class="fc" id="L37">        return &quot;urn:simpl:vm:graph:content:&quot; + name + &quot;:v&quot; + version;</span>
+    }
+
+    public static String externalIri(String name) {
+<span class="fc" id="L41">        return &quot;urn:simpl:vm:external:&quot; + name;</span>
+    }
+
+    public static String externalContentGraph(String name) {
+<span class="fc" id="L45">        return &quot;urn:simpl:vm:graph:external-content:&quot; + name;</span>
+    }
+
+    public static String receiptIri(String id) {
+<span class="fc" id="L49">        return &quot;urn:simpl:vm:receipt:&quot; + id;</span>
+    }
+
+    /** An xsd:integer literal. */
+    public static Literal integer(long value) {
+<span class="fc" id="L54">        return ResourceFactory.createTypedLiteral(String.valueOf(value), XSDDatatype.XSDinteger);</span>
+    }
+
+    /** An xsd:dateTime literal in UTC to the second (D58). */
+    public static Literal dateTime(Instant instant) {
+<span class="fc" id="L59">        return ResourceFactory.createTypedLiteral(instant.toString(), XSDDatatype.XSDdateTime);</span>
+    }
+
+    /** A plain string literal. */
+    public static Literal text(String value) {
+<span class="fc" id="L64">        return ResourceFactory.createStringLiteral(value);</span>
+    }
+
+    /** Reads a string value, or null. */
+    public static String string(QuerySolution row, String variable) {
+<span class="fc" id="L69">        RDFNode node = row.get(variable);</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        return node == null ? null : node.asLiteral().getLexicalForm();</span>
+    }
+
+    /** Reads an integer value. */
+    public static long number(QuerySolution row, String variable) {
+<span class="fc" id="L75">        return row.getLiteral(variable).getLong();</span>
+    }
+
+    /** Reads an xsd:dateTime value. */
+    public static Instant instant(QuerySolution row, String variable) {
+<span class="fc" id="L80">        return Instant.parse(row.getLiteral(variable).getLexicalForm());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

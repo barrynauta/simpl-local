@@ -1,0 +1,24 @@
+# Fuseki configuration of the Vocabulary Manager store (E3, D83, D193).
+# No anonymous access: every endpoint, also /$/ping and /$/compact, needs one of the three users.
+PREFIX fuseki: <http://jena.apache.org/fuseki#>
+PREFIX tdb2:   <http://jena.apache.org/2016/tdb#>
+PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+[] rdf:type fuseki:Server ;
+   fuseki:allowedUsers "@READ@", "@UPDATE@", "@ADMIN@" ;
+   fuseki:pingEP true ;
+   fuseki:compactEP true .
+
+<#service> rdf:type fuseki:Service ;
+    fuseki:name "vocabulary" ;
+    # Queries: the backend read user (and the update user for receipts read back on the same connection).
+    fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "query" ;
+                      fuseki:allowedUsers "@READ@", "@UPDATE@", "@ADMIN@" ] ;
+    # Updates: the backend update user only.
+    fuseki:endpoint [ fuseki:operation fuseki:update ; fuseki:name "update" ; fuseki:allowedUsers "@UPDATE@" ] ;
+    # Whole-dataset read for the backup script: the admin user only.
+    fuseki:endpoint [ fuseki:operation fuseki:gsp-r ; fuseki:name "dump" ; fuseki:allowedUsers "@ADMIN@" ] ;
+    fuseki:dataset <#dataset> .
+
+<#dataset> rdf:type tdb2:DatasetTDB2 ;
+    tdb2:location "/fuseki/databases/vocabulary" .
